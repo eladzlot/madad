@@ -1,0 +1,294 @@
+{
+  "questionnaire": {
+    "id": "pcl5",
+    "title": "PCL-5",
+    "defaultOptionSetId": "distress_5",
+    "optionSets": {
+      "distress_5": [
+        {
+          "label": "כלל לא",
+          "value": 0
+        },
+        {
+          "label": "במידה מועטה",
+          "value": 1
+        },
+        {
+          "label": "באופן בינוני",
+          "value": 2
+        },
+        {
+          "label": "במידה רבה",
+          "value": 3
+        },
+        {
+          "label": "באופן קיצוני",
+          "value": 4
+        }
+      ]
+    },
+    "items": [
+      {
+        "id": "intro",
+        "type": "instructions",
+        "text": "הוראות"
+      },
+      {
+        "id": "1",
+        "type": "likert",
+        "text": "פריט 1"
+      },
+      {
+        "id": "2",
+        "type": "likert",
+        "text": "פריט 2"
+      },
+      {
+        "id": "3",
+        "type": "likert",
+        "text": "פריט 3"
+      },
+      {
+        "id": "4",
+        "type": "likert",
+        "text": "פריט 4"
+      },
+      {
+        "id": "5",
+        "type": "likert",
+        "text": "פריט 5"
+      },
+      {
+        "id": "6",
+        "type": "likert",
+        "text": "פריט 6"
+      },
+      {
+        "id": "7",
+        "type": "likert",
+        "text": "פריט 7"
+      },
+      {
+        "id": "8",
+        "type": "likert",
+        "text": "פריט 8"
+      },
+      {
+        "id": "9",
+        "type": "likert",
+        "text": "פריט 9"
+      },
+      {
+        "id": "10",
+        "type": "likert",
+        "text": "פריט 10"
+      },
+      {
+        "id": "11",
+        "type": "likert",
+        "text": "פריט 11"
+      },
+      {
+        "id": "12",
+        "type": "likert",
+        "text": "פריט 12"
+      },
+      {
+        "id": "13",
+        "type": "likert",
+        "text": "פריט 13"
+      },
+      {
+        "id": "14",
+        "type": "likert",
+        "text": "פריט 14"
+      },
+      {
+        "id": "15",
+        "type": "likert",
+        "text": "פריט 15"
+      },
+      {
+        "id": "16",
+        "type": "likert",
+        "text": "פריט 16"
+      },
+      {
+        "id": "17",
+        "type": "likert",
+        "text": "פריט 17"
+      },
+      {
+        "id": "18",
+        "type": "likert",
+        "text": "פריט 18"
+      },
+      {
+        "id": "19",
+        "type": "likert",
+        "text": "פריט 19"
+      },
+      {
+        "id": "20",
+        "type": "likert",
+        "text": "פריט 20"
+      }
+    ],
+    "scoring": {
+      "method": "subscales",
+      "maxPerItem": 4,
+      "subscales": {
+        "intrusion": ["1", "2", "3", "4", "5"],
+        "avoidance": ["6", "7"],
+        "negative_cognition": ["8", "9", "10", "11", "12", "13", "14"],
+        "hyperarousal": ["15", "16", "17", "18", "19", "20"]
+      }
+    },
+    "interpretations": {
+      "target": "total",
+      "ranges": [{"min": 0, "max": 32, "label": "מתחת לסף"}, {"min": 33, "max": 80, "label": "PTSD אפשרי"}]
+    }
+  },
+  "cases": [
+    {
+      "description": "all zeros — below threshold",
+      "answers": {
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 0,
+        "9": 0,
+        "10": 0,
+        "11": 0,
+        "12": 0,
+        "13": 0,
+        "14": 0,
+        "15": 0,
+        "16": 0,
+        "17": 0,
+        "18": 0,
+        "19": 0,
+        "20": 0
+      },
+      "expected": {
+        "total": 0,
+        "subscales": {
+          "intrusion": 0,
+          "avoidance": 0,
+          "negative_cognition": 0,
+          "hyperarousal": 0
+        },
+        "category": "מתחת לסף"
+      }
+    },
+    {
+      "description": "all max — severe PTSD",
+      "answers": {
+        "1": 4,
+        "2": 4,
+        "3": 4,
+        "4": 4,
+        "5": 4,
+        "6": 4,
+        "7": 4,
+        "8": 4,
+        "9": 4,
+        "10": 4,
+        "11": 4,
+        "12": 4,
+        "13": 4,
+        "14": 4,
+        "15": 4,
+        "16": 4,
+        "17": 4,
+        "18": 4,
+        "19": 4,
+        "20": 4
+      },
+      "expected": {
+        "total": 80,
+        "subscales": {
+          "intrusion": 20,
+          "avoidance": 8,
+          "negative_cognition": 28,
+          "hyperarousal": 24
+        },
+        "category": "PTSD אפשרי"
+      }
+    },
+    {
+      "description": "clinical pattern — total 39, PTSD possible",
+      "answers": {
+        "1": 3,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 3,
+        "6": 2,
+        "7": 2,
+        "8": 2,
+        "9": 2,
+        "10": 2,
+        "11": 2,
+        "12": 2,
+        "13": 2,
+        "14": 2,
+        "15": 1,
+        "16": 1,
+        "17": 1,
+        "18": 1,
+        "19": 1,
+        "20": 1
+      },
+      "expected": {
+        "total": 39,
+        "subscales": {
+          "intrusion": 15,
+          "avoidance": 4,
+          "negative_cognition": 14,
+          "hyperarousal": 6
+        },
+        "category": "PTSD אפשרי"
+      }
+    },
+    {
+      "description": "all ones — total 20, below threshold",
+      "answers": {
+        "1": 1,
+        "2": 1,
+        "3": 1,
+        "4": 1,
+        "5": 1,
+        "6": 1,
+        "7": 1,
+        "8": 1,
+        "9": 1,
+        "10": 1,
+        "11": 1,
+        "12": 1,
+        "13": 1,
+        "14": 1,
+        "15": 1,
+        "16": 1,
+        "17": 1,
+        "18": 1,
+        "19": 1,
+        "20": 1
+      },
+      "expected": {
+        "total": 20,
+        "subscales": {
+          "intrusion": 5,
+          "avoidance": 2,
+          "negative_cognition": 7,
+          "hyperarousal": 6
+        },
+        "category": "מתחת לסף"
+      }
+    }
+  ]
+}

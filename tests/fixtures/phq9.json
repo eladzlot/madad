@@ -1,0 +1,231 @@
+{
+  "questionnaire": {
+    "id": "phq9",
+    "title": "PHQ-9",
+    "defaultOptionSetId": "frequency_4",
+    "optionSets": {
+      "frequency_4": [
+        {
+          "label": "כלל לא",
+          "value": 0
+        },
+        {
+          "label": "מספר ימים",
+          "value": 1
+        },
+        {
+          "label": "יותר ממחצית הזמן",
+          "value": 2
+        },
+        {
+          "label": "כמעט כל יום",
+          "value": 3
+        }
+      ]
+    },
+    "items": [
+      {
+        "id": "intro",
+        "type": "instructions",
+        "text": "הוראות"
+      },
+      {
+        "id": "1",
+        "type": "likert",
+        "text": "עניין מועט"
+      },
+      {
+        "id": "2",
+        "type": "likert",
+        "text": "דכדוך"
+      },
+      {
+        "id": "3",
+        "type": "likert",
+        "text": "שינה"
+      },
+      {
+        "id": "4",
+        "type": "likert",
+        "text": "עייפות"
+      },
+      {
+        "id": "5",
+        "type": "likert",
+        "text": "תיאבון"
+      },
+      {
+        "id": "6",
+        "type": "likert",
+        "text": "מרגיש רע"
+      },
+      {
+        "id": "7",
+        "type": "likert",
+        "text": "ריכוז"
+      },
+      {
+        "id": "8",
+        "type": "likert",
+        "text": "איטיות"
+      },
+      {
+        "id": "9",
+        "type": "likert",
+        "text": "מחשבות אובדניות"
+      }
+    ],
+    "scoring": {
+      "method": "sum",
+      "maxPerItem": 3
+    },
+    "interpretations": {
+      "target": "total",
+      "ranges": [
+        {
+          "min": 0,
+          "max": 4,
+          "label": "מינימלי"
+        },
+        {
+          "min": 5,
+          "max": 9,
+          "label": "קל"
+        },
+        {
+          "min": 10,
+          "max": 14,
+          "label": "בינוני"
+        },
+        {
+          "min": 15,
+          "max": 19,
+          "label": "בינוני-חמור"
+        },
+        {
+          "min": 20,
+          "max": 27,
+          "label": "חמור"
+        }
+      ]
+    },
+    "alerts": [{"id": "suicidality", "condition": "item.9 >= 1", "message": "אובדנות"}]
+  },
+  "cases": [
+    {
+      "description": "all zeros — minimal",
+      "answers": {
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 0,
+        "9": 0
+      },
+      "expected": {
+        "total": 0,
+        "subscales": {},
+        "category": "מינימלי"
+      }
+    },
+    {
+      "description": "all max — severe",
+      "answers": {
+        "1": 3,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 3,
+        "6": 3,
+        "7": 3,
+        "8": 3,
+        "9": 3
+      },
+      "expected": {
+        "total": 27,
+        "subscales": {},
+        "category": "חמור"
+      }
+    },
+    {
+      "description": "mild — score 7",
+      "answers": {
+        "1": 1,
+        "2": 1,
+        "3": 1,
+        "4": 1,
+        "5": 1,
+        "6": 1,
+        "7": 1,
+        "8": 0,
+        "9": 0
+      },
+      "expected": {
+        "total": 7,
+        "subscales": {},
+        "category": "קל"
+      }
+    },
+    {
+      "description": "moderately severe — score 17",
+      "answers": {
+        "1": 3,
+        "2": 3,
+        "3": 3,
+        "4": 2,
+        "5": 2,
+        "6": 1,
+        "7": 1,
+        "8": 1,
+        "9": 1
+      },
+      "expected": {
+        "total": 17,
+        "subscales": {},
+        "category": "בינוני-חמור"
+      }
+    },
+    {
+      "description": "suicidality alert threshold — item 9 = 1",
+      "answers": {
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 0,
+        "9": 1
+      },
+      "expected": {
+        "total": 1,
+        "subscales": {},
+        "category": "מינימלי"
+      }
+    },
+    {
+      "description": "reverse scoring — item with reverse flag",
+      "answers": {
+        "1": 2,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 0,
+        "9": 0
+      },
+      "expected": {
+        "total": 2,
+        "subscales": {},
+        "category": "מינימלי"
+      },
+      "note": "item 1 has no reverse flag in this fixture — value passes through unchanged"
+    }
+  ]
+}
