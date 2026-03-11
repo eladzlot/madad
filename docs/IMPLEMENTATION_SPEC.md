@@ -351,15 +351,50 @@ Severity is not rendered in the current version but the data model should accomm
 
 ## 8. Config Loading
 
-The config loader is responsible for fetching, validating, and merging one or more config files.
+The config loader is responsible for fetching, validating, and merging one or more QuestionnaireSet config files.
 
-**Steps:**
-1. Parse the `config` URL parameter as a comma-separated list of slugs.
-2. For each slug, fetch `/configs/<slug>.json` from the same origin.
-3. Lazy-load AJV and validate each fetched file against `QuestionnaireSet.schema.json`. Throw a descriptive error in Hebrew if validation fails.
-4. Merge all questionnaire arrays into a single flat list, deduplicating by questionnaire ID.
-5. If a `questionnaires` URL parameter is present, filter the merged list to only those IDs.
-6. Return the resolved set along with the config version and resolution timestamp.
+### 8.1 Source resolution
+
+Each source is either a **slug** (no slashes, no protocol) or a **full URL** (starts with `https://`, `http://`, or `/`).
+
+- Slug → `/configs/<slug>.json` (same origin)
+- Full URL or absolute path → used as-is
+
+This allows configs to be hosted on a different server.
+
+### 8.2 Steps
+
+1. For each source, fetch and parse the JSON file.
+2. Validate against `QuestionnaireSet.schema.json` using AJV (imported at module load — not lazy, since validation is required before the app can start).
+3. Run post-schema semantic checks:
+   - Duplicate session keys within each battery (see SEQUENCE_SPEC §2.4)
+   - Likert items with no resolvable options
+4. Merge all questionnaire arrays, deduplicating by ID (later file wins).
+5. Merge all battery arrays, deduplicating by ID (later file wins).
+6. If `filterIds` is provided, filter questionnaires to that list.
+7. Return `{ questionnaires, batteries, version, resolvedAt }`.
+
+Multiple sources are fetched in parallel.
+
+### 8.3 Errors
+
+All errors are typed so the UI layer can catch and display appropriate Hebrew messages. The loader itself is language-agnostic — it throws descriptive English errors only.
+
+| Class | Cause |
+|---|---|
+| `ConfigFetchError` | HTTP failure or network error; exposes `url` |
+| `ConfigValidationError` | AJV schema violation; exposes `url` and `validationErrors` array |
+| `ConfigError` | Semantic violation (duplicate session key, missing option set, etc.) |
+
+The UI catches these error classes and maps them to Hebrew UI strings. This keeps the loader language-agnostic and supports future UI language changes.
+
+### 8.4 Default config
+
+If no `config` URL parameter is present, the app shell defaults to `['standard']`. This allows the app to work out of the box without URL params. The loader itself has no knowledge of defaults — defaulting is the app shell's responsibility.
+
+### 8.5 Injectable fetch
+
+The loader accepts a `fetch` option for testing. In production it uses `globalThis.fetch`.
 
 ---
 
@@ -473,11 +508,11 @@ At session start the orchestrator:
 
 ### 8.3 Transition
 
-When the engine signals that the current questionnaire is complete, the orchestrator:
-1. Scores the completed questionnaire
-2. Updates the battery-level context with the new score
-3. Calls `advance(context)` on the sequence runner to get the next questionnaire
-4. Hands it to the engine, or signals session completion if none remain
+When the engine signals completion (its `advance()` returns `null`), the UI calls `orchestrator.engineComplete()`. The orchestrator then:
+1. Reads scores and alerts from the completed engine and persists them into session state
+2. Builds the battery-level DSL context from all completed scores so far
+3. Calls `advance(context)` on the battery runner to get the next questionnaire node
+4. Initializes a new engine for that node, or fires `onSessionComplete` if none remain
 
 ### 8.4 Progress Exposure
 

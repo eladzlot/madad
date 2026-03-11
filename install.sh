@@ -27,7 +27,8 @@ copy "IMPLEMENTATION_SPEC.md"          "docs/IMPLEMENTATION_SPEC.md"
 copy "BEHAVIORAL_SPEC.md"              "docs/BEHAVIORAL_SPEC.md"
 copy "CONFIG_SCHEMA_SPEC.md"           "docs/CONFIG_SCHEMA_SPEC.md"
 copy "DSL_SPEC.md"                     "docs/DSL_SPEC.md"
-copy "SEQUENCE_SPEC.md"                     "docs/DSL_SPEC.md"
+copy "SEQUENCE_SPEC.md"                "docs/DSL_SPEC.md"
+copy "RENDER_SPEC.md"                  "docs/DSL_SPEC.md"
 
 # ── Config ─────────────────────────────────────────────────────────────────────
 copy "QuestionnaireSet.schema.json"    "src/config/QuestionnaireSet.schema.json"
@@ -51,17 +52,45 @@ copy "render-likert.js"                "src/engine/render-likert.js"
 copy "render-binary.js"                "src/engine/render-binary.js"
 copy "render-instructions.js"          "src/engine/render-instructions.js"
 
+# ── Components ─────────────────────────────────────────────────────────────────
+copy "item-likert.js"                  "src/components/item-likert.js"
+copy "item-likert.test.js"             "src/components/item-likert.test.js"
+copy "item-binary.js"                  "src/components/item-binary.js"
+copy "item-binary.test.js"             "src/components/item-binary.test.js"
+copy "item-instructions.js"            "src/components/item-instructions.js"
+copy "item-instructions.test.js"       "src/components/item-instructions.test.js"
+copy "progress-bar.js"                 "src/components/progress-bar.js"
+copy "progress-bar.test.js"            "src/components/progress-bar.test.js"
+copy "app-shell.js"                    "src/components/app-shell.js"
+copy "app-shell.test.js"               "src/components/app-shell.test.js"
+
+# ── Helpers ────────────────────────────────────────────────────────────────────
+copy "gestures.js"                     "src/helpers/gestures.js"
+copy "gestures.test.js"                "src/helpers/gestures.test.js"
+
+# ── Styles ─────────────────────────────────────────────────────────────────────
+copy "tokens.css"                      "src/styles/tokens.css"
+copy "main.css"                        "src/styles/main.css"
+
 # ── PDF ────────────────────────────────────────────────────────────────────────
 copy "report.js"                       "src/pdf/report.js"
 
 # ── App shell ──────────────────────────────────────────────────────────────────
+copy "index.html"                      "index.html"
 copy "app.js"                          "src/app.js"
+copy "controller.js"                   "src/controller.js"
+copy "controller.test.js"              "src/controller.test.js"
 copy "router.js"                       "src/router.js"
 copy "main.css"                        "src/styles/main.css"
 
 # ── Composer ───────────────────────────────────────────────────────────────────
 copy "composer-index.html"             "composer/index.html"
 copy "composer-main.js"                "composer/src/main.js"
+
+# ── Test setup    ──────────────────────────────────────────────────────────────
+copy "vitest.config.js"                "vitest.config.js"
+copy "setup.js"                        "tests/setup.js"
+copy "setup-dom.js"                    "tests/setup-dom.js"
 
 # ── Test fixtures ──────────────────────────────────────────────────────────────
 copy "fixture-phq9.json"               "tests/fixtures/phq9.json"

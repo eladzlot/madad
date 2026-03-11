@@ -47,6 +47,14 @@ describe('linear sequence', () => {
     expect(() => runner.advance(ctx)).toThrow();
   });
 
+  it('returns null when all remaining nodes are if nodes that resolve to empty', () => {
+    const runner = createSequenceRunner([
+      ifNode('item.x >= 1', [q('a')], []),
+    ]);
+    // x=0 → else branch is empty → no leaves → null
+    expect(runner.advance({ item: { x: 0 }, subscale: {} })).toBeNull();
+  });
+
   it('works with item-level leaf nodes', () => {
     const runner = createSequenceRunner([item('1'), item('2')]);
     expect(runner.advance(ctx).id).toBe('1');

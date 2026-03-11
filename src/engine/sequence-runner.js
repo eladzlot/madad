@@ -29,8 +29,17 @@ export function createSequenceRunner(sequence) {
   // ── advance(context) ──────────────────────────────────────────────────────
 
   function advance(context) {
+    if (!hasNext()) {
+      throw new Error('SequenceRunner: advance() called but no nodes remain');
+    }
+
     const pendingBefore = [...pending];
     const leaf = pullNextLeaf(context);
+
+    if (leaf === null) {
+      // All remaining nodes were control-flow that resolved to empty branches
+      return null;
+    }
 
     if (replayFrom >= 0 && replayFrom < resolved.length) {
       const expected = resolved[replayFrom].node;
@@ -71,7 +80,7 @@ export function createSequenceRunner(sequence) {
 
       return node; // leaf
     }
-    throw new Error('SequenceRunner: advance() called but no nodes remain');
+    return null; // no nodes remain
   }
 
   // ── back() ────────────────────────────────────────────────────────────────

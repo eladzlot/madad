@@ -6,6 +6,9 @@ export default defineConfig({
     globals: true,
     include: ['src/**/*.test.js'],
     setupFiles: ['tests/setup.js'],
+    environmentOptions: {
+      happyDOM: { settings: { disableJavaScriptFileLoading: true } },
+    },
     coverage: {
       provider: 'v8',
       include: ['src/**/*.js'],

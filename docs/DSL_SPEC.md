@@ -1,343 +1,383 @@
-# Sequence & Navigation Specification
+# Render Layer Specification
 
-**Version:** 1.1  
-**Status:** Draft  
-**Scope:** Sequence runner, engine navigation, orchestrator navigation, session identity model
+Version 1.1
 
 ---
 
-## 1. Motivation
+## 1. Overview
 
-The assessment system needs to support:
-- **Branching** at both the item level (within a questionnaire) and the battery level (between questionnaires), based on answers or scores evaluated at runtime
-- **Back navigation** that lets patients revisit and change answers, including answers that affect branch conditions
-- **Repetition** of the same questionnaire definition multiple times in a single session (e.g. pre/post), with explicit naming to keep slots independent
-- **Randomization** of questionnaire or item order (future — not implemented in v1)
+The render layer translates engine and orchestrator state into DOM. It is built on **Lit** (~6 kB gzipped) and follows a strict separation between:
 
-The design must accommodate all of these without requiring a rewrite when new capabilities are added.
+- **Components** (`src/components/`) — Lit custom elements. Purely declarative. They receive data as properties, emit custom events, and manage their own DOM lifecycle. No knowledge of the engine, orchestrator, or session state.
+- **Controller** (`src/controller.js`) — The single wiring layer. Reads from the engine and orchestrator, mounts and updates components, handles component events, calls back into the engine.
+- **Helpers** (`src/helpers/`) — Reusable DOM-adjacent utilities. No business logic. Currently: `gestures.js`.
+
+Components are independently testable in isolation (set properties, observe events). The controller can be tested by mocking components.
 
 ---
 
-## 2. Session Key Model
+## 2. Architecture
 
-Every questionnaire slot in a session is identified by a **session key** — the string used to store and retrieve that slot's answers, scores, and alerts from session state.
+### 2.1 Data flow
 
-### 2.1 Default: questionnaireId as session key
-
-By default, a battery node uses the questionnaire's own ID as its session key:
-
-```json
-{ "questionnaireId": "phq9" }
+```
+Orchestrator ──┐
+               ├──▶ Controller ──▶ Components (Lit) ──▶ DOM
+Engine ────────┘         ▲
+                         │
+                    Custom events
 ```
 
-Session key → `"phq9"`. Answers stored at `session.answers["phq9"]`.
+The controller is the only place where engine/orchestrator methods are called in response to DOM events. Components never import or reference engine or orchestrator.
 
-### 2.2 Explicit instanceId
+### 2.2 Component contract
 
-When the same questionnaire definition is used more than once, each occurrence must declare a unique `instanceId`:
+Every item component:
+- Accepts a resolved `item` property (fully resolved — no `optionSetId`, no template strings)
+- Accepts a `selected` property (`any | null`) — the current answer value, or `null`
+- Fires an `answer` custom event with `detail: { value: any }` when the user makes a selection
+- Fires an `advance` custom event when the user signals they want to move forward
+- Manages its own internal interaction state (hover, focus, swipe preview) without calling out
 
-```json
-{ "questionnaireId": "phq9", "instanceId": "phq9_pre" }
-{ "questionnaireId": "phq9", "instanceId": "phq9_post" }
+`selected` and `answer.detail.value` are typed as `any` to accommodate current item types (single numeric value) and future types (arrays for select-many, objects for value+time, etc.).
+
+The controller listens for `answer` and `advance` and calls:
+```js
+engine.recordAnswer(item.id, e.detail.value); // on answer
+engine.advance();                              // on advance
 ```
 
-Session keys → `"phq9_pre"` and `"phq9_post"`. These are fully independent slots.
+For instructions items there is no `answer` event — only `advance`.
 
-The `instanceId` follows the same ID pattern as all other IDs: `^[a-zA-Z0-9][a-zA-Z0-9_]*$`.
+### 2.3 Item resolution
 
-### 2.3 Session key resolution
-
-The session key for a battery leaf node is always:
+Before mounting a component, the controller runs the item through a resolution pipeline:
 
 ```js
-node.instanceId ?? node.questionnaireId
-```
-
-### 2.4 Duplicate session key validation
-
-The config loader validates that all session keys within a battery are unique at load time. If the same questionnaire ID appears more than once without explicit `instanceId` values — or if two nodes produce the same resolved session key — the loader throws a descriptive error.
-
-This is a post-AJV validation step (AJV cannot enforce cross-node uniqueness).
-
-### 2.5 DSL references
-
-Battery-level DSL conditions reference session keys directly:
-
-```
-score.phq9_pre >= 10
-score.phq9_post < score.phq9_pre
-```
-
-No aliasing or indirection — authors write the session key they defined.
-
----
-
-## 3. Session State
-
-```js
-{
-  answers: {
-    [sessionKey]: { [itemId]: number }
-  },
-  scores: {
-    [sessionKey]: { total: number | null, subscales: {}, category: string | null }
-  },
-  alerts: {
-    [sessionKey]: Alert[]
-  },
+function resolveItem(item, context) {
+  return [
+    resolveOptions,
+    // future resolvers added here (e.g. template string substitution, conditional display rules)
+  ].reduce((item, fn) => fn(item, context), item);
 }
 ```
 
-**Orphaned answers** — when a patient goes back past a branch point and re-routes, some session keys may no longer be in the active resolved path. Their data remains in session state **completely unchanged** — answers, scores, and alerts are all preserved. If the patient re-routes back onto the same questionnaire, their previous answers are still there and the engine resumes from where they left off. Orphaned slots are excluded from the results screen and PDF by checking against the current resolved path at render time. The runner, engine, and orchestrator **never** clear answers or scores.
-
----
-
-## 4. Sequence Runner
-
-The sequence runner is a shared, context-agnostic module used by both the orchestrator (battery level) and the engine (item level). It contains all control-flow resolution logic.
-
-### 4.1 Responsibilities
-
-- Walk a sequence of nodes, yielding resolved leaf nodes one at a time
-- Resolve `if` nodes lazily at the moment `advance()` reaches them
-- Maintain a **resolved path** — the ordered list of leaf nodes yielded so far
-- Support back navigation by tracking current position in the resolved path
-- On re-advance, replay already-resolved path entries where the path is still valid; re-evaluate from the point of divergence if a branch resolves differently
-
-### 4.2 What the Runner Does NOT Do
-
-- Does not evaluate scoring, alerts, or answers
-- Does not construct or validate DSL contexts
-- Does not clear or modify session state
-- Does not know whether it operates at battery or item level
-
-### 4.3 Interface
-
-```js
-const runner = createSequenceRunner(sequence);
-
-runner.advance(context)        // → leaf node; throws if no nodes remain
-runner.back()                  // → leaf node; throws if at first node
-runner.canGoBack()             // → boolean
-runner.hasNext()               // → boolean
-runner.currentNode()           // → leaf node | null (null before first advance)
-runner.resolvedPath()          // → readonly array of leaf nodes yielded so far
-runner.isSequenceDeterminate() // → boolean (no pending if nodes)
-runner.remainingCount()        // → number | null
-```
-
-### 4.4 Internal State
-
-```
-sequence:      [ ...original nodes, unchanged ]
-pending:       [ ...nodes not yet reached ]
-resolvedPath:  [ leaf, leaf, leaf, ... ]
-position:      integer  // index of current node in resolvedPath; -1 before first advance
-```
-
-`pending` is initialized to a copy of `sequence`. As control-flow nodes are resolved, their branches are spliced into `pending` in place.
-
-### 4.5 Internal state
-
-Each entry in `resolvedPath` stores both the resolved leaf node and a `pendingBefore` snapshot — the state of `pending` captured immediately before that leaf was pulled. This snapshot always includes the leaf itself (and any preceding control-flow nodes), so restoring it and re-advancing will re-yield the same leaf and re-evaluate any `if` nodes before it.
-
-```
-resolvedPath[i] = { node: <leaf>, pendingBefore: <snapshot of pending before node was pulled> }
-```
-
-A `replayFrom` index (−1 when not replaying) tracks whether the runner is in replay mode after a `back()` call, and which resolved entry it is currently comparing against.
-
-### 4.6 advance(context)
-
-1. Snapshot `pending` as `pendingBefore`.
-2. Pull the next leaf from `pending`, resolving control-flow inline:
-   - `if` node: evaluate condition, splice matching branch into front of `pending`, repeat.
-   - `randomize` node: v1 — throw `NotImplementedError`.
-   - Empty `pending`: throw.
-3. **If in replay mode** (`replayFrom >= 0`):
-   - Compare the leaf against `resolvedPath[replayFrom].node` (by reference).
-   - **Match**: overwrite that entry with the new `{ node, pendingBefore }`, set `position = replayFrom`, advance `replayFrom`. If `replayFrom` reaches the end of `resolvedPath`, clear replay mode. Return leaf.
-   - **Diverge**: truncate `resolvedPath` from `replayFrom` onward, clear replay mode, fall through to step 4.
-4. Append `{ node, pendingBefore }` to `resolvedPath`, set `position` to last index. Return leaf.
-
-"Matches" means the same node object — since nodes come from parsed config, reference equality is correct.
-
-### 4.7 back()
-
-1. If `position <= 0`: throw.
-2. Decrement `position`.
-3. Restore `pending` to `resolvedPath[position + 1].pendingBefore` — the snapshot taken just before the node we are leaving was resolved. This re-encounters any `if` nodes that sit between the current node and the one we left, without re-yielding the current node itself.
-4. Set `replayFrom = position + 1`.
-5. Return `resolvedPath[position].node` (the new current node).
-
-**Key invariant**: after `back()`, calling `advance()` moves *forward* from the current node — it does not re-yield the current node. The next `advance()` re-evaluates any control-flow nodes between current and the next leaf.
-
-The resolved path beyond `position` is retained as a replay cache and only truncated by a diverging re-advance (§4.6).
-
-### 4.8 hasNext()
-
-Returns `true` if `pending` is non-empty.
-
-After `back()`, `pending` is set to `resolvedPath[position + 1].pendingBefore`, which always contains at least one reachable node (the one we just left), so `hasNext()` correctly returns `true`.
-
-### 4.9 isSequenceDeterminate() and remainingCount()
-
-`isSequenceDeterminate()` returns `true` if `pending` contains no `if` nodes (recursing into `randomize.ids`).
-
-`remainingCount()` returns `null` if indeterminate. Otherwise returns the count of leaf nodes reachable from `pending` (recursing into `randomize.ids` blocks). After `back()`, `pending` reflects exactly the nodes still to be visited, so no additional adjustment is needed.
-
----
-
-## 5. Control-Flow Nodes
-
-### 5.1 if node
-
-```json
-{
-  "type": "if",
-  "condition": "<DSL expression>",
-  "then": [ /* sequence nodes */ ],
-  "else": [ /* sequence nodes */ ]
-}
-```
-
-- `condition` evaluated against caller-provided context at the moment `advance()` reaches this node
-- `then` and `else` are arrays of sequence nodes — may contain further `if` or `randomize` nodes
-- `else` may be empty
-- No `rewind` flag — re-evaluation on re-advance is always the behavior (§4.5)
-
-### 5.2 randomize node (v1: not implemented)
-
-```json
-{
-  "type": "randomize",
-  "ids": [ /* sequence nodes */ ]
-}
-```
-
-- `ids` is an array of sequence nodes to shuffle
-- Shuffle performed once, at the moment the node is reached; fixed for the session
-- Re-advancing after back() does not re-shuffle — the shuffled order is stored in the resolved path
-- v1: throws `NotImplementedError`
-
-**Future randomization variants** (not specced, listed for awareness):
-- Randomize questionnaire order in battery
-- Randomize item order within questionnaire  
-- Random assignment to condition (A/B)
-- Counterbalancing (Latin square)
-
----
-
-## 6. Engine (Item-Level Navigation)
-
-The engine manages navigation within a single questionnaire instance.
-
-### 6.1 Responsibilities
-
-- Create a sequence runner from the questionnaire's item array
-- Drive `advance(context)` and `back()` on the runner
-- Record answers by item ID (never cleared)
-- Expose `currentItem`, `canGoBack()`, and progress info to the renderer
-- On completion: run scoring and alert evaluation, store results
-- Signal the orchestrator when the questionnaire is complete
-
-### 6.2 Item-Level Context
-
-Built fresh on each `advance()` call:
-
+`context` carries everything resolvers may need:
 ```js
 {
-  item:     session.answers[sessionKey] ?? {},
-  subscale: session.scores[sessionKey]?.subscales ?? {},
+  questionnaire,   // for option set lookup
+  session,         // for future use (e.g. patient name substitution in item text)
 }
 ```
 
-### 6.3 Completion
+Each resolver is a pure function `(item, context) → item`. Components always receive a fully resolved item and never perform resolution themselves.
 
-When `hasNext()` returns false, the engine:
-1. Calls `score(questionnaire, answers)` and stores the result
-2. Calls `evaluateAlerts(questionnaire, answers, scoreResult)` and stores the results
-3. Returns `null` from `advance()` to signal completion to the orchestrator
+**`resolveOptions`** — for likert items without inline `options`, looks up `item.optionSetId ?? questionnaire.defaultOptionSetId` in `questionnaire.optionSets` and inlines the result. Throws if the reference cannot be resolved (should not happen post-loader-validation).
 
-Scoring and alert results are cleared if the user navigates back into a completed questionnaire and are recomputed when it completes again.
+### 2.4 Duplicate option values
 
-### 6.4 Answer Recording
+Two options with the same `value` in the same item are a config error. Caught at load time by the loader's semantic validation (`ConfigError`). Components may assume option values are unique within an item.
 
-`recordAnswer(itemId, value)` writes to the engine's internal answer map. Answers are never cleared — not on `back()`, not on re-entry. Instructions items have no `itemId` and require no `recordAnswer` call before `advance()`.
+### 2.5 Option order
 
-### 6.5 Back Across Questionnaire Boundary
+Options are rendered in author-defined order — the order they appear in the config. No reordering is applied.
 
-When `back()` is called on the first item of a questionnaire (`runner.canGoBack()` is false), the engine signals the orchestrator to handle cross-boundary back navigation (§7.3).
+### 2.6 Controller responsibilities
 
-The orchestrator manages the full session flow at the battery level.
+```
+controller.mount(container, orchestrator)
+  — Calls orchestrator.start()
+  — On onQuestionnaireStart: stores engine reference, mounts first item
+  — Mounts and updates:
+      <progress-bar>  (battery + item progress)
+      <item-*>        (current item component, resolved)
+      back button     (visibility + enabled state)
+  — On answer event:  engine.recordAnswer(item.id, e.detail.value)
+  — On advance event: result = engine.advance()
+                      if result === null → orchestrator.engineComplete()
+                      else → mount next item
+  — On back:          engine.canGoBack()
+                        ? engine.back() → mount previous item
+                        : orchestrator.engineCrossBack()
+  — On onSessionComplete: navigate to completion screen
+```
 
-### 7.1 Responsibilities
+### 2.7 Item mounting
 
-- Resolve the battery (named or constructed from URL params)
-- Create a sequence runner from the battery sequence
-- Initialize the engine for each questionnaire instance as it is reached
-- On engine completion: score, evaluate alerts, advance battery runner
-- Signal session completion when the battery runner's `hasNext()` is false
+Each time the engine returns a new item (from `advance()` or `back()`), the controller:
 
-### 7.2 Battery-Level Context
+1. Resolves the item through the pipeline
+2. Determines the component tag from `item.type` (`item-likert`, `item-binary`, `item-instructions`)
+3. If the mounted component is the same type, updates its properties in place
+4. If the type changes, replaces the component entirely
+5. Sets `selected` from `engine.answers()[item.id] ?? null`
 
-Built from completed scores, keyed by session key:
+Updating in place is preferred — it lets Lit animate between items without a full remount.
+
+### 2.8 Auto-advance delay
+
+After the `answer` event fires, the controller waits **150 ms** before calling `engine.advance()`. This gives the selection highlight time to render visibly before the screen transitions. The delay is a named constant in the controller (`ADVANCE_DELAY_MS = 150`). Instructions advance immediately on tap — no delay.
+
+---
+
+## 3. Styling
+
+### 3.1 Approach
+
+- **Component styles** — defined inline in each Lit component using the `css` tagged template. Scoped to shadow DOM. No bleed between components.
+- **Design tokens** — CSS custom properties in `src/styles/tokens.css`, loaded globally. Components reference tokens via `var(--token)`.
+- **Global styles** — `src/styles/main.css` imports `tokens.css`, applies base reset, `html`/`body` layout, font stack, and `dir="rtl"`. Nothing component-specific lives here.
+
+No CSS preprocessor. Vite handles the imports.
+
+### 3.2 Design tokens
+
+Minimal initial values — enough to look reasonable during development. Visual design passes replace values without touching component code.
+
+```css
+/* Colour */
+--color-bg:              #ffffff;
+--color-surface:         #f5f5f5;
+--color-border:          #d0d0d0;
+--color-text:            #1a1a1a;
+--color-text-muted:      #6b6b6b;
+--color-primary:         #2563eb;
+--color-primary-text:    #ffffff;
+--color-selected-bg:     #eff6ff;
+--color-selected-border: #2563eb;
+--color-yes:             #16a34a;
+--color-no:              #dc2626;
+
+/* Spacing */
+--space-xs:  4px;
+--space-sm:  8px;
+--space-md:  16px;
+--space-lg:  24px;
+--space-xl:  40px;
+
+/* Typography */
+--font-family:        system-ui, -apple-system, sans-serif;
+--font-size-sm:       14px;
+--font-size-md:       16px;
+--font-size-lg:       20px;
+--font-size-xl:       24px;
+--font-weight-normal: 400;
+--font-weight-bold:   600;
+--line-height:        1.5;
+
+/* Shape */
+--radius-sm:    6px;
+--radius-md:    10px;
+--radius-lg:    16px;
+--border-width: 1.5px;
+
+/* Motion */
+--transition-fast: 120ms ease;
+--transition-med:  200ms ease;
+```
+
+All layout CSS uses logical properties (`inline-start`, `inline-end`, `block-start`, `block-end`). No `left`/`right` in layout rules.
+
+---
+
+## 4. Components
+
+### 4.1 `<item-likert>`
+
+Renders a question with an ordered list of response options.
+
+**Properties:**
+| Property | Type | Description |
+|---|---|---|
+| `item` | object | Resolved item — `{ id, text, options: [{label, value}, ...] }` |
+| `selected` | any\|null | Currently selected value, or null |
+
+**Options:** ≥ 2 entries, author-defined order, values unique within the item.
+
+**Rendering:**
+- Question text as a prominent block at the top
+- Options as a vertical list of tappable rows
+- Selected option: filled background (`--color-selected-bg`), coloured border (`--color-selected-border`), plus a non-colour indicator (checkmark or bold label)
+- Touch targets min 44px height, full width
+
+**Interaction:**
+- Tap/click → fires `answer`; controller waits 150 ms then calls `advance`
+- Arrow keys up/down → move focus between options (wraps)
+- Space on focused option → fires `answer` only (selects without advancing — allows review)
+- Enter on focused option → fires `answer`; controller advances after delay
+
+**ARIA:**
+- `role="radiogroup"` on container, `aria-label` = question text
+- Each option `role="radio"`, `aria-checked` reflects selected state
+
+**Events:**
+- `answer` — `detail: { value }` — on selection
+- `advance` — no detail — on tap or Enter (controller fires after 150 ms delay)
+
+**UI strings (inlined for now, extract to `src/strings.js` before release):**
+- No additional UI strings beyond item content for this component
+
+---
+
+### 4.2 `<item-binary>`
+
+Renders a yes/no question with two large answer targets.
+
+**Properties:** same as `<item-likert>`. Options always exactly two entries with values `0` (No) and `1` (Yes).
+
+**Rendering:**
+- Question text centered and prominent
+- Two large answer zones; vertical stack on mobile, side-by-side on wide screens
+- Yes zone accented with `--color-yes`; No zone with `--color-no`
+- During drag: card rotates (`calc(var(--drag-x) * 0.05deg)`), target zone opacity increases proportionally
+
+**Interaction:**
+- Tap answer zone → `answer` + `advance` (via controller delay)
+- Swipe right → Yes (1); swipe left → No (0) — via gesture utility, free horizontal swipe
+- Overscroll down (at top of scroll) → back; overscroll up (at bottom) → forward (only if already answered)
+- Arrow keys left/right → move focus; Enter → `answer` + `advance`
+
+**Swipe preview:** `onDrag` sets `--drag-x` CSS custom property on the host element. CSS responds to it via `transform` and opacity. On `phase: 'end'` below threshold, element transitions back to neutral.
+
+**ARIA:** same `radiogroup`/`radio` pattern.
+
+**Events:** same as `<item-likert>`.
+
+---
+
+### 4.3 `<item-instructions>`
+
+Renders a non-scored instruction screen.
+
+**Properties:**
+| Property | Type | Description |
+|---|---|---|
+| `item` | object | `{ id, text }` |
+
+No `selected` property.
+
+**Rendering:**
+- Text block, multi-paragraph (split on `\n`)
+- "המשך" continue button, full width
+
+**Interaction:**
+- Tap continue or Enter → `advance` immediately (no 150 ms delay)
+
+**Events:** `advance` only.
+
+---
+
+### 4.4 `<progress-bar>`
+
+Display-only.
+
+**Properties:**
+| Property | Type | Description |
+|---|---|---|
+| `batteryProgress` | `{ current: number, total: number\|null }` | From `orchestrator.progress()` |
+| `itemProgress` | `{ current: number, total: number\|null }` | From `engine.progress()` |
+| `questionnaireName` | string | Display name of current questionnaire |
+
+**Rendering:**
+- Questionnaire name
+- "שאלה N מתוך M" — hidden when total is null
+- Filled progress bar — shown only when total is known
+- Battery position ("שאלון 2 מתוך 4") — shown only when battery total > 1
+
+---
+
+## 5. Gesture Helper (`src/helpers/gestures.js`)
+
+### 5.1 API
 
 ```js
-{
-  score: {
-    [sessionKey]: scores[sessionKey].total
-  },
-  subscale: {
-    [sessionKey]: scores[sessionKey].subscales
-  },
+attachSwipeListener(element, options) → detach()
+```
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `onLeft` | fn | — | Confirmed left swipe |
+| `onRight` | fn | — | Confirmed right swipe |
+| `onUp` | fn | — | Confirmed up swipe (overscroll) |
+| `onDown` | fn | — | Confirmed down swipe (overscroll) |
+| `onDrag` | fn({dx, dy, phase}) | — | During drag; `phase`: `'start'`\|`'move'`\|`'end'` |
+| `threshold` | number | 40 | Min px delta to confirm |
+| `overscrollOnly` | boolean | false | If true, only trigger vertical gestures when the scroll container is already at its limit |
+| `scrollContainer` | Element\|null | null | The scrollable element to check scroll position against (required when `overscrollOnly: true`) |
+
+Returns `detach()` — removes all listeners. Must be called in `disconnectedCallback`.
+
+### 5.2 Direction semantics
+
+| Gesture | Direction | Mode | Target | Condition |
+|---|---|---|---|---|
+| Binary answer | left / right | free swipe | `<item-binary>` element | — |
+| Back navigation | down | overscroll | `document` | `scrollContainer.scrollTop === 0` |
+| Forward navigation | up | overscroll | `document` | at bottom of scroll AND item already answered |
+
+**Back:** user is at the top of the scrollable content and continues pulling down — overscroll triggers back navigation.
+
+**Forward:** user is at the bottom of the scrollable content and continues pulling up — overscroll triggers forward (only if the current item already has an answer recorded).
+
+Item screens must scroll freely. The gesture utility never suppresses vertical scroll. It only intercepts vertical movement when the scroll container has already reached its limit in that direction.
+
+### 5.3 Overscroll detection
+
+```js
+const atTop    = container.scrollTop === 0;
+const atBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 1;
+```
+
+On `touchstart`, the current scroll position is captured. On `touchmove`, if the container is at its limit and the drag direction matches, the gesture is recognised. `preventDefault()` is **not** called — the overscroll rubber-band effect (where present) may still occur visually, which is acceptable.
+
+### 5.4 Horizontal scroll conflict
+
+For binary swipes (horizontal), the gesture utility calls `preventDefault()` on `touchmove` once horizontal direction is confirmed (after 10 px of horizontal movement), suppressing vertical scroll for that touch. The `touchmove` listener must be registered as **non-passive** for binary items only.
+
+### 5.5 Reduced motion
+
+`onDrag` still fires under `prefers-reduced-motion: reduce` — state updates happen. Components suppress CSS transitions and transform animations via a `@media (prefers-reduced-motion: reduce)` block in their styles.
+
+### 5.6 Lit integration
+
+```js
+firstUpdated() {
+  this._detachSwipe = attachSwipeListener(this, { ... });
+}
+disconnectedCallback() {
+  super.disconnectedCallback();
+  this._detachSwipe?.();
 }
 ```
 
-Only completed questionnaire instances are included. An `if` condition referencing a score that hasn't been computed yet will throw a `DSLReferenceError`.
+---
 
-### 7.3 Back Navigation Across Questionnaire Boundary
+## 6. RTL and Localisation
 
-When the engine signals a cross-boundary back:
-
-1. Orchestrator calls `back()` on the battery runner → gets previous questionnaire node
-2. Re-initializes the engine for that questionnaire instance, pre-loading existing answers from `session.answers[sessionKey]`
-3. Engine restores position to the last item (its `advance()` is called until `hasNext()` is false, then `back()` once to land on the last item)
-4. UI resumes from the last item of the previous questionnaire
+- `dir="rtl"` set on `<html>` at app load. Components inherit it automatically via shadow DOM.
+- UI strings (button labels, ARIA labels, progress format) are inlined as Hebrew directly in components for now. They will be extracted to `src/strings.js` before the first non-development release. `strings.js` will export a plain object keyed by string ID — a single-file change enables localisation.
+- All layout CSS uses logical properties exclusively.
 
 ---
 
-## 8. Progress Tracking
+## 7. Accessibility
 
-| Value | Source |
-|---|---|
-| Current item index (1-based) | `runner.position + 1` |
-| Total items | `runner.remainingCount() + runner.position + 1` if determinate; `null` if not |
-| Back button visible | `engine.canGoBack()` OR cross-boundary back is available |
-| Questionnaire name | from config, via current battery node's `questionnaireId` |
+WCAG 2.1 AA target:
 
----
-
-## 9. v1 Scope
-
-**Implemented in v1:**
-- Linear sequences (no control-flow)
-- `if` nodes at battery level
-- `if` nodes at item level (runner supports; engine may defer)
-- Explicit `instanceId` on battery nodes
-- Back navigation within a questionnaire
-- Back navigation across questionnaire boundary
-- Duplicate session key validation at load time
-
-**Not implemented in v1 (runner throws `NotImplementedError`):**
-- `randomize` nodes
-- Dynamic question content
-- Repeated questionnaire without explicit `instanceId`
+- Touch targets ≥ 44×44 px
+- `:focus-visible` ring always present, never suppressed
+- Selected state communicated by shape/text in addition to colour
+- All swipe gestures have keyboard equivalents
+- `prefers-reduced-motion`: animations and transitions set to `0ms`
 
 ---
 
-## 10. Open Questions
+## 8. Implementation order
 
-- **Orphaned answer pruning** — the results screen and PDF need to know which session keys are currently in the resolved path. The orchestrator should expose a `activeSessionKeys()` method (or equivalent) returning the session keys of the current resolved path in order. This is the rendering layer's filter — not a state mutation.
-
-~~**Cross-boundary back and scores**~~ — resolved: scores are never cleared. When re-entering a questionnaire after going back, existing answers are pre-loaded and the old score remains until the questionnaire completes again and overwrites it. This is correct behavior — see OCI-R example in §3.
+1. `src/styles/tokens.css` + `src/styles/main.css`
+2. `<item-likert>` + minimal controller wiring (no gestures)
+3. `src/helpers/gestures.js`
+4. `<item-binary>`
+5. `<item-instructions>`
+6. `<progress-bar>`
+7. Full controller + app shell integration
