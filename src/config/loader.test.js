@@ -256,6 +256,68 @@ describe('option set validation', () => {
   });
 });
 
+// ─── Binary option count validation ──────────────────────────────────────────
+
+describe('binary option count validation', () => {
+  function binaryQ(options) {
+    return {
+      ...minimalQ(),
+      items: [{ id: 'b1', type: 'binary', text: 'שאלה בינארית', options }],
+    };
+  }
+
+  it('accepts binary item with exactly 2 inline options', async () => {
+    const q = binaryQ([{ label: 'כן', value: 1 }, { label: 'לא', value: 0 }]);
+    const fetch = makeFetch({ '/configs/a.json': { body: minimalConfig([q]) } });
+    await expect(loadConfig(['a'], { fetch })).resolves.toBeDefined();
+  });
+
+  it('throws when binary has 1 inline option (caught by schema)', async () => {
+    const q = binaryQ([{ label: 'כן', value: 1 }]);
+    const fetch = makeFetch({ '/configs/a.json': { body: minimalConfig([q]) } });
+    // Schema enforces minItems:2 on optionList, so this throws ConfigValidationError
+    await expect(loadConfig(['a'], { fetch })).rejects.toBeInstanceOf(ConfigValidationError);
+  });
+
+  it('throws ConfigError when binary has 3 inline options', async () => {
+    const q = binaryQ([
+      { label: 'א', value: 1 },
+      { label: 'ב', value: 2 },
+      { label: 'ג', value: 3 },
+    ]);
+    const fetch = makeFetch({ '/configs/a.json': { body: minimalConfig([q]) } });
+    await expect(loadConfig(['a'], { fetch })).rejects.toBeInstanceOf(ConfigError);
+  });
+
+  it('throws ConfigError when binary option set has 3 options', async () => {
+    const q = {
+      ...minimalQ(),
+      optionSets: {
+        yesno: [
+          { label: 'א', value: 1 },
+          { label: 'ב', value: 2 },
+          { label: 'ג', value: 3 },
+        ],
+      },
+      items: [{ id: 'b1', type: 'binary', text: 'שאלה', optionSetId: 'yesno' }],
+    };
+    const fetch = makeFetch({ '/configs/a.json': { body: minimalConfig([q]) } });
+    await expect(loadConfig(['a'], { fetch })).rejects.toBeInstanceOf(ConfigError);
+  });
+
+  it('accepts binary item referencing a 2-option option set', async () => {
+    const q = {
+      ...minimalQ(),
+      optionSets: {
+        yesno: [{ label: 'כן', value: 1 }, { label: 'לא', value: 0 }],
+      },
+      items: [{ id: 'b1', type: 'binary', text: 'שאלה', optionSetId: 'yesno' }],
+    };
+    const fetch = makeFetch({ '/configs/a.json': { body: minimalConfig([q]) } });
+    await expect(loadConfig(['a'], { fetch })).resolves.toBeDefined();
+  });
+});
+
 // ─── Return shape ─────────────────────────────────────────────────────────────
 
 describe('resolved config shape', () => {

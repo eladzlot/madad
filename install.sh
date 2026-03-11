@@ -63,6 +63,12 @@ copy "progress-bar.js"                 "src/components/progress-bar.js"
 copy "progress-bar.test.js"            "src/components/progress-bar.test.js"
 copy "app-shell.js"                    "src/components/app-shell.js"
 copy "app-shell.test.js"               "src/components/app-shell.test.js"
+copy "welcome-screen.js"               "src/components/welcome-screen.js"
+copy "welcome-screen.test.js"          "src/components/welcome-screen.test.js"
+copy "completion-screen.js"            "src/components/completion-screen.js"
+copy "completion-screen.test.js"       "src/components/completion-screen.test.js"
+copy "results-screen.js"               "src/components/results-screen.js"
+copy "results-screen.test.js"          "src/components/results-screen.test.js"
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
 copy "gestures.js"                     "src/helpers/gestures.js"

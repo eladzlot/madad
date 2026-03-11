@@ -194,22 +194,34 @@ describe('likert item', () => {
 // ─── Binary item ──────────────────────────────────────────────────────────────
 
 describe('binary item', () => {
-  it('accepts minimal binary item', () => expect(valid({
-    ...minimalConfig,
-    questionnaires: [makeQuestionnaire({ items: [binaryItem] })],
-  })).toBe(true));
+  const twoOptions = [{ label: 'כן', value: 1 }, { label: 'לא', value: 0 }];
 
-  it('accepts custom labels', () => expect(valid({
+  it('accepts minimal binary item with inline options', () => expect(valid({
     ...minimalConfig,
     questionnaires: [makeQuestionnaire({
-      items: [{ ...binaryItem, labels: { yes: 'כן', no: 'לא' } }],
+      items: [{ ...binaryItem, options: twoOptions }],
     })],
   })).toBe(true));
 
-  it('rejects labels missing yes', () => expect(invalid({
+  it('accepts binary item with optionSetId', () => expect(valid({
     ...minimalConfig,
     questionnaires: [makeQuestionnaire({
-      items: [{ ...binaryItem, labels: { no: 'לא' } }],
+      optionSets: { yn: twoOptions },
+      items: [{ ...binaryItem, optionSetId: 'yn' }],
+    })],
+  })).toBe(true));
+
+  it('accepts binary item with reverse flag', () => expect(valid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire({
+      items: [{ ...binaryItem, options: twoOptions, reverse: true }],
+    })],
+  })).toBe(true));
+
+  it('rejects binary item with labels (old schema)', () => expect(invalid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire({
+      items: [{ ...binaryItem, labels: { yes: 'כן', no: 'לא' } }],
     })],
   })).toBe(true));
 });

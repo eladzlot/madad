@@ -1,4 +1,5 @@
 import { LitElement, html, css } from 'lit';
+import { attachOverscroll } from '../helpers/gestures.js';
 
 /**
  * <app-shell>
@@ -17,8 +18,9 @@ import { LitElement, html, css } from 'lit';
  */
 export class AppShell extends LitElement {
   static properties = {
-    canGoBack:    { type: Boolean },
-    canGoForward: { type: Boolean },
+    canGoBack:       { type: Boolean },
+    canGoForward:    { type: Boolean },
+    gesturesEnabled: { type: Boolean },
   };
 
   static styles = css`
@@ -109,8 +111,26 @@ export class AppShell extends LitElement {
 
   constructor() {
     super();
-    this.canGoBack    = false;
-    this.canGoForward = false;
+    this.canGoBack       = false;
+    this.canGoForward    = false;
+    this.gesturesEnabled = true;
+    this._detachOverscroll = null;
+  }
+
+  firstUpdated() {
+    const contentEl = this.shadowRoot.querySelector('.content');
+    if (contentEl) {
+      this._detachOverscroll = attachOverscroll(contentEl, {
+        onPullDown: () => this.gesturesEnabled && this.canGoBack    && this._onBack(),
+        onPullUp:   () => this.gesturesEnabled && this.canGoForward && this._onForward(),
+      });
+    }
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this._detachOverscroll?.();
+    this._detachOverscroll = null;
   }
 
   _onBack()    { this.dispatchEvent(new CustomEvent('back',    { bubbles: true, composed: true })); }

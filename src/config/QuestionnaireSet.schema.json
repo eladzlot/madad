@@ -100,20 +100,13 @@
       "required": ["id", "type", "text"],
       "additionalProperties": false,
       "properties": {
-        "id":      { "$ref": "#/$defs/id" },
-        "type":    { "const": "binary" },
-        "text":    { "type": "string", "minLength": 1 },
-        "labels": {
-          "type": "object",
-          "required": ["yes", "no"],
-          "additionalProperties": false,
-          "properties": {
-            "yes": { "type": "string", "minLength": 1 },
-            "no":  { "type": "string", "minLength": 1 }
-          }
-        },
-        "reverse": { "type": "boolean" },
-        "weight":  { "type": "number" }
+        "id":          { "$ref": "#/$defs/id" },
+        "type":        { "const": "binary" },
+        "text":        { "type": "string", "minLength": 1 },
+        "options":     { "$ref": "#/$defs/optionList" },
+        "optionSetId": { "type": "string" },
+        "reverse":     { "type": "boolean" },
+        "weight":      { "type": "number" }
       }
     },
 

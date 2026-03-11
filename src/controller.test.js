@@ -80,7 +80,7 @@ function makeSetup(overrides = {}) {
       isComplete: vi.fn(() => false),
       sessionKey: vi.fn(() => questionnaire.id),
       // expose for tests that need to fire session complete manually
-      _fireSessionComplete: () => _callbacks.onSessionComplete({}),
+      _fireSessionComplete: (sessionState = {}) => _callbacks.onSessionComplete(sessionState),
     };
   });
 
@@ -205,7 +205,45 @@ describe('answer and advance', () => {
   });
 });
 
-// ─── Session complete ─────────────────────────────────────────────────────────
+// ─── Option resolution regression ────────────────────────────────────────────
+
+describe('option resolution (binary via optionSetId)', () => {
+  it('resolves options from optionSetId for binary items', () => {
+    const questionnaire = makeQuestionnaire();
+    // Override items to use a binary item with optionSetId
+    questionnaire.optionSets.yesno = [
+      { label: 'כן', value: 1 },
+      { label: 'לא', value: 0 },
+    ];
+    questionnaire.items = [
+      { id: 'b1', type: 'binary', text: 'שאלה', optionSetId: 'yesno' },
+    ];
+    const engine = makeEngine(questionnaire);
+    const { container } = makeSetup({ questionnaire, engine });
+    const el = container.querySelector('item-binary');
+    expect(el).toBeTruthy();
+    expect(el.item.options).toHaveLength(2);
+    expect(el.item.options[0].label).toBe('כן');
+  });
+
+  it('does not crash when binary button is clicked after optionSetId resolution', () => {
+    const questionnaire = makeQuestionnaire();
+    questionnaire.optionSets.yesno = [
+      { label: 'כן', value: 1 },
+      { label: 'לא', value: 0 },
+    ];
+    questionnaire.items = [
+      { id: 'b1', type: 'binary', text: 'שאלה', optionSetId: 'yesno' },
+    ];
+    const engine = makeEngine(questionnaire);
+    const { container } = makeSetup({ questionnaire, engine });
+    expect(() => {
+      container.querySelector('item-binary')
+        .dispatchEvent(new CustomEvent('answer', { detail: { value: 1 }, bubbles: true }));
+    }).not.toThrow();
+    expect(engine.recordAnswer).toHaveBeenCalledWith('b1', 1);
+  });
+});
 
 describe('session complete', () => {
   it('removes item component on session complete', () => {
@@ -214,9 +252,52 @@ describe('session complete', () => {
     expect(findItem(container)).toBeNull();
   });
 
-  it('shows completion message on session complete', () => {
+  it('mounts completion-screen on session complete', () => {
     const { container, orchestrator } = makeSetup();
     orchestrator._fireSessionComplete();
-    expect(container.textContent).toContain('הסשן הושלם');
+    expect(container.querySelector('completion-screen')).toBeTruthy();
+  });
+
+  it('keeps canGoBack true on completion screen — patient can still go back', () => {
+    const { container, orchestrator } = makeSetup();
+    orchestrator._fireSessionComplete();
+    const shell = container.querySelector('app-shell');
+    expect(shell.canGoBack).toBe(true);
+  });
+
+  it('mounts results-screen after view-results event', () => {
+    const { container, orchestrator } = makeSetup();
+    orchestrator._fireSessionComplete();
+    container.querySelector('completion-screen')
+      .dispatchEvent(new CustomEvent('view-results', { bubbles: true }));
+    expect(container.querySelector('results-screen')).toBeTruthy();
+  });
+
+  it('removes completion-screen when results-screen mounts', () => {
+    const { container, orchestrator } = makeSetup();
+    orchestrator._fireSessionComplete();
+    container.querySelector('completion-screen')
+      .dispatchEvent(new CustomEvent('view-results', { bubbles: true }));
+    expect(container.querySelector('completion-screen')).toBeNull();
+  });
+
+  it('disables canGoBack after view-results', () => {
+    const { container, orchestrator } = makeSetup();
+    orchestrator._fireSessionComplete();
+    container.querySelector('completion-screen')
+      .dispatchEvent(new CustomEvent('view-results', { bubbles: true }));
+    const shell = container.querySelector('app-shell');
+    expect(shell.canGoBack).toBe(false);
+  });
+
+  it('passes results array to results-screen', () => {
+    const { container, orchestrator, questionnaire } = makeSetup();
+    const scores = { [questionnaire.id]: { total: 14, subscales: {}, category: null } };
+    orchestrator._fireSessionComplete({ scores });
+    container.querySelector('completion-screen')
+      .dispatchEvent(new CustomEvent('view-results', { bubbles: true }));
+    const resultsEl = container.querySelector('results-screen');
+    expect(resultsEl.results).toHaveLength(1);
+    expect(resultsEl.results[0].total).toBe(14);
   });
 });

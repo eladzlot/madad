@@ -123,6 +123,15 @@ function checkUniqueOptionValues(options, itemId, questionnaireId, url) {
   }
 }
 
+function checkBinaryOptionCount(options, itemId, questionnaireId, url) {
+  if (options.length !== 2) {
+    throw new ConfigError(
+      `Binary item "${itemId}" in questionnaire "${questionnaireId}" (${url}) ` +
+      `must have exactly 2 options, got ${options.length}.`
+    );
+  }
+}
+
 function validateOptionSets(questionnaires, url) {
   for (const q of questionnaires ?? []) {
     const optionSetIds = new Set(Object.keys(q.optionSets ?? {}));
@@ -136,8 +145,8 @@ function validateOptionSets(questionnaires, url) {
       if (item.type !== 'likert' && item.type !== 'binary') continue;
 
       if (item.options) {
-        // Inline options — check uniqueness directly
         checkUniqueOptionValues(item.options, item.id, q.id, url);
+        if (item.type === 'binary') checkBinaryOptionCount(item.options, item.id, q.id, url);
         continue;
       }
 
@@ -145,17 +154,21 @@ function validateOptionSets(questionnaires, url) {
       const ref = item.optionSetId ?? q.defaultOptionSetId;
       if (!ref) {
         throw new ConfigError(
-          `Likert item "${item.id}" in questionnaire "${q.id}" (${url}) has no options, ` +
+          `Binary item "${item.id}" in questionnaire "${q.id}" (${url}) has no options, ` +
           `no optionSetId, and no defaultOptionSetId on the questionnaire.`
         );
       }
       if (!optionSetIds.has(ref)) {
         throw new ConfigError(
-          `Likert item "${item.id}" in questionnaire "${q.id}" (${url}) references ` +
+          `Item "${item.id}" in questionnaire "${q.id}" (${url}) references ` +
           `optionSetId "${ref}" which does not exist.`
         );
       }
-      // Option set values already checked above
+      // For binary items using an option set — validate count
+      if (item.type === 'binary') {
+        const options = q.optionSets[ref];
+        checkBinaryOptionCount(options, item.id, q.id, url);
+      }
     }
   }
 }

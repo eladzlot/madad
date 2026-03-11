@@ -12,7 +12,8 @@ const ADVANCE_DELAY_MS = 150;
 // ── Item resolution ───────────────────────────────────────────────────────────
 
 function resolveOptions(item, { questionnaire }) {
-  if (item.type !== 'likert' || item.options) return item;
+  if (item.type !== 'likert' && item.type !== 'binary') return item;
+  if (item.options) return item;
   const setId = item.optionSetId ?? questionnaire.defaultOptionSetId;
   const options = questionnaire.optionSets?.[setId] ?? [];
   return { ...item, options };
@@ -41,6 +42,8 @@ export function createController(container) {
   let _progressEl   = null;  // <progress-bar> in shell header
   let _itemEl       = null;
   let _advanceTimer = null;
+
+  let _session      = null;
 
   // ── Shell setup ──────────────────────────────────────────────────────────
 
@@ -121,6 +124,10 @@ export function createController(container) {
   function onBack() {
     if (!_engine) return;
     if (_engine.canGoBack()) {
+      // Remove completion screen if present
+      _shellEl?.querySelector('completion-screen')?.remove();
+      // Re-enable gestures
+      if (_shellEl) _shellEl.gesturesEnabled = true;
       mountItem(_engine.back());
     } else {
       _orchestrator.engineCrossBack();
@@ -150,22 +157,39 @@ export function createController(container) {
     }
   }
 
-  function onSessionComplete() {
+  function onSessionComplete(sessionState) {
     if (_itemEl) { _itemEl.remove(); _itemEl = null; }
+    if (_progressEl) { _progressEl.remove(); _progressEl = null; }
     if (_shellEl) {
-      _shellEl.canGoBack    = false;
-      _shellEl.canGoForward = false;
+      _shellEl.canGoBack       = true;
+      _shellEl.canGoForward    = false;
+      _shellEl.gesturesEnabled = false; // prevent overscroll artifacts on completion screen
     }
 
-    const msg = document.createElement('div');
-    msg.style.cssText = 'text-align:center; padding-block: var(--space-xl); direction: rtl;';
-    msg.innerHTML = `
-      <p style="font-size: var(--font-size-lg); font-weight: var(--font-weight-bold); margin-block-end: var(--space-md)">
-        הסשן הושלם
-      </p>
-      <p style="color: var(--color-text-muted)">תודה על מילוי השאלונים.</p>
-    `;
-    _shellEl.appendChild(msg);
+    // Mount completion screen — patient can still go back from here
+    const completionEl = document.createElement('completion-screen');
+    _shellEl.appendChild(completionEl);
+
+    completionEl.addEventListener('view-results', () => {
+      completionEl.remove();
+
+      // Lock navigation permanently
+      _shellEl.canGoBack    = false;
+      _shellEl.canGoForward = false;
+
+      // Build results array from session state + config
+      const results = Object.entries(sessionState.scores ?? {}).map(([key, scoreResult]) => {
+        const q = _config.questionnaires.find(q => q.id === key || key.startsWith(q.id));
+        return {
+          title: q?.title ?? key,
+          total: scoreResult?.total ?? null,
+        };
+      });
+
+      const resultsEl = document.createElement('results-screen');
+      resultsEl.results = results;
+      _shellEl.appendChild(resultsEl);
+    }, { once: true });
   }
 
   function onError(err) {
@@ -179,8 +203,9 @@ export function createController(container) {
 
   // ── Public API ───────────────────────────────────────────────────────────
 
-  function start(config, batteryId, { createOrchestrator } = {}) {
-    _config = config;
+  function start(config, batteryId, { createOrchestrator, session = {} } = {}) {
+    _config  = config;
+    _session = session;
     mountShell();
     _orchestrator = createOrchestrator(config, batteryId, {
       onQuestionnaireStart,
