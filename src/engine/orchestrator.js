@@ -158,7 +158,7 @@ export function createOrchestrator(config, batteryId, callbacks = {}) {
     }
     _currentEngine.back();
 
-    onQuestionnaireStart?.(_currentEngine, sessionKey);
+    onQuestionnaireStart?.(_currentEngine, sessionKey, questionnaire);
   }
 
   // ── Public accessors ─────────────────────────────────────────────────────
