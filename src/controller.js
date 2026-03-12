@@ -1,11 +1,19 @@
+import { generateReport } from './pdf/report.js';
+
 // Controller — wires orchestrator + engine to Lit components.
 // See RENDER_SPEC.md §2.
 //
 // Usage:
-//   const controller = createController(container);
+//   const controller = createController(container, router);
 //   controller.start(config, batteryId, { createOrchestrator });
 //
 // Components must be registered before calling start() — import them in app.js.
+//
+// Navigation model:
+//   All back and forward navigation routes through history.back() /
+//   history.forward() → popstate → router handlers. Shell 'back' and 'forward'
+//   events call history.back/forward() — they never call the engine directly.
+//   This keeps the history stack in sync at all times.
 
 const ADVANCE_DELAY_MS = 150;
 
@@ -33,17 +41,17 @@ const TAG_BY_TYPE = {
 
 // ── Factory ───────────────────────────────────────────────────────────────────
 
-export function createController(container) {
-  let _orchestrator = null;
-  let _engine       = null;
+export function createController(container, router) {
+  let _orchestrator  = null;
+  let _engine        = null;
   let _questionnaire = null;
-  let _config       = null;
-  let _shellEl      = null;
-  let _progressEl   = null;  // <progress-bar> in shell header
-  let _itemEl       = null;
-  let _advanceTimer = null;
-
-  let _session      = null;
+  let _config        = null;
+  let _shellEl       = null;
+  let _progressEl    = null;  // <progress-bar> in shell header
+  let _itemEl        = null;
+  let _advanceTimer  = null;
+  let _session       = null;
+  let _locked        = false; // true once patient proceeds to results screen
 
   // ── Shell setup ──────────────────────────────────────────────────────────
 
@@ -51,8 +59,9 @@ export function createController(container) {
     _shellEl = document.createElement('app-shell');
     _shellEl.canGoBack    = false;
     _shellEl.canGoForward = false;
-    _shellEl.addEventListener('back',    onBack);
-    _shellEl.addEventListener('forward', onForward);
+    // Delegate to history — popstate drives actual navigation
+    _shellEl.addEventListener('back',    () => history.back());
+    _shellEl.addEventListener('forward', () => history.forward());
 
     _progressEl = document.createElement('progress-bar');
     _progressEl.slot = 'progress';
@@ -78,7 +87,7 @@ export function createController(container) {
     if (!_shellEl || !_engine) return;
     const item = _engine.currentItem();
     const hasAnswer = item && _engine.answers()[item.id] != null;
-    _shellEl.canGoBack    = _engine.canGoBack();
+    _shellEl.canGoBack    = _engine.canGoBack() || _orchestrator?.currentEngine?.() !== _engine;
     _shellEl.canGoForward = hasAnswer && !_engine.isComplete();
 
     if (_progressEl) {
@@ -116,32 +125,121 @@ export function createController(container) {
       if (next === null) {
         _orchestrator.engineComplete();
       } else {
+        router.push('q');
         mountItem(next);
       }
     }, delay);
   }
 
-  function onBack() {
-    if (!_engine) return;
-    if (_engine.canGoBack()) {
-      // Remove completion screen if present
-      _shellEl?.querySelector('completion-screen')?.remove();
-      // Re-enable gestures
+  // ── popstate handlers ────────────────────────────────────────────────────
+
+  function _onPopBack(screen) {
+    if (_locked) return;
+
+    if (screen === 'welcome') {
+      location.reload();
+      return;
+    }
+
+    const completionEl = _shellEl?.querySelector('completion-screen');
+    if (completionEl) {
+      completionEl.remove();
       if (_shellEl) _shellEl.gesturesEnabled = true;
+    }
+
+    if (!_engine) return;
+
+    if (_engine.canGoBack()) {
       mountItem(_engine.back());
     } else {
       _orchestrator.engineCrossBack();
     }
   }
 
-  function onForward() {
-    // Forward is only available when current item is already answered —
-    // fires advance immediately without waiting for an answer event.
-    if (!_engine?.currentItem()) return;
-    const item = _engine.currentItem();
-    if (_engine.answers()[item.id] == null) return;
-    onAdvance();
+  function _onPopForward(screen) {
+    if (_locked) return;
+
+    if (screen === 'complete') {
+      if (!_shellEl?.querySelector('completion-screen')) {
+        if (_itemEl) { _itemEl.remove(); _itemEl = null; }
+        if (_progressEl) { _progressEl.remove(); _progressEl = null; }
+        _shellEl.canGoBack    = true;
+        _shellEl.canGoForward = false;
+        _shellEl.gesturesEnabled = true;
+        const completionEl = document.createElement('completion-screen');
+        _shellEl.appendChild(completionEl);
+        completionEl.addEventListener('view-results', _onViewResults, { once: true });
+      }
+      return;
+    }
+
+    if (screen === 'q') {
+      if (!_engine?.currentItem()) return;
+      const item = _engine.currentItem();
+      const needsAnswer = item.type !== 'instructions';
+      if (needsAnswer && _engine.answers()[item.id] == null) return;
+      clearTimeout(_advanceTimer);
+      const delay = item.type === 'instructions' ? 0 : ADVANCE_DELAY_MS;
+      _advanceTimer = setTimeout(() => {
+        const next = _engine.advance();
+        if (next === null) {
+          _orchestrator.engineComplete();
+        } else {
+          mountItem(next);
+        }
+      }, delay);
+    }
   }
+
+  function _onViewResults(sessionState) {
+    const completionEl = _shellEl?.querySelector('completion-screen');
+    if (completionEl) completionEl.remove();
+
+    _locked = true;
+    router.replace('results');
+    _shellEl.canGoBack    = false;
+    _shellEl.canGoForward = false;
+
+    const results = Object.entries((sessionState ?? {}).scores ?? {}).map(([key, scoreResult]) => {
+      const q = _config.questionnaires.find(q => q.id === key || key.startsWith(q.id));
+      return {
+        title: q?.title ?? key,
+        total: scoreResult?.total ?? null,
+      };
+    });
+
+    const resultsEl = document.createElement('results-screen');
+    resultsEl.results    = results;
+    resultsEl.canShare   = !!(navigator.canShare);
+    resultsEl.onDownload = async () => {
+      const { blob, filename } = await generateReport(sessionState, _config, _session);
+
+      // Use Web Share API on devices that support sharing files (mobile)
+      if (navigator.canShare?.({ files: [new File([blob], filename, { type: 'application/pdf' })] })) {
+        try {
+          await navigator.share({
+            files: [new File([blob], filename, { type: 'application/pdf' })],
+            title: filename,
+          });
+          return;
+        } catch (err) {
+          if (err.name === 'AbortError') return;   // user cancelled — don't fall through to download
+          // share failed for another reason — fall through to download
+        }
+      }
+
+      // Desktop fallback: anchor download
+      const url = URL.createObjectURL(blob);
+      const a   = Object.assign(document.createElement('a'), { href: url, download: filename });
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    };
+    _shellEl.appendChild(resultsEl);
+  }
+
+
 
   // ── Orchestrator callbacks ───────────────────────────────────────────────
 
@@ -153,6 +251,7 @@ export function createController(container) {
     if (first === null) {
       _orchestrator.engineComplete();
     } else {
+      router.push('q');
       mountItem(first);
     }
   }
@@ -163,33 +262,19 @@ export function createController(container) {
     if (_shellEl) {
       _shellEl.canGoBack       = true;
       _shellEl.canGoForward    = false;
-      _shellEl.gesturesEnabled = false; // prevent overscroll artifacts on completion screen
+      // Briefly disable gestures to absorb any trailing touch from the last answer,
+      // then re-enable so the patient can swipe back from the completion screen.
+      _shellEl.gesturesEnabled = false;
+      setTimeout(() => { if (_shellEl) _shellEl.gesturesEnabled = true; }, 400);
     }
+
+    router.push('complete');
 
     // Mount completion screen — patient can still go back from here
     const completionEl = document.createElement('completion-screen');
     _shellEl.appendChild(completionEl);
 
-    completionEl.addEventListener('view-results', () => {
-      completionEl.remove();
-
-      // Lock navigation permanently
-      _shellEl.canGoBack    = false;
-      _shellEl.canGoForward = false;
-
-      // Build results array from session state + config
-      const results = Object.entries(sessionState.scores ?? {}).map(([key, scoreResult]) => {
-        const q = _config.questionnaires.find(q => q.id === key || key.startsWith(q.id));
-        return {
-          title: q?.title ?? key,
-          total: scoreResult?.total ?? null,
-        };
-      });
-
-      const resultsEl = document.createElement('results-screen');
-      resultsEl.results = results;
-      _shellEl.appendChild(resultsEl);
-    }, { once: true });
+    completionEl.addEventListener('view-results', () => _onViewResults(sessionState), { once: true });
   }
 
   function onError(err) {
@@ -206,6 +291,8 @@ export function createController(container) {
   function start(config, batteryId, { createOrchestrator, session = {} } = {}) {
     _config  = config;
     _session = session;
+    router.onBack(_onPopBack);
+    router.onForward(_onPopForward);
     mountShell();
     _orchestrator = createOrchestrator(config, batteryId, {
       onQuestionnaireStart,

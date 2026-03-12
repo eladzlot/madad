@@ -1,5 +1,5 @@
 # Clinical Assessment App — Implementation Specification
-**Version:** 1.0  
+**Version:** 1.2  
 **Status:** Draft  
 **Supersedes:** ARCHITECTURE.md  
 
@@ -14,11 +14,12 @@ This document specifies how the Clinical Assessment App is to be built. It is in
 ## 2. Technology Stack
 
 - **Runtime:** Vanilla JavaScript, ES Modules. No framework.
+- **UI Components:** Lit (`lit` npm package, ~6 kB gzipped). Custom elements only — no Lit-specific routing or state management.
 - **Build tool:** Vite. Dev server and production bundler.
-- **Testing:** Vitest (unit), Playwright (E2E).
-- **PDF:** pdfmake, lazy-loaded.
-- **Validation:** AJV (JSON Schema 2020-12), lazy-loaded.
-- **Styling:** CSS with logical properties. `dir="rtl"` at root.
+- **Testing:** Vitest (unit). Test files are colocated with source (`*.test.js`). Playwright (E2E).
+- **PDF:** pdfmake, lazy-loaded at the moment the patient requests the PDF.
+- **Validation:** AJV (JSON Schema 2020-12), imported statically in `loader.js`. Not lazy-loaded.
+- **Styling:** CSS with logical properties. `dir="rtl"` on `<html>` at root.
 - **No other production dependencies.**
 
 ---
@@ -27,63 +28,94 @@ This document specifies how the Clinical Assessment App is to be built. It is in
 
 ```
 .
-├── src/
-│   ├── app.js                        # Entry point
-│   ├── router.js                     # Hash router
-│   ├── config/
-│   │   ├── loader.js                 # Fetches, validates, merges config
-│   │   ├── loader.test.js
-│   │   └── QuestionnaireSet.schema.json
-│   ├── engine/
-│   │   ├── sequence-runner.js        # Reusable sequence walker — resolves if/randomize nodes
-│   │   ├── sequence-runner.test.js
-│   │   ├── orchestrator.js           # Battery sequencing — feeds sequence runner at battery level
-│   │   ├── orchestrator.test.js
-│   │   ├── engine.js                 # Navigation within a single questionnaire — feeds sequence runner at item level
-│   │   ├── engine.test.js
-│   │   ├── scoring.js                # Score computation
-│   │   ├── scoring.test.js
-│   │   ├── dsl.js                    # Formula interpreter
-│   │   ├── dsl.test.js
-│   │   ├── alerts.js                 # Alert evaluation
-│   │   ├── alerts.test.js
-│   │   ├── render-likert.js          # Likert item renderer
-│   │   ├── render-binary.js          # Binary item renderer
-│   │   └── render-instructions.js   # Instruction item renderer
-│   ├── pdf/
-│   │   └── report.js                 # PDF generation
-│   └── styles/
-│       └── main.css
+├── index.html                        # Entry HTML — lang="he" dir="rtl"
 ├── composer/
-│   ├── index.html
 │   └── src/
-│       └── main.js
+│       └── composer.js               # Clinician URL composer app
+├── docs/
+│   ├── BEHAVIORAL_SPEC.md
+│   ├── CONFIG_SCHEMA_SPEC.md
+│   ├── DSL_SPEC.md
+│   └── IMPLEMENTATION_SPEC.md
 ├── public/
 │   ├── configs/
 │   │   ├── prod/
+│   │   │   └── standard.json
 │   │   └── test/
 │   └── fonts/                        # Noto Sans Hebrew TTF
+├── src/
+│   ├── app.js                        # Entry point
+│   ├── controller.js                 # Wires orchestrator + engine to Lit components
+│   ├── controller.test.js
+│   ├── components/
+│   │   ├── app-shell.js
+│   │   ├── app-shell.test.js
+│   │   ├── completion-screen.js
+│   │   ├── completion-screen.test.js
+│   │   ├── item-binary.js
+│   │   ├── item-binary.test.js
+│   │   ├── item-instructions.js
+│   │   ├── item-instructions.test.js
+│   │   ├── item-likert.js
+│   │   ├── item-likert.test.js
+│   │   ├── progress-bar.js
+│   │   ├── progress-bar.test.js
+│   │   ├── results-screen.js
+│   │   ├── results-screen.test.js
+│   │   ├── welcome-screen.js
+│   │   └── welcome-screen.test.js
+│   ├── config/
+│   │   ├── loader.js                 # Fetches, validates, merges config
+│   │   ├── loader.test.js
+│   │   ├── QuestionnaireSet.schema.json
+│   │   └── QuestionnaireSet.schema.test.js
+│   ├── engine/
+│   │   ├── alerts.js
+│   │   ├── alerts.test.js
+│   │   ├── dsl.js
+│   │   ├── dsl.test.js
+│   │   ├── engine.js
+│   │   ├── engine.test.js
+│   │   ├── orchestrator.js
+│   │   ├── orchestrator.test.js
+│   │   ├── scoring.js
+│   │   ├── scoring.test.js
+│   │   ├── sequence-runner.js
+│   │   └── sequence-runner.test.js
+│   ├── helpers/
+│   │   ├── gestures.js
+│   │   └── gestures.test.js
+│   ├── pdf/                          # PDF generation (not yet implemented)
+│   └── styles/
+│       ├── main.css
+│       └── tokens.css
 ├── tests/
-│   ├── setup.js
-│   ├── fixtures/                     # phq9.json, gad7.json, pcl5.json
-│   └── e2e/                          # Playwright specs
-├── scripts/
-│   ├── validate-configs.mjs
-│   └── check-size.mjs
-└── .github/workflows/
+│   ├── e2e/                          # Playwright specs
+│   ├── fixtures/
+│   │   ├── ocir.json
+│   │   ├── pcl5.json
+│   │   └── phq9.json
+│   ├── setup-dom.js
+│   └── setup.js
+├── vite.config.js
+├── vitest.config.js
+├── eslint.config.js
+└── package.json
 ```
 
 ---
 
 ## 4. Architecture Principles
 
-**No DOM in logic modules.** Everything under `src/engine/` and `src/config/` must be pure logic with no DOM access. This makes unit testing trivial and keeps concerns separated. DOM manipulation lives only in `render-*.js` files and `src/app.js`.
+**No DOM in logic modules.** Everything in the engine layer (`sequence-runner.js`, `orchestrator.js`, `engine.js`, `scoring.js`, `dsl.js`, `alerts.js`) and the config layer (`loader.js`) must be pure logic with no DOM access. This makes unit testing trivial and keeps concerns separated. DOM manipulation lives only in Lit components (`components/`) and `app.js`.
 
 **Flat item list.** Questionnaires have a single flat array of items. Instructions between sections are represented as items with `type: "instructions"` — not as a separate structural entity. The engine treats all item types uniformly for navigation purposes. Scoring, the response table, and progress counting each decide independently how to handle non-answerable item types.
 
-**Lazy loading.** pdfmake and AJV are never imported at startup. pdfmake is imported only when the patient requests the PDF. AJV is imported only when a config is fetched. This keeps the entry bundle within the 15 kB gzipped budget.
+**Lazy loading.** pdfmake is imported dynamically only when the patient requests the PDF. AJV is imported statically in `loader.js` — it is not lazy-loaded. The entry bundle budget is relaxed accordingly (see section 20).
 
 **Config-driven.** All clinical content — instruments, items, scoring rules, alert thresholds, instructions — lives in JSON config files. Nothing clinical is hardcoded in the application logic.
+
+**Lit for components.** All UI elements are Lit custom elements. Components are purely declarative: they receive data as properties, emit custom events, and have no knowledge of the engine, orchestrator, or session state. The controller (`controller.js`) is the sole wiring layer between the engine/orchestrator and the components.
 
 ---
 
@@ -642,38 +674,100 @@ Complex example:
 
 ## 14. Rendering
 
-Each item type has a dedicated render function. Render functions are pure in the sense that they take an item definition and a callback, and return a DOM element. They do not manage state.
+The render layer is built on Lit custom elements. All components follow the contract defined in the DSL_SPEC.md render layer section: they receive data as properties, emit custom events, and have no knowledge of the engine or session state.
 
-**Likert renderer** — renders the question text and one button per option. On tap, calls the answer callback with the item ID and selected value, then the engine advances.
+### 14.1 Item Components
 
-**Binary renderer** — renders the question text and two buttons. Also listens for pointer swipe events (threshold: ±40px horizontal delta). On selection or swipe, calls the answer callback and advances.
+**`<item-likert>`** — renders the question text and one button per option as a vertical `radiogroup`. On tap or Enter, fires `answer` (with `detail.value`) then `advance`. Space selects without advancing. Arrow keys move focus between options. Preserves the current selection via the `selected` property.
 
-**Instructions renderer** — renders the instruction text and a continue button. On tap, the engine advances without recording an answer.
+**`<item-binary>`** — renders the question text and two large tap targets (positive/negative). Supports two input methods:
 
-All renderers must:
-- Support RTL text layout
-- Implement appropriate ARIA roles and labels
-- Support keyboard navigation (arrow keys to change selection, Enter to advance)
+- **Tap:** clicking either button fires `answer` then `advance` immediately.
+- **Horizontal swipe:** `attachSwipe` from `gestures.js` is attached to the host element in `firstUpdated()`. Swipe right fires `answer` for option 0 (positive); swipe left fires `answer` for option 1 (negative). The commit threshold is `SWIPE_THRESHOLD` (0.4 × element width). During drag, the card translates and rotates with the pointer (`translateX` + `rotate` capped at ±12°). The target button highlights (`drag-target`) when the drag direction exceeds 10 px but has not yet committed; it switches to `drag-commit` styling once the threshold is crossed.
+
+**`<item-instructions>`** — renders instruction text (split on `\n` into paragraphs) and a continue button. On tap or Enter/Space, fires only `advance` — no `answer` event. The engine advances without recording a response.
+
+### 14.2 Navigation Gesture — `<app-shell>`
+
+`<app-shell>` manages the scrollable content region and attaches `attachOverscroll` from `gestures.js` to the `.content` element in `firstUpdated()`. This provides pull-to-navigate alongside the header Back/Forward buttons:
+
+- **Pull down past top boundary** (`onPullDown`) → fires `back` event — equivalent to tapping the Back button.
+- **Pull up past bottom boundary** (`onPullUp`) → fires `forward` event — equivalent to tapping the Forward button.
+
+Both gestures are gated by `gesturesEnabled` (a Lit property, default `true`) and the corresponding `canGoBack` / `canGoForward` flags. The gesture fires only when both the enabled flag and the nav flag are true.
+
+The overscroll threshold is `OVERSCROLL_THRESHOLD` (60 px) from `gestures.js`.
+
+**Completion screen gesture lockout:** when the session completes and the completion screen is shown, `gesturesEnabled` is set to `false` for 400 ms to absorb any trailing touch from the last answer tap, then restored to `true`. This prevents the pull-down gesture from accidentally triggering back navigation immediately on arrival at the completion screen, while still allowing swipe-back once the patient intentionally interacts with the screen.
+
+### 14.3 Shell Layout
+
+`<app-shell>` renders:
+- A sticky header containing Back (chevron up) and Forward (chevron down) nav buttons, and a `<slot name="progress">` for the `<progress-bar>`.
+- A scrollable `.content` main area with a centred `.content-inner` column, containing the default `<slot>` where item components and screen components are placed.
+
+Nav buttons are hidden (`opacity: 0`, `pointer-events: none`) when disabled — they remain in layout to prevent reflow.
+
+### 14.4 Other Components
+
+**`<progress-bar>`** — display-only. Shows questionnaire name, item count (`שאלה N מתוך M`), a CSS-animated fill track, and battery-level progress when the battery contains more than one questionnaire.
+
+**`<welcome-screen>`** — standalone (not inside `<app-shell>`). Full-viewport flex layout. Collects optional patient name and fires `begin` with `detail.name`.
+
+**`<completion-screen>`** — placed inside `<app-shell>`'s default slot. Fires `view-results` when the patient proceeds. Has no scrollable content.
+
+**`<results-screen>`** — placed inside `<app-shell>`'s default slot after session lock. Shows one score row per questionnaire. PDF download button (currently placeholder, pending implementation).
+
+### 14.5 Accessibility
+
+All item components must:
+- Support RTL text layout (inherited via `dir="rtl"` on `<html>`)
+- Implement appropriate ARIA roles and labels (`radiogroup`, `radio`, `aria-checked`, `aria-label` on nav buttons)
+- Support keyboard navigation (arrow keys for Likert options, Enter to advance, Space to select-only on Likert)
 
 ---
 
-## 15. Application Shell and Router
+## 15. Application Shell, Router, and Controller
 
-### 13.1 App Shell (`src/app.js`)
+### 15.1 App Entry (`app.js`)
+
 The entry point performs the following in order:
-1. Reads URL parameters: `config`, `questionnaires`, `battery`, `pid`
-2. Renders the welcome screen (name input + orientation text + begin button)
-3. On begin: stores the name in session state, initiates config loading
-4. On config load complete: passes resolved config and URL params to the orchestrator. If a `battery` param is present, the orchestrator loads that named battery. If only a `questionnaires` param is present, the orchestrator constructs a linear battery from the list. The orchestrator then hands off to the router.
+1. Reads URL parameters: `config`, `battery`, `pid` (and optionally `questionnaires` for implicit battery mode).
+2. Creates the router via `createRouter()` and calls `router.replace('welcome')` to seed the history stack.
+3. Loads the config via `loadConfig()`. Displays a loading message while fetching; shows a Hebrew error on failure.
+4. Finds the battery by ID and extracts its title for the welcome screen.
+5. Mounts `<welcome-screen>` with the battery title.
+6. On `begin` event: stores the patient name and pid in a session object, removes the welcome screen, creates a `createController(container, router)` instance, and calls `controller.start(config, batteryId, { createOrchestrator, session })`.
 
-Session state is a plain in-memory object. It is never written to `localStorage` or `sessionStorage`.
+### 15.2 Router (`src/router.js`)
 
-### 13.2 Router (`src/router.js`)
-A minimal hash-based router, target under 50 lines. Routes:
-- `#/` — welcome screen
-- `#/q` — active questionnaire (delegates to engine + renderers)
-- `#/complete` — completion screen
-- `#/results` — results screen (session locked, no back navigation)
+A minimal wrapper around the browser History API. Exposes `push(screen)`, `replace(screen)`, `onBack(handler)`, `onForward(handler)`, `currentScreen()`, and `destroy()`.
+
+**Screen names:** `'welcome'`, `'q'`, `'complete'`, `'results'`.
+
+**URL:** The URL never changes. `pushState` and `replaceState` are called without a new URL argument so the address bar stays fixed on the original patient link. This is intentional — the URL is a one-time clinical link and should not accumulate fragments or path changes.
+
+**Back vs forward detection:** `history` does not expose a stack index, so the router embeds a monotonic `pos` counter in every state object. On `popstate`, it compares `state.pos` to its tracked `_currentPos`: lower means back, higher means forward. `replace()` keeps `_currentPos` unchanged so it never triggers either handler.
+
+**Testability:** accepts an optional `win` parameter (default: `globalThis`) for injecting a mock window in unit tests.
+
+### 15.3 Controller (`controller.js`)
+
+The controller is the single wiring layer between the orchestrator/engine and the Lit components. It is created once per session and receives the router as a constructor argument.
+
+**Navigation model:** all back and forward navigation — in-app buttons, overscroll gesture, and the browser's own buttons — is routed exclusively through `history.back()` / `history.forward()` → `popstate` → `_onPopBack()` / `_onPopForward()`. The shell `back` and `forward` events call `history.back()` and `history.forward()` respectively; they do not invoke the engine directly. This keeps the history stack in sync at all times.
+
+**Responsibilities:**
+- Registers `router.onBack(_onPopBack)` and `router.onForward(_onPopForward)` at start.
+- Mounts `<app-shell>` and `<progress-bar>` at session start.
+- On `onQuestionnaireStart`: calls `router.push('q')`, creates or reuses the appropriate item component, sets its `item` and `selected` properties, and updates nav state.
+- On `answer` event: calls `engine.recordAnswer()` and updates nav state.
+- On `advance` event: waits `ADVANCE_DELAY_MS` (150 ms) for answerable items (0 ms for instructions), calls `engine.advance()`, calls `router.push('q')` for the next item, or calls `orchestrator.engineComplete()` if the engine is done.
+- On `onSessionComplete`: removes item and progress elements, sets `canGoBack: true`, briefly disables gestures (400 ms), calls `router.push('complete')`, and mounts `<completion-screen>`. On `view-results`, sets `_locked = true`, calls `router.replace('results')`, and mounts `<results-screen>`.
+- `_onPopBack(screen)`: if `_locked`, ignored. If `screen === 'welcome'`, reloads the page. Otherwise dismisses any completion screen, calls `engine.back()` or `orchestrator.engineCrossBack()`.
+- `_onPopForward(screen)`: if `_locked`, ignored. If `screen === 'complete'`, re-mounts the completion screen. If `screen === 'q'` and the current item has an answer, advances the engine without pushing a new history entry (replaying existing history).
+
+**Item resolution:** before mounting, `resolveItem()` fills in the `options` array from the questionnaire's `optionSets` map if the item references an `optionSetId` or relies on `defaultOptionSetId`.
 
 ---
 
@@ -684,7 +778,7 @@ Shown when the engine reports the last item has been answered. Displays:
 - A reminder that the Back button can still be used to review or change answers
 - A "view results" button
 
-Once the patient taps "view results", the router navigates to `#/results`. This transition is one-way — the back button is hidden or disabled on the results screen.
+Once the patient taps "view results", the session is locked and the results screen is shown. This transition is one-way — back navigation is disabled on the results screen.
 
 ---
 
@@ -732,17 +826,16 @@ The Composer uses no persistent storage of any kind.
 
 ---
 
-## 20. Bundle Size Constraints
+## 20. Bundle Size
 
-The entry bundle includes the app shell, router, orchestrator, sequence runner, engine, and all renderers. Given this scope, the budget is set at 30 kB gzipped. pdfmake and AJV must remain lazy-loaded under all circumstances — this is a hard constraint regardless of entry size.
+AJV is included in the entry bundle (statically imported in `loader.js`). pdfmake remains lazy-loaded — it is imported dynamically only when the patient requests the PDF.
 
 | Chunk | Budget |
 |---|---|
-| Entry (app shell, router, orchestrator, sequence runner, engine, renderers) | ≤ 30 kB gzipped |
-| AJV (lazy) | ≤ 40 kB gzipped |
+| Entry (app shell, controller, orchestrator, sequence runner, engine, components, AJV) | ≤ 80 kB gzipped |
 | pdfmake + font (lazy) | 250–400 kB (acceptable, lazy only) |
 
-pdfmake and AJV must be pinned to separate named chunks in the Vite config to prevent them from being pulled into the entry bundle by static analysis.
+pdfmake must be pinned to a separate named chunk in the Vite config (`pdf-vendor`) to prevent it from being pulled into the entry bundle by static analysis. AJV is similarly chunked (`ajv-vendor`) to keep the chunk graph legible, but is loaded eagerly.
 
 ---
 
@@ -757,32 +850,31 @@ pdfmake and AJV must be pinned to separate named chunks in the Vite config to pr
 
 ## 22. Testing Strategy
 
-### Unit tests (Vitest, Node environment, no DOM)
+### Unit tests (Vitest, Node environment)
 
-Unit test files live next to the source file they test (`dsl.test.js` alongside `dsl.js`). The only exceptions are `tests/fixtures/` (shared JSON test vectors) and `tests/e2e/` (Playwright specs).
+Unit test files are colocated with the source file they test, using the `.test.js` suffix (e.g. `dsl.test.js` alongside `dsl.js`). The exceptions are `tests/fixtures/` (shared JSON test vectors), `tests/setup.js`, and `tests/setup-dom.js`.
 
-Vitest is configured to include `src/**/*.test.js` in its test glob.
+Vitest is configured with `include: ['**/*.test.js']` (project root glob).
 
 - `dsl.test.js` — formula evaluation, all reference types, all operators, boolean logic, type enforcement, all error classes
-- `scoring.test.js` — sum/average/subscale/reverse scoring, one fixture per instrument (PHQ-9, GAD-7, PCL-5) with known inputs and expected totals, subscales, and category labels
+- `scoring.test.js` — sum/average/subscale/reverse scoring, one fixture per instrument (PHQ-9, PCL-5, OCIR) with known inputs and expected totals, subscales, and category labels
 - `alerts.test.js` — DSL condition evaluation, triggered and untriggered cases, empty result
 - `engine.test.js` — item-level navigation, back through instruction items, completion signal, answer storage and retrieval
-- `sequence-runner.test.js` — `if` node evaluation, `randomize` (seeded), `isSequenceDeterminate`, `remainingCount`, back navigation through resolved sequences, nested control flow
+- `sequence-runner.test.js` — `if` node evaluation, `isSequenceDeterminate`, `remainingCount`, back navigation through resolved sequences, nested control flow
 - `orchestrator.test.js` — battery resolution (named and implicit), transition scoring, progress exposure
 - `loader.test.js` — merge logic, filter logic, validation failure handling
+- `gestures.test.js` — swipe and overscroll attachment and threshold behaviour
+- Component tests (`app-shell.test.js`, `item-*.test.js`, etc.) — property setting, event emission, keyboard navigation
 
 ### E2E tests (Playwright, Chromium + WebKit)
 Located in `tests/e2e/`. Cover full flows that span multiple modules and require a real browser.
-- Full patient flow: welcome → name entry → Likert advance → binary → instruction item → completion screen → back navigation → results → PDF download
+- Full patient flow: welcome → name entry → Likert advance → binary swipe → instruction item → completion screen → swipe back → results → PDF download
 - PDF content assertions: text extraction to verify Hebrew content, patient ID, scores, and alert presence
 - Composer flow: config load → battery/questionnaire selection → URL generation → copy
 - Accessibility: axe-core injected on each screen, asserting WCAG AA
 
 ### Config validation (CI only)
 - AJV CLI over all files in `public/configs/**` on every PR touching that path
-
-### Bundle size (CI)
-- Node script asserts gzipped entry chunk size after every build
 
 ---
 

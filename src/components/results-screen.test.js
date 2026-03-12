@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import '../../tests/setup-dom.js';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { fixture, html as testHtml } from '@open-wc/testing';
 import './results-screen.js';
 
@@ -67,9 +67,39 @@ describe('pdf button', () => {
     expect(el.shadowRoot.querySelector('.pdf-btn')).toBeTruthy();
   });
 
-  it('pdf button is disabled', async () => {
+  it('pdf button is enabled by default', async () => {
     const el = await makeEl({ results: sampleResults });
+    expect(el.shadowRoot.querySelector('.pdf-btn').disabled).toBe(false);
+  });
+
+  it('pdf button is disabled while loading', async () => {
+    const el = await makeEl({ results: sampleResults, loading: true });
     expect(el.shadowRoot.querySelector('.pdf-btn').disabled).toBe(true);
+  });
+
+  it('shows loading label while loading', async () => {
+    const el = await makeEl({ results: sampleResults, loading: true });
+    expect(el.shadowRoot.querySelector('.pdf-btn').textContent.trim()).toContain('מכין');
+  });
+
+  it('shows download label when not loading', async () => {
+    const el = await makeEl({ results: sampleResults });
+    expect(el.shadowRoot.querySelector('.pdf-btn').textContent.trim()).toContain('PDF');
+  });
+
+  it('calls onDownload when clicked', async () => {
+    const onDownload = vi.fn().mockResolvedValue(undefined);
+    const el = await makeEl({ results: sampleResults });
+    el.onDownload = onDownload;
+    await el.updateComplete;
+    el.shadowRoot.querySelector('.pdf-btn').click();
+    await el.updateComplete;
+    expect(onDownload).toHaveBeenCalledOnce();
+  });
+
+  it('does not throw when clicked with no onDownload set', async () => {
+    const el = await makeEl({ results: sampleResults });
+    expect(() => el.shadowRoot.querySelector('.pdf-btn').click()).not.toThrow();
   });
 });
 

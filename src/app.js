@@ -1,6 +1,8 @@
 import { loadConfig } from './config/loader.js';
 import { createController } from './controller.js';
 import { createOrchestrator } from './engine/orchestrator.js';
+import { createRouter } from './router.js';
+import { preloadPdf } from './pdf/report.js';
 import './components/item-likert.js';
 import './components/item-binary.js';
 import './components/item-instructions.js';
@@ -37,6 +39,13 @@ async function main() {
     return;
   }
 
+  // Start loading pdfmake + fonts in the background — ready before patient finishes.
+  preloadPdf();
+
+  // Seed history stack with 'welcome' before any navigation happens.
+  const router = createRouter();
+  router.replace('welcome');
+
   // Find battery title for welcome screen
   const battery = config.batteries.find(b => b.id === batteryId);
   const batteryTitle = battery?.title ?? '';
@@ -52,7 +61,7 @@ async function main() {
     const session = { name: e.detail.name, pid };
     welcome.remove();
 
-    const controller = createController(container);
+    const controller = createController(container, router);
     controller.start(config, batteryId, { createOrchestrator, session });
   }, { once: true });
 }

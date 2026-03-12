@@ -48,9 +48,9 @@ copy "orchestrator.js"                 "src/engine/orchestrator.js"
 copy "orchestrator.test.js"            "src/engine/orchestrator.test.js"
 copy "engine.js"                       "src/engine/engine.js"
 copy "engine.test.js"                  "src/engine/engine.test.js"
-copy "render-likert.js"                "src/engine/render-likert.js"
-copy "render-binary.js"                "src/engine/render-binary.js"
-copy "render-instructions.js"          "src/engine/render-instructions.js"
+copy "router.js"                       "src/router.js"
+copy "router.test.js"                  "src/router.test.js"
+
 
 # ── Components ─────────────────────────────────────────────────────────────────
 copy "item-likert.js"                  "src/components/item-likert.js"
@@ -80,6 +80,7 @@ copy "main.css"                        "src/styles/main.css"
 
 # ── PDF ────────────────────────────────────────────────────────────────────────
 copy "report.js"                       "src/pdf/report.js"
+copy "report.test.js"                  "src/pdf/report.test.js"
 
 # ── App shell ──────────────────────────────────────────────────────────────────
 copy "index.html"                      "index.html"

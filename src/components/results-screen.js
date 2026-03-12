@@ -13,7 +13,9 @@ import { LitElement, html, css } from 'lit';
  */
 export class ResultsScreen extends LitElement {
   static properties = {
-    results: { type: Array },
+    results:  { type: Array },
+    canShare: { type: Boolean },
+    loading:  { type: Boolean },
   };
 
   static styles = css`
@@ -72,21 +74,28 @@ export class ResultsScreen extends LitElement {
       width: 100%;
       min-block-size: var(--item-min-touch);
       padding-block: var(--space-sm);
-      background: var(--color-surface);
-      color: var(--color-text-muted);
-      border: var(--border-width) solid var(--color-border);
+      background: var(--color-primary);
+      color: #ffffff;
+      border: none;
       border-radius: var(--radius-md);
       font-size: var(--font-size-md);
       font-weight: var(--font-weight-medium);
       font-family: inherit;
-      cursor: not-allowed;
+      cursor: pointer;
+    }
+
+    .pdf-btn:disabled {
       opacity: 0.6;
+      cursor: not-allowed;
     }
   `;
 
   constructor() {
     super();
-    this.results = [];
+    this.results  = [];
+    this.canShare = false;
+    this.loading  = false;
+    this.onDownload = null;
   }
 
   render() {
@@ -104,10 +113,27 @@ export class ResultsScreen extends LitElement {
         `)}
       </div>
 
-      <button class="pdf-btn" disabled aria-disabled="true">
-        הורד דוח PDF — בקרוב
+      <button
+        class="pdf-btn"
+        ?disabled=${this.loading}
+        @click=${this._handleDownload}
+      >
+        ${this.loading
+          ? 'מכין דוח...'
+          : this.canShare ? 'שתף דוח PDF' : 'הורד דוח PDF'}
       </button>
     `;
+  }
+  async _handleDownload() {
+    if (!this.onDownload || this.loading) return;
+    this.loading = true;
+    try {
+      await this.onDownload();
+    } catch (err) {
+      console.error('Download failed:', err);
+    } finally {
+      this.loading = false;
+    }
   }
 }
 

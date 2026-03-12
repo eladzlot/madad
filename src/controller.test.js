@@ -8,7 +8,6 @@ import { createController } from './controller.js';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-// Items mount inside <app-shell> which uses a slot — they're in container's light DOM
 function findItem(container, tag = 'item-likert') {
   return container.querySelector(tag);
 }
@@ -65,6 +64,23 @@ function makeEngine(questionnaire, existingAnswers = {}) {
   };
 }
 
+// Mock router — records push/replace calls and lets tests fire popstate manually.
+function makeRouter() {
+  let _backHandler    = null;
+  let _forwardHandler = null;
+  return {
+    push:          vi.fn(),
+    replace:       vi.fn(),
+    currentScreen: vi.fn(() => 'q'),
+    onBack(fn)     { _backHandler    = fn; },
+    onForward(fn)  { _forwardHandler = fn; },
+    destroy:       vi.fn(),
+    // test helpers: simulate browser back/forward arriving at given screen
+    _fireBack(screen = 'q')    { _backHandler?.(screen); },
+    _fireForward(screen = 'q') { _forwardHandler?.(screen); },
+  };
+}
+
 function makeSetup(overrides = {}) {
   const questionnaire = overrides.questionnaire ?? makeQuestionnaire();
   const engine = overrides.engine ?? makeEngine(questionnaire, overrides.existingAnswers);
@@ -79,6 +95,7 @@ function makeSetup(overrides = {}) {
       progress: vi.fn(() => ({ current: 1, total: 1 })),
       isComplete: vi.fn(() => false),
       sessionKey: vi.fn(() => questionnaire.id),
+      currentEngine: vi.fn(() => engine),
       // expose for tests that need to fire session complete manually
       _fireSessionComplete: (sessionState = {}) => _callbacks.onSessionComplete(sessionState),
     };
@@ -86,12 +103,13 @@ function makeSetup(overrides = {}) {
 
   const container = document.createElement('div');
   document.body.appendChild(container);
-  const controller = createController(container);
+  const router = overrides.router ?? makeRouter();
+  const controller = createController(container, router);
   const config = { questionnaires: [questionnaire], batteries: [{ id: 'b', sequence: [] }] };
   controller.start(config, 'b', { createOrchestrator });
   const orchestrator = createOrchestrator.mock.results[0].value;
 
-  return { container, controller, engine, orchestrator, questionnaire };
+  return { container, controller, engine, orchestrator, questionnaire, router };
 }
 
 // ─── Mounting ─────────────────────────────────────────────────────────────────
@@ -193,14 +211,289 @@ describe('answer and advance', () => {
     vi.useFakeTimers();
     const { container } = makeSetup();
     const shell = container.querySelector('app-shell');
-    // Record an answer so canGoForward becomes true
     container.querySelector('item-likert')
       .dispatchEvent(new CustomEvent('answer', { detail: { value: 1 }, bubbles: true }));
     expect(shell.canGoForward).toBe(true);
-    // Fire advance — canGoForward should clear before the timeout fires
     container.querySelector('item-likert')
       .dispatchEvent(new CustomEvent('advance', { bubbles: true }));
     expect(shell.canGoForward).toBe(false); // cleared immediately, not after 150ms
+    vi.useRealTimers();
+  });
+});
+
+// ─── Router integration ───────────────────────────────────────────────────────
+
+describe('router push on advance', () => {
+  it('pushes "q" when the first item is mounted at session start', () => {
+    const { router } = makeSetup();
+    expect(router.push).toHaveBeenCalledWith('q');
+  });
+
+  it('pushes "q" on each item advance', () => {
+    vi.useFakeTimers();
+    const { container, router } = makeSetup();
+    const countBefore = router.push.mock.calls.filter(c => c[0] === 'q').length;
+    container.querySelector('item-likert')
+      .dispatchEvent(new CustomEvent('advance', { bubbles: true }));
+    vi.advanceTimersByTime(150);
+    const countAfter = router.push.mock.calls.filter(c => c[0] === 'q').length;
+    expect(countAfter).toBe(countBefore + 1);
+    vi.useRealTimers();
+  });
+
+  it('pushes "complete" when session completes', () => {
+    const { orchestrator, router } = makeSetup();
+    orchestrator._fireSessionComplete();
+    expect(router.push).toHaveBeenCalledWith('complete');
+  });
+
+  it('replaces with "results" on view-results — not push', () => {
+    const { container, orchestrator, router } = makeSetup();
+    orchestrator._fireSessionComplete();
+    container.querySelector('completion-screen')
+      .dispatchEvent(new CustomEvent('view-results', { bubbles: true }));
+    expect(router.replace).toHaveBeenCalledWith('results');
+    // push should NOT have been called with 'results'
+    expect(router.push).not.toHaveBeenCalledWith('results');
+  });
+});
+
+describe('router back — shell back event calls history.back()', () => {
+  it('shell back event triggers history.back() not engine.back() directly', () => {
+    // The shell fires a 'back' event; controller should call history.back().
+    // We verify engine.back() is NOT called synchronously on the 'back' event —
+    // it only runs after popstate fires.
+    const { container, engine } = makeSetup();
+    // Advance to second item so canGoBack is true
+    vi.useFakeTimers();
+    container.querySelector('item-likert')
+      .dispatchEvent(new CustomEvent('advance', { bubbles: true }));
+    vi.advanceTimersByTime(150);
+    vi.useRealTimers();
+
+    const backCallsBefore = engine.back.mock.calls.length;
+    // Fire the shell 'back' event (what the back button / gesture emits)
+    container.querySelector('app-shell')
+      .dispatchEvent(new CustomEvent('back', { bubbles: true }));
+    // engine.back() must NOT have been called yet — history.back() was called instead
+    expect(engine.back.mock.calls.length).toBe(backCallsBefore);
+  });
+
+  it('engine.back() is called after popstate fires via router._fireBack', () => {
+    const { container, engine, router } = makeSetup();
+    vi.useFakeTimers();
+    container.querySelector('item-likert')
+      .dispatchEvent(new CustomEvent('advance', { bubbles: true }));
+    vi.advanceTimersByTime(150);
+    vi.useRealTimers();
+
+    // Simulate popstate arriving (what history.back() would trigger)
+    router._fireBack('q');
+    expect(engine.back).toHaveBeenCalledOnce();
+  });
+
+  it('mounts previous item after popstate back', () => {
+    const { container, router } = makeSetup();
+    vi.useFakeTimers();
+    container.querySelector('item-likert')
+      .dispatchEvent(new CustomEvent('advance', { bubbles: true }));
+    vi.advanceTimersByTime(150);
+    vi.useRealTimers();
+    expect(container.querySelector('item-likert').item.text).toBe('שאלה 2');
+
+    router._fireBack('q');
+    expect(container.querySelector('item-likert').item.text).toBe('שאלה 1');
+  });
+
+  it('calls orchestrator.engineCrossBack when at first item and popstate fires', () => {
+    const { router, orchestrator, engine } = makeSetup();
+    // engine is at first item (canGoBack returns false)
+    engine.canGoBack.mockReturnValue(false);
+    router._fireBack('q');
+    expect(orchestrator.engineCrossBack).toHaveBeenCalledOnce();
+  });
+});
+
+describe('router back — welcome screen', () => {
+  it('does not call engine.back when popstate fires with screen "welcome"', () => {
+    const { router, engine } = makeSetup();
+    router._fireBack('welcome');
+    expect(engine.back).not.toHaveBeenCalled();
+  });
+});
+
+describe('router back — completion screen', () => {
+  it('removes completion-screen when popstate fires from completion screen', () => {
+    const { container, orchestrator, router } = makeSetup();
+    orchestrator._fireSessionComplete();
+    expect(container.querySelector('completion-screen')).toBeTruthy();
+
+    router._fireBack('q');
+    expect(container.querySelector('completion-screen')).toBeNull();
+  });
+
+  it('re-enables gestures when popping back from completion screen', () => {
+    const { container, orchestrator, router } = makeSetup();
+    orchestrator._fireSessionComplete();
+    const shell = container.querySelector('app-shell');
+    // gesturesEnabled is false briefly after session complete
+    shell.gesturesEnabled = false;
+
+    router._fireBack('q');
+    expect(shell.gesturesEnabled).toBe(true);
+  });
+});
+
+describe('router back — results screen (locked)', () => {
+  it('does not call engine.back after session is locked', () => {
+    const { container, orchestrator, router, engine } = makeSetup();
+    orchestrator._fireSessionComplete();
+    container.querySelector('completion-screen')
+      .dispatchEvent(new CustomEvent('view-results', { bubbles: true }));
+
+    // Session is now locked — popstate should be ignored
+    router._fireBack('complete');
+    expect(engine.back).not.toHaveBeenCalled();
+  });
+});
+
+// ─── Router forward ───────────────────────────────────────────────────────────
+
+describe('router forward — shell forward event calls history.forward()', () => {
+  it('shell forward event does not call engine.advance() synchronously', () => {
+    const { container, engine } = makeSetup();
+    // Answer the first item so forward button is enabled
+    container.querySelector('item-likert')
+      .dispatchEvent(new CustomEvent('answer', { detail: { value: 1 }, bubbles: true }));
+
+    const advanceBefore = engine.advance.mock.calls.length;
+    container.querySelector('app-shell')
+      .dispatchEvent(new CustomEvent('forward', { bubbles: true }));
+    // engine.advance() must NOT have been called yet — history.forward() was called instead
+    expect(engine.advance.mock.calls.length).toBe(advanceBefore);
+  });
+});
+
+describe('router forward — popstate forward advances to next item', () => {
+  it('engine.advance() is called after _fireForward("q")', () => {
+    vi.useFakeTimers();
+    const { container, engine, router } = makeSetup();
+    // Answer first item
+    container.querySelector('item-likert')
+      .dispatchEvent(new CustomEvent('answer', { detail: { value: 1 }, bubbles: true }));
+
+    const advanceBefore = engine.advance.mock.calls.length;
+    router._fireForward('q');
+    vi.advanceTimersByTime(150);
+
+    expect(engine.advance.mock.calls.length).toBe(advanceBefore + 1);
+    vi.useRealTimers();
+  });
+
+  it('advances through instruction items without requiring an answer', () => {
+    vi.useFakeTimers();
+    const questionnaire = makeQuestionnaire();
+    questionnaire.items = [
+      { id: 'intro', type: 'instructions', text: 'הוראות' },
+      { id: 'q1', type: 'likert', text: 'שאלה 1' },
+    ];
+    const engine = makeEngine(questionnaire);
+    const { router } = makeSetup({ questionnaire, engine });
+    // engine is on the instructions item — no answer recorded
+    engine.answers.mockReturnValue({});
+
+    const advanceBefore = engine.advance.mock.calls.length;
+    router._fireForward('q');
+    vi.advanceTimersByTime(0); // instructions use 0 delay
+
+    expect(engine.advance.mock.calls.length).toBe(advanceBefore + 1);
+    vi.useRealTimers();
+  });
+
+  it('does not advance if current item has no answer', () => {
+    vi.useFakeTimers();
+    const { engine, router } = makeSetup();
+    // No answer recorded — engine.answers() returns empty
+    engine.answers.mockReturnValue({});
+
+    const advanceBefore = engine.advance.mock.calls.length;
+    router._fireForward('q');
+    vi.advanceTimersByTime(150);
+
+    expect(engine.advance.mock.calls.length).toBe(advanceBefore);
+    vi.useRealTimers();
+  });
+
+  it('mounts next item after forward popstate', () => {
+    vi.useFakeTimers();
+    const { container, engine, router } = makeSetup();
+    // Answer first item so forward is valid
+    container.querySelector('item-likert')
+      .dispatchEvent(new CustomEvent('answer', { detail: { value: 2 }, bubbles: true }));
+    // Make engine return the second item on next advance
+    engine.advance.mockReturnValueOnce({ id: 'q2', type: 'likert', text: 'שאלה 2', options: [] });
+
+    router._fireForward('q');
+    vi.advanceTimersByTime(150);
+
+    expect(container.querySelector('item-likert').item.text).toBe('שאלה 2');
+    vi.useRealTimers();
+  });
+
+  it('does not push a new history entry on forward popstate advance', () => {
+    vi.useFakeTimers();
+    const { container, engine, router } = makeSetup();
+    container.querySelector('item-likert')
+      .dispatchEvent(new CustomEvent('answer', { detail: { value: 1 }, bubbles: true }));
+
+    const pushCountBefore = router.push.mock.calls.length;
+    router._fireForward('q');
+    vi.advanceTimersByTime(150);
+
+    // push should NOT have been called — we're replaying existing history
+    expect(router.push.mock.calls.length).toBe(pushCountBefore);
+    vi.useRealTimers();
+  });
+});
+
+describe('router forward — completion screen', () => {
+  it('mounts completion-screen when forward popstate arrives with "complete"', () => {
+    const { container, orchestrator, router } = makeSetup();
+    orchestrator._fireSessionComplete();
+    // Simulate patient going back from completion screen then forward again
+    router._fireBack('q');
+    router._fireForward('complete');
+    expect(container.querySelector('completion-screen')).toBeTruthy();
+  });
+
+  it('does not advance engine when forward popstate is "complete"', () => {
+    vi.useFakeTimers();
+    const { orchestrator, engine, router } = makeSetup();
+    orchestrator._fireSessionComplete();
+    router._fireBack('q');
+
+    const advanceBefore = engine.advance.mock.calls.length;
+    router._fireForward('complete');
+    vi.advanceTimersByTime(150);
+
+    expect(engine.advance.mock.calls.length).toBe(advanceBefore);
+    vi.useRealTimers();
+  });
+});
+
+describe('router forward — locked (results screen)', () => {
+  it('does not advance after session is locked', () => {
+    vi.useFakeTimers();
+    const { container, orchestrator, router, engine } = makeSetup();
+    orchestrator._fireSessionComplete();
+    container.querySelector('completion-screen')
+      .dispatchEvent(new CustomEvent('view-results', { bubbles: true }));
+
+    const advanceBefore = engine.advance.mock.calls.length;
+    router._fireForward('q');
+    vi.advanceTimersByTime(150);
+
+    expect(engine.advance.mock.calls.length).toBe(advanceBefore);
     vi.useRealTimers();
   });
 });
@@ -210,7 +503,6 @@ describe('answer and advance', () => {
 describe('option resolution (binary via optionSetId)', () => {
   it('resolves options from optionSetId for binary items', () => {
     const questionnaire = makeQuestionnaire();
-    // Override items to use a binary item with optionSetId
     questionnaire.optionSets.yesno = [
       { label: 'כן', value: 1 },
       { label: 'לא', value: 0 },
@@ -244,6 +536,8 @@ describe('option resolution (binary via optionSetId)', () => {
     expect(engine.recordAnswer).toHaveBeenCalledWith('b1', 1);
   });
 });
+
+// ─── Session complete ─────────────────────────────────────────────────────────
 
 describe('session complete', () => {
   it('removes item component on session complete', () => {
