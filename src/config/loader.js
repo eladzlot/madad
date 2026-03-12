@@ -21,12 +21,15 @@
 // }
 //
 // Errors thrown:
-//   ConfigFetchError    — HTTP failure or network error
-//   ConfigValidationError — AJV schema violation (message in Hebrew + English)
-//   ConfigError         — semantic violation (duplicate session key, missing option set, etc.)
+//   ConfigFetchError      — HTTP failure or network error
+//   ConfigValidationError — AJV schema violation
+//   ConfigError           — semantic violation (duplicate session key, missing option set, etc.)
 
 import Ajv from 'ajv/dist/2020.js';
 import schema from './QuestionnaireSet.schema.json' with { type: 'json' };
+import { validateConfigData, ConfigError } from './config-validation.js';
+
+export { ConfigError };
 
 // ─── Error classes ────────────────────────────────────────────────────────────
 
@@ -48,13 +51,6 @@ export class ConfigValidationError extends Error {
   }
 }
 
-export class ConfigError extends Error {
-  constructor(message) {
-    super(message);
-    this.name = 'ConfigError';
-  }
-}
-
 // ─── AJV setup ────────────────────────────────────────────────────────────────
 
 const ajv = new Ajv({ allErrors: true });
@@ -69,108 +65,6 @@ function resolveSource(source) {
   }
   // Slug — resolve relative to /configs/
   return `/configs/${source}.json`;
-}
-
-// ─── Duplicate session key validation ────────────────────────────────────────
-
-/**
- * Recursively collect all possible session keys from a battery sequence.
- * Walks into if.then, if.else, and randomize.ids branches.
- */
-function collectSessionKeys(nodes) {
-  const keys = [];
-  for (const node of nodes) {
-    if (node.type === 'if') {
-      keys.push(...collectSessionKeys(node.then ?? []));
-      keys.push(...collectSessionKeys(node.else ?? []));
-    } else if (node.type === 'randomize') {
-      keys.push(...collectSessionKeys(node.ids ?? []));
-    } else if (node.questionnaireId) {
-      keys.push(node.instanceId ?? node.questionnaireId);
-    }
-  }
-  return keys;
-}
-
-function validateNoDuplicateSessionKeys(batteries, url) {
-  for (const battery of batteries ?? []) {
-    const keys = collectSessionKeys(battery.sequence ?? []);
-    const seen = new Set();
-    for (const key of keys) {
-      if (seen.has(key)) {
-        throw new ConfigError(
-          `Battery "${battery.id}" in "${url}" has duplicate session key "${key}". ` +
-          `Use instanceId to distinguish repeated questionnaire instances.`
-        );
-      }
-      seen.add(key);
-    }
-  }
-}
-
-// ─── Default option set validation ───────────────────────────────────────────
-
-function checkUniqueOptionValues(options, itemId, questionnaireId, url) {
-  const seen = new Set();
-  for (const opt of options) {
-    if (seen.has(opt.value)) {
-      throw new ConfigError(
-        `Item "${itemId}" in questionnaire "${questionnaireId}" (${url}) has duplicate option value "${opt.value}". ` +
-        `Option values must be unique within an item.`
-      );
-    }
-    seen.add(opt.value);
-  }
-}
-
-function checkBinaryOptionCount(options, itemId, questionnaireId, url) {
-  if (options.length !== 2) {
-    throw new ConfigError(
-      `Binary item "${itemId}" in questionnaire "${questionnaireId}" (${url}) ` +
-      `must have exactly 2 options, got ${options.length}.`
-    );
-  }
-}
-
-function validateOptionSets(questionnaires, url) {
-  for (const q of questionnaires ?? []) {
-    const optionSetIds = new Set(Object.keys(q.optionSets ?? {}));
-
-    // Validate uniqueness of values within each option set
-    for (const [setId, options] of Object.entries(q.optionSets ?? {})) {
-      checkUniqueOptionValues(options, `optionSet:${setId}`, q.id, url);
-    }
-
-    for (const item of q.items ?? []) {
-      if (item.type !== 'likert' && item.type !== 'binary') continue;
-
-      if (item.options) {
-        checkUniqueOptionValues(item.options, item.id, q.id, url);
-        if (item.type === 'binary') checkBinaryOptionCount(item.options, item.id, q.id, url);
-        continue;
-      }
-
-      // Option set reference — validate it exists
-      const ref = item.optionSetId ?? q.defaultOptionSetId;
-      if (!ref) {
-        throw new ConfigError(
-          `Binary item "${item.id}" in questionnaire "${q.id}" (${url}) has no options, ` +
-          `no optionSetId, and no defaultOptionSetId on the questionnaire.`
-        );
-      }
-      if (!optionSetIds.has(ref)) {
-        throw new ConfigError(
-          `Item "${item.id}" in questionnaire "${q.id}" (${url}) references ` +
-          `optionSetId "${ref}" which does not exist.`
-        );
-      }
-      // For binary items using an option set — validate count
-      if (item.type === 'binary') {
-        const options = q.optionSets[ref];
-        checkBinaryOptionCount(options, item.id, q.id, url);
-      }
-    }
-  }
 }
 
 // ─── Fetch and validate a single file ────────────────────────────────────────
@@ -195,8 +89,7 @@ async function fetchAndValidate(source, fetchFn) {
     throw new ConfigValidationError(url, validate.errors);
   }
 
-  validateNoDuplicateSessionKeys(data.batteries, url);
-  validateOptionSets(data.questionnaires, url);
+  validateConfigData(data, url);
 
   return { url, data };
 }

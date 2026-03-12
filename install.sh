@@ -34,6 +34,8 @@ copy "RENDER_SPEC.md"                  "docs/RENDER_SPEC.md"
 copy "QuestionnaireSet.schema.json"    "src/config/QuestionnaireSet.schema.json"
 copy "loader.js"                       "src/config/loader.js"
 copy "loader.test.js"                  "src/config/loader.test.js"
+copy "config-validation.js"            "src/config/config-validation.js"
+
 
 # ── Engine ─────────────────────────────────────────────────────────────────────
 copy "dsl.js"                          "src/engine/dsl.js"
