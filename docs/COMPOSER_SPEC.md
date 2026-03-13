@@ -21,26 +21,37 @@ It only constructs a valid launch URL for the existing questionnaire runtime.
 
 The Composer generates URLs using the following parameters:
 
-configs
-: comma-separated list of config sources
+`configs`
+: comma-separated list of config sources (slugs or absolute URLs). Only configs required to resolve the selected items are included.
 
-qids
-: comma-separated list of questionnaire IDs in launch order
+`items`
+: comma-separated ordered list of questionnaire IDs and/or battery IDs. Order defines session order. Batteries are expanded by the runtime into their full sequences, including control-flow nodes.
 
-pid
+`pid`
 : optional patient identifier
 
 Example:
 
-`https://app.example.com/?configs=/configs/core.json,/configs/trauma.json&qids=phq9,gad7,pcl5&pid=ABC123`
+`https://app.example.com/?configs=/configs/core.json,/configs/trauma.json&items=intake_battery,phq9,pcl5&pid=ABC123`
 
-Rules
+Rules:
 
-* `qids` order defines questionnaire order
-* only configs required to resolve the selected `qids` should be included
+* `items` order defines session order
+* each token in `items` resolves to either a battery (expanded) or a questionnaire
+* mixing batteries and questionnaires in `items` is supported
+* only configs required to resolve the selected `items` should be included
 * `pid` is optional
+* legacy parameters (`config`, `battery`, `qids`) are **not supported**
 
-Legacy parameters (`config`, `battery`) are **not supported**.
+---
+
+# ID Namespace
+
+Questionnaire IDs and battery IDs share a single namespace. Within any single config file, a battery ID must not match any questionnaire ID. Across multiple config files, duplicate IDs are a hard error — the app will not load if two loaded configs define the same questionnaire or battery ID.
+
+The Composer is configured to load a fixed set of in-repository configs that are maintained to have unique IDs. Adding configs with conflicting IDs is a configuration error that must be resolved in the files themselves, not in the UI.
+
+---
 
 ---
 
@@ -50,14 +61,14 @@ Legacy parameters (`config`, `battery`) are **not supported**.
 
 On load the Composer:
 
-1. loads a **config manifest**
-2. loads all configs listed in the manifest
-3. builds a questionnaire list from those configs
+1. loads a **config manifest** from `/composer/configs.json`
+2. loads all configs listed in the manifest in parallel
+3. builds a flat list of all questionnaires and batteries from those configs
 
 If one config fails to load:
 
-* the Composer continues
-* a warning banner is shown
+* the Composer continues with the remaining configs
+* a warning banner is shown naming the failed source
 
 ---
 
@@ -129,22 +140,17 @@ Recommended characters:
 
 ---
 
-## 3. Questionnaire Selection
+## 3. Questionnaire / Battery Selection
 
-Questionnaires appear in a **flat checkbox list**.
+Questionnaires and batteries appear in a **flat checkbox list**, grouped by type.
 
-Each entry shows:
+Each questionnaire entry shows the questionnaire name and description (if available).
 
-* questionnaire name
-* questionnaire description
-
-Selecting questionnaires builds the patient session.
+Each battery entry shows the battery name and a note that it is a preset.
 
 ### Order
 
-Questionnaire order follows **selection order**, not list order.
-
-A small read-only list shows the current launch order.
+Session order follows **selection order**, not list order. A small read-only list shows the current launch order.
 
 ---
 
@@ -176,9 +182,8 @@ Warnings appear in a banner at the top of the Composer.
 
 Examples:
 
-* config failed to load
-* duplicate `qid` across configs
-* invalid patient identifier
+* config failed to load (names the failed URL)
+* invalid patient identifier characters
 
 Warnings do **not block link generation**.
 
@@ -186,16 +191,15 @@ Warnings do **not block link generation**.
 
 # Runtime Requirements
 
-The questionnaire runtime must support the Composer URL model.
+The questionnaire runtime supports the Composer URL model.
 
-Required changes:
+The runtime:
 
-* parse `configs`, `qids`, and `pid`
-* load multiple configs
-* resolve questionnaires by `qid`
-* launch questionnaires in URL order
-
-The runtime must support **synthetic sessions assembled from qids**.
+* parses `configs`, `items`, and `pid` from the URL
+* loads all listed config sources in parallel via `loadConfig()`
+* resolves each `items` token as a battery (expanding its full sequence) or questionnaire via `resolveItems()`
+* launches questionnaires in the order defined by the resolved sequence
+* shows a pre-welcome error screen if `items` is absent, empty, or contains an unresolvable token
 
 ---
 
@@ -204,21 +208,20 @@ The runtime must support **synthetic sessions assembled from qids**.
 The MVP includes:
 
 * manifest-driven config discovery
-* questionnaire selection
+* questionnaire and battery selection (flat list)
 * selection-order session construction
+* conflict detection and warning banner
 * patient identifier field
-* live URL preview
+* live URL preview using the `items` parameter
 * copy/share link
 * reset button
-* warning banner
 
 The MVP **does not include**:
 
-* config selection UI
+* config selection UI (adding/removing config sources from the active set)
 * manual config URL entry
-* predefined batteries
 * questionnaire search
-* editing questionnaire order
+* editing session order after selection
 * removing items from the selected list
 
 ---

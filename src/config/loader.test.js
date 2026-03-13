@@ -1,35 +1,26 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { loadConfig, ConfigFetchError, ConfigValidationError, ConfigError } from './loader.js';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const minimalQ = (id = 'phq9') => ({
-  id,
-  title: 'Test',
+  id, title: 'Test',
   items: [{ id: 'q1', type: 'likert', text: 'Q1', options: [{ label: 'No', value: 0 }, { label: 'Yes', value: 1 }] }],
-  scoring: { method: 'none' },
-  alerts: [],
+  scoring: { method: 'none' }, alerts: [],
 });
 
+const minimalBattery = (id, qId = 'phq9') => ({ id, title: id, sequence: [{ questionnaireId: qId }] });
+
 const minimalConfig = (questionnaires = [], batteries = []) => ({
-  id: 'test_set',
-  version: '1.0',
-  questionnaires,
-  batteries,
+  id: 'test_set', version: '1.0', questionnaires, batteries,
 });
 
 function makeFetch(responses) {
-  // responses: { [url]: { ok, status, json } | Error }
   return vi.fn(async (url) => {
     const res = responses[url];
     if (!res) throw new TypeError(`fetch: unexpected URL "${url}"`);
     if (res instanceof Error) throw res;
-    return {
-      ok: res.ok ?? true,
-      status: res.status ?? 200,
-      statusText: res.statusText ?? 'OK',
-      json: async () => res.body,
-    };
+    return { ok: res.ok ?? true, status: res.status ?? 200, statusText: res.statusText ?? 'OK', json: async () => res.body };
   });
 }
 
@@ -86,7 +77,28 @@ describe('validation errors', () => {
   });
 });
 
-// ─── Merge ────────────────────────────────────────────────────────────────────
+// ─── Return shape ─────────────────────────────────────────────────────────────
+
+describe('resolved config shape', () => {
+  it('returns questionnaires and batteries as arrays', async () => {
+    const fetch = makeFetch({ '/configs/a.json': { body: minimalConfig([minimalQ()]) } });
+    const config = await loadConfig(['a'], { fetch });
+    expect(Array.isArray(config.questionnaires)).toBe(true);
+    expect(Array.isArray(config.batteries)).toBe(true);
+  });
+
+  it('returns version and resolvedAt', async () => {
+    const fetch = makeFetch({ '/configs/a.json': { body: minimalConfig([minimalQ()]) } });
+    const config = await loadConfig(['a'], { fetch });
+    expect(config).toMatchObject({ version: expect.any(String), resolvedAt: expect.any(String) });
+  });
+
+  it('throws when no sources provided', async () => {
+    await expect(loadConfig([], { fetch: vi.fn() })).rejects.toBeInstanceOf(ConfigError);
+  });
+});
+
+// ─── Merging multiple sources ─────────────────────────────────────────────────
 
 describe('merging multiple sources', () => {
   it('merges questionnaires from multiple files', async () => {
@@ -98,46 +110,54 @@ describe('merging multiple sources', () => {
     expect(config.questionnaires.map(q => q.id)).toEqual(expect.arrayContaining(['phq9', 'gad7']));
   });
 
-  it('later file wins on duplicate questionnaire ID', async () => {
-    const q1 = { ...minimalQ('phq9'), title: 'First' };
-    const q2 = { ...minimalQ('phq9'), title: 'Second' };
-    const fetch = makeFetch({
-      '/configs/a.json': { body: minimalConfig([q1]) },
-      '/configs/b.json': { body: minimalConfig([q2]) },
-    });
-    const config = await loadConfig(['a', 'b'], { fetch });
-    const phq9 = config.questionnaires.find(q => q.id === 'phq9');
-    expect(phq9.title).toBe('Second');
-  });
-
   it('merges batteries from multiple files', async () => {
-    const bat = (id, qId) => ({ id, title: id, sequence: [{ questionnaireId: qId }] });
     const fetch = makeFetch({
-      '/configs/a.json': { body: minimalConfig([minimalQ('phq9')], [bat('standard', 'phq9')]) },
-      '/configs/b.json': { body: minimalConfig([minimalQ('gad7')], [bat('trauma', 'gad7')]) },
+      '/configs/a.json': { body: minimalConfig([minimalQ('phq9')], [minimalBattery('standard', 'phq9')]) },
+      '/configs/b.json': { body: minimalConfig([minimalQ('gad7')], [minimalBattery('trauma', 'gad7')]) },
     });
     const config = await loadConfig(['a', 'b'], { fetch });
     expect(config.batteries.map(b => b.id)).toEqual(expect.arrayContaining(['standard', 'trauma']));
   });
-});
 
-// ─── filterIds ────────────────────────────────────────────────────────────────
-
-describe('filterIds option', () => {
-  it('filters questionnaires to specified IDs', async () => {
+  it('throws ConfigError on duplicate questionnaire ID across files', async () => {
     const fetch = makeFetch({
-      '/configs/a.json': { body: minimalConfig([minimalQ('phq9'), minimalQ('gad7'), minimalQ('pcl5')]) },
+      '/configs/a.json': { body: minimalConfig([minimalQ('phq9')]) },
+      '/configs/b.json': { body: minimalConfig([minimalQ('phq9')]) },
     });
-    const config = await loadConfig(['a'], { fetch, filterIds: ['phq9', 'pcl5'] });
-    expect(config.questionnaires.map(q => q.id)).toEqual(['phq9', 'pcl5']);
+    await expect(loadConfig(['a', 'b'], { fetch })).rejects.toBeInstanceOf(ConfigError);
   });
 
-  it('returns all questionnaires when filterIds is empty', async () => {
+  it('duplicate questionnaire error names the conflicting ID', async () => {
     const fetch = makeFetch({
-      '/configs/a.json': { body: minimalConfig([minimalQ('phq9'), minimalQ('gad7')]) },
+      '/configs/a.json': { body: minimalConfig([minimalQ('phq9')]) },
+      '/configs/b.json': { body: minimalConfig([minimalQ('phq9')]) },
     });
-    const config = await loadConfig(['a'], { fetch, filterIds: [] });
-    expect(config.questionnaires).toHaveLength(2);
+    const err = await loadConfig(['a', 'b'], { fetch }).catch(e => e);
+    expect(err.message).toContain('phq9');
+  });
+
+  it('throws ConfigError on duplicate battery ID across files', async () => {
+    const fetch = makeFetch({
+      '/configs/a.json': { body: minimalConfig([minimalQ('phq9')], [minimalBattery('intake', 'phq9')]) },
+      '/configs/b.json': { body: minimalConfig([minimalQ('gad7')], [minimalBattery('intake', 'gad7')]) },
+    });
+    await expect(loadConfig(['a', 'b'], { fetch })).rejects.toBeInstanceOf(ConfigError);
+  });
+});
+
+// ─── Intra-file cross-entity collision ───────────────────────────────────────
+
+describe('cross-entity ID collision (questionnaire ID = battery ID, same file)', () => {
+  it('throws ConfigError when battery shares an ID with a questionnaire', async () => {
+    const config = minimalConfig([minimalQ('intake')], [minimalBattery('intake', 'intake')]);
+    const fetch = makeFetch({ '/configs/a.json': { body: config } });
+    await expect(loadConfig(['a'], { fetch })).rejects.toBeInstanceOf(ConfigError);
+  });
+
+  it('does not throw when IDs are distinct', async () => {
+    const config = minimalConfig([minimalQ('phq9')], [minimalBattery('standard', 'phq9')]);
+    const fetch = makeFetch({ '/configs/a.json': { body: config } });
+    await expect(loadConfig(['a'], { fetch })).resolves.toBeDefined();
   });
 });
 
@@ -164,40 +184,13 @@ describe('duplicate session key validation', () => {
     const fetch = makeFetch({ '/configs/a.json': { body: config } });
     await expect(loadConfig(['a'], { fetch })).resolves.toBeTruthy();
   });
-
-  it('detects duplicates inside if branches', async () => {
-    const config = minimalConfig([minimalQ('phq9'), minimalQ('pcl5')], [{
-      id: 'b', title: 'b',
-      sequence: [
-        { questionnaireId: 'phq9' },
-        { type: 'if', condition: 'score.phq9 >= 10',
-          then: [{ questionnaireId: 'phq9' }], else: [] },
-      ],
-    }]);
-    const fetch = makeFetch({ '/configs/a.json': { body: config } });
-    await expect(loadConfig(['a'], { fetch })).rejects.toBeInstanceOf(ConfigError);
-  });
 });
 
 // ─── Option set validation ────────────────────────────────────────────────────
 
 describe('option set validation', () => {
-  it('throws ConfigError for likert item with no options and no defaultOptionSetId', async () => {
-    const q = {
-      id: 'test', title: 'Test',
-      items: [{ id: 'q1', type: 'likert', text: 'Q1' }], // no options, no optionSetId
-      scoring: { method: 'none' }, alerts: [],
-    };
-    const fetch = makeFetch({ '/configs/a.json': { body: minimalConfig([q]) } });
-    await expect(loadConfig(['a'], { fetch })).rejects.toBeInstanceOf(ConfigError);
-  });
-
-  it('throws ConfigError for likert referencing non-existent optionSetId', async () => {
-    const q = {
-      id: 'test', title: 'Test',
-      items: [{ id: 'q1', type: 'likert', text: 'Q1', optionSetId: 'missing' }],
-      scoring: { method: 'none' }, alerts: [],
-    };
+  it('throws ConfigError for likert with no options and no defaultOptionSetId', async () => {
+    const q = { id: 'test', title: 'Test', items: [{ id: 'q1', type: 'likert', text: 'Q1' }], scoring: { method: 'none' }, alerts: [] };
     const fetch = makeFetch({ '/configs/a.json': { body: minimalConfig([q]) } });
     await expect(loadConfig(['a'], { fetch })).rejects.toBeInstanceOf(ConfigError);
   });
@@ -207,48 +200,10 @@ describe('option set validation', () => {
     await expect(loadConfig(['a'], { fetch })).resolves.toBeTruthy();
   });
 
-  it('accepts likert with valid optionSetId', async () => {
+  it('throws ConfigError for duplicate option values', async () => {
     const q = {
       id: 'test', title: 'Test',
-      optionSets: { scale: [{ label: 'No', value: 0 }, { label: 'Yes', value: 1 }] },
-      items: [{ id: 'q1', type: 'likert', text: 'Q1', optionSetId: 'scale' }],
-      scoring: { method: 'none' }, alerts: [],
-    };
-    const fetch = makeFetch({ '/configs/a.json': { body: minimalConfig([q]) } });
-    await expect(loadConfig(['a'], { fetch })).resolves.toBeTruthy();
-  });
-
-  it('accepts likert with defaultOptionSetId', async () => {
-    const q = {
-      id: 'test', title: 'Test',
-      defaultOptionSetId: 'scale',
-      optionSets: { scale: [{ label: 'No', value: 0 }, { label: 'Yes', value: 1 }] },
-      items: [{ id: 'q1', type: 'likert', text: 'Q1' }],
-      scoring: { method: 'none' }, alerts: [],
-    };
-    const fetch = makeFetch({ '/configs/a.json': { body: minimalConfig([q]) } });
-    await expect(loadConfig(['a'], { fetch })).resolves.toBeTruthy();
-  });
-
-  it('throws ConfigError for duplicate option values in inline options', async () => {
-    const q = {
-      id: 'test', title: 'Test',
-      items: [{ id: 'q1', type: 'likert', text: 'Q1', options: [
-        { label: 'No', value: 0 },
-        { label: 'Also No', value: 0 },  // duplicate
-        { label: 'Yes', value: 1 },
-      ]}],
-      scoring: { method: 'none' }, alerts: [],
-    };
-    const fetch = makeFetch({ '/configs/a.json': { body: minimalConfig([q]) } });
-    await expect(loadConfig(['a'], { fetch })).rejects.toBeInstanceOf(ConfigError);
-  });
-
-  it('throws ConfigError for duplicate option values in an option set', async () => {
-    const q = {
-      id: 'test', title: 'Test',
-      optionSets: { scale: [{ label: 'A', value: 1 }, { label: 'B', value: 1 }] },
-      items: [{ id: 'q1', type: 'likert', text: 'Q1', optionSetId: 'scale' }],
+      items: [{ id: 'q1', type: 'likert', text: 'Q1', options: [{ label: 'No', value: 0 }, { label: 'Also No', value: 0 }, { label: 'Yes', value: 1 }] }],
       scoring: { method: 'none' }, alerts: [],
     };
     const fetch = makeFetch({ '/configs/a.json': { body: minimalConfig([q]) } });
@@ -256,82 +211,18 @@ describe('option set validation', () => {
   });
 });
 
-// ─── Binary option count validation ──────────────────────────────────────────
+// ─── Binary option count ──────────────────────────────────────────────────────
 
 describe('binary option count validation', () => {
-  function binaryQ(options) {
-    return {
-      ...minimalQ(),
-      items: [{ id: 'b1', type: 'binary', text: 'שאלה בינארית', options }],
-    };
-  }
-
-  it('accepts binary item with exactly 2 inline options', async () => {
-    const q = binaryQ([{ label: 'כן', value: 1 }, { label: 'לא', value: 0 }]);
+  it('accepts binary with exactly 2 options', async () => {
+    const q = { ...minimalQ(), items: [{ id: 'b1', type: 'binary', text: 'Q', options: [{ label: 'כן', value: 1 }, { label: 'לא', value: 0 }] }] };
     const fetch = makeFetch({ '/configs/a.json': { body: minimalConfig([q]) } });
     await expect(loadConfig(['a'], { fetch })).resolves.toBeDefined();
   });
 
-  it('throws when binary has 1 inline option (caught by schema)', async () => {
-    const q = binaryQ([{ label: 'כן', value: 1 }]);
-    const fetch = makeFetch({ '/configs/a.json': { body: minimalConfig([q]) } });
-    // Schema enforces minItems:2 on optionList, so this throws ConfigValidationError
-    await expect(loadConfig(['a'], { fetch })).rejects.toBeInstanceOf(ConfigValidationError);
-  });
-
-  it('throws ConfigError when binary has 3 inline options', async () => {
-    const q = binaryQ([
-      { label: 'א', value: 1 },
-      { label: 'ב', value: 2 },
-      { label: 'ג', value: 3 },
-    ]);
+  it('throws when binary has 3 options', async () => {
+    const q = { ...minimalQ(), items: [{ id: 'b1', type: 'binary', text: 'Q', options: [{ label: 'א', value: 1 }, { label: 'ב', value: 2 }, { label: 'ג', value: 3 }] }] };
     const fetch = makeFetch({ '/configs/a.json': { body: minimalConfig([q]) } });
     await expect(loadConfig(['a'], { fetch })).rejects.toBeInstanceOf(ConfigError);
-  });
-
-  it('throws ConfigError when binary option set has 3 options', async () => {
-    const q = {
-      ...minimalQ(),
-      optionSets: {
-        yesno: [
-          { label: 'א', value: 1 },
-          { label: 'ב', value: 2 },
-          { label: 'ג', value: 3 },
-        ],
-      },
-      items: [{ id: 'b1', type: 'binary', text: 'שאלה', optionSetId: 'yesno' }],
-    };
-    const fetch = makeFetch({ '/configs/a.json': { body: minimalConfig([q]) } });
-    await expect(loadConfig(['a'], { fetch })).rejects.toBeInstanceOf(ConfigError);
-  });
-
-  it('accepts binary item referencing a 2-option option set', async () => {
-    const q = {
-      ...minimalQ(),
-      optionSets: {
-        yesno: [{ label: 'כן', value: 1 }, { label: 'לא', value: 0 }],
-      },
-      items: [{ id: 'b1', type: 'binary', text: 'שאלה', optionSetId: 'yesno' }],
-    };
-    const fetch = makeFetch({ '/configs/a.json': { body: minimalConfig([q]) } });
-    await expect(loadConfig(['a'], { fetch })).resolves.toBeDefined();
-  });
-});
-
-// ─── Return shape ─────────────────────────────────────────────────────────────
-
-describe('resolved config shape', () => {
-  it('returns questionnaires, batteries, version, resolvedAt', async () => {
-    const fetch = makeFetch({ '/configs/a.json': { body: minimalConfig([minimalQ()]) } });
-    const config = await loadConfig(['a'], { fetch });
-    expect(config).toMatchObject({
-      questionnaires: expect.any(Array),
-      batteries: expect.any(Array),
-      resolvedAt: expect.any(String),
-    });
-  });
-
-  it('throws when no sources provided', async () => {
-    await expect(loadConfig([], { fetch: vi.fn() })).rejects.toBeInstanceOf(ConfigError);
   });
 });

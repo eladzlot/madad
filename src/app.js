@@ -1,4 +1,23 @@
+// app.js — entry point.
+//
+// URL model:
+//   ?configs=<src>,<src>&items=<id>,<id>&pid=<pid>
+//
+//   configs  — comma-separated config sources (slugs or URLs).
+//              Default: 'prod/standard' when omitted.
+//   items    — comma-separated ordered list of questionnaire IDs or battery IDs.
+//              Required. Error shown if absent.
+//   pid      — optional patient identifier.
+//
+// Resolution:
+//   Each token in `items` is resolved as:
+//     1. Battery ID (expands its sequence, preserving control flow)
+//     2. Questionnaire ID (wrapped as { questionnaireId: token })
+//   Ambiguous tokens (exist in both maps, or conflicted across configs) throw
+//   an ItemResolutionError, which is shown as a pre-welcome error screen.
+
 import { loadConfig } from './config/loader.js';
+import { resolveItems, ItemResolutionError } from './resolve-items.js';
 import { createController } from './controller.js';
 import { createOrchestrator } from './engine/orchestrator.js';
 import { createRouter } from './router.js';
@@ -12,57 +31,86 @@ import './components/welcome-screen.js';
 import './components/completion-screen.js';
 import './components/results-screen.js';
 
-const DEFAULT_CONFIG  = 'prod/standard';
-const DEFAULT_BATTERY = 'standard_intake';
+const DEFAULT_CONFIG = 'prod/standard';
+
+// ── Error screen ──────────────────────────────────────────────────────────────
+
+function showError(container, message, detail = '') {
+  container.innerHTML = `
+    <div class="content-column" style="direction:rtl; color: var(--color-no)">
+      <p>${message}</p>
+      ${detail ? `<pre style="font-size:12px; margin-top:1rem; white-space:pre-wrap">${detail}</pre>` : ''}
+    </div>
+  `;
+}
+
+// ── Main ──────────────────────────────────────────────────────────────────────
 
 async function main() {
-  const params    = new URLSearchParams(location.search);
-  const configSrc = params.get('config')  ?? DEFAULT_CONFIG;
-  const batteryId = params.get('battery') ?? DEFAULT_BATTERY;
-  const pid       = params.get('pid')     ?? null;
+  const params = new URLSearchParams(location.search);
+
+  const configsParam = params.get('configs');
+  const itemsParam   = params.get('items');
+  const pid          = params.get('pid') ?? null;
+
+  const configSources = configsParam
+    ? configsParam.split(',').map(s => s.trim()).filter(Boolean)
+    : [DEFAULT_CONFIG];
 
   const container = document.getElementById('app');
 
+  // `items` is required — show error before welcome screen if missing
+  if (!itemsParam) {
+    showError(container, 'לא נבחרו שאלונים.', 'יש לפתוח את הקישור שקיבלת מהמטפל.');
+    return;
+  }
+
+  const itemTokens = itemsParam.split(',').map(s => s.trim()).filter(Boolean);
+
+  if (itemTokens.length === 0) {
+    showError(container, 'לא נבחרו שאלונים.', 'יש לפתוח את הקישור שקיבלת מהמטפל.');
+    return;
+  }
+
   container.innerHTML = `<div class="content-column" style="direction:rtl">טוען...</div>`;
 
+  // Load config(s)
   let config;
   try {
-    config = await loadConfig([configSrc]);
+    config = await loadConfig(configSources);
   } catch (err) {
-    container.innerHTML = `
-      <div class="content-column" style="direction:rtl; color: var(--color-no)">
-        <p>שגיאה בטעינת התצורה.</p>
-        <pre style="font-size:12px; margin-top:1rem">${err.message}</pre>
-      </div>
-    `;
+    showError(container, 'שגיאה בטעינת התצורה.', err.message);
     console.error(err);
     return;
   }
 
-  // Start loading pdfmake + fonts in the background — ready before patient finishes.
+  // Resolve items to a sequence
+  let sequence;
+  try {
+    sequence = resolveItems(itemTokens, config);
+  } catch (err) {
+    showError(container, 'שגיאה בבניית מפגש השאלונים.', err.message);
+    console.error(err);
+    return;
+  }
+
+  // Preload PDF in background
   preloadPdf();
 
-  // Seed history stack with 'welcome' before any navigation happens.
   const router = createRouter();
   router.replace('welcome');
 
-  // Find battery title for welcome screen
-  const battery = config.batteries.find(b => b.id === batteryId);
-  const batteryTitle = battery?.title ?? '';
-
-  // Show welcome screen
   container.innerHTML = '';
   const welcome = document.createElement('welcome-screen');
-  welcome.batteryTitle = batteryTitle;
+  welcome.batteryTitle = '';
   container.appendChild(welcome);
 
-  // On begin — start session
   welcome.addEventListener('begin', (e) => {
     const session = { name: e.detail.name, pid };
     welcome.remove();
 
     const controller = createController(container, router);
-    controller.start(config, batteryId, { createOrchestrator, session });
+    controller.start(config, { sequence }, { createOrchestrator, session });
   }, { once: true });
 }
 

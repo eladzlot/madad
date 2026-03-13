@@ -33,15 +33,36 @@ The Composer is a clinician-facing tool, served at `/composer/`. Its purpose is 
 
 ### 4.2 Flow
 1. Clinician opens the Composer.
-2. Clinician selects which questionnaires to include from a predefined list. Available batteries are defined in configuration files; the clinician cannot add or modify them from within the Composer.
-3. Clinician enters a patient ID — an opaque clinic code (e.g. `TRC-2025-000123`). No patient name is entered at this stage.
-4. Clinician copies the generated URL and sends it to the patient (e.g. via SMS or email).
+2. The Composer loads a manifest of available config files and all questionnaires and batteries defined within them.
+3. Clinician selects which questionnaires or batteries to include, in selection order.
+4. Clinician optionally enters a patient ID — an opaque clinic code (e.g. `TRC-2025-000123`). No patient name is entered at this stage.
+5. The Composer generates a URL live as selections are made.
+6. Clinician copies or shares the generated URL and sends it to the patient (e.g. via SMS or email).
 
 ### 4.3 What the URL Contains
-- The selected questionnaires
-- The patient ID
+The generated URL uses the following parameters:
+
+| Parameter | Description |
+|---|---|
+| `configs` | Comma-separated list of config source URLs required to resolve the selected items |
+| `items` | Comma-separated ordered list of questionnaire and/or battery IDs in session order |
+| `pid` | Patient identifier (optional) |
+
+Example:
+```
+https://app.example.com/?configs=/configs/core.json,/configs/trauma.json&items=intake_battery,phq9,pcl5&pid=TRC-2025-000123
+```
+
+The URL contains:
+- The selected questionnaires and/or batteries, in order
+- The config sources needed to resolve them
+- The patient ID (if provided)
 - No patient name or personally identifying information
 - No clinical scoring rules or alert thresholds
+
+### 4.4 Config maintenance
+
+Questionnaires and batteries are defined in configuration files maintained by the clinical and technical leads. All config IDs must be unique across the full set of loaded configs — duplicate IDs are a hard error. Config files are not editable from within the app or the Composer.
 
 ---
 

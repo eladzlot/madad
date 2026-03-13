@@ -382,34 +382,37 @@ This allows configs to be hosted on a different server.
 ### 8.2 Steps
 
 1. For each source, fetch and parse the JSON file.
-2. Validate against `QuestionnaireSet.schema.json` using AJV (imported statically at module load).
-3. Run post-schema semantic checks:
-   - Duplicate session keys within each battery (see SEQUENCE_SPEC §2.4)
-   - Likert items with no resolvable options
-4. Merge all questionnaire arrays, deduplicating by ID (later file wins).
-5. Merge all battery arrays, deduplicating by ID (later file wins).
-6. If `filterIds` is provided, filter questionnaires to that list.
-7. Return `{ questionnaires, batteries, version, resolvedAt }`.
+2. Validate against `QuestionnaireSet.schema.json` using AJV.
+3. Run post-schema semantic checks (duplicate session keys, missing options, cross-entity ID collision within file).
+4. Merge all questionnaire and battery arrays in order. **Duplicate IDs across files throw a `ConfigError` immediately.**
+5. Return `{ questionnaires, batteries, version, resolvedAt }`.
 
 Multiple sources are fetched in parallel.
 
-### 8.3 Errors
+### 8.3 Return shape
 
-All errors are typed so the UI layer can catch and display appropriate Hebrew messages. The loader itself is language-agnostic — it throws descriptive English errors only.
+```js
+{
+  questionnaires: Questionnaire[],
+  batteries:      Battery[],
+  version:        string | null,
+  resolvedAt:     string,
+}
+```
+
+### 8.4 Errors
 
 | Class | Cause |
 |---|---|
 | `ConfigFetchError` | HTTP failure or network error; exposes `url` |
 | `ConfigValidationError` | AJV schema violation; exposes `url` and `validationErrors` array |
-| `ConfigError` | Semantic violation (duplicate session key, missing option set, etc.) |
+| `ConfigError` | Semantic violation: duplicate ID (within or across files), missing option set, cross-entity collision |
 
-The UI catches these error classes and maps them to Hebrew UI strings. This keeps the loader language-agnostic and supports future UI language changes.
+### 8.5 Default config
 
-### 8.4 Default config
+If no `configs` URL parameter is present, the app shell defaults to `prod/standard`. The loader has no knowledge of defaults.
 
-If no `config` URL parameter is present, the app shell defaults to `['standard']`. This allows the app to work out of the box without URL params. The loader itself has no knowledge of defaults — defaulting is the app shell's responsibility.
-
-### 8.5 Injectable fetch
+### 8.6 Injectable fetch
 
 The loader accepts a `fetch` option for testing. In production it uses `globalThis.fetch`.
 
@@ -505,20 +508,24 @@ Example item-level `if`:
 
 The orchestrator manages the session at the battery level. It is responsible for initializing the sequence runner with a battery-level sequence and handing each resolved questionnaire to the engine in turn.
 
-### 10.1 Battery Definition
+### 10.1 Session Source
 
-A battery may be defined in two ways:
+The orchestrator accepts a `source` object as its second argument:
 
-**Named battery in config** — a `batteries` array in the config file, alongside `questionnaires`. Each battery has an ID and a sequence of nodes. The URL `battery` param references the battery ID.
+```js
+// Named battery — looks up battery by ID in config.batteries (Map)
+createOrchestrator(config, { batteryId: 'intake' }, callbacks)
 
-**Implicit from URL** — if the URL contains a `questionnaires` param with no `battery` param, the orchestrator constructs a linear battery at runtime from that list. This preserves backward compatibility.
+// Pre-built sequence — used by the items URL model (see §12)
+createOrchestrator(config, { sequence: [...] }, callbacks)
+```
 
-Both cases produce an identical sequence structure that is handed to the sequence runner.
+Both forms produce an identical sequence structure handed to the sequence runner. The pre-built sequence path is used by the app shell when resolving `items` URL tokens; the `batteryId` path is available for internal use.
 
 ### 10.2 Initialization
 
 At session start the orchestrator:
-1. Resolves the battery (named or implicit)
+1. Resolves the source (named battery lookup or pre-built sequence)
 2. Initializes the sequence runner with the battery sequence
 3. Calls `isSequenceDeterminate()` on the runner to determine progress display mode
 4. Hands the first questionnaire to the engine
@@ -677,14 +684,41 @@ All components must:
 ## 15. Application Shell and Router
 
 ### 15.1 App Shell (`src/app.js`)
-The entry point performs the following in order:
-1. Reads URL parameters: `config`, `battery`, `pid`
-2. Shows a loading indicator
-3. Fetches and validates the config (via `loadConfig`)
-4. On config load complete: calls `preloadPdf()` (fire-and-forget background fetch), initialises the router, and shows the welcome screen
-5. On begin: stores the name, passes config and params to the controller, which initialises the orchestrator
+
+#### URL Parameters
+
+| Parameter | Required | Default | Description |
+|---|---|---|---|
+| `configs` | No | `prod/standard` | Comma-separated config sources (slugs or URLs) |
+| `items` | Yes | — | Comma-separated ordered list of questionnaire or battery IDs |
+| `pid` | No | — | Optional patient identifier |
+
+If `items` is absent or empty, a pre-welcome error screen is shown in Hebrew. If `configs` is absent, the default config is loaded.
+
+#### Startup sequence
+1. Parse URL parameters: `configs`, `items`, `pid`
+2. If `items` is missing or empty: show error screen, halt
+3. Show loading indicator
+4. Fetch and validate all configs in parallel via `loadConfig(configSources)`
+5. Call `resolveItems(itemTokens, config)` to build the session sequence
+   - On `ItemResolutionError`: show error screen, halt
+6. Call `preloadPdf()` (fire-and-forget background fetch)
+7. Initialise router, show welcome screen
+8. On begin: pass `config` and `{ sequence }` to the controller, which initialises the orchestrator
 
 Session state is a plain in-memory object. It is never written to `localStorage` or `sessionStorage`.
+
+#### Item resolution (`src/resolve-items.js`)
+
+`resolveItems(tokens, config)` converts URL tokens into an orchestrator sequence:
+
+- **Battery token** → the battery's full sequence is expanded inline, preserving all control-flow nodes (`if`, `randomize`). Each questionnaire reference within the battery is validated for existence and unambiguity.
+- **Questionnaire token** → wrapped as `{ questionnaireId: token }`.
+- **Conflicted token** (same ID in multiple configs) → throws `ItemResolutionError`.
+- **Both-type token** (ID present as both questionnaire and battery across configs) → throws `ItemResolutionError`.
+- **Not found** → throws `ItemResolutionError`.
+
+Tokens are resolved in URL order, which defines the session order.
 
 ### 15.2 Router (`src/router.js`)
 A minimal History API router using `pushState` / `replaceState`. Target under 60 lines. Screen names (stored as state values, not URL hashes):

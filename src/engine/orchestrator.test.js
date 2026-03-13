@@ -6,19 +6,14 @@ import { createOrchestrator } from './orchestrator.js';
 const likert = (id) => ({ id, type: 'likert', text: `Q${id}` });
 
 const makeQ = (id, items = [likert('q1'), likert('q2')], extras = {}) => ({
-  id,
-  title: id,
-  items,
-  scoring: { method: 'sum' },
-  alerts: [],
-  ...extras,
+  id, title: id, items, scoring: { method: 'sum' }, alerts: [], ...extras,
 });
 
+// config.questionnaires and config.batteries are plain arrays
 const makeConfig = (questionnaires, batteries) => ({ questionnaires, batteries });
 
 const linearBattery = (id, ...qIds) => ({
-  id,
-  title: id,
+  id, title: id,
   sequence: qIds.map(qId => ({ questionnaireId: qId })),
 });
 
@@ -31,24 +26,38 @@ function drainEngine(engine, value = 1) {
   }
 }
 
-// ─── Initialization ───────────────────────────────────────────────────────────
+// ─── Source validation ────────────────────────────────────────────────────────
 
-describe('initialization', () => {
+describe('source validation', () => {
+  it('throws if invalid source object is provided', () => {
+    const config = makeConfig([makeQ('phq9')], [linearBattery('b', 'phq9')]);
+    expect(() => createOrchestrator(config, {}, {})).toThrow('source must be');
+  });
+
+  it('throws if source is null', () => {
+    const config = makeConfig([makeQ('phq9')], []);
+    expect(() => createOrchestrator(config, null, {})).toThrow('source must be');
+  });
+});
+
+// ─── batteryId source ─────────────────────────────────────────────────────────
+
+describe('batteryId source', () => {
   it('throws if battery not found', () => {
     const config = makeConfig([makeQ('phq9')], [linearBattery('standard', 'phq9')]);
-    expect(() => createOrchestrator(config, 'missing')).toThrow('battery "missing" not found');
+    expect(() => createOrchestrator(config, { batteryId: 'missing' })).toThrow('battery "missing" not found');
   });
 
   it('throws if questionnaire not found in config', () => {
     const config = makeConfig([], [linearBattery('b', 'phq9')]);
-    const orc = createOrchestrator(config, 'b');
+    const orc = createOrchestrator(config, { batteryId: 'b' });
     expect(() => orc.start()).toThrow('questionnaire "phq9" not found');
   });
 
   it('start() fires onQuestionnaireStart with engine, sessionKey, and questionnaire', () => {
     const config = makeConfig([makeQ('phq9')], [linearBattery('b', 'phq9')]);
     const onStart = vi.fn();
-    const orc = createOrchestrator(config, 'b', { onQuestionnaireStart: onStart });
+    const orc = createOrchestrator(config, { batteryId: 'b' }, { onQuestionnaireStart: onStart });
     orc.start();
     expect(onStart).toHaveBeenCalledOnce();
     const [engine, key, questionnaire] = onStart.mock.calls[0];
@@ -58,22 +67,82 @@ describe('initialization', () => {
   });
 });
 
+// ─── sequence source ──────────────────────────────────────────────────────────
+
+describe('sequence source (items URL model)', () => {
+  it('accepts a pre-built sequence directly', () => {
+    const config = makeConfig([makeQ('phq9')], []);
+    const sequence = [{ questionnaireId: 'phq9' }];
+    const onStart = vi.fn();
+    const orc = createOrchestrator(config, { sequence }, { onQuestionnaireStart: onStart });
+    orc.start();
+    expect(onStart).toHaveBeenCalledOnce();
+    expect(onStart.mock.calls[0][1]).toBe('phq9');
+  });
+
+  it('runs multiple questionnaires from sequence in order', () => {
+    const config = makeConfig([makeQ('phq9'), makeQ('gad7')], []);
+    const sequence = [{ questionnaireId: 'phq9' }, { questionnaireId: 'gad7' }];
+    const starts = [];
+    const orc = createOrchestrator(config, { sequence }, {
+      onQuestionnaireStart: (_, key) => starts.push(key),
+    });
+    orc.start();
+    drainEngine(orc.currentEngine());
+    orc.engineComplete();
+    expect(starts).toEqual(['phq9', 'gad7']);
+  });
+
+  it('completes session after sequence exhausted', () => {
+    const config = makeConfig([makeQ('phq9')], []);
+    const sequence = [{ questionnaireId: 'phq9' }];
+    const onComplete = vi.fn();
+    const orc = createOrchestrator(config, { sequence }, { onSessionComplete: onComplete });
+    orc.start();
+    drainEngine(orc.currentEngine());
+    orc.engineComplete();
+    expect(onComplete).toHaveBeenCalledOnce();
+    expect(orc.isComplete()).toBe(true);
+  });
+
+  it('throws if questionnaire referenced in sequence is not in config', () => {
+    const config = makeConfig([], []);
+    const sequence = [{ questionnaireId: 'missing' }];
+    const orc = createOrchestrator(config, { sequence });
+    expect(() => orc.start()).toThrow('questionnaire "missing" not found');
+  });
+
+  it('works with an empty sequence — immediately completes', () => {
+    const config = makeConfig([], []);
+    const onComplete = vi.fn();
+    const orc = createOrchestrator(config, { sequence: [] }, { onSessionComplete: onComplete });
+    orc.start();
+    expect(onComplete).toHaveBeenCalledOnce();
+  });
+
+  it('supports instanceId in pre-built sequence', () => {
+    const config = makeConfig([makeQ('phq9')], []);
+    const sequence = [{ questionnaireId: 'phq9', instanceId: 'phq9_t1' }];
+    const onStart = vi.fn();
+    const orc = createOrchestrator(config, { sequence }, { onQuestionnaireStart: onStart });
+    orc.start();
+    expect(onStart.mock.calls[0][1]).toBe('phq9_t1');
+  });
+});
+
 // ─── Linear battery flow ──────────────────────────────────────────────────────
 
-describe('linear battery', () => {
+describe('linear battery flow', () => {
   it('advances to second questionnaire after first completes', () => {
     const config = makeConfig(
       [makeQ('phq9'), makeQ('gad7')],
       [linearBattery('b', 'phq9', 'gad7')]
     );
     const starts = [];
-    const orc = createOrchestrator(config, 'b', {
-      onQuestionnaireStart: (engine, key) => starts.push(key),
+    const orc = createOrchestrator(config, { batteryId: 'b' }, {
+      onQuestionnaireStart: (_, key) => starts.push(key),
     });
     orc.start();
-    expect(starts).toEqual(['phq9']);
-
-    // Complete phq9
     drainEngine(orc.currentEngine());
     orc.engineComplete();
     expect(starts).toEqual(['phq9', 'gad7']);
@@ -82,7 +151,7 @@ describe('linear battery', () => {
   it('signals session complete after last questionnaire', () => {
     const config = makeConfig([makeQ('phq9')], [linearBattery('b', 'phq9')]);
     const onComplete = vi.fn();
-    const orc = createOrchestrator(config, 'b', { onSessionComplete: onComplete });
+    const orc = createOrchestrator(config, { batteryId: 'b' }, { onSessionComplete: onComplete });
     orc.start();
     drainEngine(orc.currentEngine());
     orc.engineComplete();
@@ -92,21 +161,19 @@ describe('linear battery', () => {
 
   it('persists answers into session state on completion', () => {
     const config = makeConfig([makeQ('phq9')], [linearBattery('b', 'phq9')]);
-    const orc = createOrchestrator(config, 'b');
+    const orc = createOrchestrator(config, { batteryId: 'b' });
     orc.start();
     const engine = orc.currentEngine();
+    engine.advance(); engine.recordAnswer('q1', 3);
+    engine.advance(); engine.recordAnswer('q2', 2);
     engine.advance();
-    engine.recordAnswer('q1', 3);
-    engine.advance();
-    engine.recordAnswer('q2', 2);
-    engine.advance(); // complete
     orc.engineComplete();
     expect(orc.sessionState().answers.phq9).toEqual({ q1: 3, q2: 2 });
   });
 
   it('persists scores into session state on completion', () => {
     const config = makeConfig([makeQ('phq9')], [linearBattery('b', 'phq9')]);
-    const orc = createOrchestrator(config, 'b');
+    const orc = createOrchestrator(config, { batteryId: 'b' });
     orc.start();
     const engine = orc.currentEngine();
     engine.advance(); engine.recordAnswer('q1', 3);
@@ -121,16 +188,12 @@ describe('linear battery', () => {
 
 describe('conditional battery (if node)', () => {
   const conditionalBattery = {
-    id: 'b',
-    title: 'b',
+    id: 'b', title: 'b',
     sequence: [
       { questionnaireId: 'phq9' },
-      {
-        type: 'if',
-        condition: 'score.phq9 >= 10',
+      { type: 'if', condition: 'score.phq9 >= 10',
         then: [{ questionnaireId: 'pcl5' }],
-        else: [],
-      },
+        else: [] },
     ],
   };
 
@@ -140,13 +203,13 @@ describe('conditional battery (if node)', () => {
       [conditionalBattery]
     );
     const starts = [];
-    const orc = createOrchestrator(config, 'b', {
+    const orc = createOrchestrator(config, { batteryId: 'b' }, {
       onQuestionnaireStart: (_, key) => starts.push(key),
     });
     orc.start();
     orc.currentEngine().advance();
-    orc.currentEngine().recordAnswer('q1', 12); // score = 12
-    orc.currentEngine().advance(); // complete
+    orc.currentEngine().recordAnswer('q1', 12);
+    orc.currentEngine().advance();
     orc.engineComplete();
     expect(starts).toEqual(['phq9', 'pcl5']);
   });
@@ -157,13 +220,13 @@ describe('conditional battery (if node)', () => {
       [conditionalBattery]
     );
     const onComplete = vi.fn();
-    const orc = createOrchestrator(config, 'b', { onSessionComplete: onComplete });
+    const orc = createOrchestrator(config, { batteryId: 'b' }, { onSessionComplete: onComplete });
     orc.start();
     orc.currentEngine().advance();
-    orc.currentEngine().recordAnswer('q1', 5); // score = 5
-    orc.currentEngine().advance(); // complete
+    orc.currentEngine().recordAnswer('q1', 5);
+    orc.currentEngine().advance();
     orc.engineComplete();
-    expect(onComplete).toHaveBeenCalledOnce(); // skipped pcl5, went straight to complete
+    expect(onComplete).toHaveBeenCalledOnce();
   });
 });
 
@@ -177,7 +240,7 @@ describe('instanceId', () => {
     };
     const config = makeConfig([makeQ('phq9')], [battery]);
     const onStart = vi.fn();
-    const orc = createOrchestrator(config, 'b', { onQuestionnaireStart: onStart });
+    const orc = createOrchestrator(config, { batteryId: 'b' }, { onQuestionnaireStart: onStart });
     orc.start();
     expect(onStart.mock.calls[0][1]).toBe('phq9_pre');
   });
@@ -189,10 +252,10 @@ describe('engineCrossBack()', () => {
   it('does nothing when at first questionnaire', () => {
     const config = makeConfig([makeQ('phq9')], [linearBattery('b', 'phq9')]);
     const onStart = vi.fn();
-    const orc = createOrchestrator(config, 'b', { onQuestionnaireStart: onStart });
+    const orc = createOrchestrator(config, { batteryId: 'b' }, { onQuestionnaireStart: onStart });
     orc.start();
-    orc.engineCrossBack(); // no-op
-    expect(onStart).toHaveBeenCalledOnce(); // not called again
+    orc.engineCrossBack();
+    expect(onStart).toHaveBeenCalledOnce();
   });
 
   it('re-initializes previous questionnaire engine', () => {
@@ -201,13 +264,13 @@ describe('engineCrossBack()', () => {
       [linearBattery('b', 'phq9', 'gad7')]
     );
     const starts = [];
-    const orc = createOrchestrator(config, 'b', {
+    const orc = createOrchestrator(config, { batteryId: 'b' }, {
       onQuestionnaireStart: (_, key) => starts.push(key),
     });
     orc.start();
     drainEngine(orc.currentEngine());
-    orc.engineComplete(); // → gad7
-    orc.engineCrossBack(); // → back to phq9
+    orc.engineComplete();
+    orc.engineCrossBack();
     expect(starts).toEqual(['phq9', 'gad7', 'phq9']);
   });
 
@@ -216,7 +279,7 @@ describe('engineCrossBack()', () => {
       [makeQ('phq9'), makeQ('gad7')],
       [linearBattery('b', 'phq9', 'gad7')]
     );
-    const orc = createOrchestrator(config, 'b');
+    const orc = createOrchestrator(config, { batteryId: 'b' });
     orc.start();
     drainEngine(orc.currentEngine());
     orc.engineComplete();
@@ -229,7 +292,7 @@ describe('engineCrossBack()', () => {
       [makeQ('phq9'), makeQ('gad7')],
       [linearBattery('b', 'phq9', 'gad7')]
     );
-    const orc = createOrchestrator(config, 'b');
+    const orc = createOrchestrator(config, { batteryId: 'b' });
     orc.start();
     const engine = orc.currentEngine();
     engine.advance(); engine.recordAnswer('q1', 3);
@@ -246,7 +309,7 @@ describe('engineCrossBack()', () => {
 describe('progress()', () => {
   it('current starts at 1 after first questionnaire starts', () => {
     const config = makeConfig([makeQ('phq9')], [linearBattery('b', 'phq9')]);
-    const orc = createOrchestrator(config, 'b');
+    const orc = createOrchestrator(config, { batteryId: 'b' });
     orc.start();
     expect(orc.progress().current).toBe(1);
   });
@@ -256,7 +319,7 @@ describe('progress()', () => {
       [makeQ('phq9'), makeQ('gad7'), makeQ('pcl5')],
       [linearBattery('b', 'phq9', 'gad7', 'pcl5')]
     );
-    const orc = createOrchestrator(config, 'b');
+    const orc = createOrchestrator(config, { batteryId: 'b' });
     orc.start();
     expect(orc.progress().total).toBe(3);
   });
@@ -271,8 +334,17 @@ describe('progress()', () => {
       ],
     };
     const config = makeConfig([makeQ('phq9'), makeQ('pcl5')], [battery]);
-    const orc = createOrchestrator(config, 'b');
+    const orc = createOrchestrator(config, { batteryId: 'b' });
     orc.start();
     expect(orc.progress().total).toBeNull();
+  });
+
+  it('works with sequence source — total reflects sequence length', () => {
+    const config = makeConfig([makeQ('phq9'), makeQ('gad7')], []);
+    const sequence = [{ questionnaireId: 'phq9' }, { questionnaireId: 'gad7' }];
+    const orc = createOrchestrator(config, { sequence });
+    orc.start();
+    expect(orc.progress().total).toBe(2);
+    expect(orc.progress().current).toBe(1);
   });
 });

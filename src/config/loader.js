@@ -10,20 +10,19 @@
 //   - A full URL (starts with https:// or http:// or /) → used as-is
 //
 // options:
-//   filterIds: string[]   — keep only questionnaires with these IDs (from URL ?questionnaires=)
-//   fetch: fn             — injectable fetch (default: globalThis.fetch)
+//   fetch: fn  — injectable fetch (default: globalThis.fetch)
 //
 // ResolvedConfig: {
 //   questionnaires: Questionnaire[],
 //   batteries:      Battery[],
-//   version:        string,
-//   resolvedAt:     string,   // ISO timestamp
+//   version:        string | null,
+//   resolvedAt:     string,
 // }
 //
 // Errors thrown:
 //   ConfigFetchError      — HTTP failure or network error
 //   ConfigValidationError — AJV schema violation
-//   ConfigError           — semantic violation (duplicate session key, missing option set, etc.)
+//   ConfigError           — semantic violation (duplicate ID, missing option set, etc.)
 
 import Ajv from 'ajv/dist/2020.js';
 import schema from './QuestionnaireSet.schema.json' with { type: 'json' };
@@ -59,11 +58,7 @@ const validate = ajv.compile(schema);
 // ─── URL resolution ───────────────────────────────────────────────────────────
 
 function resolveSource(source) {
-  // Full URL or absolute path — use as-is
-  if (/^https?:\/\//.test(source) || source.startsWith('/')) {
-    return source;
-  }
-  // Slug — resolve relative to /configs/
+  if (/^https?:\/\//.test(source) || source.startsWith('/')) return source;
   return `/configs/${source}.json`;
 }
 
@@ -75,19 +70,14 @@ async function fetchAndValidate(source, fetchFn) {
   let data;
   try {
     const res = await fetchFn(url);
-    if (!res.ok) {
-      throw new ConfigFetchError(url, `HTTP ${res.status} ${res.statusText}`);
-    }
+    if (!res.ok) throw new ConfigFetchError(url, `HTTP ${res.status} ${res.statusText}`);
     data = await res.json();
   } catch (err) {
     if (err instanceof ConfigFetchError) throw err;
     throw new ConfigFetchError(url, err);
   }
 
-  const valid = validate(data);
-  if (!valid) {
-    throw new ConfigValidationError(url, validate.errors);
-  }
+  if (!validate(data)) throw new ConfigValidationError(url, validate.errors);
 
   validateConfigData(data, url);
 
@@ -97,38 +87,41 @@ async function fetchAndValidate(source, fetchFn) {
 // ─── Merge ────────────────────────────────────────────────────────────────────
 
 function mergeConfigs(results) {
-  const questionnairesById = new Map();
-  const batteriesById = new Map();
+  const questionnaires = [];
+  const batteries      = [];
+  const seenQIds = new Set();
+  const seenBIds = new Set();
 
-  for (const { data } of results) {
+  for (const { url, data } of results) {
     for (const q of data.questionnaires ?? []) {
-      // Later files win on duplicate questionnaire IDs
-      questionnairesById.set(q.id, q);
+      if (seenQIds.has(q.id)) {
+        throw new ConfigError(
+          `Duplicate questionnaire ID "${q.id}" found when merging configs (in "${url}"). ` +
+          `Questionnaire IDs must be unique across all loaded configs.`
+        );
+      }
+      seenQIds.add(q.id);
+      questionnaires.push(q);
     }
     for (const b of data.batteries ?? []) {
-      batteriesById.set(b.id, b);
+      if (seenBIds.has(b.id)) {
+        throw new ConfigError(
+          `Duplicate battery ID "${b.id}" found when merging configs (in "${url}"). ` +
+          `Battery IDs must be unique across all loaded configs.`
+        );
+      }
+      seenBIds.add(b.id);
+      batteries.push(b);
     }
   }
 
-  return {
-    questionnaires: [...questionnairesById.values()],
-    batteries:      [...batteriesById.values()],
-  };
+  return { questionnaires, batteries };
 }
 
 // ─── Public API ───────────────────────────────────────────────────────────────
 
-/**
- * Load, validate, and merge one or more config sources.
- *
- * @param {string[]} sources  — slugs or full URLs
- * @param {object}   options
- * @param {string[]} [options.filterIds]  — keep only these questionnaire IDs
- * @param {Function} [options.fetch]      — injectable fetch (default: globalThis.fetch)
- * @returns {Promise<ResolvedConfig>}
- */
 export async function loadConfig(sources, options = {}) {
-  const { filterIds, fetch: fetchFn = globalThis.fetch } = options;
+  const { fetch: fetchFn = globalThis.fetch } = options;
 
   if (!sources || sources.length === 0) {
     throw new ConfigError('loadConfig requires at least one source.');
@@ -140,12 +133,8 @@ export async function loadConfig(sources, options = {}) {
 
   const { questionnaires, batteries } = mergeConfigs(results);
 
-  const filtered = filterIds && filterIds.length > 0
-    ? questionnaires.filter(q => filterIds.includes(q.id))
-    : questionnaires;
-
   return {
-    questionnaires: filtered,
+    questionnaires,
     batteries,
     version:    results[0].data.version ?? null,
     resolvedAt: new Date().toISOString(),

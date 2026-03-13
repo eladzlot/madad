@@ -91,6 +91,9 @@ copy "app.js"                          "src/app.js"
 copy "controller.js"                   "src/controller.js"
 copy "controller.test.js"              "src/controller.test.js"
 copy "router.js"                       "src/router.js"
+copy "resolve-items.js"                "src/resolve-items.js"
+copy "resolve-items.test.js"           "src/resolve-items.test.js"
+
 copy "main.css"                        "src/styles/main.css"
 
 # ── Composer ───────────────────────────────────────────────────────────────────

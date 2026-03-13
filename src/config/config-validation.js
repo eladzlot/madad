@@ -188,6 +188,22 @@ function checkScoringRefs(data, errors) {
   }
 }
 
+// ── Cross-entity uniqueness ───────────────────────────────────────────────────
+// Battery IDs and questionnaire IDs share a single namespace in the runtime's
+// items resolution. Collisions within the same file are a hard error.
+
+function checkCrossEntityIdCollisions(data, errors) {
+  const questionnaireIds = new Set((data.questionnaires ?? []).map(q => q.id));
+  for (const battery of data.batteries ?? []) {
+    if (questionnaireIds.has(battery.id)) {
+      errors.push(
+        `ID "${battery.id}" is used by both a questionnaire and a battery. ` +
+        `Questionnaire and battery IDs must be unique across both types.`
+      );
+    }
+  }
+}
+
 // ── Public API ────────────────────────────────────────────────────────────────
 
 /**
@@ -203,6 +219,7 @@ export function collectConfigErrors(data) {
   checkDuplicateItemIds(data, errors);
   checkOptionSets(data, errors);
   checkScoringRefs(data, errors);
+  checkCrossEntityIdCollisions(data, errors);
   return errors;
 }
 

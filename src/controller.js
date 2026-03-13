@@ -5,7 +5,8 @@ import { generateReport } from './pdf/report.js';
 //
 // Usage:
 //   const controller = createController(container, router);
-//   controller.start(config, batteryId, { createOrchestrator });
+//   controller.start(config, source, { createOrchestrator });
+//   source: { batteryId: string } | { sequence: BatteryNode[] }
 //
 // Components must be registered before calling start() — import them in app.js.
 //
@@ -288,13 +289,14 @@ export function createController(container, router) {
 
   // ── Public API ───────────────────────────────────────────────────────────
 
-  function start(config, batteryId, { createOrchestrator, session = {} } = {}) {
+  // source: { batteryId: string } | { sequence: BatteryNode[] }
+  function start(config, source, { createOrchestrator, session = {} } = {}) {
     _config  = config;
     _session = session;
     router.onBack(_onPopBack);
     router.onForward(_onPopForward);
     mountShell();
-    _orchestrator = createOrchestrator(config, batteryId, {
+    _orchestrator = createOrchestrator(config, source, {
       onQuestionnaireStart,
       onSessionComplete,
       onError,

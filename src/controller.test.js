@@ -86,7 +86,7 @@ function makeSetup(overrides = {}) {
   const engine = overrides.engine ?? makeEngine(questionnaire, overrides.existingAnswers);
   let _callbacks = {};
 
-  const createOrchestrator = vi.fn((_config, _batteryId, callbacks) => {
+  const createOrchestrator = vi.fn((_config, _source, callbacks) => {
     _callbacks = callbacks;
     return {
       start: vi.fn(() => _callbacks.onQuestionnaireStart(engine, questionnaire.id, questionnaire)),
@@ -105,8 +105,12 @@ function makeSetup(overrides = {}) {
   document.body.appendChild(container);
   const router = overrides.router ?? makeRouter();
   const controller = createController(container, router);
-  const config = { questionnaires: [questionnaire], batteries: [{ id: 'b', sequence: [] }] };
-  controller.start(config, 'b', { createOrchestrator });
+  const config = {
+    questionnaires: [questionnaire],
+    batteries:      [],
+  };
+  const source = { sequence: [{ questionnaireId: questionnaire.id }] };
+  controller.start(config, source, { createOrchestrator });
   const orchestrator = createOrchestrator.mock.results[0].value;
 
   return { container, controller, engine, orchestrator, questionnaire, router };
