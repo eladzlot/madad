@@ -29,6 +29,7 @@ copy "CONFIG_SCHEMA_SPEC.md"           "docs/CONFIG_SCHEMA_SPEC.md"
 copy "DSL_SPEC.md"                     "docs/DSL_SPEC.md"
 copy "SEQUENCE_SPEC.md"                "docs/SEQUENCE_SPEC.md"
 copy "RENDER_SPEC.md"                  "docs/RENDER_SPEC.md"
+copy "COMPOSER_SPEC.md"                "docs/COMPOSER_SPEC.md"
 
 # ── Config ─────────────────────────────────────────────────────────────────────
 copy "QuestionnaireSet.schema.json"    "src/config/QuestionnaireSet.schema.json"
