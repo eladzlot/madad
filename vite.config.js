@@ -9,8 +9,7 @@ export default defineConfig({
       },
       output: {
         manualChunks: {
-          'pdf-vendor': ['pdfmake'],
-          'ajv-vendor': ['ajv'],
+          'pdf-vendor': ['pdfmake']
         },
       },
     },

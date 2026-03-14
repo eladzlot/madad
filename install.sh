@@ -29,6 +29,8 @@ copy "DSL_SPEC.md"                     "docs/DSL_SPEC.md"
 copy "SEQUENCE_SPEC.md"                "docs/SEQUENCE_SPEC.md"
 copy "RENDER_SPEC.md"                  "docs/RENDER_SPEC.md"
 copy "COMPOSER_SPEC.md"                "docs/COMPOSER_SPEC.md"
+copy "HANDOVER.md"                     "docs/HANDOVER.md"
+copy "INSTRUMENTS.md"                  "docs/INSTRUMENTS.md"
 
 # ── Config ─────────────────────────────────────────────────────────────────────
 copy "QuestionnaireSet.schema.json"    "src/config/QuestionnaireSet.schema.json"
@@ -98,6 +100,14 @@ copy "main.css"                        "src/styles/main.css"
 
 # ── Composer ───────────────────────────────────────────────────────────────────
 copy "composer.js"                "composer/src/composer.js"
+copy "composer.test.js"           "composer/src/composer.test.js"
+copy "composer-handlers.js"       "composer/src/composer-handlers.js"
+copy "composer-loader.js"         "composer/src/composer-loader.js"
+copy "composer-loader.test.js"    "composer/src/composer-loader.test.js"
+copy "composer-render.js"         "composer/src/composer-render.js"
+copy "composer-state.js"          "composer/src/composer-state.js"
+copy "composer-state.test.js"     "composer/src/composer-state.test.js"
+
 
 # ── Test setup    ──────────────────────────────────────────────────────────────
 copy "vitest.config.js"                "vitest.config.js"
@@ -121,6 +131,9 @@ copy "check-size.mjs"                  "scripts/check-size.mjs"
 # ── Config data ────────────────────────────────────────────────────────────────
 copy "standard.json"                   "public/configs/prod/standard.json"
 copy "QuestionnaireSet.schema.test.js" "src/config/QuestionnaireSet.schema.test.js"
+
+copy "ci.yml"                          ".github/workflows/ci.yml"
+
 
 echo ""
 echo "Done."

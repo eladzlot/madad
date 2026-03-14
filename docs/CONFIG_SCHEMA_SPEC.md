@@ -58,7 +58,9 @@ A config file is a single JSON object with the following fields:
 | Field | Type | Required | Description |
 |---|---|---|---|
 | `id` | string (ID) | yes | Unique within file and across all loaded files |
-| `title` | string | yes | Display title shown on separator screen |
+| `title` | string | yes | Display title shown on separator screen and in the Composer |
+| `description` | string | no | Short description of the instrument shown in the Composer alongside the title. Plain text, any language. |
+| `keywords` | array of strings | no | Free-form terms used for search and filtering in the Composer (e.g. `["depression", "screening", "PHQ"]`). Any language. |
 | `optionSets` | object | no | Map of Likert option set definitions scoped to this questionnaire |
 | `defaultOptionSetId` | string (ID) | no | Used by any Likert item that declares neither `options` nor `optionSetId`. If a Likert item has no options and no default is set, the config loader throws. |
 | `items` | array | yes | Flat array of item and control-flow nodes. Min 1. |
@@ -179,6 +181,8 @@ Each alert:
 |---|---|---|---|
 | `id` | string (ID) | yes | |
 | `title` | string | yes | Display title shown in Composer |
+| `description` | string | no | Short description of the battery shown in the Composer. Plain text, any language. |
+| `keywords` | array of strings | no | Free-form terms used for search and filtering in the Composer. Any language. |
 | `sequence` | array | yes | Array of sequence nodes. Min 1. |
 
 ### 9.1 Battery Sequence Nodes
@@ -263,6 +267,8 @@ DSL expressions (`condition`, `customFormula`) are validated lazily — they are
     {
       "id": "phq9",
       "title": "PHQ-9",
+      "description": "9-item depression severity scale. Recommended for routine screening and monitoring.",
+      "keywords": ["depression", "mood", "screening", "PHQ"],
       "defaultOptionSetId": "frequency_4",
       "optionSets": {
         "frequency_4": [
@@ -298,6 +304,8 @@ DSL expressions (`condition`, `customFormula`) are validated lazily — they are
     {
       "id": "standard_intake",
       "title": "הערכה ראשונית",
+      "description": "Standard intake battery. Screens for depression; adds PTSD screening if PHQ-9 score is elevated.",
+      "keywords": ["intake", "screening", "depression", "PTSD"],
       "sequence": [
         { "questionnaireId": "phq9" },
         {

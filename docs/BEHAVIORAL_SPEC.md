@@ -134,7 +134,7 @@ The PDF is generated entirely in the patient's browser at the moment of request.
 ### 6.1 Contents
 The PDF contains the following sections in order:
 
-1. **Patient Information** — patient name (if provided), patient ID, date and time of completion, list of questionnaires administered, configuration ID and version.
+1. **Patient Information** — patient name (if provided), patient ID, date and time of completion.
 2. **Clinical Alerts** — any alert conditions triggered during the session. See section 7.
 3. **Questionnaire Results** — for each instrument: total score and subscale scores where applicable.
 4. **Response Table** — every item answered, the response label given, and the numeric score assigned to that response.
@@ -181,12 +181,22 @@ Alert thresholds are fixed per instrument in the configuration. They cannot be a
 
 Questionnaires and batteries are defined in configuration files maintained by the clinical and technical leads. They are not editable from within the app or the Composer.
 
-The following instruments are currently configured:
-- PHQ-9 (Patient Health Questionnaire)
-- GAD-7 (Generalised Anxiety Disorder scale)
-- PCL-5 (PTSD Checklist for DSM-5)
+### 9.1 Config strategy
 
-Additional instruments using Likert or Binary item types may be added by editing configuration files. Support for other item types (e.g. free text, numeric input) is planned for a future phase.
+All standard instruments are defined in a single canonical config file (`standard.json`). Specialised or complex instruments that require their own file (e.g. structured diagnostic interviews, worksheet-style content) are defined in separate config files loaded alongside `standard.json` via the multi-config URL mechanism.
+
+### 9.2 Currently configured instruments
+
+| Instrument | Full name | Config file | Status |
+|---|---|---|---|
+| PHQ-9 | Patient Health Questionnaire — 9 items | `standard.json` | Live |
+| PCL-5 | PTSD Checklist for DSM-5 | in migration | Pending move to `standard.json` |
+| PDSS-SR | Panic Disorder Severity Scale — Self Report | in migration | Pending move to `standard.json` |
+| OCI-R | Obsessive Compulsive Inventory — Revised | in migration | Pending move to `standard.json` |
+| ASI-3 | Anxiety Sensitivity Index — 3 | in migration | Pending move to `standard.json` |
+| GAD-7 | Generalised Anxiety Disorder scale — 7 items | — | To be added |
+
+Additional instruments using Likert or Binary item types may be added by editing `standard.json`. See `docs/INSTRUMENTS.md` for the step-by-step process. Support for other item types (e.g. free text, numeric input) is planned for a future phase.
 
 ---
 
@@ -200,8 +210,9 @@ The following are explicitly excluded from the current version:
 - Session recovery after browser close
 - Clinician-adjustable thresholds per patient or session
 - Narrative clinical summaries in the PDF
-- Severity tier rendering in the PDF
+- Severity tier rendering in the PDF (data model is ready; rendering is not implemented)
 - QR code generation in the Composer
 - Patient name in the URL
 - Back navigation from the results screen
 - Languages other than Hebrew
+- Randomised item ordering (node type is defined in schema; execution throws `NotImplementedError`)

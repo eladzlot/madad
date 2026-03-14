@@ -366,7 +366,42 @@ Severity is not rendered in the current version but the data model should accomm
 
 ---
 
-## 8. Config Loading
+## 8. Config Strategy
+
+### 8.1 Single canonical instrument library
+
+All standard questionnaire instruments are defined in a single file: `public/configs/prod/standard.json`. This is the authoritative source for all clinical content used in routine sessions. The Composer's manifest (`public/composer/configs.json`) points to this file.
+
+Adding a new instrument means adding a new questionnaire definition to `standard.json`. See `docs/INSTRUMENTS.md` for the step-by-step process.
+
+### 8.2 Specialised config files
+
+Some future instruments will require their own config files rather than being added to `standard.json`. The criteria for a separate file:
+
+- **Structured diagnostic interviews** (e.g. DIAMOND) — complex branching logic, conditional item sequences, or administrative overhead that would make `standard.json` difficult to maintain
+- **Worksheet-style content** (e.g. CPT worksheets) — not scored assessments; different lifecycle and authoring process
+- **Research instruments** — instruments used only in specific study contexts, not general clinical practice
+
+Separate config files are loaded alongside `standard.json` via the `configs` URL parameter. All IDs must remain globally unique across all loaded files — the loader enforces this at runtime.
+
+### 8.3 What does not belong in a config file
+
+- Scoring logic or alert thresholds that vary per patient or per session — these must be fixed in the config
+- Any data that changes at runtime — configs are loaded once at session start and are immutable for the duration of the session
+- Authentication, credentials, or environment-specific URLs
+
+### 8.4 Config namespaces
+
+| Path | Purpose |
+|---|---|
+| `public/configs/prod/` | Production instruments — loaded by live sessions |
+| `public/configs/test/` | Test fixtures — used in automated tests and staging only |
+
+Never put test fixtures in `prod/`. The `validate:configs` script runs over all files in `public/configs/` — test fixtures must still be schema-valid.
+
+---
+
+## 9. Config Loading
 
 The config loader is responsible for fetching, validating, and merging one or more QuestionnaireSet config files.
 
@@ -418,7 +453,7 @@ The loader accepts a `fetch` option for testing. In production it uses `globalTh
 
 ---
 
-## 9. Sequence Runner
+## 10. Sequence Runner
 
 The sequence runner is a shared, context-agnostic module used by both the orchestrator and the engine. It contains all control-flow resolution logic. Neither the orchestrator nor the engine implement branching themselves. See SEQUENCE_SPEC.md for full design rationale.
 
@@ -504,7 +539,7 @@ Example item-level `if`:
 
 ---
 
-## 10. Orchestrator — Battery Sequencing
+## 11. Orchestrator — Battery Sequencing
 
 The orchestrator manages the session at the battery level. It is responsible for initializing the sequence runner with a battery-level sequence and handing each resolved questionnaire to the engine in turn.
 
@@ -548,7 +583,7 @@ The orchestrator exposes to the UI:
 
 ---
 
-## 11. Engine — Navigation Within a Questionnaire
+## 12. Engine — Navigation Within a Questionnaire
 
 The engine manages navigation within a single questionnaire. It initializes its own sequence runner instance with the questionnaire's item list and delegates all sequence walking to it.
 
@@ -571,7 +606,7 @@ The engine exposes to the UI:
 
 ---
 
-## 12. DSL Interpreter
+## 13. DSL Interpreter
 
 The DSL interpreter is used in two contexts: evaluating scoring formulas and evaluating conditions in `if` nodes and alert specifications. It is the single expression language used throughout the system. It never uses `eval`.
 
@@ -630,7 +665,7 @@ The interpreter must throw a descriptive error for any unrecognised token, malfo
 
 ---
 
-## 13. Alert Evaluation
+## 14. Alert Evaluation
 
 Alerts are evaluated after scoring is complete, against the full answers map and computed scores for the session.
 
@@ -664,7 +699,7 @@ Complex example:
 
 ---
 
-## 14. Rendering
+## 15. Rendering
 
 Each item type has a dedicated Lit web component. Components are passive — they receive resolved item data as properties, display it, and fire events. They contain no navigation logic.
 
@@ -681,7 +716,7 @@ All components must:
 
 ---
 
-## 15. Application Shell and Router
+## 16. Application Shell and Router
 
 ### 15.1 App Shell (`src/app.js`)
 
@@ -731,7 +766,7 @@ Direction is determined by comparing a monotonic `pos` counter embedded in every
 
 ---
 
-## 16. Completion Screen
+## 17. Completion Screen
 
 Shown when the engine reports the last item has been answered. Displays:
 - A completion message
@@ -742,7 +777,7 @@ Once the patient taps "view results", the router navigates to `#/results`. This 
 
 ---
 
-## 17. Results Screen
+## 18. Results Screen
 
 Displayed after session lock. Shows summary scores only — one total per questionnaire. Does not show interpretation labels, alerts, subscales, or individual responses.
 
@@ -755,7 +790,7 @@ The PDF is generated at the moment the patient taps the button; it is not genera
 
 ---
 
-## 18. PDF Generation
+## 19. PDF Generation
 
 pdfmake is imported dynamically via `preloadPdf()` at session start. By the time the patient reaches the results screen, the chunk is already cached. The Noto Sans Hebrew font (Regular + Bold) is embedded and loaded as separate hashed assets.
 
@@ -796,12 +831,11 @@ RTL rendering: do NOT use `rtl: true` on text nodes — causes double-reversal. 
 ### 18.4 Not yet implemented
 
 - Embedded `data.json` machine-readable attachment via pdfmake EmbeddedFiles (planned v2)
-- Patient information header: questionnaire list and config ID (planned)
 - `APP_NAME` / `APP_URL` from config (currently hardcoded constants)
 
 ---
 
-## 19. URL Composer
+## 20. URL Composer
 
 The Composer is a self-contained app at `/composer/`. It shares the config loader with the main app.
 
@@ -820,7 +854,7 @@ The Composer uses no persistent storage of any kind.
 
 ---
 
-## 20. Bundle Size Constraints
+## 21. Bundle Size Constraints
 
 The entry bundle includes the app shell, router, orchestrator, sequence runner, engine, and all renderers. Given this scope, the budget is set at 30 kB gzipped. pdfmake and AJV must remain lazy-loaded under all circumstances — this is a hard constraint regardless of entry size.
 
@@ -834,7 +868,7 @@ pdfmake and AJV must be pinned to separate named chunks in the Vite config to pr
 
 ---
 
-## 21. Security
+## 22. Security
 
 - CSP: `default-src 'self'`; `script-src 'self'`; `font-src 'self' data:`; `img-src 'self' data:`; `connect-src 'self'`
 - All URL parameter values (name, pid) must be sanitized on read: NFKC normalization, length cap, strip markup.
@@ -843,7 +877,7 @@ pdfmake and AJV must be pinned to separate named chunks in the Vite config to pr
 
 ---
 
-## 22. Testing Strategy
+## 23. Testing Strategy
 
 ### Unit tests (Vitest, Node environment, no DOM)
 
@@ -874,7 +908,7 @@ Located in `tests/e2e/`. Cover full flows that span multiple modules and require
 
 ---
 
-## 23. Deployment
+## 24. Deployment
 
 - Static hosting: GitHub Pages (primary), compatible with Netlify or Cloudflare Pages
 - HTTPS required

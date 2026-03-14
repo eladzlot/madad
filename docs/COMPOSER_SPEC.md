@@ -144,9 +144,21 @@ Recommended characters:
 
 Questionnaires and batteries appear in a **flat checkbox list**, grouped by type.
 
-Each questionnaire entry shows the questionnaire name and description (if available).
+Each questionnaire entry shows:
+- The questionnaire name (title)
+- The description, if defined in the config
+- Keyword tags, if defined in the config
 
-Each battery entry shows the battery name and a note that it is a preset.
+Each battery entry shows the battery name, description (if any), and a note that it is a preset.
+
+### Search and filtering
+
+A search input filters the visible list in real time. The search matches against:
+- Questionnaire or battery title
+- Description
+- Keywords
+
+Matching is case-insensitive. The full list is shown when the search input is empty. Items with no description or keywords are still shown — they just have fewer match surfaces.
 
 ### Order
 
@@ -208,7 +220,8 @@ The runtime:
 The MVP includes:
 
 * manifest-driven config discovery
-* questionnaire and battery selection (flat list)
+* questionnaire and battery selection (flat list with descriptions and keyword tags)
+* real-time search/filter by title, description, and keywords
 * selection-order session construction
 * conflict detection and warning banner
 * patient identifier field
@@ -220,7 +233,6 @@ The MVP **does not include**:
 
 * config selection UI (adding/removing config sources from the active set)
 * manual config URL entry
-* questionnaire search
 * editing session order after selection
 * removing items from the selected list
 
@@ -237,8 +249,7 @@ Planned improvements include:
 
 ## Questionnaire Discovery
 
-* grouped questionnaire lists
-* search
+* grouped questionnaire lists (by clinical domain)
 * fuzzy search
 
 ## Session Editing

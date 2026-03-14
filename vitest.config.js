@@ -4,7 +4,7 @@ export default defineConfig({
   test: {
     environment: 'node',
     globals: true,
-    include: ['src/**/*.test.js'],
+    include: ['src/**/*.test.js', 'composer/src/**/*.test.js'],
     setupFiles: ['tests/setup.js'],
     environmentOptions: {
       happyDOM: { settings: { disableJavaScriptFileLoading: true } },

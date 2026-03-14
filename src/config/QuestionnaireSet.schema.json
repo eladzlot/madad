@@ -50,6 +50,7 @@
         "id":                 { "$ref": "#/$defs/id" },
         "title":              { "type": "string", "minLength": 1 },
         "description":        { "type": "string" },
+        "keywords":           { "type": "array", "items": { "type": "string", "minLength": 1 } },
         "optionSets":         {
           "type": "object",
           "propertyNames": { "type": "string", "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_]*$" },
@@ -220,9 +221,10 @@
       "required": ["id", "title", "sequence"],
       "additionalProperties": false,
       "properties": {
-        "id":       { "$ref": "#/$defs/id" },
-        "title":    { "type": "string", "minLength": 1 },
+        "id":          { "$ref": "#/$defs/id" },
+        "title":       { "type": "string", "minLength": 1 },
         "description": { "type": "string" },
+        "keywords":    { "type": "array", "items": { "type": "string", "minLength": 1 } },
         "sequence": {
           "type": "array",
           "minItems": 1,
