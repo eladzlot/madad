@@ -17,7 +17,7 @@
 //   an ItemResolutionError, which is shown as a pre-welcome error screen.
 
 import { loadConfig } from './config/loader.js';
-import { resolveItems, ItemResolutionError } from './resolve-items.js';
+import { resolveItems } from './resolve-items.js';
 import { createController } from './controller.js';
 import { createOrchestrator } from './engine/orchestrator.js';
 import { createRouter } from './router.js';

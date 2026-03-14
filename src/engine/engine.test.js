@@ -1,11 +1,10 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { createEngine } from './engine.js';
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
 const likert = (id, text = `Q${id}`) => ({ id, type: 'likert', text });
 const instr  = (id, text = `Instr${id}`) => ({ id, type: 'instructions', text });
-const binary = (id, text = `B${id}`) => ({ id, type: 'binary', text });
 const ifNode = (condition, then_, else_ = []) => ({ type: 'if', condition, then: then_, else: else_ });
 
 const makeQ = (items, extras = {}) => ({

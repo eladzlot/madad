@@ -290,11 +290,6 @@ const OPTIONS_FREQ = [
   { label: 'כמעט\u00a0תמיד',   value: 3 },
 ];
 
-const OPTIONS_YESNO = [
-  { label: 'לא', value: 0 },
-  { label: 'כן', value: 1 },
-];
-
 const Q = {
   id: 'q1',
   title: 'בדיקה',

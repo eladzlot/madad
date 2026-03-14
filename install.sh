@@ -11,12 +11,11 @@ copy() {
   local src="$HOME/Downloads/$1"
   local dst="$PROJECT/$2"
   if [[ ! -f "$src" ]]; then
-    echo "  SKIP  $1 (not found in ~/Downloads)"
     return
   fi
   mkdir -p "$(dirname "$dst")"
   mv "$src" "$dst"
-  echo "  OK    $1 → $2"
+  echo "  MOVING    $1 → $2"
 }
 
 echo "Installing into: $PROJECT"
@@ -36,6 +35,7 @@ copy "QuestionnaireSet.schema.json"    "src/config/QuestionnaireSet.schema.json"
 copy "loader.js"                       "src/config/loader.js"
 copy "loader.test.js"                  "src/config/loader.test.js"
 copy "config-validation.js"            "src/config/config-validation.js"
+copy "config-validation.test.js"       "src/config/config-validation.test.js"
 
 
 # ── Engine ─────────────────────────────────────────────────────────────────────
@@ -97,8 +97,7 @@ copy "resolve-items.test.js"           "src/resolve-items.test.js"
 copy "main.css"                        "src/styles/main.css"
 
 # ── Composer ───────────────────────────────────────────────────────────────────
-copy "composer-index.html"             "composer/index.html"
-copy "composer-main.js"                "composer/src/main.js"
+copy "composer.js"                "composer/src/composer.js"
 
 # ── Test setup    ──────────────────────────────────────────────────────────────
 copy "vitest.config.js"                "vitest.config.js"

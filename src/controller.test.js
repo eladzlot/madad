@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import '../tests/setup-dom.js';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { createController } from './controller.js';
 
 // item-* components don't need to be registered — controller just
@@ -12,9 +12,6 @@ function findItem(container, tag = 'item-likert') {
   return container.querySelector(tag);
 }
 
-function findShell(container) {
-  return container.querySelector('app-shell');
-}
 
 function makeQuestionnaire(id = 'phq9') {
   return {
@@ -446,7 +443,7 @@ describe('router forward — popstate forward advances to next item', () => {
 
   it('does not push a new history entry on forward popstate advance', () => {
     vi.useFakeTimers();
-    const { container, engine, router } = makeSetup();
+    const { container, router } = makeSetup();
     container.querySelector('item-likert')
       .dispatchEvent(new CustomEvent('answer', { detail: { value: 1 }, bubbles: true }));
 

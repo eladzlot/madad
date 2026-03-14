@@ -219,7 +219,7 @@ export function buildDocDefinition(sessionState, config, session, now = new Date
     },
     styles:  buildStyles(),
     content,
-    footer:  buildFooter(config, now),
+    footer:  buildFooter(config),
   };
 }
 
@@ -493,7 +493,7 @@ export function resolveOptions(item, questionnaire) {
 
 // ── Footer ────────────────────────────────────────────────────────────────────
 
-export function buildFooter(config, now) {
+export function buildFooter(config) {
   const appVer  = config.appVersion  ?? '—';
   const cfgVer  = config.version     ?? '—';
 

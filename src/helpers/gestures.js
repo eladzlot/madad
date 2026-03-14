@@ -27,10 +27,6 @@ function getTouch(e) {
   return e.touches?.[0] ?? e.changedTouches?.[0] ?? null;
 }
 
-function clamp(val, min, max) {
-  return Math.max(min, Math.min(max, val));
-}
-
 // ── attachSwipe ───────────────────────────────────────────────────────────────
 
 /**
@@ -150,7 +146,6 @@ export function attachOverscroll(scrollEl, options = {}) {
   } = options;
 
   let startY       = null;
-  let startScrollY = null;
   let fired        = false;
 
   function atTop() { return scrollEl.scrollTop <= 0; }
@@ -164,7 +159,6 @@ export function attachOverscroll(scrollEl, options = {}) {
     const touch = getTouch(e);
     if (!touch) return;
     startY       = touch.clientY;
-    startScrollY = scrollEl.scrollTop;
     fired        = false;
   }
 
@@ -184,7 +178,6 @@ export function attachOverscroll(scrollEl, options = {}) {
 
   function onEnd() {
     startY       = null;
-    startScrollY = null;
     fired        = false;
   }
 

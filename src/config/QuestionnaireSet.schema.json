@@ -49,6 +49,7 @@
       "properties": {
         "id":                 { "$ref": "#/$defs/id" },
         "title":              { "type": "string", "minLength": 1 },
+        "description":        { "type": "string" },
         "optionSets":         {
           "type": "object",
           "propertyNames": { "type": "string", "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_]*$" },
@@ -221,6 +222,7 @@
       "properties": {
         "id":       { "$ref": "#/$defs/id" },
         "title":    { "type": "string", "minLength": 1 },
+        "description": { "type": "string" },
         "sequence": {
           "type": "array",
           "minItems": 1,

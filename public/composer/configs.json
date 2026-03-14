@@ -1,0 +1,8 @@
+{
+  "configs": [
+    {
+      "name": "שאלונים סטנדרטיים",
+      "url": "/configs/prod/standard.json"
+    }
+  ]
+}
