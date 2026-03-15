@@ -58,8 +58,10 @@ const validate = ajv.compile(schema);
 // ─── URL resolution ───────────────────────────────────────────────────────────
 
 function resolveSource(source) {
-  if (/^https?:\/\//.test(source) || source.startsWith('/')) return source;
-  return `/configs/${source}.json`;
+  if (/^https?:\/\//.test(source)) return source;  // full URL
+  if (source.startsWith('/')) return source;         // root-relative path
+  if (source.includes('/') || source.endsWith('.json')) return source; // relative path
+  return `configs/${source}.json`;                   // slug → relative path
 }
 
 // ─── Fetch and validate a single file ────────────────────────────────────────

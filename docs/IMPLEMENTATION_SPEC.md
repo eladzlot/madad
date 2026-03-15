@@ -407,12 +407,18 @@ The config loader is responsible for fetching, validating, and merging one or mo
 
 ### 8.1 Source resolution
 
-Each source is either a **slug** (no slashes, no protocol) or a **full URL** (starts with `https://`, `http://`, or `/`).
+Each source passed to `loadConfig()` is one of:
 
-- Slug → `/configs/<slug>.json` (same origin)
-- Full URL or absolute path → used as-is
+| Source type | Example | Resolution |
+|---|---|---|
+| Slug (no slashes, no `.json`) | `prod/standard` | → `configs/prod/standard.json` (relative) |
+| Relative path | `configs/prod/standard.json` | used as-is (relative) |
+| Root-relative path | `/configs/prod/standard.json` | used as-is (absolute from origin) |
+| Full URL | `https://example.com/q.json` | used as-is |
 
-This allows configs to be hosted on a different server.
+Relative and slug-resolved paths are resolved by the browser relative to the current page URL. This means the same path works correctly at any base path deployment (`/`, `/madad/`, etc.) without any runtime path detection.
+
+**Rule:** Always use relative paths or slugs in `configs=` URL parameters. Root-relative paths (`/configs/...`) are only used internally by the Composer loader, which resolves them against the app root before passing to `loadConfig`.
 
 ### 8.2 Steps
 
@@ -445,7 +451,7 @@ Multiple sources are fetched in parallel.
 
 ### 8.5 Default config
 
-If no `configs` URL parameter is present, the app shell defaults to `prod/standard`. The loader has no knowledge of defaults.
+If no `configs` URL parameter is present, the app shell defaults to the slug `prod/standard`, which resolves to `configs/prod/standard.json`. The loader has no knowledge of defaults.
 
 ### 8.6 Injectable fetch
 
@@ -724,7 +730,7 @@ All components must:
 
 | Parameter | Required | Default | Description |
 |---|---|---|---|
-| `configs` | No | `prod/standard` | Comma-separated config sources (slugs or URLs) |
+| `configs` | No | `prod/standard` | Comma-separated config sources (slugs or relative paths). Slug `prod/standard` resolves to `configs/prod/standard.json`. |
 | `items` | Yes | — | Comma-separated ordered list of questionnaire or battery IDs |
 | `pid` | No | — | Optional patient identifier |
 
@@ -942,8 +948,17 @@ Located in `tests/e2e/`. Cover full flows that span multiple modules and require
 
 ## 24. Deployment
 
-- Static hosting: GitHub Pages (primary), compatible with Netlify or Cloudflare Pages
+- Static hosting: GitHub Pages at `https://eladzlot.github.io/madad/` (primary), compatible with Netlify or Cloudflare Pages
 - HTTPS required
 - Cache strategy: immutable long-cache headers for hashed app assets; short TTL for config JSON files
 - Config namespaces: `public/configs/prod/` for production, `public/configs/test/` for staging
 - `APP_VERSION` injected at build time via Vite define; printed in PDF footer and embedded JSON
+
+### Base path strategy
+
+The app is deployed at `/madad/` on GitHub Pages but served at `/` in development. Vite's `base` config handles asset paths at build time (`mode === 'development'` → `'/'`, otherwise → `'/madad/'`). Runtime config fetches use **relative paths** so they resolve correctly at any base path without code changes:
+
+- `configs/prod/standard.json` from `https://eladzlot.github.io/madad/` → `https://eladzlot.github.io/madad/configs/prod/standard.json` ✓
+- `configs/prod/standard.json` from `http://localhost:5173/` → `http://localhost:5173/configs/prod/standard.json` ✓
+
+The Composer manifest (`public/composer/configs.json`) stores root-relative paths (`/configs/...`). The Composer loader resolves these against the app root URL at runtime before fetching and stores them as relative paths (`configs/...`) in generated patient URLs.

@@ -95,14 +95,53 @@ if (files.length === 0) {
 let passed = 0;
 let failed = 0;
 
+// Per-file validation
+const validFiles = [];  // { rel, data } for files that passed
+
 for (const file of files) {
   const { rel, errors } = validateFile(file);
   if (errors.length === 0) {
     console.log(`  ✓  ${rel}`);
     passed++;
+    validFiles.push({ rel, data: JSON.parse(readFileSync(file, 'utf8')) });
   } else {
     console.error(`  ✗  ${rel}`);
     for (const err of errors) console.error(`       ${err}`);
+    failed++;
+  }
+}
+
+// ── Cross-file duplicate ID check ─────────────────────────────────────────────
+// IDs must be globally unique across all loaded configs. Catch violations here.
+
+if (validFiles.length > 1) {
+  const seenQ = new Map();  // questionnaire id → rel
+  const seenB = new Map();  // battery id → rel
+  const crossErrors = [];
+
+  for (const { rel, data } of validFiles) {
+    for (const q of data.questionnaires ?? []) {
+      if (seenQ.has(q.id)) {
+        crossErrors.push(`Duplicate questionnaire ID "${q.id}" in ${rel} (already in ${seenQ.get(q.id)})`);
+      } else {
+        seenQ.set(q.id, rel);
+      }
+    }
+    for (const b of data.batteries ?? []) {
+      if (seenB.has(b.id)) {
+        crossErrors.push(`Duplicate battery ID "${b.id}" in ${rel} (already in ${seenB.get(b.id)})`);
+      } else {
+        seenB.set(b.id, rel);
+      }
+      if (seenQ.has(b.id)) {
+        crossErrors.push(`Battery ID "${b.id}" in ${rel} collides with questionnaire ID in ${seenQ.get(b.id)}`);
+      }
+    }
+  }
+
+  if (crossErrors.length > 0) {
+    console.error('\n  ✗  Cross-file ID conflicts:');
+    for (const err of crossErrors) console.error(`       ${err}`);
     failed++;
   }
 }

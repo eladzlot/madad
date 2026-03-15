@@ -1,7 +1,7 @@
 /**
- * tests/e2e/composer.test.js
+ * tests/e2e/composer.e2e.test.js
  *
- * End-to-end tests for the Composer tool (/composer/composer.html).
+ * End-to-end tests for the Composer tool (/composer/).
  *
  * Tests cover:
  *   - page load and basic UI structure
@@ -18,17 +18,15 @@ import { test, expect } from '@playwright/test';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-const COMPOSER_URL = '/composer/index.html';
+const COMPOSER_URL = '/composer/';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 /** Navigate to composer and wait for it to finish loading */
 async function gotoComposer(page) {
   await page.goto(COMPOSER_URL);
-  // Wait for either the item list to appear or an error to show
-  await expect(
-    page.locator('.c-item-list, .c-error, .c-empty')
-  ).toBeVisible({ timeout: 15_000 });
+  // Wait for the title to appear — confirms configs loaded and render() was called
+  await expect(page.locator('.c-title')).toBeVisible({ timeout: 10_000 });
 }
 
 /** Get the current URL shown in the URL preview box */

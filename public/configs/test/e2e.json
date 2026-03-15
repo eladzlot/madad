@@ -3,12 +3,13 @@
   "version": "1.0.0",
   "questionnaires": [
     {
-      "id": "phq9",
-      "title": "PHQ-9",
-      "description": "9-item depression screening scale.",
+      "id": "phq9_test",
+      "title": "PHQ-9 (E2E)",
+      "description": "PHQ-9 test fixture for E2E tests.",
       "keywords": [
-        "depression",
-        "PHQ-9"
+        "test",
+        "e2e",
+        "depression"
       ],
       "defaultOptionSetId": "frequency_4",
       "optionSets": {
@@ -50,7 +51,7 @@
         {
           "id": "3",
           "type": "likert",
-          "text": "קשיים בהירדמות או בשינה רציפה, או עודף שינה"
+          "text": "קשיים בהירדמות או בשינה רציפה"
         },
         {
           "id": "4",
@@ -210,7 +211,7 @@
       ],
       "sequence": [
         {
-          "questionnaireId": "phq9"
+          "questionnaireId": "phq9_test"
         }
       ]
     },

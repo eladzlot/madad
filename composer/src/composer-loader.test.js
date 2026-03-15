@@ -71,25 +71,25 @@ describe('loadAllConfigs', () => {
   it('sets sourceUrl on questionnaires', async () => {
     mockFetch.mockResolvedValueOnce(makeConfigResponse([minimalQ('phq9')]));
     await loadAllConfigs({ configs: [{ name: 'Test', url: '/configs/a.json' }] });
-    expect(state.questionnaires[0].sourceUrl).toBe('/configs/a.json');
+    expect(state.questionnaires[0].sourceUrl).toBe('configs/a.json');
   });
 
   it('sets sourceUrl on batteries', async () => {
     mockFetch.mockResolvedValueOnce(makeConfigResponse([minimalQ('phq9')], [minimalBattery('intake')]));
     await loadAllConfigs({ configs: [{ name: 'Test', url: '/configs/a.json' }] });
-    expect(state.batteries[0].sourceUrl).toBe('/configs/a.json');
+    expect(state.batteries[0].sourceUrl).toBe('configs/a.json');
   });
 
   it('populates sourceByItem map for questionnaires', async () => {
     mockFetch.mockResolvedValueOnce(makeConfigResponse([minimalQ('phq9')]));
     await loadAllConfigs({ configs: [{ name: 'Test', url: '/configs/a.json' }] });
-    expect(state.sourceByItem.get('phq9')).toBe('/configs/a.json');
+    expect(state.sourceByItem.get('phq9')).toBe('configs/a.json');
   });
 
   it('populates sourceByItem map for batteries', async () => {
     mockFetch.mockResolvedValueOnce(makeConfigResponse([minimalQ('phq9')], [minimalBattery('intake')]));
     await loadAllConfigs({ configs: [{ name: 'Test', url: '/configs/a.json' }] });
-    expect(state.sourceByItem.get('intake')).toBe('/configs/a.json');
+    expect(state.sourceByItem.get('intake')).toBe('configs/a.json');
   });
 
   it('carries description through (empty string when absent)', async () => {

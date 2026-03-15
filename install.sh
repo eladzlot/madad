@@ -112,6 +112,7 @@ copy "configs.test.json"          "public/composer/configs.test.json"
 
 # ── Test setup    ──────────────────────────────────────────────────────────────
 copy "vitest.config.js"                "vitest.config.js"
+copy "playwright.config.js"            "playwright.config.js"
 copy "setup.js"                        "tests/setup.js"
 copy "setup-dom.js"                    "tests/setup-dom.js"
 
@@ -136,6 +137,9 @@ copy "QuestionnaireSet.schema.test.js" "src/config/QuestionnaireSet.schema.test.
 
 copy "ci.yml"                          ".github/workflows/ci.yml"
 copy "deploy.yml"                      ".github/workflows/deploy.yml"
+
+copy "vite.config.js"                  "vite.config.js"
+copy "eslint.config.js"                "eslintite.config.js"
 
 
 echo ""

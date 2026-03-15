@@ -2,7 +2,8 @@
 // Shared mutable state, URL builder, search matcher, and PID validator.
 // All other composer modules import from here — nothing else holds state.
 
-export const MANIFEST_URL = '/composer/configs.json';
+// Relative URL — resolves correctly at any base path deployment.
+export const MANIFEST_URL = 'configs.json';
 export const PID_PATTERN  = /^[a-zA-Z0-9\u0590-\u05FF_-]*$/;
 
 export const state = {
@@ -18,7 +19,7 @@ export const state = {
 
 // ── URL generation ────────────────────────────────────────────────────────────
 
-export function buildUrl(origin = window.location.origin) {
+export function buildUrl(base = getAppRoot()) {
   if (state.selected.length === 0) return null;
 
   const neededSources = new Set(
@@ -31,7 +32,16 @@ export function buildUrl(origin = window.location.origin) {
   ];
   if (state.pid.trim()) parts.push(`pid=${encodeURIComponent(state.pid.trim())}`);
 
-  return `${origin}/?${parts.join('&')}`;
+  return `${base}?${parts.join('&')}`;
+}
+
+// Returns the app root URL (the page serving index.html).
+// Derived from the composer's own URL by stripping /composer/...
+// e.g. http://localhost:5173/composer/ → http://localhost:5173/
+//      https://eladzlot.github.io/madad/composer/ → https://eladzlot.github.io/madad/
+export function getAppRoot() {
+  if (typeof window === 'undefined') return '/';
+  return window.location.href.replace(/\/composer(\/.*)?$/, '/');
 }
 
 // ── PID validation ────────────────────────────────────────────────────────────

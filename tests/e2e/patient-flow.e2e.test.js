@@ -19,13 +19,13 @@ import { test, expect } from '@playwright/test';
 
 // ── URLs ──────────────────────────────────────────────────────────────────────
 
-const CONFIG = '/configs/test/e2e.json';
+const E2E_CONFIG = '/configs/test/e2e.json';
 
-/** PHQ-9 only */
-const PHQ9_URL = `/?configs=${CONFIG}&items=phq9_intake`;
+/** PHQ-9 equivalent (phq9_test) — 1 instructions + 9 likert + suicidality alert */
+const PHQ9_URL = `/?configs=${E2E_CONFIG}&items=phq9_intake`;
 
-/** test_q battery (binary + likert mix, fewer items) */
-const TEST_URL = `/?configs=${CONFIG}&items=standard_intake`;
+/** test_q battery — binary + likert mix */
+const TEST_URL = `/?configs=${E2E_CONFIG}&items=standard_intake`;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -342,12 +342,12 @@ test.describe('standard_intake battery (binary + likert)', () => {
 
 test.describe('error handling', () => {
   test('missing items param shows Hebrew error', async ({ page }) => {
-    await page.goto(`/?configs=${CONFIG}`);
+    await page.goto(`/?configs=${E2E_CONFIG}`);
     await expect(page.locator('#app')).toContainText('לא נבחרו שאלונים');
   });
 
   test('unknown item token shows Hebrew error', async ({ page }) => {
-    await page.goto(`/?configs=${CONFIG}&items=nonexistent_xyz`);
+    await page.goto(`/?configs=${E2E_CONFIG}&items=nonexistent_xyz`);
     await expect(page.locator('#app')).toContainText('שגיאה');
   });
 

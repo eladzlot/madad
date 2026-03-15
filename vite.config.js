@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 
-export default defineConfig({
-  base: '/madad/',
+export default defineConfig(({ mode }) => ({
+  base: mode === 'development' ? '/' : '/madad/',
   build: {
     rollupOptions: {
       input: {
@@ -10,10 +10,11 @@ export default defineConfig({
       },
       output: {
         manualChunks: {
-          'pdf-vendor': ['pdfmake']
+          'pdf-vendor': ['pdfmake'],
+          'ajv-vendor': ['ajv'],
         },
       },
     },
   },
   assetsInclude: ['**/*.ttf'],
-});
+}));

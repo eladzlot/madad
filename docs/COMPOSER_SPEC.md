@@ -32,7 +32,7 @@ The Composer generates URLs using the following parameters:
 
 Example:
 
-`https://app.example.com/?configs=/configs/core.json,/configs/trauma.json&items=intake_battery,phq9,pcl5&pid=ABC123`
+`https://app.example.com/?configs=configs/core.json,configs/trauma.json&items=intake_battery,phq9,pcl5&pid=ABC123`
 
 Rules:
 
@@ -61,8 +61,8 @@ The Composer is configured to load a fixed set of in-repository configs that are
 
 On load the Composer:
 
-1. loads a **config manifest** from `/composer/configs.json`
-2. loads all configs listed in the manifest in parallel
+1. loads a **config manifest** from `configs.json` (relative to the Composer page — resolves correctly at any base path)
+2. loads all configs listed in the manifest in parallel, resolving their URLs against the app root
 3. builds a flat list of all questionnaires and batteries from those configs
 
 If one config fails to load:
@@ -74,30 +74,30 @@ If one config fails to load:
 
 # Config Discovery
 
-Configs are defined by a Composer-specific manifest.
+Configs are defined by a Composer-specific manifest at `public/composer/configs.json`.
 
-Example:
+Config URLs in the manifest use **root-relative paths** (`/configs/...`). The Composer resolves these against the app root URL at runtime, so they work at any base path deployment.
 
-`/composer/configs.json`
+Example manifest:
 
-Example structure:
-
-```
+```json
 {
   "configs": [
     {
-      "name": "Emotion Disorder Questionnaires",
-      "url": "/configs/emotion.json"
+      "name": "ספריית שאלונים סטנדרטית",
+      "url": "/configs/prod/standard.json"
     },
     {
-      "name": "Trauma Questionnaires",
-      "url": "/configs/trauma.json"
+      "name": "שאלונים נוספים",
+      "url": "/configs/prod/supplemental.json"
     }
   ]
 }
 ```
 
 The Composer loads **all configs listed in the manifest**.
+
+Generated patient URLs use **relative paths** (no leading slash) in the `configs=` parameter — e.g. `configs=configs/prod/standard.json` — so the patient app can fetch them relative to its own page URL at any base path.
 
 ---
 
