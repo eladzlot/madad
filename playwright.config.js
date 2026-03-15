@@ -18,10 +18,11 @@ export default defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
-    {
+    // webkit is excluded from CI — run locally only
+    ...(!process.env.CI ? [{
       name: 'mobile-safari',
       use: { ...devices['iPhone 14'] },
-    },
+    }] : []),
   ],
 
   webServer: {
