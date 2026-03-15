@@ -132,6 +132,7 @@ copy "standard.json"                   "public/configs/prod/standard.json"
 copy "QuestionnaireSet.schema.test.js" "src/config/QuestionnaireSet.schema.test.js"
 
 copy "ci.yml"                          ".github/workflows/ci.yml"
+copy "deploy.yml"                      ".github/workflows/deploy.yml"
 
 
 echo ""
