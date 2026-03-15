@@ -18,7 +18,7 @@ This document specifies how Madad is to be built. It is intended for the develop
 - **Build tool:** Vite. Dev server and production bundler.
 - **Testing:** Vitest (unit), Playwright (E2E).
 - **PDF:** pdfmake, lazy-loaded. `preloadPdf()` is called at session start to begin fetching in the background; the actual import resolves before the patient reaches the results screen.
-- **Validation:** AJV (JSON Schema 2020-12). Imported statically in `loader.js` (not lazy) — validation is required synchronously during config loading. The `ajv-vendor` chunk is pinned separately in the Vite config to keep it out of the entry bundle.
+- **Validation:** AJV (JSON Schema 2020-12). Imported statically in `loader.js` (not lazy) — validation is required synchronously during config loading. AJV is bundled into the `loader` chunk alongside the config loading code.
 - **Styling:** CSS with logical properties. `dir="rtl"` at root.
 - **No other production dependencies.**
 
@@ -106,7 +106,7 @@ This document specifies how Madad is to be built. It is intended for the develop
 
 **Flat item list.** Questionnaires have a single flat array of items. Instructions between sections are represented as items with `type: "instructions"` — not as a separate structural entity. The engine treats all item types uniformly for navigation purposes. Scoring, the response table, and progress counting each decide independently how to handle non-answerable item types.
 
-**Lazy loading.** pdfmake is never imported at startup. `preloadPdf()` is called immediately after config loads (before the welcome screen interaction) so the pdfmake chunk begins downloading in the background and is ready by the time the patient reaches results. AJV is imported statically in `loader.js` — it is only ever loaded when the config is fetched (which happens before the session starts), and the `ajv-vendor` chunk is pinned separately to keep it out of the entry bundle.
+**Lazy loading.** pdfmake is never imported at startup. `preloadPdf()` is called immediately after config loads (before the welcome screen interaction) so the pdfmake chunk begins downloading in the background and is ready by the time the patient reaches results. AJV is imported statically in `loader.js` — it is only ever loaded when the config is fetched (which happens before the session starts), AJV is bundled into the `loader` chunk since it is used synchronously during config loading.
 
 **Config-driven.** All clinical content — instruments, items, scoring rules, alert thresholds, instructions — lives in JSON config files. Nothing clinical is hardcoded in the application logic.
 

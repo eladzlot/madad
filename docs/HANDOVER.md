@@ -217,4 +217,4 @@ To add a new instrument: `docs/INSTRUMENTS.md`.
 - **`QuestionnaireSet.schema.json`** — changing without updating `config-validation.js` and existing configs will break validation.
 - **`src/pdf/report.js` — RTL rendering** — pdfmake has incomplete bidi support. Six specific rules govern all text rendering; they are documented in full in `docs/IMPLEMENTATION_SPEC.md §19.3`. The short version: numbers in `direction:'ltr'` nodes, mixed Hebrew/Latin through `bidiNodes()`, category on its own line, never use `rtl: true`, never concatenate numbers into Hebrew strings.
 - **`src/pdf/report.js` — pdfmake API** — uses Promise-based `getBuffer()`. The callback form `getBlob(callback)` silently hangs.
-- **`vite.config.js` chunk assignment** — `pdfmake` and `ajv` are pinned to named chunks. Removing `manualChunks` will pull them into the entry bundle.
+- **`vite.config.js` chunk assignment** — `pdfmake` is pinned to a named chunk via `manualChunks`. This keeps it out of the entry bundle since it is lazy-loaded. AJV is bundled with the `loader` chunk (statically imported there) — no manual chunk needed.

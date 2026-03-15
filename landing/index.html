@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>מדד — הערכה קלינית דיגיטלית</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue:        #2563eb;
+      --blue-dark:   #1d4ed8;
+      --blue-light:  #eff6ff;
+      --blue-mid:    #bfdbfe;
+      --text:        #18181b;
+      --text-muted:  #52525b;
+      --text-light:  #a1a1aa;
+      --border:      #e4e4e7;
+      --bg:          #ffffff;
+      --surface:     #f8fafc;
+      --radius:      12px;
+      --radius-lg:   20px;
+      --shadow:      0 4px 24px rgba(37,99,235,0.08), 0 1px 4px rgba(0,0,0,0.06);
+      --max:         1100px;
+    }
+
+    html { font-family: 'Heebo', sans-serif; color: var(--text); background: var(--bg); scroll-behavior: smooth; }
+    body { min-height: 100vh; }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 clamp(16px, 5vw, 48px);
+      display: flex; align-items: center; justify-content: space-between;
+      height: 60px;
+    }
+    .nav-logo { font-size: 22px; font-weight: 900; color: var(--blue); letter-spacing: -0.5px; text-decoration: none; }
+    .nav-logo span { color: var(--text); }
+    .nav-links { display: flex; gap: 8px; align-items: center; }
+    .nav-link { color: var(--text-muted); text-decoration: none; font-size: 14px; font-weight: 500; padding: 6px 12px; border-radius: 8px; transition: color 120ms, background 120ms; }
+    .nav-link:hover { color: var(--blue); background: var(--blue-light); }
+    .nav-cta { background: var(--blue); color: #fff; padding: 8px 18px; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; transition: background 120ms; }
+    .nav-cta:hover { background: var(--blue-dark); }
+
+    /* ── SECTIONS ── */
+    section { padding: clamp(48px, 8vw, 96px) clamp(16px, 5vw, 48px); }
+    .container { max-width: var(--max); margin: 0 auto; }
+
+    /* ── HERO ── */
+    .hero {
+      background: linear-gradient(160deg, #f0f7ff 0%, #ffffff 55%, #f8fafc 100%);
+      padding-top: clamp(56px, 10vw, 112px);
+      padding-bottom: clamp(48px, 8vw, 96px);
+      padding-inline: clamp(16px, 5vw, 48px);
+    }
+    .hero-inner { max-width: var(--max); margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
+    .hero-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--blue-light); color: var(--blue); font-size: 13px; font-weight: 600; padding: 4px 12px; border-radius: 100px; margin-bottom: 20px; border: 1px solid var(--blue-mid); }
+    .hero-badge::before { content: "●"; font-size: 8px; }
+    h1 { font-size: clamp(32px, 5vw, 54px); font-weight: 900; line-height: 1.15; letter-spacing: -1px; color: var(--text); margin-bottom: 20px; }
+    h1 em { font-style: normal; color: var(--blue); }
+    .hero-sub { font-size: clamp(16px, 2vw, 19px); color: var(--text-muted); line-height: 1.7; margin-bottom: 36px; font-weight: 300; max-width: 480px; }
+    .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+    .btn-primary { background: var(--blue); color: #fff; padding: 14px 28px; border-radius: 10px; font-size: 16px; font-weight: 700; text-decoration: none; transition: background 120ms, transform 120ms, box-shadow 120ms; box-shadow: 0 4px 16px rgba(37,99,235,0.3); display: inline-flex; align-items: center; gap: 8px; }
+    .btn-primary:hover { background: var(--blue-dark); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(37,99,235,0.35); }
+    .btn-secondary { background: #fff; color: var(--blue); padding: 14px 28px; border-radius: 10px; font-size: 16px; font-weight: 600; text-decoration: none; border: 1.5px solid var(--blue-mid); transition: border-color 120ms, background 120ms; display: inline-flex; align-items: center; gap: 8px; }
+    .btn-secondary:hover { border-color: var(--blue); background: var(--blue-light); }
+
+    /* Hero visual — mock PDF card */
+    .hero-visual { display: flex; justify-content: center; }
+    .mock-card {
+      background: #fff;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow), 0 16px 48px rgba(37,99,235,0.10);
+      padding: 28px;
+      width: 100%;
+      max-width: 340px;
+      border: 1px solid var(--border);
+    }
+    .mock-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+    .mock-title { font-size: 15px; font-weight: 700; }
+    .mock-date { font-size: 12px; color: var(--text-light); }
+    .mock-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; border-radius: 8px; margin-bottom: 6px; }
+    .mock-row.highlight { background: #fef3f2; }
+    .mock-row.ok { background: #f0fdf4; }
+    .mock-label { font-size: 13px; font-weight: 500; }
+    .mock-score { font-size: 18px; font-weight: 900; }
+    .mock-row.highlight .mock-score { color: #dc2626; }
+    .mock-row.ok .mock-score { color: #16a34a; }
+    .mock-score-label { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+    .mock-alert { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 8px; padding: 10px 12px; margin-top: 14px; font-size: 12px; color: #c2410c; font-weight: 500; display: flex; gap: 6px; align-items: flex-start; }
+    .mock-footer { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .mock-footer-text { font-size: 11px; color: var(--text-light); }
+    .mock-pdf-badge { background: var(--blue); color: #fff; font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 4px; }
+
+    /* ── HOW IT WORKS ── */
+    .section-label { font-size: 13px; font-weight: 700; color: var(--blue); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; }
+    .section-title { font-size: clamp(24px, 4vw, 36px); font-weight: 900; letter-spacing: -0.5px; margin-bottom: 12px; line-height: 1.2; }
+    .section-sub { font-size: 17px; color: var(--text-muted); line-height: 1.7; font-weight: 300; max-width: 540px; }
+    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 48px; }
+    .step { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px 24px; position: relative; overflow: hidden; }
+    .step::before { content: ""; position: absolute; top: 0; right: 0; width: 3px; height: 100%; background: var(--blue); border-radius: 0 var(--radius) var(--radius) 0; opacity: 0; transition: opacity 200ms; }
+    .step:hover::before { opacity: 1; }
+    .step:hover { border-color: var(--blue-mid); box-shadow: var(--shadow); }
+    .step-num { font-size: 42px; font-weight: 900; color: var(--blue-mid); line-height: 1; margin-bottom: 12px; }
+    .step h3 { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
+    .step p { font-size: 14px; color: var(--text-muted); line-height: 1.6; font-weight: 300; }
+
+    /* ── INSTRUMENTS ── */
+    .instruments-bg { background: var(--surface); }
+    .instruments-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 40px; }
+    .instrument-card {
+      background: #fff; border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 20px 22px; text-decoration: none; color: inherit;
+      display: flex; flex-direction: column; gap: 8px;
+      transition: border-color 150ms, box-shadow 150ms, transform 150ms;
+    }
+    .instrument-card:hover { border-color: var(--blue); box-shadow: var(--shadow); transform: translateY(-2px); }
+    .instrument-top { display: flex; justify-content: space-between; align-items: flex-start; }
+    .instrument-name { font-size: 16px; font-weight: 700; }
+    .instrument-abbr { font-size: 12px; font-weight: 700; color: var(--blue); background: var(--blue-light); padding: 2px 8px; border-radius: 100px; border: 1px solid var(--blue-mid); }
+    .instrument-desc { font-size: 13px; color: var(--text-muted); line-height: 1.5; font-weight: 300; }
+    .instrument-try { font-size: 13px; color: var(--blue); font-weight: 600; display: flex; align-items: center; gap: 4px; margin-top: 4px; }
+    .instrument-try::after { content: "←"; }
+
+    /* ── WHY ── */
+    .why-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-top: 40px; }
+    .why-card { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; }
+    .why-icon { font-size: 28px; margin-bottom: 12px; }
+    .why-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+    .why-card p { font-size: 14px; color: var(--text-muted); line-height: 1.6; font-weight: 300; }
+
+    /* ── CTA ── */
+    .cta-section {
+      background: var(--blue);
+      color: #fff;
+      text-align: center;
+    }
+    .cta-section .section-label { color: rgba(255,255,255,0.7); }
+    .cta-section .section-title { color: #fff; }
+    .cta-section .section-sub { color: rgba(255,255,255,0.8); margin: 0 auto 36px; }
+    .btn-white { background: #fff; color: var(--blue); padding: 14px 28px; border-radius: 10px; font-size: 16px; font-weight: 700; text-decoration: none; transition: background 120ms, transform 120ms; display: inline-flex; align-items: center; gap: 8px; }
+    .btn-white:hover { background: var(--blue-light); transform: translateY(-1px); }
+
+    /* ── FOOTER ── */
+    footer {
+      background: #09090b;
+      color: #a1a1aa;
+      padding: clamp(32px, 5vw, 56px) clamp(16px, 5vw, 48px);
+    }
+    .footer-inner { max-width: var(--max); margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 48px; }
+    .footer-brand .nav-logo { display: inline-block; margin-bottom: 10px; color: var(--blue); font-size: 24px; }
+    .footer-brand .nav-logo span { color: #fff; }
+    .footer-brand p { font-size: 13px; line-height: 1.7; max-width: 300px; font-weight: 300; }
+    .footer-brand a { color: #60a5fa; text-decoration: none; }
+    .footer-brand a:hover { text-decoration: underline; }
+    .footer-col h4 { color: #fff; font-size: 14px; font-weight: 600; margin-bottom: 14px; }
+    .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .footer-col a { color: #a1a1aa; text-decoration: none; font-size: 13px; transition: color 120ms; }
+    .footer-col a:hover { color: #fff; }
+    .footer-bottom { max-width: var(--max); margin: 32px auto 0; padding-top: 24px; border-top: 1px solid #27272a; display: flex; justify-content: space-between; font-size: 12px; color: #52525b; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .hero-inner { grid-template-columns: 1fr; gap: 40px; }
+      .hero-visual { display: none; }
+      .steps { grid-template-columns: 1fr; }
+      .why-grid { grid-template-columns: 1fr; }
+      .footer-inner { grid-template-columns: 1fr; gap: 32px; }
+      .nav-links .nav-link { display: none; }
+    }
+    @media (max-width: 540px) {
+      .instruments-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ── FADE IN ── */
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .hero-content > * { animation: fadeUp 500ms ease both; }
+    .hero-content > *:nth-child(1) { animation-delay: 0ms; }
+    .hero-content > *:nth-child(2) { animation-delay: 80ms; }
+    .hero-content > *:nth-child(3) { animation-delay: 160ms; }
+    .hero-content > *:nth-child(4) { animation-delay: 240ms; }
+    .hero-visual { animation: fadeUp 600ms 300ms ease both; }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="./" class="nav-logo">מדד<span>.</span></a>
+  <div class="nav-links">
+    <a href="#how" class="nav-link">איך זה עובד</a>
+    <a href="#instruments" class="nav-link">שאלונים</a>
+    <a href="#why" class="nav-link">למה מדד</a>
+    <a href="../composer/" class="nav-cta">מחולל קישורים ←</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-content">
+      <div class="hero-badge">כלי הערכה קלינית חינמי</div>
+      <h1>הערכה קלינית<br><em>בלחיצת כפתור</em></h1>
+      <p class="hero-sub">שלחו שאלוני מדידה למטופלים לפני הפגישה. קבלו דוח PDF ברור ומסכם — בעברית, ללא הרשמה, ללא שמירת נתונים.</p>
+      <div class="hero-actions">
+        <a href="../composer/" class="btn-primary">
+          צרו קישור לשאלון ←
+        </a>
+        <a href="../?configs=configs/prod/standard.json&items=phq9" class="btn-secondary">
+          ראו דוגמה
+        </a>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="mock-card">
+        <div class="mock-header">
+          <div>
+            <div class="mock-title">דוח הערכה קלינית</div>
+            <div class="mock-date">מזהה מטופל: TRC-2025-042</div>
+          </div>
+          <div class="mock-pdf-badge">PDF</div>
+        </div>
+        <div class="mock-row highlight">
+          <div>
+            <div class="mock-label">שאלון דיכאון PHQ-9</div>
+            <div class="mock-score-label">בינוני-חמור</div>
+          </div>
+          <div class="mock-score">18</div>
+        </div>
+        <div class="mock-row ok">
+          <div>
+            <div class="mock-label">שאלון חרדה GAD-7</div>
+            <div class="mock-score-label">קל</div>
+          </div>
+          <div class="mock-score">7</div>
+        </div>
+        <div class="mock-row">
+          <div>
+            <div class="mock-label">שאלון פאניקה PDSS-SR</div>
+            <div class="mock-score-label">מתחת לסף קליני</div>
+          </div>
+          <div class="mock-score">4</div>
+        </div>
+        <div class="mock-alert">
+          ⚠ פריט 9 — דיווח על מחשבות אובדניות
+        </div>
+        <div class="mock-footer">
+          <div class="mock-footer-text">נוצר עם מדד · 15.3.2026</div>
+          <div class="mock-pdf-badge">PDF</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div class="container">
+    <div class="section-label">תהליך פשוט</div>
+    <h2 class="section-title">שלושה צעדים בלבד</h2>
+    <p class="section-sub">ממחולל הקישורים ועד דוח מוכן — הכל קורה בדפדפן, ללא כניסה לחשבון.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <h3>בחרו שאלונים</h3>
+        <p>פתחו את מחולל הקישורים, בחרו את השאלונים הרלוונטיים והוסיפו מזהה מטופל. המערכת מייצרת קישור ייחודי.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <h3>שלחו למטופל</h3>
+        <p>העתיקו את הקישור ושלחו אותו למטופל לפני הפגישה — בוואטסאפ, מייל, או כל ערוץ אחר. אין הרשמה, אין אפליקציה.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <h3>קבלו דוח PDF</h3>
+        <p>המטופל ממלא את השאלונים ומוריד דוח PDF מסכם. הדוח מגיע לפגישה — בידי המטופל. אף נתון לא נשמר בשרת.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INSTRUMENTS -->
+<section id="instruments" class="instruments-bg">
+  <div class="container">
+    <div class="section-label">שאלונים זמינים</div>
+    <h2 class="section-title">שאלוני מדידה מבוססי ראיות</h2>
+    <p class="section-sub">כל השאלונים תורגמו לעברית ומאומתים. לחצו על שאלון לניסוי עצמאי.</p>
+    <div class="instruments-grid">
+
+      <a href="../?configs=configs/prod/standard.json&items=phq9" class="instrument-card">
+        <div class="instrument-top">
+          <div class="instrument-name">שאלון דיכאון</div>
+          <div class="instrument-abbr">PHQ-9</div>
+        </div>
+        <div class="instrument-desc">9 שאלות למדידת חומרת דיכאון. כולל התראה אוטומטית על מחשבות אובדניות.</div>
+        <div class="instrument-try">נסו עכשיו</div>
+      </a>
+
+      <a href="../?configs=configs/prod/standard.json&items=gad7" class="instrument-card">
+        <div class="instrument-top">
+          <div class="instrument-name">שאלון חרדה</div>
+          <div class="instrument-abbr">GAD-7</div>
+        </div>
+        <div class="instrument-desc">7 שאלות למדידת הפרעת חרדה כללית. אחד השאלונים הנפוצים ביותר בקליניקה.</div>
+        <div class="instrument-try">נסו עכשיו</div>
+      </a>
+
+      <a href="../?configs=configs/prod/standard.json&items=pcl5" class="instrument-card">
+        <div class="instrument-top">
+          <div class="instrument-name">שאלון פוסט-טראומה</div>
+          <div class="instrument-abbr">PCL-5</div>
+        </div>
+        <div class="instrument-desc">20 שאלות לפי DSM-5. כולל ציוני תת-סקלות: חדירה, הימנעות, דיספוריה ועוררות יתר.</div>
+        <div class="instrument-try">נסו עכשיו</div>
+      </a>
+
+      <a href="../?configs=configs/prod/standard.json&items=oci_r" class="instrument-card">
+        <div class="instrument-top">
+          <div class="instrument-name">שאלון טורדנות כפייתית</div>
+          <div class="instrument-abbr">OCI-R</div>
+        </div>
+        <div class="instrument-desc">18 שאלות עם 6 תת-סקלות: שטיפה, אובססיות, אגירה, סדר, בדיקה ונטרול.</div>
+        <div class="instrument-try">נסו עכשיו</div>
+      </a>
+
+      <a href="../?configs=configs/prod/standard.json&items=pdss_sr" class="instrument-card">
+        <div class="instrument-top">
+          <div class="instrument-name">שאלון פאניקה</div>
+          <div class="instrument-abbr">PDSS-SR</div>
+        </div>
+        <div class="instrument-desc">גרסת דיווח עצמי של PDSS למדידת חומרת הפרעת פאניקה.</div>
+        <div class="instrument-try">נסו עכשיו</div>
+      </a>
+
+      <a href="../?configs=configs/prod/standard.json&items=asi_3" class="instrument-card">
+        <div class="instrument-top">
+          <div class="instrument-name">שאלון רגישות לחרדה</div>
+          <div class="instrument-abbr">ASI-3</div>
+        </div>
+        <div class="instrument-desc">18 שאלות למדידת רגישות לחרדה — גורם סיכון לפיתוח הפרעות חרדה.</div>
+        <div class="instrument-try">נסו עכשיו</div>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+<!-- WHY MADAD -->
+<section id="why">
+  <div class="container">
+    <div class="section-label">למה מדד</div>
+    <h2 class="section-title">פרטיות. פשטות. מקצועיות.</h2>
+    <p class="section-sub">מדד תוכנן מהיסוד עבור סביבה קלינית — עם אפס פשרות בנושא פרטיות המטופל.</p>
+    <div class="why-grid">
+      <div class="why-card">
+        <div class="why-icon">🔒</div>
+        <h3>פרטיות מלאה</h3>
+        <p>אף נתון לא נשמר בשרת. כל העיבוד מתבצע בדפדפן המטופל. הדוח היחיד הוא קובץ PDF שנוצר מקומית.</p>
+      </div>
+      <div class="why-card">
+        <div class="why-icon">📱</div>
+        <h3>עובד על כל מכשיר</h3>
+        <p>ממוטב למגע — המטופל יכול למלא בטלפון, טאבלט או מחשב. ללא הורדת אפליקציה.</p>
+      </div>
+      <div class="why-card">
+        <div class="why-icon">🇮🇱</div>
+        <h3>עברית מלאה</h3>
+        <p>כל השאלונים, הדוחות והממשק — בעברית. כולל תמיכה RTL מלאה ופונטים קריאים.</p>
+      </div>
+      <div class="why-card">
+        <div class="why-icon">⚡</div>
+        <h3>חינמי לחלוטין</h3>
+        <p>ללא הרשמה, ללא תשלום, ללא מנוי. מדד הוא כלי פתוח לשימוש כל מטפל.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="container" style="text-align:center">
+    <div class="section-label">מוכנים להתחיל?</div>
+    <h2 class="section-title" style="margin-bottom:14px">שלחו את השאלון הראשון עוד היום</h2>
+    <p class="section-sub">פתחו את מחולל הקישורים, בחרו שאלונים, והקישור מוכן בשניות.</p>
+    <a href="../composer/" class="btn-white">פתחו את המחולל ←</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <a href="./" class="nav-logo">מדד<span>.</span></a>
+      <p>
+        מדד פותח על ידי
+        <a href="https://ctr.huji.ac.il" target="_blank" rel="noopener">ד"ר אלעד זלוטניק</a>
+        מהמרכז להחלמה מטראומה באוניברסיטה העברית.
+        <br><br>
+        לפניות מקצועיות ושיתופי פעולה:
+        <br>
+        <a href="mailto:elad.zlotnick@mail.huji.ac.il">elad.zlotnick@mail.huji.ac.il</a>
+      </p>
+    </div>
+    <div class="footer-col">
+      <h4>שאלונים</h4>
+      <ul>
+        <li><a href="../?configs=configs/prod/standard.json&items=phq9">PHQ-9 — דיכאון</a></li>
+        <li><a href="../?configs=configs/prod/standard.json&items=gad7">GAD-7 — חרדה</a></li>
+        <li><a href="../?configs=configs/prod/standard.json&items=pcl5">PCL-5 — פוסט-טראומה</a></li>
+        <li><a href="../?configs=configs/prod/standard.json&items=oci_r">OCI-R — OCD</a></li>
+        <li><a href="../?configs=configs/prod/standard.json&items=pdss_sr">PDSS-SR — פאניקה</a></li>
+        <li><a href="../?configs=configs/prod/standard.json&items=asi_3">ASI-3 — רגישות לחרדה</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>כלים</h4>
+      <ul>
+        <li><a href="../composer/">מחולל קישורים</a></li>
+        <li><a href="./">עמוד הבית</a></li>
+        <li><a href="https://github.com/eladzlot/madad" target="_blank" rel="noopener">קוד פתוח ב-GitHub</a></li>
+        <li><a href="https://ctr.huji.ac.il" target="_blank" rel="noopener">המרכז להחלמה מטראומה</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 ד"ר אלעד זלוטניק, אוניברסיטה העברית</span>
+    <span>כל הנתונים נשארים במכשיר המטופל</span>
+  </div>
+</footer>
+
+</body>
+</html>

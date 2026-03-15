@@ -7,11 +7,11 @@ export default defineConfig(({ mode }) => ({
       input: {
         main:     'index.html',
         composer: 'composer/index.html',
+        landing:  'landing/index.html',
       },
       output: {
         manualChunks: {
           'pdf-vendor': ['pdfmake'],
-          'ajv-vendor': ['ajv'],
         },
       },
     },
