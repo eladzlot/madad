@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  ci:
+    name: Lint, test, validate, build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # ── Lint ────────────────────────────────────────────────────────────────
+      - name: Lint
+        run: npm run lint
+
+      # ── Unit tests ──────────────────────────────────────────────────────────
+      - name: Unit tests
+        run: npm test
+
+      # ── Config validation ───────────────────────────────────────────────────
+      - name: Validate configs
+        run: npm run validate:configs
+
+      # ── Production build ────────────────────────────────────────────────────
+      - name: Build
+        run: npm run build
+
+      # ── Bundle size budgets ─────────────────────────────────────────────────
+      - name: Check bundle size
+        run: npm run size

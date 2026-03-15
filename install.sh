@@ -39,7 +39,6 @@ copy "loader.test.js"                  "src/config/loader.test.js"
 copy "config-validation.js"            "src/config/config-validation.js"
 copy "config-validation.test.js"       "src/config/config-validation.test.js"
 
-
 # ── Engine ─────────────────────────────────────────────────────────────────────
 copy "dsl.js"                          "src/engine/dsl.js"
 copy "dsl.test.js"                     "src/engine/dsl.test.js"
@@ -107,7 +106,7 @@ copy "composer-loader.test.js"    "composer/src/composer-loader.test.js"
 copy "composer-render.js"         "composer/src/composer-render.js"
 copy "composer-state.js"          "composer/src/composer-state.js"
 copy "composer-state.test.js"     "composer/src/composer-state.test.js"
-
+copy "configs.json"               "public/composer/configs.json"
 
 # ── Test setup    ──────────────────────────────────────────────────────────────
 copy "vitest.config.js"                "vitest.config.js"

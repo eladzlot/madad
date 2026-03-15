@@ -1,7 +1,7 @@
 {
   "configs": [
     {
-      "name": "שאלונים סטנדרטיים",
+      "name": "ספריית שאלונים סטנדרטית",
       "url": "/configs/prod/standard.json"
     }
   ]

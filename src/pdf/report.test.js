@@ -474,39 +474,69 @@ describe('buildScoresLine', () => {
     expect(buildScoresLine({ total: null, subscales: {} }, Q)).toBeNull();
   });
 
-  it('returns a text node when total is provided', () => {
+  it('returns a text node when total is provided and no subscales', () => {
     const line = buildScoresLine({ total: 5, subscales: {} }, Q);
     expect(line).not.toBeNull();
     expect(line.text).toBeDefined();
   });
 
-  it('total value appears in the text parts', () => {
+  it('returns a stack when subscales are present', () => {
+    const line = buildScoresLine({ total: 5, subscales: { sub1: 3 } }, Q);
+    expect(line.stack).toBeDefined();
+    expect(line.stack).toHaveLength(2);
+  });
+
+  it('total value appears in the total line', () => {
     const line = buildScoresLine({ total: 14, subscales: {} }, Q);
     const allText = line.text.map(p => p.text ?? p).join('');
     expect(allText).toContain('14');
   });
 
-  it('includes RLM before colon in scores label', () => {
-    const line = buildScoresLine({ total: 5, subscales: {} }, Q);
-    const allText = line.text.map(p => p.text ?? p).join('');
-    expect(allText).toContain(RLM + ':');
+  it('total: number first (rightmost in RTL), then colon, then label', () => {
+    const line = buildScoresLine({ total: 27, subscales: {} }, Q);
+    // No subscales and no category — returns single text node
+    expect(line.text[0].text).toBe('27');
+    expect(line.text[0].direction).toBe('ltr');
+    expect(line.text[0].bold).toBe(true);
+    expect(line.text[1].text).toContain(':');
   });
 
   it('uses NBSP within Hebrew label', () => {
     const line = buildScoresLine({ total: 5, subscales: {} }, Q);
     const allText = line.text.map(p => p.text ?? p).join('');
     expect(allText).toContain(NBSP);
-    expect(allText).not.toMatch(/ציון כולל/); // no bare space in label
   });
 
-  it('includes subscale value and label when subscales present', () => {
-    const q = {
-      ...Q,
-      scoring: { subscales: { sub1: { title: 'תת\u00a0סקלה' } } },
-    };
+  it('category gets its own line in the stack', () => {
+    const line = buildScoresLine({ total: 5, subscales: {}, category: 'קל' }, Q);
+    expect(line.stack).toHaveLength(2);
+    // Category line text is a bidiNodes array
+    const catText = line.stack[1].text.map(n => n.text ?? n).join('');
+    expect(catText).toContain('קל');
+  });
+
+  it('subscale: number first, then colon, then label', () => {
+    const line = buildScoresLine({ total: 5, subscales: { sub1: 3 } }, Q);
+    // stack: [totalLine, subscaleLine]
+    const subLine = line.stack[1];
+    expect(subLine.text[0].text).toBe('3');
+    expect(subLine.text[0].direction).toBe('ltr');
+    expect(subLine.text[1].text).toContain(':');
+  });
+
+  it('uses subscaleLabels when provided', () => {
+    const q = { ...Q, subscaleLabels: { sub1: 'תת-סקלה ראשונה (Sub One)' } };
     const line = buildScoresLine({ total: 5, subscales: { sub1: 3 } }, q);
-    const allText = line.text.map(p => p.text ?? p).join('');
-    expect(allText).toContain('3');
+    const subLine = line.stack[1];
+    const allText = subLine.text.map(p => p.text ?? p).join('');
+    expect(allText).toContain('תת-סקלה');
+  });
+
+  it('falls back to subscale ID when no label defined', () => {
+    const line = buildScoresLine({ total: 5, subscales: { sub1: 3 } }, Q);
+    const subLine = line.stack[1];
+    const allText = subLine.text.map(p => p.text ?? p).join('');
+    expect(allText).toContain('sub1');
   });
 });
 

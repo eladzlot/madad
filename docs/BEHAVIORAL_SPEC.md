@@ -187,14 +187,14 @@ All standard instruments are defined in a single canonical config file (`standar
 
 ### 9.2 Currently configured instruments
 
-| Instrument | Full name | Config file | Status |
+| Instrument | Full name | Config file | Subscales |
 |---|---|---|---|
-| PHQ-9 | Patient Health Questionnaire — 9 items | `standard.json` | Live |
-| PCL-5 | PTSD Checklist for DSM-5 | in migration | Pending move to `standard.json` |
-| PDSS-SR | Panic Disorder Severity Scale — Self Report | in migration | Pending move to `standard.json` |
-| OCI-R | Obsessive Compulsive Inventory — Revised | in migration | Pending move to `standard.json` |
-| ASI-3 | Anxiety Sensitivity Index — 3 | in migration | Pending move to `standard.json` |
-| GAD-7 | Generalised Anxiety Disorder scale — 7 items | — | To be added |
+| PHQ-9 | Patient Health Questionnaire — 9 items | `standard.json` | — |
+| GAD-7 | Generalised Anxiety Disorder scale — 7 items | `standard.json` | — |
+| PCL-5 | PTSD Checklist for DSM-5 | `standard.json` | Intrusion, Avoidance, Dysphoria, Hyperarousal |
+| OCI-R | Obsessive Compulsive Inventory — Revised | `standard.json` | Washing, Obsessing, Hoarding, Ordering, Checking, Neutralising |
+| PDSS-SR | Panic Disorder Severity Scale — Self Report | `standard.json` | — |
+| ASI-3 | Anxiety Sensitivity Index — 3 | `standard.json` | — |
 
 Additional instruments using Likert or Binary item types may be added by editing `standard.json`. See `docs/INSTRUMENTS.md` for the step-by-step process. Support for other item types (e.g. free text, numeric input) is planned for a future phase.
 

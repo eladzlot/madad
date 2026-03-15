@@ -21,7 +21,7 @@ import regularFontUrl from '../../public/fonts/NotoSansHebrew-Regular.ttf?url';
 import boldFontUrl    from '../../public/fonts/NotoSansHebrew-Bold.ttf?url';
 
 // ── Branding ──────────────────────────────────────────────────────────────────
-const APP_URL  = 'https://example.com';          // TODO: parameterise via config
+const getAppUrl = () => (typeof window !== 'undefined' ? window.location.origin : '');
 
 // ── Layout constants ──────────────────────────────────────────────────────────
 const PAGE_MARGIN   = 40;   // pt, all sides
@@ -168,14 +168,24 @@ export function bidiNodes(str, opts = {}) {
     return [{ text: str.replace(/ /g, NBSP), ...opts }];
   }
 
-  // Mixed — tokenise, classify, group into runs
+  // Mixed — tokenise, classify, group into runs.
+  // Sub-split on hyphens (keeping hyphen on the left sub-token) so mixed
+  // tokens like "ל-OCD" are classified correctly rather than being treated
+  // as a single ambiguous token that defeats script detection.
   const tokens = [];
   let i = 0;
   while (i < str.length) {
     if (str[i] === ' ') { i++; continue; }
     let j = i;
     while (j < str.length && str[j] !== ' ') j++;
-    tokens.push({ tok: str.slice(i, j), level: _tokenLevel(str.slice(i, j)) });
+    const word = str.slice(i, j);
+    // "ל-OCD" → ["ל-", "OCD"]; "PHQ-9" stays as one token (no letter after hyphen ambiguity)
+    // Only split at cross-script hyphens (Hebrew→Latin or Latin→Hebrew).
+    // Same-script hyphens like "תת-סקלה" or "PHQ-9" are left intact.
+    const parts = word.split(/(?<=[֐-׿]-)(?=[A-Za-z])|(?<=[A-Za-z]-)(?=[֐-׿])/);
+    for (const part of parts) {
+      if (part) tokens.push({ tok: part, level: _tokenLevel(part) });
+    }
     i = j;
   }
 
@@ -321,7 +331,7 @@ export function buildAlertSection(sessionState, config) {
     table: {
       widths: ['*'],
       body: [
-        [{ text: '⚠\u00a0התראות\u00a0קליניות', style: 'alertTitle', border: [true, true, true, false] }],
+        [{ text: '!\u00a0התראות\u00a0קליניות', style: 'alertTitle', border: [true, true, true, false] }],
         ...triggered.map(a => [{
           // qTitle and message may contain mixed Hebrew/Latin — use bidiNodes
           text: [
@@ -375,20 +385,54 @@ export function buildQuestionnaireSections(sessionState, config) {
 export function buildScoresLine(scoreResult, q) {
   if (!scoreResult || scoreResult.total == null) return null;
 
-  const parts = [];
+  // Mixed Hebrew/Latin strings use bidiNodes() — which pre-reverses runs
+  // for pdfmake's RTL paragraph rendering (pdfmake reverses them back).
+  // Numbers are isolated in direction:'ltr' nodes.
+  // Category is on its own line to prevent bidi interference with the score.
 
-  parts.push({ text: 'ציון\u00a0כולל\u200f:\u00a0' + String(scoreResult.total) });
+  // ── Total line (bold) ──────────────────────────────────────────────────
+  const totalLine = {
+    text: [
+      { text: String(scoreResult.total), bold: true, direction: 'ltr' },
+      { text: ' : ', bold: true },
+      { text: 'ציון כולל', bold: true },
+    ],
+    style: 'scoresLine',
+    margin: [0, 0, 0, 1],
+  };
 
-  const subscaleEntries = Object.entries(scoreResult.subscales ?? {});
-  for (const [subId, subVal] of subscaleEntries) {
-    const subDef   = q.scoring?.subscales?.[subId];
-    const subLabel = subDef?.title ?? subId;
-    parts.push({ text: '\u00a0\u00a0' });
-    parts.push(...bidiNodes(subLabel));
-    parts.push({ text: '\u200f:\u00a0' + String(subVal ?? '—') });
+  const lines = [totalLine];
+
+  // ── Category: own line, bidiNodes for mixed Hebrew/Latin ───────────────
+  if (scoreResult.category) {
+    lines.push({
+      text: bidiNodes(scoreResult.category),
+      style: 'scoresLine',
+      color: '#666666',
+      margin: [0, 0, 0, 2],
+    });
   }
 
-  return { text: parts, style: 'scoresLine', margin: [0, 0, 0, 8] };
+  // ── Subscale line ──────────────────────────────────────────────────────
+  const subscaleEntries = Object.entries(scoreResult.subscales ?? {});
+  if (subscaleEntries.length > 0) {
+    const SEP = { text: '  |  ' };
+    const subParts = [];
+    for (const [subId, subVal] of subscaleEntries) {
+      if (subParts.length > 0) subParts.push(SEP);
+      subParts.push({ text: String(subVal ?? '—'), direction: 'ltr' });
+      subParts.push({ text: ' : ' });
+      const label = q.subscaleLabels?.[subId] ?? subId;
+      subParts.push(...bidiNodes(label));
+    }
+    lines.push({
+      text: subParts,
+      style: 'scoresLine',
+      margin: [0, 0, 0, 8],
+    });
+  }
+
+  return lines.length === 1 ? lines[0] : { stack: lines };
 }
 
 // ── Response table ────────────────────────────────────────────────────────────
@@ -508,7 +552,7 @@ export function buildFooter(config) {
           { text: 'גרסת\u00a0תצורה\u200f:\u00a0' + cfgVer },
           { text: '\u00a0\u00a0|\u00a0\u00a0' },
           { text: 'הערכה\u00a0קלינית' },
-          { text: '\u00a0\u00a0' + APP_URL },
+          { text: '\u00a0\u00a0' + getAppUrl() },
         ],
         alignment: 'right',
         fontSize:  8,

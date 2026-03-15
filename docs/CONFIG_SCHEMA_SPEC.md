@@ -65,6 +65,7 @@ A config file is a single JSON object with the following fields:
 | `defaultOptionSetId` | string (ID) | no | Used by any Likert item that declares neither `options` nor `optionSetId`. If a Likert item has no options and no default is set, the config loader throws. |
 | `items` | array | yes | Flat array of item and control-flow nodes. Min 1. |
 | `scoring` | object | no | Scoring specification. If absent, questionnaire is unscored. |
+| `subscaleLabels` | object | no | Display labels for subscale IDs. Keys must match subscale IDs defined in `scoring.subscales`. Values are free-form strings (e.g. `"שטיפה (Washing)"`) shown in the PDF. If absent, subscale IDs are used as-is. |
 | `interpretations` | object | no | Score-to-label mapping |
 | `alerts` | array | no | Clinical alert definitions |
 
