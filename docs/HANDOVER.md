@@ -1,5 +1,5 @@
 # Handover Document
-**Project:** Clinical Assessment App (working name: Measure)
+**Project:** Madad — Clinical Assessment App
 **Document version:** 1.1
 **Status:** Living document — update whenever the system state changes
 **Purpose:** Everything a developer (human or AI) needs to understand the project, work safely within it, and expand it without breaking things.
@@ -163,8 +163,7 @@ Specialised config files (DIAMOND, CPT worksheets, research instruments) will be
 | No deploy workflow | Cannot ship without one | Add `.github/workflows/deploy.yml` gated on CI |
 | `randomize` throws `NotImplementedError` | Safe now; breaks if config author uses it | Already documented; add pre-flight warning to `validate:configs` |
 | Component branch coverage ~60% | UI regressions may go undetected | E2E tests compensate; acceptable until CI is running |
-| `emotion.json` still on disk | Minor confusion | Delete when ready |
-| `package.json` name is `psychology-questionnaire` | Minor inconsistency | Rename when product name is settled |
+| `emotion.json` deleted | — | Done |
 
 ---
 
@@ -216,6 +215,6 @@ To add a new instrument: `docs/INSTRUMENTS.md`.
 - **`src/engine/sequence-runner.js`** — shared by orchestrator and engine. Back-navigation logic is subtle; tests are the specification.
 - **Session state shape** — `answers`, `scores`, `alerts` keyed by `sessionKey`. PDF generator, orchestrator, engine, and results screen all read from this shape.
 - **`QuestionnaireSet.schema.json`** — changing without updating `config-validation.js` and existing configs will break validation.
-- **`src/pdf/report.js` — RTL rendering** — pdfmake has incomplete bidi support. Numbers must be isolated in `direction: 'ltr'` nodes. Mixed Hebrew/Latin strings go through `bidiNodes()`. Do not concatenate numbers into Hebrew strings. Do not use `rtl: true` on text nodes. The `bidiNodes()` hyphen-splitting only fires at **cross-script boundaries** — do not broaden it.
+- **`src/pdf/report.js` — RTL rendering** — pdfmake has incomplete bidi support. Six specific rules govern all text rendering; they are documented in full in `docs/IMPLEMENTATION_SPEC.md §19.3`. The short version: numbers in `direction:'ltr'` nodes, mixed Hebrew/Latin through `bidiNodes()`, category on its own line, never use `rtl: true`, never concatenate numbers into Hebrew strings.
 - **`src/pdf/report.js` — pdfmake API** — uses Promise-based `getBuffer()`. The callback form `getBlob(callback)` silently hangs.
 - **`vite.config.js` chunk assignment** — `pdfmake` and `ajv` are pinned to named chunks. Removing `manualChunks` will pull them into the entry bundle.

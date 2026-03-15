@@ -1,4 +1,4 @@
-# Clinical Assessment App — Implementation Specification
+# Madad — Implementation Specification
 **Version:** 1.0  
 **Status:** Draft  
 **Supersedes:** ARCHITECTURE.md  
@@ -7,7 +7,7 @@
 
 ## 1. Purpose
 
-This document specifies how the Clinical Assessment App is to be built. It is intended for the developer or AI implementing the system. It describes module responsibilities, data models, engine behavior, scoring logic, PDF generation, and build/deployment. It should be read alongside the Behavioral Specification, which defines what the system does from the user's perspective.
+This document specifies how Madad is to be built. It is intended for the developer or AI implementing the system. It describes module responsibilities, data models, engine behavior, scoring logic, PDF generation, and build/deployment. It should be read alongside the Behavioral Specification, which defines what the system does from the user's perspective.
 
 ---
 
@@ -794,7 +794,7 @@ The PDF is generated at the moment the patient taps the button; it is not genera
 
 pdfmake is imported dynamically via `preloadPdf()` at session start. By the time the patient reaches the results screen, the chunk is already cached. The Noto Sans Hebrew font (Regular + Bold) is embedded and loaded as separate hashed assets.
 
-### 18.1 Public API
+### 19.1 Public API
 
 ```js
 preloadPdf()
@@ -806,7 +806,7 @@ generateReport(sessionState, config, session)
 // Does NOT trigger download — caller is responsible for share or anchor download.
 ```
 
-### 18.2 pdfmake 0.3.x API notes
+### 19.2 pdfmake 0.3.x API
 
 ```js
 // ✓ Correct — Promise-based, returns Uint8Array
@@ -816,22 +816,54 @@ const blob   = new Blob([buffer], { type: 'application/pdf' });
 // ✗ Wrong — getBlob(callback) silently hangs in 0.3.x, callback never fires
 ```
 
-RTL rendering: do NOT use `rtl: true` on text nodes — causes double-reversal. Use NBSP (`\u00a0`) instead of regular spaces between Hebrew words. See `bidiNodes()` for mixed Hebrew/Latin strings.
+### 19.3 RTL rendering rules
 
-### 18.3 Document structure (in order)
+pdfmake has **incomplete Unicode Bidirectional Algorithm support**. It applies its own RTL reordering rather than delegating to the Unicode standard. This has several non-obvious consequences that have been resolved through careful implementation. Do not change any of the following without understanding the full impact.
+
+**Rule 1 — Never use `rtl: true` on text nodes.**
+Setting `rtl: true` on a node inside an RTL paragraph causes double-reversal — pdfmake reverses the content once for the `rtl` flag and once for the paragraph direction. The document default is `alignment: 'right'`; that is sufficient.
+
+**Rule 2 — Never concatenate numbers into Hebrew strings.**
+pdfmake reverses digit strings inside RTL text. `'ציון כולל: ' + score` will render the score digits in reverse order (e.g. `39` → `93`). All numeric values must be isolated in their own `{ text: String(n), direction: 'ltr' }` nodes.
+
+**Rule 3 — Text node array order is right-to-left.**
+In an RTL paragraph, pdfmake lays out text node arrays from right to left. Array index 0 renders on the right. To achieve the visual order `54 :ציון כולל` (right to left), the array must be `[number_node, colon_node, label_node]` — number first.
+
+**Rule 4 — Use `bidiNodes()` for mixed Hebrew/Latin strings.**
+pdfmake reverses Latin runs inside Hebrew text (e.g. `"OCD"` → `"DCO"`). The `bidiNodes()` function in `report.js` works around this by pre-reversing mixed-script runs before they reach pdfmake, so pdfmake's second reversal restores the correct visual order.
+
+`bidiNodes()` is appropriate for:
+- Subscale labels: `"שטיפה (Washing)"`, `"חדירה (Intrusion)"`
+- Category labels: `"חשד ל-OCD"`, `"חשד ל-PTSD"`
+- Alert messages and questionnaire titles containing Latin acronyms
+- Item text in response table cells
+
+`bidiNodes()` must **not** be used in the scores line text array alongside isolated number nodes — the pre-reversal conflicts with the explicit node ordering (Rule 3). In that context, pass the string as a plain `{ text: string }` node or use `bidiNodes()` on its own dedicated line.
+
+**Rule 5 — Use NBSP (U+00A0) instead of regular spaces within Hebrew phrases.**
+pdfmake drops regular spaces between Hebrew words in some contexts. All space characters within Hebrew label strings should be NBSP.
+
+**Rule 6 — Category and subscale layout.**
+The scores section uses a stack of separate lines:
+1. Bold total line: `[number_node (ltr), colon_node, hebrew_label_node]`
+2. Category line (if present): `bidiNodes(category)` — its own line to prevent bidi interference with the number
+3. Subscale line (if present): per-subscale entries of `[number_node (ltr), colon_node, ...bidiNodes(label)]`, separated by `|`
+
+Keeping the category on its own line is essential — mixing a Hebrew category string with a numeric node in the same text array causes pdfmake to pull the Hebrew rightward regardless of array position.
+
+### 19.4 Document structure (in order)
 
 1. **Patient information header** — name (if provided), patient ID, date/time.
-2. **Clinical alerts** — all triggered alerts, each with its questionnaire title and message. Omitted if no alerts fired.
-3. **Questionnaire results** — for each instrument: title, total score, subscale scores if applicable.
-4. **Response table** — one row per answerable item (instruction items excluded): item number, item text, response label, numeric value. Risk highlighting rules:
-   - Response equals the maximum possible value: soft red background (`#FCE8E8`, text `#8A1C1C`)
-   - Response equals the second-highest possible value (Likert only, not binary): soft yellow background (`#FFF6DB`, text `#8A6A00`)
-5. **Footer** — generation timestamp, app version, config version, app name and URL.
+2. **Clinical alerts** — all triggered alerts, each with its questionnaire title and message. Omitted if no alerts fired. Alert title uses `!` prefix (not `⚠` — that glyph is not in Noto Sans Hebrew).
+3. **Questionnaire results** — for each instrument: bold total score line, category line (if defined), subscale line (if defined).
+4. **Response table** — one row per answerable item (instruction items excluded): item number, item text, response label, numeric value. Risk highlighting:
+   - Maximum possible value: soft red background (`#FCE8E8`, text `#8A1C1C`)
+   - Second-highest value (Likert only): soft yellow background (`#FFF6DB`, text `#8A6A00`)
+5. **Footer** — generation timestamp, app version, config version, app URL (`window.location.origin`).
 
-### 18.4 Not yet implemented
+### 19.5 Not yet implemented
 
 - Embedded `data.json` machine-readable attachment via pdfmake EmbeddedFiles (planned v2)
-- `APP_NAME` / `APP_URL` from config (currently hardcoded constants)
 
 ---
 

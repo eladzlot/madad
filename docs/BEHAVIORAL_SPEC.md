@@ -1,4 +1,4 @@
-# Clinical Assessment App — Behavioral Specification
+# Madad — Behavioral Specification
 **Version:** 1.1  
 **Status:** Draft  
 
@@ -6,7 +6,7 @@
 
 ## 1. Purpose and Scope
 
-This document describes the behavior of the Clinical Assessment App from the perspective of its users — the clinician and the patient. It covers the full lifecycle of a clinical assessment session: from link generation through questionnaire completion to PDF delivery. It does not describe implementation details or technology choices.
+This document describes the behavior of Madad from the perspective of its users — the clinician and the patient. It covers the full lifecycle of a clinical assessment session: from link generation through questionnaire completion to PDF delivery. It does not describe implementation details or technology choices.
 
 ---
 
