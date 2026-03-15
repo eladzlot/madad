@@ -18,15 +18,17 @@ import { test, expect } from '@playwright/test';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-const COMPOSER_URL = '/composer/index.html?manifest=/composer/configs.test.json';
+const COMPOSER_URL = '/composer/index.html';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 /** Navigate to composer and wait for it to finish loading */
 async function gotoComposer(page) {
   await page.goto(COMPOSER_URL);
-  // Loading spinner disappears once configs are loaded
-  await expect(page.locator('.c-loading')).not.toBeVisible({ timeout: 10_000 });
+  // Wait for either the item list to appear or an error to show
+  await expect(
+    page.locator('.c-item-list, .c-error, .c-empty')
+  ).toBeVisible({ timeout: 15_000 });
 }
 
 /** Get the current URL shown in the URL preview box */

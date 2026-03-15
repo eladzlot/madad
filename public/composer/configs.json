@@ -3,6 +3,10 @@
     {
       "name": "ספריית שאלונים סטנדרטית",
       "url": "/configs/prod/standard.json"
+    },
+    {
+      "name": "שאלונים לבדיקה",
+      "url": "/configs/test/e2e.json"
     }
   ]
 }

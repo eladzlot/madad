@@ -2,10 +2,7 @@
 // Shared mutable state, URL builder, search matcher, and PID validator.
 // All other composer modules import from here — nothing else holds state.
 
-const _manifestParam = new URLSearchParams(
-  typeof window !== 'undefined' ? window.location.search : ''
-).get('manifest');
-export const MANIFEST_URL = _manifestParam ?? '/composer/configs.json';
+export const MANIFEST_URL = '/composer/configs.json';
 export const PID_PATTERN  = /^[a-zA-Z0-9\u0590-\u05FF_-]*$/;
 
 export const state = {
