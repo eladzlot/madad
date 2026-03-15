@@ -1,0 +1,8 @@
+{
+  "configs": [
+    {
+      "name": "שאלונים לבדיקה (E2E)",
+      "url": "/configs/test/e2e.json"
+    }
+  ]
+}

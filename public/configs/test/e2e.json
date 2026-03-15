@@ -1,0 +1,233 @@
+{
+  "id": "e2e",
+  "version": "1.0.0",
+  "questionnaires": [
+    {
+      "id": "phq9",
+      "title": "PHQ-9",
+      "description": "9-item depression screening scale.",
+      "keywords": [
+        "depression",
+        "PHQ-9"
+      ],
+      "defaultOptionSetId": "frequency_4",
+      "optionSets": {
+        "frequency_4": [
+          {
+            "label": "כלל לא",
+            "value": 0
+          },
+          {
+            "label": "מספר ימים",
+            "value": 1
+          },
+          {
+            "label": "ביותר ממחצית הימים",
+            "value": 2
+          },
+          {
+            "label": "כמעט כל יום",
+            "value": 3
+          }
+        ]
+      },
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "במהלך השבוע האחרון, באיזו תדירות היית מוטרד מכל אחת מן הבעיות הבאות?"
+        },
+        {
+          "id": "1",
+          "type": "likert",
+          "text": "עניין או הנאה מועטים מעשיית דברים"
+        },
+        {
+          "id": "2",
+          "type": "likert",
+          "text": "תחושת דכדוך, דיכאון, או חוסר תקווה"
+        },
+        {
+          "id": "3",
+          "type": "likert",
+          "text": "קשיים בהירדמות או בשינה רציפה, או עודף שינה"
+        },
+        {
+          "id": "4",
+          "type": "likert",
+          "text": "תחושה של עייפות או אנרגיה מועטה"
+        },
+        {
+          "id": "5",
+          "type": "likert",
+          "text": "תיאבון מועט או אכילת יתר"
+        },
+        {
+          "id": "6",
+          "type": "likert",
+          "text": "מרגיש רע לגבי עצמך"
+        },
+        {
+          "id": "7",
+          "type": "likert",
+          "text": "קושי להתרכז בדברים"
+        },
+        {
+          "id": "8",
+          "type": "likert",
+          "text": "היית מדבר או נע באיטיות"
+        },
+        {
+          "id": "9",
+          "type": "likert",
+          "text": "מחשבות שהיה עדיף לו היית מת"
+        }
+      ],
+      "scoring": {
+        "method": "sum",
+        "maxPerItem": 3
+      },
+      "interpretations": {
+        "target": "total",
+        "ranges": [
+          {
+            "min": 0,
+            "max": 4,
+            "label": "מינימלי"
+          },
+          {
+            "min": 5,
+            "max": 9,
+            "label": "קל"
+          },
+          {
+            "min": 10,
+            "max": 14,
+            "label": "בינוני"
+          },
+          {
+            "min": 15,
+            "max": 19,
+            "label": "בינוני-חמור"
+          },
+          {
+            "min": 20,
+            "max": 27,
+            "label": "חמור"
+          }
+        ]
+      },
+      "alerts": [
+        {
+          "id": "suicidality",
+          "condition": "item.9 >= 1",
+          "message": "פריט 9 — דיווח על מחשבות אובדניות",
+          "severity": "critical"
+        }
+      ]
+    },
+    {
+      "id": "test_q",
+      "title": "שאלון בדיקה",
+      "description": "שאלון בדיקה קצר לצורכי E2E.",
+      "keywords": [
+        "test",
+        "e2e"
+      ],
+      "defaultOptionSetId": "agree_4",
+      "optionSets": {
+        "yesno": [
+          {
+            "label": "כן",
+            "value": 1
+          },
+          {
+            "label": "לא",
+            "value": 0
+          }
+        ],
+        "agree_4": [
+          {
+            "label": "כלל לא",
+            "value": 0
+          },
+          {
+            "label": "קצת",
+            "value": 1
+          },
+          {
+            "label": "במידה רבה",
+            "value": 2
+          },
+          {
+            "label": "לגמרי",
+            "value": 3
+          }
+        ]
+      },
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "ברוכים הבאים לשאלון הבדיקה."
+        },
+        {
+          "id": "b1",
+          "type": "binary",
+          "text": "האם ישנת טוב הלילה?",
+          "optionSetId": "yesno"
+        },
+        {
+          "id": "b2",
+          "type": "binary",
+          "text": "האם הרגשת רגוע היום?",
+          "optionSetId": "yesno"
+        },
+        {
+          "id": "l1",
+          "type": "likert",
+          "text": "הרגשתי ממוקד ופרודוקטיבי במהלך היום"
+        },
+        {
+          "id": "l2",
+          "type": "likert",
+          "text": "הרגשתי קשר ותמיכה מאנשים סביבי"
+        }
+      ],
+      "scoring": {
+        "method": "sum"
+      }
+    }
+  ],
+  "batteries": [
+    {
+      "id": "phq9_intake",
+      "title": "הערכה ראשונית — דיכאון",
+      "description": "סוללת PHQ-9 בלבד.",
+      "keywords": [
+        "depression",
+        "intake"
+      ],
+      "sequence": [
+        {
+          "questionnaireId": "phq9"
+        }
+      ]
+    },
+    {
+      "id": "standard_intake",
+      "title": "שאלון בדיקה",
+      "description": "סוללת בדיקה עם שאלות בינאריות וליקרט.",
+      "keywords": [
+        "test",
+        "binary",
+        "likert"
+      ],
+      "sequence": [
+        {
+          "questionnaireId": "test_q"
+        }
+      ]
+    }
+  ]
+}

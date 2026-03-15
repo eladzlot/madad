@@ -107,6 +107,8 @@ copy "composer-render.js"         "composer/src/composer-render.js"
 copy "composer-state.js"          "composer/src/composer-state.js"
 copy "composer-state.test.js"     "composer/src/composer-state.test.js"
 copy "configs.json"               "public/composer/configs.json"
+copy "configs.test.json"          "public/composer/configs.test.json"
+
 
 # ── Test setup    ──────────────────────────────────────────────────────────────
 copy "vitest.config.js"                "vitest.config.js"
@@ -120,8 +122,8 @@ copy "fixture-pcl5.json"               "tests/fixtures/pcl5.json"
 copy "fixture-ocir.json"               "tests/fixtures/ocir.json"
 
 # ── E2E tests ──────────────────────────────────────────────────────────────────
-copy "e2e-patient-flow.test.js"        "tests/e2e/patient-flow.test.js"
-copy "e2e-composer.test.js"            "tests/e2e/composer.test.js"
+copy "patient-flow.e2e.test.js"        "tests/e2e/patient-flow.e2e.test.js"
+copy "composer.e2e.test.js"            "tests/e2e/composer.e2e.test.js"
 
 # ── Scripts ────────────────────────────────────────────────────────────────────
 copy "validate-configs.mjs"            "scripts/validate-configs.mjs"
@@ -129,6 +131,7 @@ copy "check-size.mjs"                  "scripts/check-size.mjs"
 
 # ── Config data ────────────────────────────────────────────────────────────────
 copy "standard.json"                   "public/configs/prod/standard.json"
+copy "e2e.json"                        "public/configs/test/e2e.json"
 copy "QuestionnaireSet.schema.test.js" "src/config/QuestionnaireSet.schema.test.js"
 
 copy "ci.yml"                          ".github/workflows/ci.yml"

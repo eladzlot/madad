@@ -18,7 +18,7 @@ import { test, expect } from '@playwright/test';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-const COMPOSER_URL = '/composer/index.html';
+const COMPOSER_URL = '/composer/index.html?manifest=/composer/configs.test.json';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 

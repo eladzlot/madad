@@ -19,7 +19,7 @@ import { test, expect } from '@playwright/test';
 
 // ── URLs ──────────────────────────────────────────────────────────────────────
 
-const CONFIG = '/configs/prod/standard.json';
+const CONFIG = '/configs/test/e2e.json';
 
 /** PHQ-9 only */
 const PHQ9_URL = `/?configs=${CONFIG}&items=phq9_intake`;
