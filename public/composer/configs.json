@@ -5,6 +5,10 @@
       "url": "/configs/prod/standard.json"
     },
     {
+      "name": "שאלוני הערכה ראשונית",
+      "url": "/configs/prod/intake.json"
+    },
+    {
       "name": "שאלונים לבדיקה",
       "url": "/configs/test/e2e.json"
     }

@@ -1,6 +1,6 @@
 # Handover Document
 **Project:** Madad — Clinical Assessment App
-**Document version:** 1.1
+**Document version:** 1.2
 **Status:** Living document — update whenever the system state changes
 **Purpose:** Everything a developer (human or AI) needs to understand the project, work safely within it, and expand it without breaking things.
 
@@ -15,6 +15,11 @@ A static web application for clinical psychological assessment. No backend, no d
 **Patient workflow:** Opens the URL, completes questionnaires one item at a time, downloads a PDF, shares it with the clinician.
 
 **What never happens:** No patient data is stored anywhere. Nothing is transmitted. The PDF is the entire output.
+
+**Deployed at:** `https://eladzlot.github.io/madad/`
+**Landing page:** `https://eladzlot.github.io/madad/landing/`
+**Composer:** `https://eladzlot.github.io/madad/composer/`
+**Contact:** Dr. Elad Zlotnick, Hebrew University / CTR — elad.zlotnick@mail.huji.ac.il
 
 ---
 
@@ -60,15 +65,20 @@ src/pdf/report.js              ← PDF generation (pdfmake, lazy-loaded)
 - Alert evaluation (item-level and score-level conditions)
 - Back navigation including keyboard and swipe
 - PDF: patient info, alerts, scores, response table with risk highlighting
-- PDF: bold total score on its own line; subscale scores on a second line with Hebrew labels from `subscaleLabels`
+- PDF: bold total score on its own line; subscale scores on a second line with Hebrew labels
 - PDF: numbers isolated in `direction:ltr` nodes — bypasses pdfmake RTL shaping
 - PDF: mixed Hebrew/Latin strings via `bidiNodes()` with cross-script hyphen splitting
 - PDF: `APP_URL` resolved dynamically via `window.location.origin`
 - Composer at `/composer/` with real-time search by title, description, and keywords
-- CI workflow: `.github/workflows/ci.yml`
-- 635 unit tests passing across 24 test files
+- Landing page at `/landing/` for therapist-facing marketing
+- CI workflow: `.github/workflows/ci.yml` — lint → unit tests → validate configs → build → size → E2E
+- Deploy workflow: `.github/workflows/deploy.yml` — same + GitHub Pages deployment
+- 636 unit tests passing across 24 test files
+- E2E tests passing (Chromium; WebKit excluded from CI)
 
-### Instrument library (`standard.json` v1.2.0)
+### Instrument library
+
+**`standard.json` v1.2.0** — standard clinical scales:
 
 | ID | Name | Subscales | Alerts |
 |---|---|---|---|
@@ -79,16 +89,33 @@ src/pdf/report.js              ← PDF generation (pdfmake, lazy-loaded)
 | `pdss_sr` | שאלון פאניקה (PDSS-SR) | — | — |
 | `asi_3` | שאלון רגישות לחרדה (ASI-3) | — | — |
 
-No batteries defined yet — deferred until the instrument library is more complete.
+**`intake.json` v1.0.0** — initial assessment screeners:
+
+| ID | Name | Alerts |
+|---|---|---|
+| `diamond_sr` | DIAMOND Self Report Screener | Psychotic ideation (q29/q30), mania (q7), trauma (q19), substance use (q24/q25) |
+
+**Policy:** Only open-source instruments. Do not add proprietary instruments (e.g. BDI-II) without a license.
+
+No batteries defined yet.
+
+### Config files and manifest
+
+```
+public/configs/
+  prod/standard.json       ← Standard clinical scales (6 instruments)
+  prod/intake.json         ← Initial assessment screeners (DIAMOND)
+  test/e2e.json            ← E2E test fixtures only — not for clinical use
+  CONTRIBUTING.md          ← How to add an instrument (human-readable)
+  LLM_GUIDE.md             ← Comprehensive spec for LLM-assisted authoring
+public/composer/
+  configs.json             ← Composer manifest (lists all prod configs)
+```
 
 ### What is stubbed / not implemented
 - **`randomize` node:** Recognised by schema and runner; execution throws `NotImplementedError`. Do not remove the schema definition.
-- **Severity tiers in alerts:** `severity` field exists in data model; not rendered in PDF.
-- **Embedded JSON attachment in PDF:** Planned v2. Not started.
-
-### What does not exist yet
-- **Deployment:** Not deployed. CI workflow is ready; deploy workflow is not.
-- **Batteries:** Deliberately deferred until instrument library is complete enough.
+- **Severity tiers in alerts:** `severity` field exists in data model; not rendered differently in PDF. Planned next.
+- **Embedded JSON attachment in PDF:** Planned. Not started.
 
 ---
 
@@ -117,42 +144,47 @@ No batteries defined yet — deferred until the instrument library is more compl
 │   ├── pdf/report.js             # PDF generation
 │   └── styles/
 ├── composer/                     # Composer tool (separate entry point)
+├── landing/                      # Landing page for therapists
 ├── public/
-│   ├── configs/
-│   │   ├── prod/standard.json    # Canonical instrument library (v1.2.0)
-│   │   ├── prod/emotion.json     # Archive — superseded, not referenced
-│   │   └── test/                 # Staging fixtures (currently empty)
+│   ├── configs/                  # Clinical content (see above)
 │   ├── fonts/                    # Noto Sans Hebrew TTF
 │   └── composer/configs.json     # Composer manifest
 ├── tests/
 │   ├── fixtures/                 # phq9.json, pcl5.json, ocir.json
-│   ├── e2e/
+│   ├── e2e/                      # patient-flow.e2e.test.js, composer.e2e.test.js
 │   └── setup.js / setup-dom.js
 ├── scripts/
-│   ├── validate-configs.mjs
+│   ├── validate-configs.mjs      # Cross-file ID collision detection included
 │   └── check-size.mjs
-├── .github/workflows/ci.yml
+├── .github/workflows/
+│   ├── ci.yml                    # Runs on push + PRs
+│   └── deploy.yml                # Runs on push to main, deploys to Pages
 └── docs/
     ├── HANDOVER.md               ← this file
     ├── BEHAVIORAL_SPEC.md
     ├── IMPLEMENTATION_SPEC.md
     ├── CONFIG_SCHEMA_SPEC.md
-    ├── DSL_SPEC.md
-    ├── SEQUENCE_SPEC.md
-    ├── RENDER_SPEC.md
     ├── COMPOSER_SPEC.md
-    └── INSTRUMENTS.md
+    ├── INSTRUMENTS.md
+    └── (RENDER_SPEC.md, SEQUENCE_SPEC.md, DSL_SPEC.md — implementation detail)
 ```
 
 ---
 
-## 5. Config strategy
+## 5. Config and URL strategy
 
-All standard instruments live in `public/configs/prod/standard.json`. Adding an instrument is config-only — no code changes required for standard Likert/binary instruments. See `docs/INSTRUMENTS.md`.
+### Config files
+All standard instruments live in `public/configs/prod/`. Each file is a self-contained `QuestionnaireSet`. The Composer manifest (`public/composer/configs.json`) lists all prod configs — add a new file here to make it visible in the Composer.
 
-Specialised config files (DIAMOND, CPT worksheets, research instruments) will be loaded alongside `standard.json` via the multi-config URL mechanism. All IDs must be globally unique across loaded files.
+The `test/e2e.json` file contains test-only instruments (`phq9_test`, `test_q`) and batteries used exclusively by E2E tests. It is listed in the manifest but clearly labelled.
 
-`emotion.json` is an archive. Schema-valid but not referenced. Delete when ready.
+### URL design
+Config paths in `configs=` URL parameters are **relative** (no leading slash): `configs/prod/standard.json`. This resolves correctly from any base path (`/`, `/madad/`, etc.) without runtime detection. The Composer's `getAppRoot()` in `composer-state.js` derives the app root from `window.location.href` and prepends it to manifest paths for fetching, then stores the path without a leading slash as `sourceUrl` for use in generated URLs.
+
+Do not use absolute paths (`/configs/...`) in generated patient URLs — they break at non-root deployments.
+
+### Adding an instrument
+See `public/configs/INSTRUMENTS.md` (human guide) or `public/configs/LLM_GUIDE.md` (LLM guide). The process is config-only — no application code changes required for standard Likert/binary instruments.
 
 ---
 
@@ -160,33 +192,35 @@ Specialised config files (DIAMOND, CPT worksheets, research instruments) will be
 
 | Gap | Risk | Resolution |
 |---|---|---|
-| No deploy workflow | Cannot ship without one | Add `.github/workflows/deploy.yml` gated on CI |
-| `randomize` throws `NotImplementedError` | Safe now; breaks if config author uses it | Already documented; add pre-flight warning to `validate:configs` |
-| Component branch coverage ~60% | UI regressions may go undetected | E2E tests compensate; acceptable until CI is running |
-| `emotion.json` deleted | — | Done |
+| `randomize` throws `NotImplementedError` | Safe now; breaks if config author uses it | Documented in schema spec; validate:configs could warn |
+| Alert severity not rendered in PDF | `critical` and `warning` look identical | Next planned feature |
+| Embedded JSON in PDF | Machine-readable output for clinic systems | Planned, not started |
+| Component branch coverage ~60% | UI regressions may go undetected | E2E tests compensate |
 
 ---
 
 ## 7. Next steps
 
-### ~~Step 1 — Config cleanup~~ ✓ Complete
-All instruments in `standard.json` v1.2.0. GAD-7 included. PCL-5 and OCI-R have subscales and `subscaleLabels`.
+### ~~Steps 1–4~~ ✓ Complete
+Config cleanup, APP_URL fix, Composer search, GitHub Pages deployment — all done.
 
-### ~~Step 2 — Fix `APP_URL`~~ ✓ Complete
-`report.js` uses `window.location.origin` via lazy `getAppUrl()`.
+### ~~Step 5 — Landing page~~ ✓ Complete
+`/landing/` live with Hebrew therapist-facing content, instrument cards, CTR attribution.
 
-### ~~Step 3 — Composer search UI~~ ✓ Already implemented
-Search, keyword chips, descriptions — fully built before this handover.
+### ~~Step 6 — CI/CD~~ ✓ Complete
+Both `ci.yml` and `deploy.yml` working. E2E passing on Chromium.
 
-### Step 4 — Deploy to GitHub Pages
-- Add `.github/workflows/deploy.yml` gated on CI passing on `main`
-- Short-TTL cache for config JSON; immutable long-cache for hashed assets
+### Step 7 — PDF: alert severity rendering
+Render `critical` alerts with a red accent and `warning` alerts with orange/amber in the PDF. The `severity` field is already in the data model — this is purely a `report.js` change.
 
-### Step 5 — Batteries
-Define clinical batteries in `standard.json` once the instrument library feels complete. Each battery needs `id`, `title`, `description`, `keywords`, and a `sequence`. See `docs/CONFIG_SCHEMA_SPEC.md §9`.
+### Step 8 — PDF: embedded JSON attachment
+Embed a machine-readable `data.json` attachment in the PDF using pdfmake's EmbeddedFiles. Allows clinic systems to parse scores without reading the visual PDF.
 
-### Step 6 — Expand instrument library
-Low-risk with CI in place. Follow the checklist in `docs/INSTRUMENTS.md`.
+### Step 9 — Batteries
+Define the first clinical battery in `standard.json` once the instrument library feels complete. A `standard_intake` battery sequencing PHQ-9 → GAD-7 → conditionally PCL-5 is the obvious first candidate.
+
+### Step 10 — Expand instrument library
+Open-source instruments only. Use `public/configs/LLM_GUIDE.md` + an LLM to author new instruments efficiently. Candidates: SPIN, STAI, Y-BOCS self-report, CAPS-5.
 
 ---
 
@@ -200,12 +234,13 @@ Read in this order:
 
 ```bash
 npm ci
-npm run dev              # localhost:5173
-npm test                 # 635 unit tests
+npm run dev              # localhost:5173 (base /)
+npm test                 # 636 unit tests
 npm run validate:configs
+npm run build && npm run preview  # localhost:4173/madad/ (base /madad/)
 ```
 
-To add a new instrument: `docs/INSTRUMENTS.md`.
+To add a new instrument: `public/configs/CONTRIBUTING.md`.
 
 ---
 
@@ -215,6 +250,8 @@ To add a new instrument: `docs/INSTRUMENTS.md`.
 - **`src/engine/sequence-runner.js`** — shared by orchestrator and engine. Back-navigation logic is subtle; tests are the specification.
 - **Session state shape** — `answers`, `scores`, `alerts` keyed by `sessionKey`. PDF generator, orchestrator, engine, and results screen all read from this shape.
 - **`QuestionnaireSet.schema.json`** — changing without updating `config-validation.js` and existing configs will break validation.
-- **`src/pdf/report.js` — RTL rendering** — pdfmake has incomplete bidi support. Six specific rules govern all text rendering; they are documented in full in `docs/IMPLEMENTATION_SPEC.md §19.3`. The short version: numbers in `direction:'ltr'` nodes, mixed Hebrew/Latin through `bidiNodes()`, category on its own line, never use `rtl: true`, never concatenate numbers into Hebrew strings.
-- **`src/pdf/report.js` — pdfmake API** — uses Promise-based `getBuffer()`. The callback form `getBlob(callback)` silently hangs.
-- **`vite.config.js` chunk assignment** — `pdfmake` is pinned to a named chunk via `manualChunks`. This keeps it out of the entry bundle since it is lazy-loaded. AJV is bundled with the `loader` chunk (statically imported there) — no manual chunk needed.
+- **`src/pdf/report.js` — RTL rendering** — pdfmake has incomplete bidi support. Six rules documented in `IMPLEMENTATION_SPEC.md §19.3`. Short version: numbers in `direction:'ltr'` nodes, mixed Hebrew/Latin through `bidiNodes()`, category on its own line, never `rtl:true`, never concatenate numbers into Hebrew strings.
+- **`src/pdf/report.js` — pdfmake API** — use `getBuffer()` (Promise-based). `getBlob(callback)` silently hangs in pdfmake 0.3.x.
+- **`vite.config.js`** — `base` is `'/'` in development mode and `'/madad/'` in all other modes. `pdfmake` is pinned to a named chunk via `manualChunks` to keep it lazy-loaded and out of the entry bundle.
+- **Config URL format** — `configs=` params must use relative paths (no leading slash). See §5 above.
+- **`composer-state.js` `getAppRoot()`** — derives app root by stripping `/composer/...` from `window.location.href`. Any change to Composer URL structure requires updating this.

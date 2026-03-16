@@ -134,6 +134,7 @@ copy "check-size.mjs"                  "scripts/check-size.mjs"
 
 # ── Config data ────────────────────────────────────────────────────────────────
 copy "standard.json"                   "public/configs/prod/standard.json"
+copy "intake.json"                     "public/configs/prod/intake.json"
 copy "e2e.json"                        "public/configs/test/e2e.json"
 copy "QuestionnaireSet.schema.test.js" "src/config/QuestionnaireSet.schema.test.js"
 

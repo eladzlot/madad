@@ -1,7 +1,7 @@
 # Config Schema Specification
-**Version:** 1.0  
-**Status:** Draft  
-**Implements:** Implementation Spec §7  
+**Version:** 1.1
+**Status:** Stable
+**Implements:** Implementation Spec §7, §9
 
 ---
 
@@ -10,6 +10,21 @@
 This document specifies the structure of questionnaire config JSON files. It is the reference for clinicians authoring configs, developers implementing the config loader, and the AJV schema that validates them.
 
 Config files are language-specific. Text fields are plain strings — the language is implicit in which file is loaded. There is no localisation nesting.
+
+### Instrument policy
+
+Only open-source or public-domain instruments may be added without explicit licensing. Do not add proprietary instruments (e.g. BDI-II, STAI commercial editions) without verifying the license.
+
+### Config file layout
+
+```
+public/configs/
+  prod/standard.json   ← Standard clinical scales (PHQ-9, GAD-7, PCL-5, OCI-R, PDSS-SR, ASI-3)
+  prod/intake.json     ← Initial assessment screeners (DIAMOND-SR)
+  test/e2e.json        ← E2E test fixtures only — never used clinically
+```
+
+All prod files are listed in `public/composer/configs.json`. The `validate:configs` script checks all files for schema validity and cross-file ID uniqueness.
 
 ---
 
