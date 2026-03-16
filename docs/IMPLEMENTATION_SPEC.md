@@ -867,9 +867,13 @@ Keeping the category on its own line is essential — mixing a Hebrew category s
    - Second-highest value (Likert only): soft yellow background (`#FFF6DB`, text `#8A6A00`)
 5. **Footer** — generation timestamp, app version, config version, app URL (`window.location.origin`).
 
-### 19.5 Not yet implemented
+### 19.6 Future: replace bidiNodes() with bidi-js
 
-- Embedded `data.json` machine-readable attachment via pdfmake EmbeddedFiles (planned v2)
+The current `bidiNodes()` function is a hand-rolled approximation of the Unicode Bidirectional Algorithm. It handles common cases (Hebrew+Latin mixing, digit isolation, parenthesis mirroring) but is fragile — each new punctuation pattern discovered in instrument content may require a new special case.
+
+The correct long-term fix: add `bidi-js` (~15KB, no dependencies, full UAX-C1 conformance) as a pre-processor. Pre-apply the full Unicode BiDi Algorithm before text reaches pdfmake, then pass already-reordered strings as `direction:'ltr'` nodes so pdfmake never applies its own incorrect reordering. This eliminates all special cases and correctly handles any future content.
+
+Implementation: replace `bidiNodes()` in `report.js` with a function that calls `bidi.getEmbeddingLevels()`, `bidi.getReorderSegments()`, and `bidi.getMirroredCharactersMap()` from `bidi-js`, then assembles the result as a single `{ text: reordered, direction: 'ltr' }` node. The change is ~50 lines in `report.js` plus one lazy-loaded dependency.
 
 ---
 

@@ -33,6 +33,7 @@ copy "HANDOVER.md"                     "docs/HANDOVER.md"
 copy "INSTRUMENTS.md"                  "docs/INSTRUMENTS.md"
 copy "LLM_GUIDE.md"                    "public/configs/LLM_GUIDE.md"
 copy "CONTRIBUTING.md"                 "public/configs/CONTRIBUTING.md"
+copy "ITEM_TYPES_SPEC.md"              "docs/ITEM_TYPES_SPEC.md"
 
 # ── Config ─────────────────────────────────────────────────────────────────────
 copy "QuestionnaireSet.schema.json"    "src/config/QuestionnaireSet.schema.json"

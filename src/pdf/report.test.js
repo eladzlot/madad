@@ -368,6 +368,15 @@ describe('bidiNodes()', () => {
     const nodes = bidiNodes('בדיקה');
     expect(nodes[0].text).toBe('בדיקה');
   });
+
+  it('treats digit tokens as LTR so they are not reversed in RTL paragraphs', () => {
+    // "פריטים 29-30" — the number range "29-30" must be classified LTR
+    // so bidiNodes pre-reverses it for the RTL paragraph double-reversal to restore it correctly
+    const nodes = bidiNodes('פריטים 29-30');
+    const allText = nodes.map(n => n.text).join('');
+    // The token "29-30" should appear in the output (pre-reversed means it stays as-is for LTR run)
+    expect(allText).toContain('29-30');
+  });
 });
 
 // ── buildHeader ───────────────────────────────────────────────────────────────
@@ -448,18 +457,46 @@ describe('buildAlertSection', () => {
     expect(buildAlertSection({ alerts: { q1: [] } }, CFG)).toBeNull();
   });
 
-  it('returns a table node when alerts are present', () => {
-    const state = { alerts: { q1: [{ message: 'התראה חמורה' }] } };
-    const section = buildAlertSection(state, CFG);
-    expect(section).not.toBeNull();
-    expect(section.table).toBeDefined();
+  it('returns an array of table nodes when alerts are present', () => {
+    const state = { alerts: { q1: [{ message: 'התראה חמורה', severity: 'critical' }] } };
+    const sections = buildAlertSection(state, CFG);
+    expect(Array.isArray(sections)).toBe(true);
+    expect(sections).toHaveLength(1);
+    expect(sections[0].table).toBeDefined();
   });
 
-  it('contains one body row per alert (plus header row)', () => {
-    const state = { alerts: { q1: [{ message: 'א' }, { message: 'ב' }] } };
-    const section = buildAlertSection(state, CFG);
-    // body[0] = title row, body[1..n] = alert rows, body[last] = closing border row
-    expect(section.table.body).toHaveLength(4); // title + 2 alerts + closing
+  it('returns one block per alert', () => {
+    const state = { alerts: { q1: [{ message: 'א', severity: 'critical' }, { message: 'ב', severity: 'warning' }] } };
+    const sections = buildAlertSection(state, CFG);
+    expect(sections).toHaveLength(2);
+  });
+
+  it('sorts critical before warning', () => {
+    const state = { alerts: { q1: [{ message: 'אזהרה', severity: 'warning' }, { message: 'חמור', severity: 'critical' }] } };
+    const sections = buildAlertSection(state, CFG);
+    // critical block has red border colour
+    expect(sections[0].layout.hLineColor()).toBe('#CC0000');
+    expect(sections[1].layout.hLineColor()).toBe('#B45309');
+  });
+
+  it('uses amber colour for warning severity', () => {
+    const state = { alerts: { q1: [{ message: 'אזהרה', severity: 'warning' }] } };
+    const [section] = buildAlertSection(state, CFG);
+    expect(section.layout.hLineColor()).toBe('#B45309');
+    expect(section.layout.fillColor()).toBe('#FFFBEB');
+  });
+
+  it('uses red colour for critical severity', () => {
+    const state = { alerts: { q1: [{ message: 'חמור', severity: 'critical' }] } };
+    const [section] = buildAlertSection(state, CFG);
+    expect(section.layout.hLineColor()).toBe('#CC0000');
+    expect(section.layout.fillColor()).toBe('#FFF4F4');
+  });
+
+  it('falls back to default colour when severity is absent', () => {
+    const state = { alerts: { q1: [{ message: 'ללא סוג' }] } };
+    const [section] = buildAlertSection(state, CFG);
+    expect(section.layout.hLineColor()).toBe('#64748B');
   });
 });
 

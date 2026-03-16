@@ -210,17 +210,20 @@ Config cleanup, APP_URL fix, Composer search, GitHub Pages deployment — all do
 ### ~~Step 6 — CI/CD~~ ✓ Complete
 Both `ci.yml` and `deploy.yml` working. E2E passing on Chromium.
 
-### Step 7 — PDF: alert severity rendering
-Render `critical` alerts with a red accent and `warning` alerts with orange/amber in the PDF. The `severity` field is already in the data model — this is purely a `report.js` change.
+### ~~Step 7 — PDF: alert severity rendering~~ ✓ Complete
+Critical/warning/info alerts now render with distinct colours. Alerts are sorted critical-first.
 
 ### Step 8 — PDF: embedded JSON attachment
 Embed a machine-readable `data.json` attachment in the PDF using pdfmake's EmbeddedFiles. Allows clinic systems to parse scores without reading the visual PDF.
 
-### Step 9 — Batteries
-Define the first clinical battery in `standard.json` once the instrument library feels complete. A `standard_intake` battery sequencing PHQ-9 → GAD-7 → conditionally PCL-5 is the obvious first candidate.
+### Step 9 — PDF: replace bidiNodes() with bidi-js
+The current `bidiNodes()` is a fragile hand-rolled approximation of the Unicode BiDi Algorithm. Replace it with `bidi-js` (15KB, no deps, fully conformant) to handle all mixed-script content correctly without special cases. See `IMPLEMENTATION_SPEC.md §19.6` for the full design.
 
-### Step 10 — Expand instrument library
-Open-source instruments only. Use `public/configs/LLM_GUIDE.md` + an LLM to author new instruments efficiently. Candidates: SPIN, STAI, Y-BOCS self-report, CAPS-5.
+### Step 10 — Batteries
+Define the first clinical battery in `standard.json`. A `standard_intake` battery sequencing PHQ-9 → GAD-7 → conditionally PCL-5 is the obvious first candidate.
+
+### Step 11 — Expand instrument library
+Open-source instruments only. Use `public/configs/LLM_GUIDE.md` + an LLM to author efficiently. Candidates: SPIN, STAI, Y-BOCS self-report.
 
 ---
 

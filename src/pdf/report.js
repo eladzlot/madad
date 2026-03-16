@@ -26,6 +26,7 @@ const getAppUrl = () => (typeof window !== 'undefined' ? window.location.origin 
 // ── Layout constants ──────────────────────────────────────────────────────────
 const PAGE_MARGIN   = 40;   // pt, all sides
 // A4 width 595pt − 2×40pt margins = 515pt usable
+const USABLE_WIDTH  = 515;
 const COL_NUM       = 25;   // item number
 const COL_TEXT      = 265;  // item text (Hebrew)
 const COL_LABEL     = 175;  // response label
@@ -40,9 +41,13 @@ const RISK_HIGH_FG  = '#8A1C1C';
 const RISK_MED_BG   = '#FFF6DB';
 const RISK_MED_FG   = '#8A6A00';
 
-// Alert section colours
-const ALERT_BG      = '#FFF4F4';
-const ALERT_BORDER  = '#CC0000';
+// Alert section colours — keyed by severity
+const ALERT_COLOURS = {
+  critical: { bg: '#FFF4F4', border: '#CC0000' },
+  warning:  { bg: '#FFFBEB', border: '#B45309' },
+  info:     { bg: '#F0F9FF', border: '#0369A1' },
+  default:  { bg: '#F8FAFC', border: '#64748B' },
+};
 
 // ── Preload state ─────────────────────────────────────────────────────────────
 
@@ -137,12 +142,12 @@ export function buildFilename(session, now = new Date()) {
 
 const NBSP = '\u00a0';
 
-// Classify a word token: 2 = LTR (Latin-dominant), 1 = RTL (Hebrew-dominant)
+// Classify a word token: 2 = LTR (Latin or digit-dominant), 1 = RTL (Hebrew-dominant)
 function _tokenLevel(tok) {
   let rtl = 0, ltr = 0;
   for (const c of tok) {
     if (/[\u0590-\u05FF]/.test(c)) rtl++;
-    else if (/[A-Za-z]/.test(c)) ltr++;
+    else if (/[A-Za-z0-9]/.test(c)) ltr++;  // digits count as LTR
   }
   return (ltr > 0 && rtl === 0) ? 2 : 1;
 }
@@ -162,9 +167,10 @@ export function bidiNodes(str, opts = {}) {
 
   const hasHebrew = /[\u0590-\u05FF]/.test(str);
   const hasLatin  = /[A-Za-z]/.test(str);
+  const hasDigits = /[0-9]/.test(str);
 
   // Pure script — single node, just normalise spaces
-  if (!hasLatin || !hasHebrew) {
+  if (!hasHebrew || (!hasLatin && !hasDigits)) {
     return [{ text: str.replace(/ /g, NBSP), ...opts }];
   }
 
@@ -215,7 +221,7 @@ export function buildDocDefinition(sessionState, config, session, now = new Date
 
   const content = [
     buildHeader(session, config, now),
-    buildAlertSection(sessionState, config),
+    ...(buildAlertSection(sessionState, config) ?? []),
     ...buildQuestionnaireSections(sessionState, config),
   ].filter(Boolean);
 
@@ -262,7 +268,7 @@ function buildStyles() {
     alertTitle: {
       fontSize:  11,
       bold:      true,
-      color:     ALERT_BORDER,
+      color:     ALERT_COLOURS.critical.border,
       alignment: 'right',
       marginBottom: 4,
     },
@@ -321,43 +327,49 @@ export function buildAlertSection(sessionState, config) {
     if (!Array.isArray(alertList) || alertList.length === 0) continue;
     const q = config.questionnaires.find(q => q.id === key);
     for (const alert of alertList) {
-      triggered.push({ qTitle: q?.title ?? key, message: alert.message });
+      triggered.push({ qTitle: q?.title ?? key, message: alert.message, severity: alert.severity });
     }
   }
 
   if (triggered.length === 0) return null;
 
-  return {
-    table: {
-      widths: ['*'],
-      body: [
-        [{ text: '!\u00a0התראות\u00a0קליניות', style: 'alertTitle', border: [true, true, true, false] }],
-        ...triggered.map(a => [{
-          // qTitle and message may contain mixed Hebrew/Latin — use bidiNodes
-          text: [
-            ...bidiNodes(a.qTitle),
-            { text: '\u200f:\u00a0' },   // RLM + colon + NBSP separator
-            ...bidiNodes(a.message),
-          ],
-          style:  'alertItem',
-          border: [true, false, true, false],
-        }]),
-        [{ text: '', border: [true, false, true, true], marginBottom: 0 }],
-      ],
-    },
-    layout: {
-      hLineColor: () => ALERT_BORDER,
-      vLineColor: () => ALERT_BORDER,
-      hLineWidth: (i, node) => (i === 0 || i === node.table.body.length) ? 1.5 : 0,
-      vLineWidth: () => 3,
-      fillColor:  () => ALERT_BG,
-      paddingLeft:   () => 10,
-      paddingRight:  () => 10,
-      paddingTop:    () => 8,
-      paddingBottom: () => 8,
-    },
-    marginBottom: 16,
-  };
+  // Sort: critical first, then warning, then info, then unspecified
+  const SEVERITY_ORDER = { critical: 0, warning: 1, info: 2 };
+  triggered.sort((a, b) =>
+    (SEVERITY_ORDER[a.severity] ?? 3) - (SEVERITY_ORDER[b.severity] ?? 3)
+  );
+
+  return triggered.map(a => {
+    const colours = ALERT_COLOURS[a.severity] ?? ALERT_COLOURS.default;
+    return {
+      table: {
+        widths: [USABLE_WIDTH - 6],  // subtract vLine width (3pt each side)
+        body: [
+          [{ text: '!\u00a0התראה\u00a0קלינית', style: 'alertTitle', border: [true, true, true, false], color: colours.border }],
+          [{
+            stack: [
+              { text: bidiNodes(a.qTitle), style: 'alertItem', bold: true, marginBottom: 2 },
+              { text: bidiNodes(a.message), style: 'alertItem' },
+            ],
+            border: [true, false, true, false],
+          }],
+          [{ text: '', border: [true, false, true, true] }],
+        ],
+      },
+      layout: {
+        hLineColor: () => colours.border,
+        vLineColor: () => colours.border,
+        hLineWidth: (i, node) => (i === 0 || i === node.table.body.length) ? 1.5 : 0,
+        vLineWidth: () => 3,
+        fillColor:  () => colours.bg,
+        paddingLeft:   () => 10,
+        paddingRight:  () => 10,
+        paddingTop:    () => 8,
+        paddingBottom: () => 8,
+      },
+      marginBottom: 8,
+    };
+  });
 }
 
 // ── Questionnaire sections ────────────────────────────────────────────────────
