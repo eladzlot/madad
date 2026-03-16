@@ -31,6 +31,8 @@ copy "RENDER_SPEC.md"                  "docs/RENDER_SPEC.md"
 copy "COMPOSER_SPEC.md"                "docs/COMPOSER_SPEC.md"
 copy "HANDOVER.md"                     "docs/HANDOVER.md"
 copy "INSTRUMENTS.md"                  "docs/INSTRUMENTS.md"
+copy "LLM_GUIDE.md"                    "public/configs/LLM_GUIDE.md"
+copy "CONTRIBUTING.md"                 "public/configs/CONTRIBUTING.md"
 
 # ── Config ─────────────────────────────────────────────────────────────────────
 copy "QuestionnaireSet.schema.json"    "src/config/QuestionnaireSet.schema.json"
