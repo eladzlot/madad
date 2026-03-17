@@ -213,12 +213,30 @@ function checkCrossEntityIdCollisions(data, errors) {
  * @param   {object}   data
  * @returns {string[]}
  */
+// ── Slider validation ─────────────────────────────────────────────────────────
+
+function checkSliderItems(data, errors) {
+  for (const q of data.questionnaires ?? []) {
+    for (const item of q.items ?? []) {
+      if (item.type !== 'slider') continue;
+      const label = `Questionnaire "${q.id}" › item "${item.id}" (slider)`;
+      if (item.min >= item.max) {
+        errors.push(`${label}: min (${item.min}) must be less than max (${item.max}).`);
+      }
+      if (item.step != null && item.step <= 0) {
+        errors.push(`${label}: step must be greater than 0.`);
+      }
+    }
+  }
+}
+
 export function collectConfigErrors(data) {
   const errors = [];
   checkDuplicateSessionKeys(data, errors);
   checkDuplicateItemIds(data, errors);
   checkOptionSets(data, errors);
   checkScoringRefs(data, errors);
+  checkSliderItems(data, errors);
   checkCrossEntityIdCollisions(data, errors);
   return errors;
 }

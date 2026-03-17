@@ -355,6 +355,18 @@ async function skipTextItem(page) {
   await page.locator('item-text >> button.skip-btn').click();
 }
 
+/** Move the slider to a given value and submit */
+async function setSliderValue(page, value, { submit = true } = {}) {
+  const input = page.locator('item-slider >> input[type="range"]');
+  await input.evaluate((el, val) => {
+    el.value = val;
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+  }, String(value));
+  if (submit) {
+    await page.locator('item-slider >> button.submit-btn').click();
+  }
+}
+
 // ── Error handling ────────────────────────────────────────────────────────────
 
 test.describe('error handling', () => {
@@ -399,7 +411,7 @@ test.describe('PDF download', () => {
 
 // ── All item types battery ────────────────────────────────────────────────────
 
-test.describe('all item types battery (instructions + likert + binary + text)', () => {
+test.describe('all item types battery (instructions + likert + binary + slider + text)', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto(ALL_TYPES_URL);
     await clickBegin(page);
@@ -409,22 +421,54 @@ test.describe('all item types battery (instructions + likert + binary + text)', 
     await expect(page.locator('item-instructions')).toBeVisible();
   });
 
-  test('instructions → likert → binary → text sequence renders correctly', async ({ page }) => {
-    // instructions
+  test('instructions → likert → binary → slider → text sequence renders correctly', async ({ page }) => {
     await expect(page.locator('item-instructions')).toBeVisible();
     await clickContinue(page);
 
-    // likert
     await expect(page.locator('item-likert')).toBeVisible();
     await clickLikertOption(page, 1);
     await page.waitForTimeout(200);
 
-    // binary
     await expect(page.locator('item-binary')).toBeVisible();
     await clickBinaryFirst(page);
     await page.waitForTimeout(200);
 
-    // text
+    await expect(page.locator('item-slider')).toBeVisible();
+  });
+
+  test('slider item shows question text and range input', async ({ page }) => {
+    await clickContinue(page);
+    await clickLikertOption(page, 0);
+    await page.waitForTimeout(200);
+    await clickBinaryFirst(page);
+    await page.waitForTimeout(200);
+
+    await expect(page.locator('item-slider')).toBeVisible();
+    await expect(page.locator('item-slider >> .question')).toContainText('מצב הרוח');
+    await expect(page.locator('item-slider >> input[type="range"]')).toBeVisible();
+  });
+
+  test('slider submit button disabled until touched', async ({ page }) => {
+    await clickContinue(page);
+    await clickLikertOption(page, 0);
+    await page.waitForTimeout(200);
+    await clickBinaryFirst(page);
+    await page.waitForTimeout(200);
+
+    await expect(page.locator('item-slider')).toBeVisible();
+    await expect(page.locator('item-slider >> button.submit-btn')).toBeDisabled();
+  });
+
+  test('slider enables submit after interaction and advances', async ({ page }) => {
+    await clickContinue(page);
+    await clickLikertOption(page, 0);
+    await page.waitForTimeout(200);
+    await clickBinaryFirst(page);
+    await page.waitForTimeout(200);
+
+    await expect(page.locator('item-slider')).toBeVisible();
+    await setSliderValue(page, 7);
+
     await expect(page.locator('item-text')).toBeVisible();
   });
 
@@ -434,10 +478,10 @@ test.describe('all item types battery (instructions + likert + binary + text)', 
     await page.waitForTimeout(200);
     await clickBinaryFirst(page);
     await page.waitForTimeout(200);
+    await setSliderValue(page, 5);
 
     await expect(page.locator('item-text')).toBeVisible();
-    const question = page.locator('item-text >> .question');
-    await expect(question).toContainText('הערות');
+    await expect(page.locator('item-text >> .question')).toContainText('הערות');
   });
 
   test('text item shows skip button (skippable by default)', async ({ page }) => {
@@ -446,6 +490,7 @@ test.describe('all item types battery (instructions + likert + binary + text)', 
     await page.waitForTimeout(200);
     await clickBinaryFirst(page);
     await page.waitForTimeout(200);
+    await setSliderValue(page, 5);
 
     await expect(page.locator('item-text >> button.skip-btn')).toBeVisible();
   });
@@ -456,8 +501,7 @@ test.describe('all item types battery (instructions + likert + binary + text)', 
     await page.waitForTimeout(200);
     await clickBinaryFirst(page);
     await page.waitForTimeout(200);
-
-    await expect(page.locator('item-text')).toBeVisible();
+    await setSliderValue(page, 5);
     await skipTextItem(page);
 
     await expect(page.locator('completion-screen')).toBeVisible({ timeout: 2000 });
@@ -469,8 +513,7 @@ test.describe('all item types battery (instructions + likert + binary + text)', 
     await page.waitForTimeout(200);
     await clickBinaryFirst(page);
     await page.waitForTimeout(200);
-
-    await expect(page.locator('item-text')).toBeVisible();
+    await setSliderValue(page, 5);
     await fillTextItem(page, 'בדיקה בדיקה');
 
     await expect(page.locator('completion-screen')).toBeVisible({ timeout: 2000 });
@@ -482,14 +525,12 @@ test.describe('all item types battery (instructions + likert + binary + text)', 
     await page.waitForTimeout(200);
     await clickBinaryFirst(page);
     await page.waitForTimeout(200);
+    await setSliderValue(page, 5);
 
     await expect(page.locator('item-text')).toBeVisible();
-    const input = page.locator('item-text >> input');
-    await input.fill('טקסט לבדיקה');
-
-    // navigate back then forward
+    await page.locator('item-text >> input').fill('טקסט לבדיקה');
     await page.goBack();
-    await expect(page.locator('item-binary')).toBeVisible();
+    await expect(page.locator('item-slider')).toBeVisible();
     await page.goForward();
 
     await expect(page.locator('item-text')).toBeVisible();
@@ -502,6 +543,7 @@ test.describe('all item types battery (instructions + likert + binary + text)', 
     await page.waitForTimeout(200);
     await clickBinaryFirst(page);
     await page.waitForTimeout(200);
+    await setSliderValue(page, 7);
     await fillTextItem(page, 'הערה לדוגמה');
 
     await expect(page.locator('completion-screen')).toBeVisible({ timeout: 2000 });

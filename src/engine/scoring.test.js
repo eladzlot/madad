@@ -255,3 +255,59 @@ describe('interpretations', () => {
     expect(score(q2, { '1': 2, '2': 3, '3': 0 }).category).toBe('high-a');
   });
 });
+
+// ── slider items ──────────────────────────────────────────────────────────────
+
+describe('slider items contribute to scoring like likert', () => {
+  const sliderQ = {
+    id: 'pain_q',
+    items: [
+      { id: 'pain', type: 'slider', text: 'דרגת הכאב', min: 0, max: 10 },
+      { id: 'mood', type: 'slider', text: 'מצב הרוח', min: 0, max: 10 },
+    ],
+    scoring: { method: 'sum' },
+  };
+
+  it('sums slider answers into total', () => {
+    expect(score(sliderQ, { pain: 7, mood: 3 }).total).toBe(10);
+  });
+
+  it('skips unanswered slider items', () => {
+    expect(score(sliderQ, { pain: 5 }).total).toBe(5);
+  });
+
+  it('slider with reverse scoring', () => {
+    const q = {
+      ...sliderQ,
+      items: [{ id: 'pain', type: 'slider', text: 'כאב', min: 0, max: 10, reverse: true }],
+      scoring: { method: 'sum', maxPerItem: 10 },
+    };
+    // reverse: 10 - 3 = 7
+    expect(score(q, { pain: 3 }).total).toBe(7);
+  });
+
+  it('mixed slider and likert items are both summed', () => {
+    const q = {
+      id: 'mixed',
+      items: [
+        { id: 's1', type: 'slider', text: 'slider', min: 0, max: 10 },
+        { id: 'l1', type: 'likert', text: 'likert',
+          options: [{ label: 'a', value: 0 }, { label: 'b', value: 3 }] },
+      ],
+      scoring: { method: 'sum' },
+    };
+    expect(score(q, { s1: 4, l1: 3 }).total).toBe(7);
+  });
+
+  it('text items in same questionnaire are excluded from sum', () => {
+    const q = {
+      id: 'mixed2',
+      items: [
+        { id: 's1', type: 'slider', text: 'slider', min: 0, max: 10 },
+        { id: 'notes', type: 'text', text: 'הערות' },
+      ],
+      scoring: { method: 'sum' },
+    };
+    expect(score(q, { s1: 5, notes: 'some text' }).total).toBe(5);
+  });
+});

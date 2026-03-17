@@ -619,8 +619,6 @@ export function buildItemRow(item, rowNum, rawAnswer, questionnaire) {
     };
   }
 
-  // TODO: type 'text' — render answer as full-width text cell, no score column
-
   // RTL visual order: ערך (score) | תשובה (label) | תוכן (text) | # (num)
   return [
     cell(numericValue != null ? String(numericValue) : '—', 'center'),
@@ -633,6 +631,17 @@ export function buildItemRow(item, rowNum, rawAnswer, questionnaire) {
 // ── Risk calculation ──────────────────────────────────────────────────────────
 
 export function calcRiskLevel(item, value, options) {
+  // Slider: risk based on position in range (top 20% = high, top 40% = med)
+  if (item.type === 'slider') {
+    const { min = 0, max = 10 } = item;
+    const range = max - min;
+    if (range <= 0) return null;
+    const pos = (value - min) / range;  // 0..1
+    if (pos >= 0.8) return 'high';
+    if (pos >= 0.6) return 'med';
+    return null;
+  }
+
   if (!options || options.length === 0) return null;
 
   const values = options.map(o => o.value).sort((a, b) => a - b);

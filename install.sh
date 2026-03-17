@@ -68,6 +68,8 @@ copy "item-instructions.js"            "src/components/item-instructions.js"
 copy "item-instructions.test.js"       "src/components/item-instructions.test.js"
 copy "item-text.js"       "src/components/item-text.js"
 copy "item-text.test.js"  "src/components/item-text.test.js"
+copy "item-slider.js"       "src/components/item-slider.js"
+copy "item-slider.test.js"  "src/components/item-slider.test.js"
 
 copy "progress-bar.js"                 "src/components/progress-bar.js"
 copy "progress-bar.test.js"            "src/components/progress-bar.test.js"

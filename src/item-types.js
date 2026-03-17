@@ -48,6 +48,15 @@ const REGISTRY = {
     answerShape:        'scalar',
     pdfRenderer:        'text',
   },
+  slider: {
+    tag:                'item-slider',
+    autoAdvance:        false,  // requires explicit submit
+    skippableDefault:   false,  // required by default like likert
+    contributesToScore: true,
+    answerIsNumeric:    true,
+    answerShape:        'scalar',
+    pdfRenderer:        'scored',
+  },
 };
 
 // Control-flow nodes — not rendered as items, never reach the component layer.

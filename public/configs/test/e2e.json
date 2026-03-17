@@ -257,6 +257,18 @@
           "optionSetId": "yesno"
         },
         {
+          "id": "slider1",
+          "type": "slider",
+          "text": "דרג את מצב הרוח שלך",
+          "min": 0,
+          "max": 10,
+          "step": 1,
+          "labels": {
+            "min": "גרוע מאד",
+            "max": "מצוין"
+          }
+        },
+        {
           "id": "text1",
           "type": "text",
           "text": "הערות נוספות",

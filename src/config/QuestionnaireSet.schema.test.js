@@ -277,6 +277,66 @@ describe('instructions item', () => {
   })).toBe(true));
 });
 
+// ─── Slider item ──────────────────────────────────────────────────────────────
+
+describe('slider item', () => {
+  const sliderItem = { id: 's1', type: 'slider', text: 'דרגת הכאב', min: 0, max: 10 };
+
+  it('accepts minimal slider item', () => expect(valid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire({ items: [sliderItem] })],
+  })).toBe(true));
+
+  it('accepts slider with step and labels', () => expect(valid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire({
+      items: [{ ...sliderItem, step: 0.5, labels: { min: 'ללא', max: 'מקסימום' } }],
+    })],
+  })).toBe(true));
+
+  it('accepts slider with reverse and weight', () => expect(valid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire({
+      items: [{ ...sliderItem, reverse: true, weight: 2 }],
+    })],
+  })).toBe(true));
+
+  it('accepts required: false on slider', () => expect(valid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire({
+      items: [{ ...sliderItem, required: false }],
+    })],
+  })).toBe(true));
+
+  it('rejects slider missing min', () => expect(invalid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire({
+      items: [{ id: 's1', type: 'slider', text: 'test', max: 10 }],
+    })],
+  })).toBe(true));
+
+  it('rejects slider missing max', () => expect(invalid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire({
+      items: [{ id: 's1', type: 'slider', text: 'test', min: 0 }],
+    })],
+  })).toBe(true));
+
+  it('rejects slider with step: 0', () => expect(invalid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire({
+      items: [{ ...sliderItem, step: 0 }],
+    })],
+  })).toBe(true));
+
+  it('rejects slider with unknown extra fields', () => expect(invalid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire({
+      items: [{ ...sliderItem, options: [] }],
+    })],
+  })).toBe(true));
+});
+
 // ─── If node (item level) ─────────────────────────────────────────────────────
 
 describe('if node (item level)', () => {

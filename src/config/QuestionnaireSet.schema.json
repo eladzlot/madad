@@ -82,6 +82,7 @@
         { "$ref": "#/$defs/binaryItem" },
         { "$ref": "#/$defs/instructionsItem" },
         { "$ref": "#/$defs/textItem" },
+        { "$ref": "#/$defs/sliderItem" },
         { "$ref": "#/$defs/ifNode" },
         { "$ref": "#/$defs/randomizeNode" }
       ]
@@ -145,6 +146,31 @@
         "max":       { "type": "number" },
         "pattern":   { "type": "string", "minLength": 1 },
         "required":  { "type": "boolean" }
+      }
+    },
+
+    "sliderItem": {
+      "type": "object",
+      "required": ["id", "type", "text", "min", "max"],
+      "additionalProperties": false,
+      "properties": {
+        "id":       { "$ref": "#/$defs/id" },
+        "type":     { "const": "slider" },
+        "text":     { "type": "string", "minLength": 1 },
+        "min":      { "type": "number" },
+        "max":      { "type": "number" },
+        "step":     { "type": "number", "exclusiveMinimum": 0 },
+        "labels":   {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "min": { "type": "string", "minLength": 1 },
+            "max": { "type": "string", "minLength": 1 }
+          }
+        },
+        "reverse":  { "type": "boolean" },
+        "weight":   { "type": "number" },
+        "required": { "type": "boolean" }
       }
     },
 

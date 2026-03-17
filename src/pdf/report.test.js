@@ -21,6 +21,15 @@ import { describe, it, expect, beforeAll } from 'vitest';
 // ── calcRiskLevel (copied from report.js for isolation) ───────────────────────
 
 function calcRiskLevel(item, value, options) {
+  if (item.type === 'slider') {
+    const { min = 0, max = 10 } = item;
+    const range = max - min;
+    if (range <= 0) return null;
+    const pos = (value - min) / range;
+    if (pos >= 0.8) return 'high';
+    if (pos >= 0.6) return 'med';
+    return null;
+  }
   if (!options || options.length === 0) return null;
   const values = options.map(o => o.value).sort((a, b) => a - b);
   const max    = values[values.length - 1];
@@ -112,6 +121,33 @@ describe('calcRiskLevel', () => {
     expect(calcRiskLevel({ type: 'likert' }, 10, opts)).toBe('high');
     expect(calcRiskLevel({ type: 'likert' }, 5,  opts)).toBe('med');
     expect(calcRiskLevel({ type: 'likert' }, 0,  opts)).toBeNull();
+  });
+
+  // ── slider (range-based) ──
+
+  it('slider: returns "high" when value is in top 20% of range', () => {
+    const slider = { type: 'slider', min: 0, max: 10 };
+    expect(calcRiskLevel(slider, 8, [])).toBe('high');
+    expect(calcRiskLevel(slider, 10, [])).toBe('high');
+  });
+
+  it('slider: returns "med" when value is in top 40-80% of range', () => {
+    const slider = { type: 'slider', min: 0, max: 10 };
+    expect(calcRiskLevel(slider, 6, [])).toBe('med');
+    expect(calcRiskLevel(slider, 7, [])).toBe('med');
+  });
+
+  it('slider: returns null for lower values', () => {
+    const slider = { type: 'slider', min: 0, max: 10 };
+    expect(calcRiskLevel(slider, 0, [])).toBeNull();
+    expect(calcRiskLevel(slider, 5, [])).toBeNull();
+  });
+
+  it('slider: works with non-zero min', () => {
+    const slider = { type: 'slider', min: 1, max: 5 };
+    // range=4, top 20% = above 4.2 → value 5 is high
+    expect(calcRiskLevel(slider, 5, [])).toBe('high');
+    expect(calcRiskLevel(slider, 1, [])).toBeNull();
   });
 });
 
