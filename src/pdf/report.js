@@ -169,9 +169,12 @@ export function bidiNodes(str, opts = {}) {
   const hasLatin  = /[A-Za-z]/.test(str);
   const hasDigits = /[0-9]/.test(str);
 
-  // Pure script — single node, just normalise spaces
+  // Pure script — single node, just normalise spaces and mirror parens for RTL
   if (!hasHebrew || (!hasLatin && !hasDigits)) {
-    return [{ text: str.replace(/ /g, NBSP), ...opts }];
+    const text = hasHebrew
+      ? str.replace(/ /g, NBSP).replace(/[()]/g, c => c === '(' ? ')' : '(')
+      : str.replace(/ /g, NBSP);
+    return [{ text, ...opts }];
   }
 
   // Mixed — tokenise, classify, group into runs.
@@ -207,9 +210,13 @@ export function bidiNodes(str, opts = {}) {
   const visual = [...runs].reverse();
 
   // One text node per run; NBSP separator nodes between runs
+  // RTL runs get parentheses mirrored — pdfmake reverses them visually so we pre-flip.
   const nodes = [];
   visual.forEach((run, idx) => {
-    nodes.push({ text: run.words.join(NBSP), ...opts });
+    const text = run.level === 1
+      ? run.words.join(NBSP).replace(/[()]/g, c => c === '(' ? ')' : '(')
+      : run.words.join(NBSP);
+    nodes.push({ text, ...opts });
     if (idx < visual.length - 1) nodes.push({ text: NBSP });
   });
   return nodes;
@@ -282,6 +289,13 @@ function buildStyles() {
       alignment: 'right',
       marginBottom: 8,
       color:     '#444444',
+    },
+    instructionText: {
+      fontSize:  9,
+      alignment: 'right',
+      color:     '#888888',
+      italics:   true,
+      margin:    [0, 0, 0, 6],
     },
   };
 }
@@ -450,22 +464,51 @@ export function buildScoresLine(scoreResult, q) {
 // ── Response table ────────────────────────────────────────────────────────────
 
 export function buildResponseTable(questionnaire, answers) {
-  const answerableItems = questionnaire.items.filter(item =>
-    item.type !== 'instructions'
-  );
+  const items = questionnaire.items;
+  if (!items || items.length === 0) return null;
 
-  if (answerableItems.length === 0) return null;
+  // Separate instructions from answerable items — instructions are rendered
+  // as paragraph text above/between the table rows, not as table rows.
+  const blocks = [];
+  const tableRows = [];
+  let rowNum = 0;
 
-  const headerRow = buildTableHeaderRow();
-  const bodyRows  = answerableItems.map((item, idx) =>
-    buildItemRow(item, idx + 1, answers[item.id], questionnaire)
-  );
+  for (const item of items) {
+    if (item.type === 'instructions') {
+      // Flush any accumulated table rows first
+      if (tableRows.length > 0) {
+        blocks.push(buildTable([buildTableHeaderRow(), ...tableRows]));
+        tableRows.length = 0;
+        rowNum = 0;
+      }
+      blocks.push({
+        text: bidiNodes(item.text),
+        style: 'instructionText',
+      });
+    } else {
+      rowNum++;
+      tableRows.push(buildItemRow(item, rowNum, answers[item.id], questionnaire));
+    }
+  }
 
+  // Flush remaining table rows
+  if (tableRows.length > 0) {
+    blocks.push(buildTable([buildTableHeaderRow(), ...tableRows]));
+  }
+
+  // If no answerable items at all, nothing to show
+  const hasAnyAnswerable = items.some(i => i.type !== 'instructions');
+  if (!hasAnyAnswerable) return null;
+
+  return blocks.length === 1 ? blocks[0] : { stack: blocks };
+}
+
+function buildTable(rows) {
   return {
     table: {
       headerRows: 1,
       widths:     COL_WIDTHS,
-      body:       [headerRow, ...bodyRows],
+      body:       rows,
     },
     layout: {
       hLineColor: () => '#DDDDDD',

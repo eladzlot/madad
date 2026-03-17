@@ -377,6 +377,21 @@ describe('bidiNodes()', () => {
     // The token "29-30" should appear in the output (pre-reversed means it stays as-is for LTR run)
     expect(allText).toContain('29-30');
   });
+
+  it('mirrors parentheses in Hebrew runs so pdfmake double-reversal restores them', () => {
+    // pdfmake reverses ( → ) in RTL; we pre-flip to compensate
+    const nodes = bidiNodes('(אמונות חריגות)');
+    const allText = nodes.map(n => n.text).join('');
+    // pre-mirrored to )...( so pdfmake renders (אמונות חריגות)
+    expect(allText).toContain(')');
+    expect(allText).toContain('(');
+  });
+
+  it('does not mirror parentheses in LTR runs', () => {
+    const nodes = bidiNodes('שטיפה (Washing)');
+    const ltrNode = nodes.find(n => n.text && n.text.includes('Washing'));
+    expect(ltrNode.text).toBe('(Washing)');
+  });
 });
 
 // ── buildHeader ───────────────────────────────────────────────────────────────
@@ -608,11 +623,22 @@ describe('buildTableHeaderRow', () => {
 describe('buildResponseTable', () => {
   const answers = { i1: 2, i2: 1 };
 
-  it('excludes instruction items', () => {
-    const table = buildResponseTable(Q, answers);
-    // headerRows=1, so body[0] is header; rest are data rows
-    // Q has 2 non-instruction items
-    expect(table.table.body).toHaveLength(3); // 1 header + 2 data
+  // Helper: extract the table node from the return value.
+  // When instructions are present, returns a stack — the table is the last block.
+  function getTable(result) {
+    if (!result) return null;
+    if (result.stack) return result.stack.find(b => b.table);
+    return result.table ? result : null;
+  }
+
+  it('renders instructions as paragraph text, not table rows', () => {
+    const result = buildResponseTable(Q, answers);
+    expect(result.stack).toBeDefined(); // stack because Q has instructions
+    const instrBlock = result.stack.find(b => !b.table);
+    expect(instrBlock).toBeDefined();
+    // instruction text should appear somewhere in the block
+    const allText = JSON.stringify(instrBlock.text);
+    expect(allText).toContain('הוראות');
   });
 
   it('returns null when all items are instructions', () => {
@@ -620,24 +646,38 @@ describe('buildResponseTable', () => {
     expect(buildResponseTable(q, {})).toBeNull();
   });
 
+  it('includes a table with 2 data rows for 2 answerable items', () => {
+    const table = getTable(buildResponseTable(Q, answers));
+    expect(table.table.body).toHaveLength(3); // 1 header + 2 data
+  });
+
   it('has 4 columns matching COL_WIDTHS length', () => {
-    const table = buildResponseTable(Q, answers);
+    const table = getTable(buildResponseTable(Q, answers));
     expect(table.table.widths).toHaveLength(4);
     table.table.body.forEach(row => expect(row).toHaveLength(4));
   });
 
   it('RTL column order: score at index 0, row num at index 3', () => {
-    const table = buildResponseTable(Q, answers);
+    const table = getTable(buildResponseTable(Q, answers));
     const dataRow = table.table.body[1]; // first data row
-    // index 0 = score (numeric), index 3 = row number '1'
     expect(dataRow[0].text).toBe('2');   // i1 answer value
     expect(dataRow[3].text).toBe('1');   // row number
   });
 
   it('shows em-dash for unanswered items', () => {
-    const table = buildResponseTable(Q, {});
+    const table = getTable(buildResponseTable(Q, {}));
     const dataRow = table.table.body[1];
-    expect(dataRow[0].text).toBe('—');  // score column (always plain string)
+    expect(dataRow[0].text).toBe('—');
+  });
+
+  it('returns a bare table (no stack) when there are no instructions', () => {
+    const q = { ...Q, items: [
+      { id: 'i1', type: 'likert', text: 'שאלה' },
+      { id: 'i2', type: 'likert', text: 'שאלה נוספת' },
+    ]};
+    const result = buildResponseTable(q, { i1: 1, i2: 2 });
+    expect(result.table).toBeDefined();
+    expect(result.stack).toBeUndefined();
   });
 });
 
@@ -799,7 +839,9 @@ describe('RTL invariants', () => {
   });
 
   it('data rows have numeric score at index 0 and row number at index 3', () => {
-    const table = buildResponseTable(Q, { i1: 3, i2: 0 });
+    const result = buildResponseTable(Q, { i1: 3, i2: 0 });
+    // Q has instructions — result may be a stack; find the table block
+    const table = result.stack ? result.stack.find(b => b.table) : result;
     const row1 = table.table.body[1];
     expect(Number(row1[0].text)).toBeGreaterThanOrEqual(0); // score is numeric
     expect(row1[3].text).toBe('1');                          // row number

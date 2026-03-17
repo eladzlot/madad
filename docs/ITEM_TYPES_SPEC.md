@@ -91,12 +91,14 @@ The PDF response table currently assumes all rows are `(#, itemText, label, nume
 | Renderer key | Layout | Used by |
 |---|---|---|
 | `'scored'` | `# | text | label | value` — current layout | `likert`, `binary`, `slider`, `select` |
-| `'text'` | `# | text | [answer spanning remaining width]` — 2 visible columns, answer in a wrapped cell | `text` |
+| `'text'` | Rendered outside the response table entirely. The item text appears in bold, the answer appears below it in normal weight. Both wrap freely. No row in the scored table. | `text` |
 | `'multiselect'` | `# | text | [checked labels, stacked vertically] | —` | `multiselect` |
 | `'composite'` | `# | text` header row, then indented sub-rows one per selected option | `composite` |
 | `'unscored'` | `# | text | answer | —` — no value column | fallback for unscored scalars |
 
-The PDF section builder iterates items and calls the appropriate renderer via lookup. The renderer returns one or more pdfmake table row arrays. Renderers that return multiple rows (composite, multiselect) return `Array<row>` — the table builder flattens them.
+The PDF section builder iterates items and calls the appropriate renderer via lookup. The renderer returns one or more pdfmake content blocks. Renderers that return multiple blocks (composite, text-outside-table) return `Array` — the section builder splices them into the content stream.
+
+Instructions items are printed in the PDF as plain paragraph text, slightly muted, before the response table. This gives the clinician the full context the patient saw.
 
 Text answers must never be truncated. The `text` renderer uses a single cell with `noWrap: false` and no height constraint. pdfmake will expand the row height as needed.
 
