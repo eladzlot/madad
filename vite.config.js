@@ -11,7 +11,7 @@ export default defineConfig(({ mode }) => ({
       },
       output: {
         manualChunks: {
-          'pdf-vendor': ['pdfmake'],
+          'pdf-vendor': ['pdfmake', 'bidi-js'],
         },
       },
     },
