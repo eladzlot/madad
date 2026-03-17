@@ -10,17 +10,7 @@
 // preloadPdf() is not called in these tests — generateReport() is not tested
 // directly as it requires pdfmake to be loaded.
 
-import { describe, it, expect } from 'vitest';
-
-// We test the internal helpers by importing the module and reaching the
-// exported building functions via a named re-export seam. Since the functions
-// are currently unexported, we use a workaround: import the module URL and
-// call the functions we care about through a thin test-only export.
-//
-// Simpler approach: extract pure helpers into report-helpers.js and test those.
-// For now we test through the public surface by inspecting docDefinition output.
-// We call generateReport with a mock pdfmake injected via the module's
-// preload seam.
+import { describe, it, expect, beforeAll } from 'vitest';
 
 // ── Re-import pure helpers from the module ───────────────────────────────────
 // Because the helpers are internal, we duplicate the small pure functions here
@@ -276,7 +266,11 @@ import {
   buildTableHeaderRow,
   buildItemRow,
   bidiNodes,
+  initBidiForTesting,
 } from './report.js';
+
+// Initialise bidi-js before any test runs — bidiNodes requires it.
+beforeAll(async () => { await initBidiForTesting(); });
 
 // ── Shared fixtures ───────────────────────────────────────────────────────────
 

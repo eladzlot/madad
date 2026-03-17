@@ -57,6 +57,7 @@ export function preloadPdf() {
   if (_ready) return;
   _ready = Promise.all([
     import('pdfmake/build/pdfmake'),
+    import('bidi-js').then(m => { _bidi = (m.default ?? m)(); }),
     fetch(regularFontUrl).then(r => {
       if (!r.ok) throw new Error(`Failed to fetch font: ${regularFontUrl} (${r.status})`);
       return r.arrayBuffer();
@@ -83,7 +84,7 @@ export function preloadPdf() {
  */
 export async function generateReport(sessionState, config, session) {
   if (!_ready) preloadPdf();   // defensive: start if caller forgot
-  const [pdfmakeModule, regularAB, boldAB] = await _ready;
+  const [pdfmakeModule, , regularAB, boldAB] = await _ready;
   const pdfmake = pdfmakeModule.default ?? pdfmakeModule;
 
   // pdfmake 0.3.x API: addVirtualFileSystem expects base64 strings.
@@ -128,28 +129,61 @@ export function buildFilename(session, now = new Date()) {
 
 // ── BiDi text helper ──────────────────────────────────────────────────────────
 // pdfmake does not implement the Unicode Bidirectional Algorithm.
-// For pure-script strings we just replace spaces with NBSP (pdfmake drops
-// regular spaces between Hebrew words). For mixed Hebrew+Latin strings we:
-//   1. Tokenise by word
-//   2. Classify each token as Hebrew (RTL, level 1) or Latin (LTR, level 2)
-//      using letter-majority — punctuation does not vote
-//   3. Group consecutive same-level tokens into runs
-//   4. Reverse run order for the RTL paragraph
-//   5. Return an array of pdfmake text nodes — one node per run
-//      (separate nodes prevent fontkit from treating Latin glyphs as RTL)
+// We pre-process strings using bidi-js (UAX-9 conformant) to produce
+// correctly ordered pdfmake text nodes.
 //
-// The returned array is always safe to pass as `text:` in any pdfmake node.
+// Strategy — word-level runs, not character-level:
+//   1. Classify each space-separated token as RTL or LTR using bidi-js
+//      character types (R/AL = RTL, L/EN = LTR). Punctuation doesn't vote.
+//   2. Group consecutive same-direction tokens into runs.
+//   3. Reverse run order — pdfmake renders node[0] at the left; we want
+//      LTR runs (left) before RTL runs (right).
+//   4. Mirror bracket characters inside RTL runs using getMirroredCharacter
+//      (handles (, ), [, ], «, », angle brackets, etc.).
+//   5. Return an array of pdfmake text nodes, one per run.
+//
+// Word-level (not char-level) granularity is deliberate: it keeps bracket
+// characters attached to their adjacent word token, so '(Intrusion)' is
+// classified as LTR as a unit and its brackets are not mirrored.
+
+// _bidi is initialised lazily via preloadPdf() — see below.
+let _bidi = null;
 
 const NBSP = '\u00a0';
 
-// Classify a word token: 2 = LTR (Latin or digit-dominant), 1 = RTL (Hebrew-dominant)
+// Classify a word token using bidi-js character types.
+// Strong RTL types (R, AL) → level 1; Strong LTR types (L, EN) → level 2.
+// Neutral/punctuation characters don't vote. Default: RTL (level 1).
+function _getBidi() {
+  // _bidi is set by preloadPdf() in the browser.
+  // In test environments, call initBidiForTesting() before using bidiNodes.
+  if (!_bidi) throw new Error('[report] bidi-js not initialised — call preloadPdf() or initBidiForTesting()');
+  return _bidi;
+}
+
+/** For use in tests only — synchronously initialise bidi-js without preloadPdf(). */
+export async function initBidiForTesting() {
+  if (_bidi) return;
+  const m = await import('bidi-js');
+  _bidi = (m.default ?? m)();
+}
+
 function _tokenLevel(tok) {
+  const bidi = _getBidi();
   let rtl = 0, ltr = 0;
   for (const c of tok) {
-    if (/[\u0590-\u05FF]/.test(c)) rtl++;
-    else if (/[A-Za-z0-9]/.test(c)) ltr++;  // digits count as LTR
+    const t = bidi.getBidiCharTypeName(c);
+    if (t === 'R' || t === 'AL') rtl++;
+    else if (t === 'L' || t === 'EN') ltr++;
   }
   return (ltr > 0 && rtl === 0) ? 2 : 1;
+}
+
+// Mirror all bracket/quote characters in a string using Unicode standard.
+// Only applied to RTL runs so LTR brackets (e.g. around English words) stay unchanged.
+function _mirror(str) {
+  const bidi = _getBidi();
+  return [...str].map(c => bidi.getMirroredCharacter(c) ?? c).join('');
 }
 
 /**
@@ -165,22 +199,21 @@ export function bidiNodes(str, opts = {}) {
   if (!str) return [{ text: '', ...opts }];
   str = String(str);
 
-  const hasHebrew = /[\u0590-\u05FF]/.test(str);
-  const hasLatin  = /[A-Za-z]/.test(str);
-  const hasDigits = /[0-9]/.test(str);
+  const hasHebrew = [...str].some(c => { const t = _getBidi().getBidiCharTypeName(c); return t === 'R' || t === 'AL'; });
+  const hasLtr    = [...str].some(c => { const t = _getBidi().getBidiCharTypeName(c); return t === 'L' || t === 'EN'; });
 
-  // Pure script — single node, just normalise spaces and mirror parens for RTL
-  if (!hasHebrew || (!hasLatin && !hasDigits)) {
+  // Pure script — single node, normalise spaces and mirror brackets for RTL
+  if (!hasHebrew || !hasLtr) {
     const text = hasHebrew
-      ? str.replace(/ /g, NBSP).replace(/[()]/g, c => c === '(' ? ')' : '(')
+      ? _mirror(str).replace(/ /g, NBSP)
       : str.replace(/ /g, NBSP);
     return [{ text, ...opts }];
   }
 
-  // Mixed — tokenise, classify, group into runs.
-  // Sub-split on hyphens (keeping hyphen on the left sub-token) so mixed
-  // tokens like "ל-OCD" are classified correctly rather than being treated
-  // as a single ambiguous token that defeats script detection.
+  // Mixed — tokenise by spaces, classify each token, group into runs.
+  // Sub-split tokens on cross-script hyphens so "ל-OCD" → ["ל-", "OCD"]
+  // and each part is classified correctly by _tokenLevel.
+  // Same-script hyphens like "תת-סקלה" or "PHQ-9" are left intact.
   const tokens = [];
   let i = 0;
   while (i < str.length) {
@@ -188,9 +221,6 @@ export function bidiNodes(str, opts = {}) {
     let j = i;
     while (j < str.length && str[j] !== ' ') j++;
     const word = str.slice(i, j);
-    // "ל-OCD" → ["ל-", "OCD"]; "PHQ-9" stays as one token (no letter after hyphen ambiguity)
-    // Only split at cross-script hyphens (Hebrew→Latin or Latin→Hebrew).
-    // Same-script hyphens like "תת-סקלה" or "PHQ-9" are left intact.
     const parts = word.split(/(?<=[֐-׿]-)(?=[A-Za-z])|(?<=[A-Za-z]-)(?=[֐-׿])/);
     for (const part of parts) {
       if (part) tokens.push({ tok: part, level: _tokenLevel(part) });
@@ -209,12 +239,13 @@ export function bidiNodes(str, opts = {}) {
   // RTL paragraph: reverse run order for visual display
   const visual = [...runs].reverse();
 
-  // One text node per run; NBSP separator nodes between runs
-  // RTL runs get parentheses mirrored — pdfmake reverses them visually so we pre-flip.
+  // One text node per run; NBSP separator nodes between runs.
+  // RTL runs get all bracket/quote characters mirrored via Unicode standard —
+  // pdfmake reverses them again visually, so pre-mirroring gives the correct glyph.
   const nodes = [];
   visual.forEach((run, idx) => {
     const text = run.level === 1
-      ? run.words.join(NBSP).replace(/[()]/g, c => c === '(' ? ')' : '(')
+      ? _mirror(run.words.join(NBSP))
       : run.words.join(NBSP);
     nodes.push({ text, ...opts });
     if (idx < visual.length - 1) nodes.push({ text: NBSP });
