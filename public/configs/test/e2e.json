@@ -198,6 +198,74 @@
       "scoring": {
         "method": "sum"
       }
+    },
+    {
+      "id": "all_types_q",
+      "title": "שאלון כל הסוגים (E2E)",
+      "description": "Test fixture with one item of each type.",
+      "keywords": [
+        "test",
+        "e2e",
+        "all-types"
+      ],
+      "defaultOptionSetId": "agree_4",
+      "optionSets": {
+        "agree_4": [
+          {
+            "label": "כלל לא",
+            "value": 0
+          },
+          {
+            "label": "קצת",
+            "value": 1
+          },
+          {
+            "label": "במידה רבה",
+            "value": 2
+          },
+          {
+            "label": "לגמרי",
+            "value": 3
+          }
+        ],
+        "yesno": [
+          {
+            "label": "כן",
+            "value": 1
+          },
+          {
+            "label": "לא",
+            "value": 0
+          }
+        ]
+      },
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "זהו שאלון בדיקה הכולל פריט אחד מכל סוג."
+        },
+        {
+          "id": "likert1",
+          "type": "likert",
+          "text": "הרגשתי טוב היום"
+        },
+        {
+          "id": "binary1",
+          "type": "binary",
+          "text": "ישנתי טוב הלילה",
+          "optionSetId": "yesno"
+        },
+        {
+          "id": "text1",
+          "type": "text",
+          "text": "הערות נוספות",
+          "inputType": "line"
+        }
+      ],
+      "scoring": {
+        "method": "sum"
+      }
     }
   ],
   "batteries": [
@@ -227,6 +295,21 @@
       "sequence": [
         {
           "questionnaireId": "test_q"
+        }
+      ]
+    },
+    {
+      "id": "all_types_battery",
+      "title": "בדיקת כל הסוגים",
+      "description": "Battery with one item of each type.",
+      "keywords": [
+        "test",
+        "e2e",
+        "all-types"
+      ],
+      "sequence": [
+        {
+          "questionnaireId": "all_types_q"
         }
       ]
     }

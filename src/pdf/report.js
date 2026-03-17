@@ -516,6 +516,14 @@ export function buildResponseTable(questionnaire, answers) {
         text: bidiNodes(item.text),
         style: 'instructionText',
       });
+    } else if (item.type === 'text') {
+      // Text items render outside the table — bold question then wrapped answer
+      if (tableRows.length > 0) {
+        blocks.push(buildTable([buildTableHeaderRow(), ...tableRows]));
+        tableRows.length = 0;
+        rowNum = 0;
+      }
+      blocks.push(buildTextBlock(item, answers[item.id]));
     } else {
       rowNum++;
       tableRows.push(buildItemRow(item, rowNum, answers[item.id], questionnaire));
@@ -527,7 +535,7 @@ export function buildResponseTable(questionnaire, answers) {
     blocks.push(buildTable([buildTableHeaderRow(), ...tableRows]));
   }
 
-  // If no answerable items at all, nothing to show
+  // If no answerable items at all (only instructions), nothing to show
   const hasAnyAnswerable = items.some(i => i.type !== 'instructions');
   if (!hasAnyAnswerable) return null;
 
@@ -552,6 +560,29 @@ function buildTable(rows) {
       paddingBottom: () => 4,
     },
     marginBottom: 8,
+  };
+}
+
+// ── Text item block (outside table) ──────────────────────────────────────────
+
+export function buildTextBlock(item, answer) {
+  return {
+    stack: [
+      {
+        text: bidiNodes(item.text),
+        bold: true,
+        fontSize: 10,
+        alignment: 'right',
+        margin: [0, 0, 0, 4],
+      },
+      {
+        text: answer ? bidiNodes(String(answer)) : [{ text: '—', color: '#999999' }],
+        fontSize: 10,
+        alignment: 'right',
+        margin: [0, 0, 0, 0],
+      },
+    ],
+    margin: [0, 6, 0, 10],
   };
 }
 

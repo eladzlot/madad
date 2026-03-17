@@ -27,6 +27,9 @@ const PHQ9_URL = `/?configs=${E2E_CONFIG}&items=phq9_intake`;
 /** test_q battery — binary + likert mix */
 const TEST_URL = `/?configs=${E2E_CONFIG}&items=standard_intake`;
 
+/** all_types_battery — instructions + likert + binary + text */
+const ALL_TYPES_URL = `/?configs=${E2E_CONFIG}&items=all_types_battery`;
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 /**
@@ -338,6 +341,20 @@ test.describe('standard_intake battery (binary + likert)', () => {
   });
 });
 
+/** Type text into the item-text component and optionally submit */
+async function fillTextItem(page, text, { submit = true } = {}) {
+  const input = page.locator('item-text >> input');
+  await input.fill(text);
+  if (submit) {
+    await page.locator('item-text >> button.submit-btn').click();
+  }
+}
+
+/** Click skip on a text item */
+async function skipTextItem(page) {
+  await page.locator('item-text >> button.skip-btn').click();
+}
+
 // ── Error handling ────────────────────────────────────────────────────────────
 
 test.describe('error handling', () => {
@@ -377,5 +394,119 @@ test.describe('PDF download', () => {
     ]);
 
     expect(download.suggestedFilename()).toMatch(/\.pdf$/i);
+  });
+});
+
+// ── All item types battery ────────────────────────────────────────────────────
+
+test.describe('all item types battery (instructions + likert + binary + text)', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto(ALL_TYPES_URL);
+    await clickBegin(page);
+  });
+
+  test('first item is instructions', async ({ page }) => {
+    await expect(page.locator('item-instructions')).toBeVisible();
+  });
+
+  test('instructions → likert → binary → text sequence renders correctly', async ({ page }) => {
+    // instructions
+    await expect(page.locator('item-instructions')).toBeVisible();
+    await clickContinue(page);
+
+    // likert
+    await expect(page.locator('item-likert')).toBeVisible();
+    await clickLikertOption(page, 1);
+    await page.waitForTimeout(200);
+
+    // binary
+    await expect(page.locator('item-binary')).toBeVisible();
+    await clickBinaryFirst(page);
+    await page.waitForTimeout(200);
+
+    // text
+    await expect(page.locator('item-text')).toBeVisible();
+  });
+
+  test('text item shows question text', async ({ page }) => {
+    await clickContinue(page);
+    await clickLikertOption(page, 0);
+    await page.waitForTimeout(200);
+    await clickBinaryFirst(page);
+    await page.waitForTimeout(200);
+
+    await expect(page.locator('item-text')).toBeVisible();
+    const question = page.locator('item-text >> .question');
+    await expect(question).toContainText('הערות');
+  });
+
+  test('text item shows skip button (skippable by default)', async ({ page }) => {
+    await clickContinue(page);
+    await clickLikertOption(page, 0);
+    await page.waitForTimeout(200);
+    await clickBinaryFirst(page);
+    await page.waitForTimeout(200);
+
+    await expect(page.locator('item-text >> button.skip-btn')).toBeVisible();
+  });
+
+  test('text item can be skipped to reach completion', async ({ page }) => {
+    await clickContinue(page);
+    await clickLikertOption(page, 0);
+    await page.waitForTimeout(200);
+    await clickBinaryFirst(page);
+    await page.waitForTimeout(200);
+
+    await expect(page.locator('item-text')).toBeVisible();
+    await skipTextItem(page);
+
+    await expect(page.locator('completion-screen')).toBeVisible({ timeout: 2000 });
+  });
+
+  test('text item can be submitted with text to reach completion', async ({ page }) => {
+    await clickContinue(page);
+    await clickLikertOption(page, 0);
+    await page.waitForTimeout(200);
+    await clickBinaryFirst(page);
+    await page.waitForTimeout(200);
+
+    await expect(page.locator('item-text')).toBeVisible();
+    await fillTextItem(page, 'בדיקה בדיקה');
+
+    await expect(page.locator('completion-screen')).toBeVisible({ timeout: 2000 });
+  });
+
+  test('back navigation from text item restores typed value', async ({ page }) => {
+    await clickContinue(page);
+    await clickLikertOption(page, 0);
+    await page.waitForTimeout(200);
+    await clickBinaryFirst(page);
+    await page.waitForTimeout(200);
+
+    await expect(page.locator('item-text')).toBeVisible();
+    const input = page.locator('item-text >> input');
+    await input.fill('טקסט לבדיקה');
+
+    // navigate back then forward
+    await page.goBack();
+    await expect(page.locator('item-binary')).toBeVisible();
+    await page.goForward();
+
+    await expect(page.locator('item-text')).toBeVisible();
+    await expect(page.locator('item-text >> input')).toHaveValue('טקסט לבדיקה');
+  });
+
+  test('completes full battery and shows results with pdf button', async ({ page }) => {
+    await clickContinue(page);
+    await clickLikertOption(page, 1);
+    await page.waitForTimeout(200);
+    await clickBinaryFirst(page);
+    await page.waitForTimeout(200);
+    await fillTextItem(page, 'הערה לדוגמה');
+
+    await expect(page.locator('completion-screen')).toBeVisible({ timeout: 2000 });
+    await clickViewResults(page);
+    await expect(page.locator('results-screen')).toBeVisible();
+    await expect(page.locator('results-screen >> button.pdf-btn')).toBeVisible();
   });
 });

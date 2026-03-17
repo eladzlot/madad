@@ -66,6 +66,9 @@ copy "item-binary.js"                  "src/components/item-binary.js"
 copy "item-binary.test.js"             "src/components/item-binary.test.js"
 copy "item-instructions.js"            "src/components/item-instructions.js"
 copy "item-instructions.test.js"       "src/components/item-instructions.test.js"
+copy "item-text.js"       "src/components/item-text.js"
+copy "item-text.test.js"  "src/components/item-text.test.js"
+
 copy "progress-bar.js"                 "src/components/progress-bar.js"
 copy "progress-bar.test.js"            "src/components/progress-bar.test.js"
 copy "app-shell.js"                    "src/components/app-shell.js"
@@ -76,6 +79,9 @@ copy "completion-screen.js"            "src/components/completion-screen.js"
 copy "completion-screen.test.js"       "src/components/completion-screen.test.js"
 copy "results-screen.js"               "src/components/results-screen.js"
 copy "results-screen.test.js"          "src/components/results-screen.test.js"
+copy "item-types.js"                   "src/item-types.js"
+copy "item-types.test.js"              "src/item-types.test.js"
+
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
 copy "gestures.js"                     "src/helpers/gestures.js"

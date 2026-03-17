@@ -81,6 +81,7 @@
         { "$ref": "#/$defs/likertItem" },
         { "$ref": "#/$defs/binaryItem" },
         { "$ref": "#/$defs/instructionsItem" },
+        { "$ref": "#/$defs/textItem" },
         { "$ref": "#/$defs/ifNode" },
         { "$ref": "#/$defs/randomizeNode" }
       ]
@@ -97,7 +98,8 @@
         "options":     { "$ref": "#/$defs/optionList" },
         "optionSetId": { "$ref": "#/$defs/id" },
         "reverse":     { "type": "boolean" },
-        "weight":      { "type": "number" }
+        "weight":      { "type": "number" },
+        "required":    { "type": "boolean" }
       },
       "not": { "required": ["options", "optionSetId"] }
     },
@@ -113,7 +115,8 @@
         "options":     { "$ref": "#/$defs/optionList" },
         "optionSetId": { "type": "string" },
         "reverse":     { "type": "boolean" },
-        "weight":      { "type": "number" }
+        "weight":      { "type": "number" },
+        "required":    { "type": "boolean" }
       }
     },
 
@@ -122,9 +125,26 @@
       "required": ["id", "type", "text"],
       "additionalProperties": false,
       "properties": {
-        "id":   { "$ref": "#/$defs/id" },
-        "type": { "const": "instructions" },
-        "text": { "type": "string", "minLength": 1 }
+        "id":       { "$ref": "#/$defs/id" },
+        "type":     { "const": "instructions" },
+        "text":     { "type": "string", "minLength": 1 },
+        "required": { "type": "boolean" }
+      }
+    },
+
+    "textItem": {
+      "type": "object",
+      "required": ["id", "type", "text"],
+      "additionalProperties": false,
+      "properties": {
+        "id":        { "$ref": "#/$defs/id" },
+        "type":      { "const": "text" },
+        "text":      { "type": "string", "minLength": 1 },
+        "inputType": { "enum": ["line", "multiline", "number", "email"], "default": "line" },
+        "min":       { "type": "number" },
+        "max":       { "type": "number" },
+        "pattern":   { "type": "string", "minLength": 1 },
+        "required":  { "type": "boolean" }
       }
     },
 

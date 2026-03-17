@@ -265,6 +265,7 @@ import {
   buildResponseTable,
   buildTableHeaderRow,
   buildItemRow,
+  buildTextBlock,
   bidiNodes,
   initBidiForTesting,
 } from './report.js';
@@ -672,6 +673,48 @@ describe('buildResponseTable', () => {
     const result = buildResponseTable(q, { i1: 1, i2: 2 });
     expect(result.table).toBeDefined();
     expect(result.stack).toBeUndefined();
+  });
+
+  it('renders text items outside the table as a stack block', () => {
+    const q = { ...Q, items: [
+      { id: 'i1', type: 'likert', text: 'שאלה' },
+      { id: 'notes', type: 'text', text: 'הערות' },
+    ]};
+    const result = buildResponseTable(q, { i1: 2, notes: 'some note' });
+    expect(result.stack).toBeDefined();
+    const tableBlock = result.stack.find(b => b.table);
+    const textBlock  = result.stack.find(b => b.stack);
+    expect(tableBlock).toBeDefined();
+    expect(textBlock).toBeDefined();
+  });
+});
+
+// ── buildTextBlock ────────────────────────────────────────────────────────────
+
+describe('buildTextBlock', () => {
+  const textItem = { id: 'notes', type: 'text', text: 'הערות נוספות' };
+
+  it('returns a stack with question bold and answer below', () => {
+    const block = buildTextBlock(textItem, 'some free text');
+    expect(block.stack).toHaveLength(2);
+    expect(block.stack[0].bold).toBe(true);
+    expect(block.stack[1].bold).toBeFalsy();
+  });
+
+  it('renders em-dash when answer is null', () => {
+    const block = buildTextBlock(textItem, null);
+    const answerNode = block.stack[1];
+    // em-dash node — colour is muted grey
+    expect(answerNode.text[0].color).toBe('#999999');
+  });
+
+  it('renders the answer text when provided', () => {
+    const block = buildTextBlock(textItem, 'שלום עולם');
+    const answerNodes = block.stack[1].text;
+    const joined = Array.isArray(answerNodes)
+      ? answerNodes.map(n => n.text ?? '').join('')
+      : String(answerNodes);
+    expect(joined.replace(/\u00a0/g, ' ')).toContain('שלום');
   });
 });
 

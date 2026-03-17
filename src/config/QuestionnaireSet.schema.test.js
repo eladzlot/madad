@@ -189,6 +189,27 @@ describe('likert item', () => {
       items: [{ ...likertItem, reverse: true, weight: 2 }],
     })],
   })).toBe(true));
+
+  it('accepts required: false on likert (makes it skippable)', () => expect(valid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire({
+      items: [{ ...likertItem, required: false }],
+    })],
+  })).toBe(true));
+
+  it('accepts required: true on likert', () => expect(valid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire({
+      items: [{ ...likertItem, required: true }],
+    })],
+  })).toBe(true));
+
+  it('rejects non-boolean required on likert', () => expect(invalid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire({
+      items: [{ ...likertItem, required: 'yes' }],
+    })],
+  })).toBe(true));
 });
 
 // ─── Binary item ──────────────────────────────────────────────────────────────
@@ -218,6 +239,13 @@ describe('binary item', () => {
     })],
   })).toBe(true));
 
+  it('accepts required: false on binary', () => expect(valid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire({
+      items: [{ ...binaryItem, options: twoOptions, required: false }],
+    })],
+  })).toBe(true));
+
   it('rejects binary item with labels (old schema)', () => expect(invalid({
     ...minimalConfig,
     questionnaires: [makeQuestionnaire({
@@ -232,6 +260,13 @@ describe('instructions item', () => {
   it('accepts valid instructions item', () => expect(valid({
     ...minimalConfig,
     questionnaires: [makeQuestionnaire({ items: [instructionsItem] })],
+  })).toBe(true));
+
+  it('accepts required: true on instructions', () => expect(valid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire({
+      items: [{ ...instructionsItem, required: true }],
+    })],
   })).toBe(true));
 
   it('rejects instructions with extra fields', () => expect(invalid({

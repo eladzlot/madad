@@ -1,4 +1,5 @@
 import { generateReport } from './pdf/report.js';
+import { tagForType, canAdvance, autoAdvances } from './item-types.js';
 
 // Controller — wires orchestrator + engine to Lit components.
 // See RENDER_SPEC.md §2.
@@ -31,14 +32,6 @@ function resolveOptions(item, { questionnaire }) {
 function resolveItem(item, context) {
   return [resolveOptions].reduce((it, fn) => fn(it, context), item);
 }
-
-// ── Component tag by item type ────────────────────────────────────────────────
-
-const TAG_BY_TYPE = {
-  likert:       'item-likert',
-  binary:       'item-binary',
-  instructions: 'item-instructions',
-};
 
 // ── Factory ───────────────────────────────────────────────────────────────────
 
@@ -87,9 +80,9 @@ export function createController(container, router) {
   function updateNav() {
     if (!_shellEl || !_engine) return;
     const item = _engine.currentItem();
-    const hasAnswer = item && _engine.answers()[item.id] != null;
+    const answer = item ? _engine.answers()[item.id] : null;
     _shellEl.canGoBack    = _engine.canGoBack() || _orchestrator?.currentEngine?.() !== _engine;
-    _shellEl.canGoForward = hasAnswer && !_engine.isComplete();
+    _shellEl.canGoForward = !!item && canAdvance(item, answer) && !_engine.isComplete();
 
     if (_progressEl) {
       _progressEl.itemProgress      = _engine.progress();
@@ -99,7 +92,7 @@ export function createController(container, router) {
   }
 
   function mountItem(item) {
-    const tag = TAG_BY_TYPE[item.type] ?? 'item-likert';
+    const tag = tagForType(item.type);
     const resolved = resolveItem(item, { questionnaire: _questionnaire });
     const el = getOrCreateItemEl(tag);
     el.item = resolved;
@@ -120,7 +113,7 @@ export function createController(container, router) {
     clearTimeout(_advanceTimer);
     // Hide forward button immediately — prevents it flashing during the delay
     if (_shellEl) _shellEl.canGoForward = false;
-    const delay = _engine?.currentItem()?.type === 'instructions' ? 0 : ADVANCE_DELAY_MS;
+    const delay = autoAdvances(_engine?.currentItem()) ? ADVANCE_DELAY_MS : 0;
     _advanceTimer = setTimeout(() => {
       const next = _engine.advance();
       if (next === null) {
@@ -177,10 +170,10 @@ export function createController(container, router) {
     if (screen === 'q') {
       if (!_engine?.currentItem()) return;
       const item = _engine.currentItem();
-      const needsAnswer = item.type !== 'instructions';
-      if (needsAnswer && _engine.answers()[item.id] == null) return;
+      const answer = _engine.answers()[item.id];
+      if (!canAdvance(item, answer)) return;
       clearTimeout(_advanceTimer);
-      const delay = item.type === 'instructions' ? 0 : ADVANCE_DELAY_MS;
+      const delay = autoAdvances(item) ? ADVANCE_DELAY_MS : 0;
       _advanceTimer = setTimeout(() => {
         const next = _engine.advance();
         if (next === null) {

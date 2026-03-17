@@ -4,6 +4,7 @@
 // See Implementation Spec §5.4, §5.5
 
 import { evaluate } from './dsl.js';
+import { isScored } from '../item-types.js';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -11,7 +12,7 @@ import { evaluate } from './dsl.js';
  * Returns true for item types that contribute to scoring.
  */
 function isAnswerable(item) {
-  return item.type === 'likert' || item.type === 'binary';
+  return isScored(item);
 }
 
 /**

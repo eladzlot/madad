@@ -95,6 +95,8 @@ Uses `defaultOptionSetId` by default. Override with `"optionSetId": "other_scale
 
 Add `"reverse": true` to reverse-score an item. If any item uses `reverse`, you must set `maxPerItem` in the scoring spec.
 
+Add `"required": false` to make a likert item skippable (patient can advance without answering). Default is required.
+
 ### Binary item (yes/no)
 ```json
 { "id": "b1", "type": "binary", "text": "Did you sleep well?" }
@@ -102,6 +104,8 @@ Add `"reverse": true` to reverse-score an item. If any item uses `reverse`, you 
 Default labels are כן/לא. Override with `"labels": { "yes": "כן", "no": "לא" }`.
 
 Binary items score: כן = 1, לא = 0 by default. With `"reverse": true`: כן = 0, לא = 1.
+
+Add `"required": false` to make a binary item skippable. Default is required.
 
 ### Instructions item
 ```json
