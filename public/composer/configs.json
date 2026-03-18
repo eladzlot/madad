@@ -10,8 +10,7 @@
     },
     {
       "name": "שאלונים לבדיקה",
-      "url": "/configs/test/e2e.json",
-      "hidden": true
+      "url": "/configs/test/e2e.json"
     }
   ]
 }

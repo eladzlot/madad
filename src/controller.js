@@ -282,11 +282,13 @@ export function createController(container, router) {
   }
 
   function onError(err) {
-    container.innerHTML = `
-      <div style="padding: var(--space-lg); direction: rtl; color: var(--color-no)">
-        <p>אירעה שגיאה: ${err.message}</p>
-      </div>
-    `;
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'padding: var(--space-lg); direction: rtl; color: var(--color-no)';
+    const msg = document.createElement('p');
+    msg.textContent = 'אירעה שגיאה: ' + err.message;
+    wrap.appendChild(msg);
+    container.innerHTML = '';
+    container.appendChild(wrap);
     console.error('Controller error:', err);
   }
 

@@ -10,7 +10,15 @@
 //   - A full URL (starts with https:// or http:// or /) → used as-is
 //
 // options:
-//   fetch: fn  — injectable fetch (default: globalThis.fetch)
+//   fetch: fn              — injectable fetch (default: globalThis.fetch)
+//   allowedOrigins: Set    — https:// origins permitted for external config URLs.
+//                            Defaults to same-origin only (location.origin).
+//                            Pass an explicit Set to allow trusted external servers.
+//                            Pass an empty Set (new Set()) to block all external URLs.
+//
+// External-origin support is deliberately opt-in. To allow a trusted external
+// config server in the future, pass its origin at the call site:
+//   loadConfig(sources, { allowedOrigins: new Set(['https://configs.example.com']) })
 //
 // ResolvedConfig: {
 //   questionnaires: Questionnaire[],
@@ -57,8 +65,31 @@ const validate = ajv.compile(schema);
 
 // ─── URL resolution ───────────────────────────────────────────────────────────
 
-function resolveSource(source) {
-  if (/^https?:\/\//.test(source)) return source;  // full URL
+// resolveSource validates the source string and returns a URL/path safe to fetch.
+// allowedOrigins: Set<string> — permitted external https:// origins.
+// Relative and same-origin paths are always allowed; http:// is never allowed.
+function resolveSource(source, allowedOrigins) {
+  if (/^https?:\/\//.test(source)) {
+    let parsed;
+    try { parsed = new URL(source); } catch {
+      throw new ConfigError(`Invalid config URL: "${source}"`);
+    }
+    const isSameOrigin = allowedOrigins.has(parsed.origin);
+    // Same-origin URLs are always permitted regardless of protocol.
+    // (e.g. http://localhost in development is fine — no cross-origin risk.)
+    if (isSameOrigin) return source;
+    // External origins: HTTPS only, and must be explicitly listed.
+    if (parsed.protocol !== 'https:') {
+      throw new ConfigError(
+        `External config URLs must use HTTPS: "${source}"`
+      );
+    }
+    throw new ConfigError(
+      `Config origin not permitted: "${parsed.origin}". ` +
+      `Only same-origin configs are loaded by default. ` +
+      `To allow an external config server, pass its origin in the allowedOrigins option.`
+    );
+  }
   if (source.startsWith('/')) return source;         // root-relative path
   if (source.includes('/') || source.endsWith('.json')) return source; // relative path
   return `configs/${source}.json`;                   // slug → relative path
@@ -66,8 +97,8 @@ function resolveSource(source) {
 
 // ─── Fetch and validate a single file ────────────────────────────────────────
 
-async function fetchAndValidate(source, fetchFn) {
-  const url = resolveSource(source);
+async function fetchAndValidate(source, fetchFn, allowedOrigins) {
+  const url = resolveSource(source, allowedOrigins);
 
   let data;
   try {
@@ -123,14 +154,22 @@ function mergeConfigs(results) {
 // ─── Public API ───────────────────────────────────────────────────────────────
 
 export async function loadConfig(sources, options = {}) {
-  const { fetch: fetchFn = globalThis.fetch } = options;
+  const {
+    fetch: fetchFn = globalThis.fetch,
+    // allowedOrigins: Set of https:// origins permitted for external config URLs.
+    // Defaults to same-origin only. To allow a trusted external config server,
+    // pass: allowedOrigins: new Set(['https://configs.example.com'])
+    allowedOrigins = new Set(
+      typeof location !== 'undefined' ? [location.origin] : []
+    ),
+  } = options;
 
   if (!sources || sources.length === 0) {
     throw new ConfigError('loadConfig requires at least one source.');
   }
 
   const results = await Promise.all(
-    sources.map(src => fetchAndValidate(src, fetchFn))
+    sources.map(src => fetchAndValidate(src, fetchFn, allowedOrigins))
   );
 
   const { questionnaires, batteries } = mergeConfigs(results);

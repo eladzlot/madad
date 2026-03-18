@@ -468,15 +468,36 @@ Each source passed to `loadConfig()` is one of:
 | Slug (no slashes, no `.json`) | `prod/standard` | → `configs/prod/standard.json` (relative) |
 | Relative path | `configs/prod/standard.json` | used as-is (relative) |
 | Root-relative path | `/configs/prod/standard.json` | used as-is (absolute from origin) |
-| Full URL | `https://example.com/q.json` | used as-is |
+| Full URL | `https://trusted.example.com/q.json` | allowed only if origin is in `allowedOrigins` |
 
 Relative and slug-resolved paths are resolved by the browser relative to the current page URL. This means the same path works correctly at any base path deployment (`/`, `/madad/`, etc.) without any runtime path detection.
 
 **Rule:** Always use relative paths or slugs in `configs=` URL parameters. Root-relative paths (`/configs/...`) are only used internally by the Composer loader, which resolves them against the app root before passing to `loadConfig`.
 
+#### External-origin config loading
+
+Full `https://` URLs are supported but **opt-in**. By default `loadConfig` only permits same-origin sources (`location.origin`). Loading from any other origin requires passing an explicit `allowedOrigins` set at the call site:
+
+```js
+// Default behaviour — same-origin only:
+await loadConfig(sources);
+
+// Opt-in to a trusted external config server:
+await loadConfig(sources, {
+  allowedOrigins: new Set(['https://configs.example.com']),
+});
+
+// Block all external URLs unconditionally:
+await loadConfig(sources, { allowedOrigins: new Set() });
+```
+
+**Security rationale:** configs are fully trusted at runtime — they drive scoring, branching, alert thresholds, and PDF content. An attacker who can supply a config URL can inject arbitrary content into the patient's session. Restricting external origins by default limits this attack surface to the same origin as the app itself.
+
+`http://` (non-TLS) is permitted for **same-origin** URLs (e.g. `http://localhost` in development) but is **never permitted for external origins**, even if listed in `allowedOrigins`.
+
 ### 9.2 Steps
 
-1. For each source, fetch and parse the JSON file.
+1. For each source, validate origin policy (see §9.1), then fetch and parse the JSON file.
 2. Validate against `QuestionnaireSet.schema.json` using AJV.
 3. Run post-schema semantic checks (duplicate session keys, missing options, cross-entity ID collision within file).
 4. Merge all questionnaire and battery arrays in order. **Duplicate IDs across files throw a `ConfigError` immediately.**
@@ -502,7 +523,7 @@ Multiple sources are fetched in parallel.
 |---|---|
 | `ConfigFetchError` | HTTP failure or network error; exposes `url` |
 | `ConfigValidationError` | AJV schema violation; exposes `url` and `validationErrors` array |
-| `ConfigError` | Semantic violation: duplicate ID (within or across files), missing option set, cross-entity collision |
+| `ConfigError` | Semantic violation: duplicate ID (within or across files), missing option set, cross-entity collision, disallowed config origin |
 
 ### 9.5 Default config
 
@@ -511,6 +532,10 @@ If no `configs` URL parameter is present, the app shell defaults to the slug `pr
 ### 9.6 Injectable fetch
 
 The loader accepts a `fetch` option for testing. In production it uses `globalThis.fetch`.
+
+### 9.7 Injectable allowedOrigins
+
+The loader accepts an `allowedOrigins` option (a `Set<string>`) for testing and for future external-origin deployments. Tests that exercise full `https://` URLs must pass an explicit `allowedOrigins` containing the test origin — the default (same-origin only) will reject them, which is the correct production behaviour.
 
 ---
 

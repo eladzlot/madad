@@ -1,5 +1,19 @@
 import { LitElement, html, css } from 'lit';
 
+// ─── ReDoS guard ─────────────────────────────────────────────────────────────
+// Rejects regex patterns that contain nested/chained quantifiers which can
+// cause catastrophic backtracking on crafted inputs. This is a conservative
+// syntactic check, not a full ReDoS solver — it blocks the most common forms.
+// Patterns that fail this check are silently skipped (no validation applied).
+function _isSafePattern(pattern) {
+  if (typeof pattern !== 'string' || pattern.length > 200) return false;
+  // Reject nested quantifiers: (x+)+ (x*)+ (x+)* (x?)+ etc.
+  if (/\([^)]*[*+?][^)]*\)[*+?]/.test(pattern)) return false;
+  // Reject adjacent quantifiers on groups: )+(  )*( etc.
+  if (/\)[*+?]\s*\(/.test(pattern)) return false;
+  return true;
+}
+
 /**
  * <item-text>
  *
@@ -152,9 +166,13 @@ export class ItemText extends LitElement {
       if (!value.includes('@')) return 'כתובת דוא"ל לא תקינה';
     }
     if (pattern) {
-      try {
-        if (!new RegExp(pattern).test(value)) return 'הערך אינו בפורמט הנדרש';
-      } catch { /* invalid pattern — skip */ }
+      // Guard against ReDoS: reject patterns with nested/chained quantifiers
+      // that can cause catastrophic backtracking on crafted inputs.
+      if (_isSafePattern(pattern)) {
+        try {
+          if (!new RegExp(pattern).test(value)) return 'הערך אינו בפורמט הנדרש';
+        } catch { /* malformed pattern — skip */ }
+      }
     }
     return '';
   }

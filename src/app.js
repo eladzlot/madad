@@ -39,12 +39,23 @@ const DEFAULT_CONFIG = 'prod/standard';
 // ── Error screen ──────────────────────────────────────────────────────────────
 
 function showError(container, message, detail = '') {
-  container.innerHTML = `
-    <div class="content-column" style="direction:rtl; color: var(--color-no)">
-      <p>${message}</p>
-      ${detail ? `<pre style="font-size:12px; margin-top:1rem; white-space:pre-wrap">${detail}</pre>` : ''}
-    </div>
-  `;
+  const wrap = document.createElement('div');
+  wrap.className = 'content-column';
+  wrap.style.cssText = 'direction:rtl; color: var(--color-no)';
+
+  const msg = document.createElement('p');
+  msg.textContent = message;
+  wrap.appendChild(msg);
+
+  if (detail) {
+    const pre = document.createElement('pre');
+    pre.style.cssText = 'font-size:12px; margin-top:1rem; white-space:pre-wrap';
+    pre.textContent = detail;
+    wrap.appendChild(pre);
+  }
+
+  container.innerHTML = '';
+  container.appendChild(wrap);
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────
@@ -54,7 +65,11 @@ async function main() {
 
   const configsParam = params.get('configs');
   const itemsParam   = params.get('items');
-  const pid          = params.get('pid') ?? null;
+  const pidRaw = params.get('pid') ?? null;
+  // Validate PID: alphanumeric, Hebrew chars, hyphen, underscore, max 64 chars.
+  // Reject silently (treat as absent) to avoid leaking crafted values into error messages.
+  const PID_PATTERN = /^[a-zA-Z0-9\u0590-\u05FF_-]{1,64}$/;
+  const pid = pidRaw && PID_PATTERN.test(pidRaw) ? pidRaw : null;
 
   const configSources = configsParam
     ? configsParam.split(',').map(s => s.trim()).filter(Boolean)

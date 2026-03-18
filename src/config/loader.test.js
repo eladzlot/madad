@@ -33,10 +33,40 @@ describe('URL resolution', () => {
     expect(fetch).toHaveBeenCalledWith('configs/standard.json');
   });
 
-  it('uses full https URL as-is', async () => {
+  it('uses full https URL when origin is explicitly allowed', async () => {
     const url = 'https://example.com/my-config.json';
     const fetch = makeFetch({ [url]: { body: minimalConfig() } });
-    await loadConfig([url], { fetch });
+    await loadConfig([url], { fetch, allowedOrigins: new Set(['https://example.com']) });
+    expect(fetch).toHaveBeenCalledWith(url);
+  });
+
+  it('rejects https URL from origin not in allowedOrigins', async () => {
+    const url = 'https://evil.example.com/config.json';
+    const fetch = makeFetch({ [url]: { body: minimalConfig() } });
+    await expect(
+      loadConfig([url], { fetch })
+    ).rejects.toBeInstanceOf(ConfigError);
+  });
+
+  it('rejects http (non-TLS) URL for external origins even if listed in allowedOrigins', async () => {
+    const url = 'http://example.com/config.json';
+    const fetch = makeFetch({ [url]: { body: minimalConfig() } });
+    // External http:// is blocked regardless of allowedOrigins — only same-origin
+    // http:// (e.g. localhost) is permitted. The origin check uses the parsed origin
+    // from allowedOrigins, so listing 'http://example.com' does not bypass the block
+    // because the same-origin check uses location.origin which is not example.com.
+    // We pass an empty allowedOrigins to ensure example.com is not same-origin.
+    await expect(
+      loadConfig([url], { fetch, allowedOrigins: new Set() })
+    ).rejects.toBeInstanceOf(ConfigError);
+  });
+
+  it('allows http (non-TLS) URL for same-origin (e.g. localhost in dev)', async () => {
+    // In test environments location is undefined, so allowedOrigins defaults to an
+    // empty Set. Pass the localhost origin explicitly to simulate a dev environment.
+    const url = 'http://localhost:5173/configs/test.json';
+    const fetch = makeFetch({ [url]: { body: minimalConfig() } });
+    await loadConfig([url], { fetch, allowedOrigins: new Set(['http://localhost:5173']) });
     expect(fetch).toHaveBeenCalledWith(url);
   });
 

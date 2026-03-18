@@ -197,6 +197,22 @@ See `public/configs/INSTRUMENTS.md` (human guide) or `public/configs/LLM_GUIDE.m
 | Embedded JSON in PDF | Machine-readable output for clinic systems | Planned, not started |
 | Component branch coverage ~60% | UI regressions may go undetected | E2E tests compensate |
 
+## 6a. Security model (summary)
+
+The following security controls are in place. Do not remove them without understanding the implications.
+
+| Control | Location | What it prevents |
+|---|---|---|
+| `allowedOrigins` in `loadConfig` | `src/config/loader.js` | External servers injecting malicious configs via crafted `?configs=` URLs. Default: same-origin only. |
+| `http://` rejection | `src/config/loader.js` | Config loading over unencrypted transport. |
+| `textContent` in error rendering | `src/app.js`, `src/controller.js` | XSS via error messages containing HTML from crafted URL parameters. |
+| PID validation (`PID_PATTERN`, max 64 chars) | `src/app.js` | Crafted PIDs entering error surfaces or the PDF filename. |
+| Name length cap (200 chars) + BiDi strip | `src/components/welcome-screen.js` | Oversized or directionally-manipulated names in the PDF. |
+| `_isSafePattern` ReDoS guard | `src/components/item-text.js` | Config-supplied `pattern` fields causing catastrophic regex backtracking. |
+| Content-Security-Policy meta tag | `index.html`, `composer/index.html` | Limits the blast radius of any future XSS: no inline scripts, no external connects. |
+
+**To allow an external config server in the future**, pass `allowedOrigins` at the `loadConfig` call site in `src/app.js` — no changes to `loader.js` are needed. See `IMPLEMENTATION_SPEC.md §9.1`.
+
 ---
 
 ## 7. Next steps
@@ -258,3 +274,5 @@ To add a new instrument: `public/configs/CONTRIBUTING.md`.
 - **`vite.config.js`** — `base` is `'/'` in development mode and `'/madad/'` in all other modes. `pdfmake` is pinned to a named chunk via `manualChunks` to keep it lazy-loaded and out of the entry bundle.
 - **Config URL format** — `configs=` params must use relative paths (no leading slash). See §5 above.
 - **`composer-state.js` `getAppRoot()`** — derives app root by stripping `/composer/...` from `window.location.href`. Any change to Composer URL structure requires updating this.
+- **Security controls in §6a** — specifically: do not revert error rendering to `innerHTML`, do not remove PID/name validation, do not remove the `allowedOrigins` check from `loadConfig`. Each of these was introduced to fix a concrete vulnerability.
+- **`allowedOrigins` default in `loadConfig`** — defaults to `location.origin` (same-origin only). If you change this default to be permissive, you re-open F-02. The correct pattern for future external-config support is to pass an explicit `allowedOrigins` set at the call site in `src/app.js`, not to change the default.

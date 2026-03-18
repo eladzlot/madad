@@ -126,7 +126,8 @@ export class WelcomeScreen extends LitElement {
   }
 
   _onInput(e) {
-    this._name = e.target.value;
+    // Cap name length at the component level so oversized values never reach the PDF
+    this._name = e.target.value.slice(0, 200);
   }
 
   _onKeyDown(e) {
@@ -134,8 +135,11 @@ export class WelcomeScreen extends LitElement {
   }
 
   _begin() {
+    // Strip Unicode BiDi control characters before emitting the name.
+    // These can cause misleading visual rendering in PDF documents.
+    const safeName = this._name.trim().replace(/[\u200E\u200F\u202A-\u202E\u2066-\u2069]/g, '');
     this.dispatchEvent(new CustomEvent('begin', {
-      detail: { name: this._name.trim() },
+      detail: { name: safeName },
       bubbles: true,
       composed: true,
     }));
