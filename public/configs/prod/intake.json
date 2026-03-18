@@ -424,6 +424,26 @@
             }
           ],
           "else": []
+        },
+        {
+          "type": "if",
+          "condition": "item.diamond_sr.q17 == 1 || item.diamond_sr.q18 == 1",
+          "then": [
+            {
+              "questionnaireId": "hai"
+            }
+          ],
+          "else": []
+        },
+        {
+          "type": "if",
+          "condition": "item.diamond_sr.q15 == 1",
+          "then": [
+            {
+              "questionnaireId": "mgh_hps"
+            }
+          ],
+          "else": []
         }
       ]
     }
