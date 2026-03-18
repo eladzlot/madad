@@ -19,9 +19,9 @@ Only open-source or public-domain instruments may be added without explicit lice
 
 ```
 public/configs/
-  prod/standard.json   ← Standard clinical scales (PHQ-9, GAD-7, PCL-5, OCI-R, PDSS-SR, ASI-3)
-  prod/intake.json     ← Initial assessment screeners (DIAMOND-SR)
-  test/e2e.json        ← E2E test fixtures only — never used clinically
+  prod/standard.json   ← Standard clinical scales (PHQ-9, GAD-7, PCL-5, OCI-R, PDSS-SR, ASI-3, HAI, MGH-HPS)
+  prod/intake.json     ← Intake workflow (DIAMOND-SR screener, demographics, clinical_intake battery)
+  test/e2e.json        ← E2E test fixtures only — hidden in Composer, never used clinically
 ```
 
 All prod files are listed in `public/composer/configs.json`. The `validate:configs` script checks all files for schema validity and cross-file ID uniqueness.
@@ -42,7 +42,7 @@ All identifiers (questionnaire IDs, battery IDs, item IDs, subscale IDs, option 
 - No spaces, dots, or other characters
 
 The following are reserved and must not be used as any ID:
-`item`, `score`, `subscale`, `sum`, `avg`, `min`, `max`, `if`
+`item`, `score`, `subscale`, `sum`, `avg`, `min`, `max`, `if`, `count`, `checked`
 
 IDs must be unique within their scope:
 - Questionnaire IDs — unique within the file (and across all loaded files after merge)

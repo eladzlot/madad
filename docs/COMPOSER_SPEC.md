@@ -74,9 +74,17 @@ If one config fails to load:
 
 # Config Discovery
 
-Configs are defined by a Composer-specific manifest at `public/composer/configs.json`.
+Configs are defined by a manifest at `public/configs.json` (relative to the app root).
 
 Config URLs in the manifest use **root-relative paths** (`/configs/...`). The Composer resolves these against the app root URL at runtime, so they work at any base path deployment.
+
+Each manifest entry may include:
+
+| Field | Type | Description |
+|---|---|---|
+| `name` | string | Display name (internal, not shown in UI) |
+| `url` | string | Root-relative path to the config JSON |
+| `hidden` | boolean | If `true`, config is loaded (IDs registered, dependencies resolved) but its questionnaires and batteries are **not shown** in the Composer UI. Default: `false`. |
 
 Example manifest:
 
@@ -88,14 +96,21 @@ Example manifest:
       "url": "/configs/prod/standard.json"
     },
     {
-      "name": "שאלונים נוספים",
-      "url": "/configs/prod/supplemental.json"
+      "name": "שאלוני הערכה ראשונית",
+      "url": "/configs/prod/intake.json"
+    },
+    {
+      "name": "שאלונים לבדיקה",
+      "url": "/configs/test/e2e.json",
+      "hidden": true
     }
   ]
 }
 ```
 
-The Composer loads **all configs listed in the manifest**.
+`hidden: true` is used for test fixtures and any config not intended for clinical selection. The config is still fully loaded so that batteries in visible configs can reference questionnaires from hidden configs, and dependency resolution works correctly.
+
+The Composer loads **all configs listed in the manifest**, regardless of `hidden`.
 
 Generated patient URLs use **relative paths** (no leading slash) in the `configs=` parameter — e.g. `configs=configs/prod/standard.json` — so the patient app can fetch them relative to its own page URL at any base path.
 
@@ -111,13 +126,14 @@ A read-only field showing the generated URL.
 
 Buttons:
 
-* Copy link
-* Share link (Web Share API if available)
+* **העתק קישור** — copies the URL to clipboard
+* **פתח לבדיקה ↗** — opens the URL in a new browser tab for immediate testing
+* **שתף** — Web Share API (shown only if available)
 
 Behavior:
 
 * URL is visible immediately
-* URL is disabled when no questionnaires are selected
+* All action buttons are disabled when no questionnaires are selected
 
 ---
 
@@ -174,6 +190,12 @@ The URL updates automatically whenever:
 * the patient identifier changes
 
 URL generation is disabled if **no questionnaires are selected**.
+
+## Dependency auto-include
+
+When a config file declares `"dependencies": [...]`, the Composer automatically adds those dependency sources to the `configs=` parameter whenever any battery or questionnaire from that config is selected. This ensures the patient URL is always self-contained and loadable without manual intervention.
+
+Example: selecting `clinical_intake` (from `intake.json`) automatically includes `configs/prod/standard.json` in the URL, because `intake.json` declares `"dependencies": ["configs/prod/standard.json"]`.
 
 ---
 

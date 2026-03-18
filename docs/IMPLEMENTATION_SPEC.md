@@ -33,9 +33,15 @@ This document specifies how Madad is to be built. It is intended for the develop
 │   ├── router.js                     # History API router
 │   ├── controller.js                 # Wires orchestrator + engine to components
 │   ├── controller.test.js
+│   ├── item-types.js                 # Item type registry — single source of truth for all type metadata
+│   ├── item-types.test.js
+│   ├── resolve-items.js              # Converts URL tokens to orchestrator sequence
+│   ├── resolve-items.test.js
 │   ├── config/
 │   │   ├── loader.js                 # Fetches, validates, merges config
 │   │   ├── loader.test.js
+│   │   ├── config-validation.js      # Post-AJV semantic validation
+│   │   ├── config-validation.test.js
 │   │   ├── QuestionnaireSet.schema.json
 │   │   └── QuestionnaireSet.schema.test.js
 │   ├── engine/
@@ -59,6 +65,9 @@ This document specifies how Madad is to be built. It is intended for the develop
 │   │   ├── item-select.js / .test.js
 │   │   ├── item-binary.js / .test.js
 │   │   ├── item-instructions.js / .test.js
+│   │   ├── item-text.js / .test.js
+│   │   ├── item-slider.js / .test.js
+│   │   ├── item-multiselect.js / .test.js
 │   │   └── progress-bar.js / .test.js
 │   ├── helpers/
 │   │   ├── gestures.js               # Touch/pointer gesture utilities (swipe, overscroll)
@@ -72,16 +81,26 @@ This document specifies how Madad is to be built. It is intended for the develop
 ├── composer/
 │   ├── index.html
 │   └── src/
-│       └── composer.js
+│       ├── composer.js               # Entry point — bootstraps manifest load and render
+│       ├── composer-loader.js        # Fetches manifest + all configs, populates state
+│       ├── composer-loader.test.js
+│       ├── composer-render.js        # Renders the full composer UI
+│       ├── composer-handlers.js      # User interaction handlers (toggle, copy, share, reset)
+│       ├── composer-state.js         # Shared mutable state + URL builder
+│       └── composer-state.test.js
 ├── public/
+│   ├── configs.json                  # Composer manifest — lists all available config files
 │   ├── configs/
 │   │   ├── prod/
+│   │   │   ├── standard.json         # All standard clinical instruments
+│   │   │   └── intake.json           # DIAMOND screener + demographics + clinical_intake battery
 │   │   └── test/
+│   │       └── e2e.json              # E2E test fixtures only (hidden:true in manifest)
 │   └── fonts/                        # Noto Sans Hebrew TTF
 ├── tests/
 │   ├── setup.js
 │   ├── setup-dom.js
-│   ├── fixtures/                     # phq9.json, gad7.json, pcl5.json, ocir.json
+│   ├── fixtures/                     # phq9.json, pcl5.json, ocir.json (test data)
 │   └── e2e/                          # Playwright specs
 ├── scripts/
 │   ├── validate-configs.mjs
@@ -92,8 +111,11 @@ This document specifies how Madad is to be built. It is intended for the develop
 │   ├── CONFIG_SCHEMA_SPEC.md
 │   ├── DSL_SPEC.md
 │   ├── SEQUENCE_SPEC.md
-│   └── RENDER_SPEC.md
-└── .github/workflows/
+│   ├── RENDER_SPEC.md
+│   ├── ITEM_TYPES_SPEC.md
+│   ├── COMPOSER_SPEC.md
+│   └── INSTRUMENTS.md
+└── .github/workflows/ci.yml
 ```
 
 ---
@@ -160,10 +182,12 @@ Session state is a single plain JS object created by the app shell at startup an
   pid:  string,                // from URL; sanitized on read
 
   // ── Answers ──────────────────────────────────────────────────────
-  // Keyed by sessionKey (questionnaireId or instanceId), then by itemId
+  // Keyed by sessionKey (questionnaireId or instanceId), then by itemId.
+  // Value type depends on item type: number (select/binary/slider),
+  // string (text), or number[] of 1-based indices (multiselect).
   answers: {
     [sessionKey]: {
-      [itemId]: number
+      [itemId]: number | string | number[] | null
     }
   },
 
@@ -216,8 +240,11 @@ The battery-level context, passed to the DSL for battery-level `if` conditions, 
 {
   score:    { [qId]: scores[qId].total },
   subscale: { [qId]: scores[qId].subscales },
+  item:     { [qId]: answers[qId] },   // answers from each completed questionnaire
 }
 ```
+
+Battery conditions use the **qualified** form `item.<questionnaireId>.<itemId>` to reference individual item answers. The unqualified `item.<id>` form is not available at battery level.
 
 Neither context object holds a reference to the full session state — they are constructed fresh on each call.
 
@@ -432,7 +459,7 @@ Never put test fixtures in `prod/`. The `validate:configs` script runs over all 
 
 The config loader is responsible for fetching, validating, and merging one or more QuestionnaireSet config files.
 
-### 8.1 Source resolution
+### 9.1 Source resolution
 
 Each source passed to `loadConfig()` is one of:
 
@@ -447,7 +474,7 @@ Relative and slug-resolved paths are resolved by the browser relative to the cur
 
 **Rule:** Always use relative paths or slugs in `configs=` URL parameters. Root-relative paths (`/configs/...`) are only used internally by the Composer loader, which resolves them against the app root before passing to `loadConfig`.
 
-### 8.2 Steps
+### 9.2 Steps
 
 1. For each source, fetch and parse the JSON file.
 2. Validate against `QuestionnaireSet.schema.json` using AJV.
@@ -457,18 +484,19 @@ Relative and slug-resolved paths are resolved by the browser relative to the cur
 
 Multiple sources are fetched in parallel.
 
-### 8.3 Return shape
+### 9.3 Return shape
 
 ```js
 {
   questionnaires: Questionnaire[],
   batteries:      Battery[],
+  dependencies:   string[],    // from config file's top-level dependencies field; empty array if absent
   version:        string | null,
   resolvedAt:     string,
 }
 ```
 
-### 8.4 Errors
+### 9.4 Errors
 
 | Class | Cause |
 |---|---|
@@ -476,11 +504,11 @@ Multiple sources are fetched in parallel.
 | `ConfigValidationError` | AJV schema violation; exposes `url` and `validationErrors` array |
 | `ConfigError` | Semantic violation: duplicate ID (within or across files), missing option set, cross-entity collision |
 
-### 8.5 Default config
+### 9.5 Default config
 
 If no `configs` URL parameter is present, the app shell defaults to the slug `prod/standard`, which resolves to `configs/prod/standard.json`. The loader has no knowledge of defaults.
 
-### 8.6 Injectable fetch
+### 9.6 Injectable fetch
 
 The loader accepts a `fetch` option for testing. In production it uses `globalThis.fetch`.
 
@@ -490,7 +518,7 @@ The loader accepts a `fetch` option for testing. In production it uses `globalTh
 
 The sequence runner is a shared, context-agnostic module used by both the orchestrator and the engine. It contains all control-flow resolution logic. Neither the orchestrator nor the engine implement branching themselves. See SEQUENCE_SPEC.md for full design rationale.
 
-### 9.1 Responsibilities
+### 10.1 Responsibilities
 
 - Walk a sequence of nodes, yielding resolved leaf nodes one at a time
 - Resolve `if` nodes lazily at the moment `advance()` reaches them
@@ -499,7 +527,7 @@ The sequence runner is a shared, context-agnostic module used by both the orches
 - On re-advance, replay already-resolved path entries where the branch is unchanged; truncate and diverge where a branch resolves differently
 - Never touch the DOM, session state, answers, or scores
 
-### 9.2 Interface
+### 10.2 Interface
 
 ```js
 const runner = createSequenceRunner(sequence);
@@ -516,7 +544,7 @@ runner.remainingCount()          // → number | null
 
 The context object is provided by the caller on each `advance()` call so conditions always evaluate against the latest session state.
 
-### 9.3 Control Flow Node Types
+### 10.3 Control Flow Node Types
 
 **`if` node:**
 ```json
@@ -538,24 +566,38 @@ The `condition` is a DSL string evaluated at the point the node is reached. The 
 ```
 `ids` is an array of sequence nodes to shuffle. v1: throws `NotImplementedError` if encountered.
 
-### 9.4 Condition Syntax
+### 10.4 Condition Syntax
 
 **Battery-level context:**
 ```js
-{ score: { [sessionKey]: number }, subscale: { [sessionKey]: { [id]: number } } }
+{
+  score:    { [sessionKey]: number },
+  subscale: { [sessionKey]: { [id]: number } },
+  item:     { [sessionKey]: { [itemId]: number | number[] } },  // qualified: item.<qId>.<itemId>
+}
 ```
 
 **Item-level context:**
 ```js
-{ item: { [itemId]: number }, subscale: { [subscaleId]: number } }
+{ item: { [itemId]: number | number[] }, subscale: { [subscaleId]: number } }
 ```
 
-Example battery-level `if`:
+Example battery-level `if` using score:
 ```json
 {
   "type": "if",
   "condition": "score.phq9 >= 10",
   "then": [{ "questionnaireId": "pcl5" }],
+  "else": []
+}
+```
+
+Example battery-level `if` using qualified item reference:
+```json
+{
+  "type": "if",
+  "condition": "item.diamond_sr.q11 == 1 || item.diamond_sr.q12 == 1",
+  "then": [{ "questionnaireId": "oci_r" }],
   "else": []
 }
 ```
@@ -576,7 +618,7 @@ Example item-level `if`:
 
 The orchestrator manages the session at the battery level. It is responsible for initializing the sequence runner with a battery-level sequence and handing each resolved questionnaire to the engine in turn.
 
-### 10.1 Session Source
+### 11.1 Session Source
 
 The orchestrator accepts a `source` object as its second argument:
 
@@ -590,7 +632,7 @@ createOrchestrator(config, { sequence: [...] }, callbacks)
 
 Both forms produce an identical sequence structure handed to the sequence runner. The pre-built sequence path is used by the app shell when resolving `items` URL tokens; the `batteryId` path is available for internal use.
 
-### 10.2 Initialization
+### 11.2 Initialization
 
 At session start the orchestrator:
 1. Resolves the source (named battery lookup or pre-built sequence)
@@ -598,7 +640,7 @@ At session start the orchestrator:
 3. Calls `isSequenceDeterminate()` on the runner to determine progress display mode
 4. Hands the first questionnaire to the engine
 
-### 10.3 Transition
+### 11.3 Transition
 
 When the engine signals completion (its `advance()` returns `null`), the UI calls `orchestrator.engineComplete()`. The orchestrator then:
 1. Reads scores and alerts from the completed engine and persists them into session state
@@ -606,7 +648,7 @@ When the engine signals completion (its `advance()` returns `null`), the UI call
 3. Calls `advance(context)` on the battery runner to get the next questionnaire node
 4. Initializes a new engine for that node, or fires `onSessionComplete` if none remain
 
-### 10.4 Progress Exposure
+### 11.4 Progress Exposure
 
 The orchestrator exposes to the UI:
 - `isSequenceDeterminate` — from the sequence runner
@@ -620,7 +662,7 @@ The orchestrator exposes to the UI:
 
 The engine manages navigation within a single questionnaire. It initializes its own sequence runner instance with the questionnaire's item list and delegates all sequence walking to it.
 
-### 11.1 Responsibilities
+### 12.1 Responsibilities
 
 - Initializes the sequence runner with the questionnaire's flat item array
 - Calls `advance(context)` to get the next item, passing current item responses as context
@@ -630,7 +672,7 @@ The engine manages navigation within a single questionnaire. It initializes its 
 - Returns `null` from `advance()` to signal completion to the orchestrator
 - Has no knowledge of the DOM or what questionnaire comes next
 
-### 11.2 Progress Exposure
+### 12.2 Progress Exposure
 
 The engine exposes to the UI:
 - `currentItem` — the resolved leaf node currently being displayed
@@ -643,7 +685,7 @@ The engine exposes to the UI:
 
 The DSL interpreter is used in two contexts: evaluating scoring formulas and evaluating conditions in `if` nodes and alert specifications. It is the single expression language used throughout the system. It never uses `eval`. See `docs/DSL_SPEC.md` for full architecture and syntax reference.
 
-### 12.1 Capabilities
+### 13.1 Capabilities
 
 **Numeric functions:** `sum`, `avg`, `min`, `max`
 
@@ -666,11 +708,11 @@ The DSL interpreter is used in two contexts: evaluating scoring formulas and eva
 
 **Literals:** numeric values only (no string or boolean literals)
 
-### 12.2 Return Types
+### 13.2 Return Types
 
 The interpreter returns either a numeric value (for scoring formulas) or a boolean value (for conditions). The caller determines which is expected. The interpreter throws a descriptive error if the expression returns the wrong type for the context.
 
-### 12.3 Examples
+### 13.3 Examples
 
 Scoring formula:
 ```
@@ -706,7 +748,7 @@ Complex alert condition:
 score.phq9 >= 15 && (item.phq9_9 >= 1 || subscale.phq9.somatic >= 6)
 ```
 
-### 12.4 Error Handling
+### 13.4 Error Handling
 
 The interpreter must throw a descriptive error for any unrecognised token, malformed expression, unresolved reference, or type mismatch. Errors should identify the offending expression and the context in which it was evaluated.
 
@@ -754,7 +796,13 @@ Each item type has a dedicated Lit web component. Components are passive — the
 
 **`<item-binary>`** — renders the question text and two buttons. Also listens for horizontal pointer swipe events via `gestures.js` (threshold: 40% of element width). On selection or committed swipe, fires `answer` then `advance`.
 
-**`<item-instructions>`** — renders instruction text and a continue button. Fires `advance` without an `answer` event (instruction items are not scored).
+**`<item-instructions>`** — renders instruction text and a continue button. Fires `advance` without an `answer` event (instruction items are not scored). Controller applies 0ms delay (not 150ms) for instructions — there is no animation to wait for.
+
+**`<item-text>`** — renders the question text and a text input (single line, multiline, number, or email depending on `inputType`). Has an explicit submit button — never auto-advances. Fires `answer` on each input change and `advance` on submit. Skippable by default; forward button is enabled even without an answer.
+
+**`<item-slider>`** — renders the question text, a range track, and optional endpoint labels. Has an explicit submit button — never auto-advances. Fires `answer` when the value changes and `advance` on submit. Required by default.
+
+**`<item-multiselect>`** — renders the question text and a checkbox list. Each checkbox tap fires `answer` with the updated `number[]` (1-based indices of checked options). Has an explicit submit button — never auto-advances. Skippable by default (zero selections is a valid answer).
 
 All components must:
 - Support RTL text layout
@@ -765,7 +813,7 @@ All components must:
 
 ## 16. Application Shell and Router
 
-### 15.1 App Shell (`src/app.js`)
+### 16.1 App Shell (`src/app.js`)
 
 #### URL Parameters
 
@@ -804,7 +852,7 @@ All `ItemResolutionError` messages are in Hebrew and are shown directly to the p
 
 Tokens are resolved in URL order, which defines the session order.
 
-### 15.2 Router (`src/router.js`)
+### 16.2 Router (`src/router.js`)
 A minimal History API router using `pushState` / `replaceState`. Target under 60 lines. Screen names (stored as state values, not URL hashes):
 - `'welcome'` — replaced onto the stack before the welcome screen shows
 - `'q'` — pushed on each item advance (including first item of each questionnaire)
@@ -910,7 +958,7 @@ Keeping the category on its own line is essential — mixing a Hebrew category s
    - Second-highest value (select only): soft yellow background (`#FFF6DB`, text `#8A6A00`)
 5. **Footer** — generation timestamp, app version, config version, app URL (`window.location.origin`).
 
-### 19.6 Future: replace bidiNodes() with bidi-js
+### 19.5 Future: replace bidiNodes() with bidi-js
 
 The current `bidiNodes()` function is a hand-rolled approximation of the Unicode Bidirectional Algorithm. It handles common cases (Hebrew+Latin mixing, digit isolation, parenthesis mirroring) but is fragile — each new punctuation pattern discovered in instrument content may require a new special case.
 
@@ -922,34 +970,41 @@ Implementation: replace `bidiNodes()` in `report.js` with a function that calls 
 
 ## 20. URL Composer
 
-The Composer is a self-contained app at `/composer/`. It shares the config loader with the main app.
+The Composer is a self-contained app at `/composer/`. It shares the config loader with the main app. See `docs/COMPOSER_SPEC.md` for the full UI and behaviour specification.
 
-**Behavior:**
-1. On load, fetches all available config files and presents two modes of selection:
+**Architecture:**
+- `composer.js` — entry point, bootstraps manifest load then calls render
+- `composer-loader.js` — fetches the manifest at `configs.json`, loads all listed configs, populates shared state. Filters out configs marked `hidden: true` from the UI (they are still loaded for dependency resolution). Reads each config's `dependencies` field and stores it in `dependenciesBySource`.
+- `composer-state.js` — shared mutable state (`batteries`, `questionnaires`, `sourceByItem`, `dependenciesBySource`, `selected`, `pid`, `query`). Exports `buildUrl()` which constructs the patient URL and automatically includes dependency sources when a selected item's config declares them.
+- `composer-render.js` — renders the full UI. Filters hidden items from display lists. Includes a "פתח לבדיקה ↗" button that opens the generated URL in a new tab.
+- `composer-handlers.js` — handles toggle, copy, share, and reset interactions.
 
-   **Battery mode** — the clinician selects a named battery from the list of batteries defined in the config. The generated URL uses the `battery` param. This is the recommended path for standard clinical workflows.
+**Manifest (`public/configs.json`):**
+```json
+{
+  "configs": [
+    { "name": "...", "url": "/configs/prod/standard.json" },
+    { "name": "...", "url": "/configs/prod/intake.json" },
+    { "name": "...", "url": "/configs/test/e2e.json", "hidden": true }
+  ]
+}
+```
 
-   **Custom mode** — the clinician selects individual questionnaires from the full list. The generated URL uses the `questionnaires` param, which the orchestrator resolves as an implicit linear battery. This is the fallback for ad-hoc or non-standard sessions.
-
-2. The clinician enters a patient ID.
-3. The app generates and displays the patient URL.
-4. A copy-to-clipboard button copies the URL.
-
-The Composer uses no persistent storage of any kind.
+`hidden: true` — config is loaded (so IDs are registered and dependencies resolve) but its questionnaires and batteries are not shown in the Composer UI. Used for test fixtures and any config not intended for clinical use.
 
 ---
 
 ## 21. Bundle Size Constraints
 
-The entry bundle includes the app shell, router, orchestrator, sequence runner, engine, and all renderers. Given this scope, the budget is set at 30 kB gzipped. pdfmake and AJV must remain lazy-loaded under all circumstances — this is a hard constraint regardless of entry size.
+The entry bundle includes the app shell, router, orchestrator, sequence runner, engine, and all renderers. Given this scope, the budget is set at 30 kB gzipped. pdfmake must remain lazy-loaded under all circumstances — this is a hard constraint regardless of entry size. AJV is bundled statically into the `loader` chunk (not the entry chunk) since it is required synchronously during config loading.
 
 | Chunk | Budget |
 |---|---|
 | Entry (app shell, router, orchestrator, sequence runner, engine, renderers) | ≤ 30 kB gzipped |
-| AJV (lazy) | ≤ 40 kB gzipped |
-| pdfmake + font (lazy) | 250–400 kB (acceptable, lazy only) |
+| Loader chunk (AJV + config loading code) | ≤ 40 kB gzipped |
+| pdfmake + font (lazy, `pdf-vendor` chunk) | 250–400 kB (acceptable, lazy only) |
 
-pdfmake and AJV must be pinned to separate named chunks in the Vite config to prevent them from being pulled into the entry bundle by static analysis.
+pdfmake must be pinned to a separate named chunk (`pdf-vendor`) in the Vite config to prevent it from being pulled into the entry bundle by static analysis.
 
 ---
 
@@ -970,26 +1025,31 @@ Unit test files live next to the source file they test (`dsl.test.js` alongside 
 
 Vitest is configured to include `src/**/*.test.js` in its test glob.
 
-- `dsl.test.js` — formula evaluation, all reference types, all operators, boolean logic, type enforcement, all error classes
+- `dsl.test.js` — formula evaluation, all reference types, all operators, boolean logic, type enforcement, all error classes, `count()`/`checked()` multiselect functions
 - `scoring.test.js` — sum/average/subscale/reverse scoring, one fixture per instrument (PHQ-9, GAD-7, PCL-5) with known inputs and expected totals, subscales, and category labels
 - `alerts.test.js` — DSL condition evaluation, triggered and untriggered cases, empty result
-- `engine.test.js` — item-level navigation, back through instruction items, completion signal, answer storage and retrieval
-- `sequence-runner.test.js` — `if` node evaluation, `randomize` (seeded), `isSequenceDeterminate`, `remainingCount`, back navigation through resolved sequences, nested control flow
-- `orchestrator.test.js` — battery resolution (named and implicit), transition scoring, progress exposure
-- `loader.test.js` — merge logic, filter logic, validation failure handling
+- `engine.test.js` — item-level navigation, back through instruction items, completion signal, answer storage and retrieval, progress counting excludes instruction items
+- `sequence-runner.test.js` — `if` node evaluation, `isSequenceDeterminate`, `remainingCount` (excluding instructions), back navigation through resolved sequences, nested control flow
+- `orchestrator.test.js` — battery resolution (named and sequence source), transition scoring, item-level battery branching via qualified `item.<q>.<id>` references, progress exposure
+- `loader.test.js` — merge logic, filter logic, validation failure handling, `dependencies` field exposure
+- `item-types.test.js` — registry helpers (`canAdvance`, `autoAdvances`, `isSkippable`, `tagForType`)
+- `resolve-items.test.js` — token resolution, Hebrew error messages
+- `composer-state.test.js` — `buildUrl` including dependency source inclusion
+- `composer-loader.test.js` — hidden flag propagation, dependency registration, dev filter behaviour
 
-### E2E tests (Playwright, Chromium + WebKit)
+### E2E tests (Playwright, Chromium only in CI)
 Located in `tests/e2e/`. Cover full flows that span multiple modules and require a real browser.
-- Full patient flow: welcome → name entry → select item advance → binary → instruction item → completion screen → back navigation → results → PDF download
-- PDF content assertions: text extraction to verify Hebrew content, patient ID, scores, and alert presence
-- Composer flow: config load → battery/questionnaire selection → URL generation → copy
-- Accessibility: axe-core injected on each screen, asserting WCAG AA
+- Full patient flow: welcome → name entry → item navigation → completion screen → back navigation → results → PDF download
 
-### Config validation (CI only)
-- AJV CLI over all files in `public/configs/**` on every PR touching that path
+### CI pipeline (`npm run ci`)
+Mirrors the GitHub Actions workflow exactly: `lint → test → validate:configs → build → size → e2e`. Run this locally before pushing to catch issues before CI. Playwright browsers must be installed locally: `npx playwright install --with-deps chromium`.
 
-### Bundle size (CI)
-- Node script asserts gzipped entry chunk size after every build
+### Config validation
+- `npm run validate:configs` — AJV schema + semantic checks over all files in `public/configs/`
+- Run automatically as part of `npm run ci`
+
+### Bundle size
+- `npm run size` — Node script asserts gzipped entry chunk size after every build
 
 ---
 

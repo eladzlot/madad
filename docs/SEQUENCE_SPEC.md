@@ -197,10 +197,10 @@ The runner itself does not move. This lands the patient back on the last answere
 engine.progress() → { current: number, total: number | null }
 ```
 
-`current` = `runner.resolvedPath().length` if a node is current, else `0`.  
+`current` = count of non-instructions nodes in `runner.resolvedPath()`.  
 `total` = `current + runner.remainingCount()` if determinate, else `null`.
 
-Instruction items count toward both `current` and `total`. The progress bar shows them as steps.
+Instruction items are excluded from both `current` and `total`. `remainingCount()` already skips them; `progress()` filters the resolved path to non-instructions nodes. The progress bar reflects only answerable items.
 
 ---
 
@@ -216,13 +216,17 @@ Builds a `questionnaireMap` from `config.questionnaires` (keyed by `questionnair
 
 ### 7.2 DSL Context
 
-The orchestrator builds the context from completed questionnaire scores. Only questionnaires that have already completed appear:
+The orchestrator builds the context from completed questionnaire scores and answers. Only questionnaires that have already completed appear:
 
 ```js
-{ score: { [sessionKey]: total }, subscale: { [sessionKey]: subscales } }
+{
+  score:    { [sessionKey]: total },
+  subscale: { [sessionKey]: subscales },
+  item:     { [sessionKey]: answers },   // answers from each completed questionnaire
+}
 ```
 
-Battery-level `if` conditions therefore can only reference scores from questionnaires that precede them in the sequence.
+Battery-level `if` conditions reference item answers using the **qualified** form `item.<questionnaireId>.<itemId>`. The unqualified `item.<id>` form is only available within a questionnaire. Battery-level `if` conditions can therefore only reference scores and item answers from questionnaires that precede them in the sequence.
 
 ### 7.3 Session Keys
 

@@ -97,7 +97,7 @@ Items are presented one at a time, full screen.
 #### 5.2.3 Navigation
 A Back button is always visible during the questionnaire. Tapping Back returns to the previous item or instruction screen, in exact reverse order. Answers given before going back are preserved and displayed when the patient returns to that item.
 
-A progress indicator is visible throughout (e.g. "5 / 23"). This count includes all items, including instruction items.
+A progress indicator is visible throughout (e.g. "5 / 23"). This count includes only answerable items — instruction screens are excluded and do not count toward the total.
 
 #### 5.2.4 Battery Flow
 When one questionnaire is complete, an instruction screen for the next questionnaire is shown. The patient taps to begin the next instrument. This continues until all questionnaires in the battery are complete.
@@ -194,9 +194,19 @@ All standard instruments are defined in a single canonical config file (`standar
 | PCL-5 | PTSD Checklist for DSM-5 | `standard.json` | Intrusion, Avoidance, Dysphoria, Hyperarousal |
 | OCI-R | Obsessive Compulsive Inventory — Revised | `standard.json` | Washing, Obsessing, Hoarding, Ordering, Checking, Neutralising |
 | PDSS-SR | Panic Disorder Severity Scale — Self Report | `standard.json` | — |
-| ASI-3 | Anxiety Sensitivity Index — 3 | `standard.json` | — |
+| ASI-3 | Anxiety Sensitivity Index — 3 | `standard.json` | Physical, Cognitive, Social |
+| HAI | Health Anxiety Inventory — Part 1 | `standard.json` | — |
+| MGH-HPS | MGH Hairpulling Scale | `standard.json` | — |
+| DIAMOND-SR | DIAMOND Self-Report Screener (30-item binary) | `intake.json` | — |
+| Demographics | Intake demographics questionnaire | `intake.json` | — |
 
-Additional instruments using select or binary item types may be added by editing `standard.json`. See `docs/INSTRUMENTS.md` for the step-by-step process. Support for other item types (e.g. free text, numeric input) is planned for a future phase.
+Batteries:
+
+| Battery | Contents | Config file |
+|---|---|---|
+| `clinical_intake` | DIAMOND-SR → conditional OCI-R, PCL-5, PDSS-SR, GAD-7, PHQ-9, HAI, MGH-HPS | `intake.json` |
+
+Additional instruments using any supported item type may be added by editing `standard.json` (or a new specialised config file). See `docs/INSTRUMENTS.md` for the step-by-step process.
 
 ---
 

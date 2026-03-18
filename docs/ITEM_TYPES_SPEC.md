@@ -1,7 +1,11 @@
 # Item Types Expansion Spec
-**Version:** 1.0
-**Status:** Design — not yet implemented
-**Scope:** New answerable item types beyond `select` and `binary`
+**Version:** 1.1
+**Status:** Implemented — `text`, `slider`, `multiselect` are live. `composite` is defined here as a future type and is not yet implemented.
+**Scope:** Item types beyond `select`, `binary`, and `instructions`
+
+---
+
+> **Implementation note for fresh readers:** Steps 1–6 of the implementation plan below are complete. The type registry (`src/item-types.js`), `required` field, `text`, `slider`, and `multiselect` item types are all live in the codebase. `composite` (Step 7) is not implemented — treat that section as a design spec for a future phase.
 
 ---
 

@@ -23,7 +23,7 @@ The `validate:configs` script catches schema errors, missing option set referenc
 
 A questionnaire definition is a JSON object. Here is a minimal working example followed by a full example with all optional fields.
 
-### Minimal example (Likert, single option set)
+### Minimal example (select, single option set)
 
 ```json
 {
@@ -188,6 +188,17 @@ For conditional inclusion (e.g. only add PCL-5 if PHQ-9 is elevated):
 }
 ```
 
+For conditional inclusion based on individual screener item answers (battery-level only — use qualified form):
+
+```json
+{
+  "type": "if",
+  "condition": "item.diamond_sr.q19 == 1",
+  "then": [{ "questionnaireId": "pcl5" }],
+  "else": []
+}
+```
+
 See `docs/DSL_SPEC.md` for the full condition expression syntax.
 
 ---
@@ -206,8 +217,8 @@ Common errors and what they mean:
 |---|---|
 | `Schema: /questionnaires/N/items/M — must have required property 'id'` | An item is missing its `id` field |
 | `Semantic: duplicate questionnaire ID 'xyz'` | The same ID exists in two questionnaires (within or across files) |
-| `Semantic: optionSetId 'xyz' not found` | A Likert item references an option set that isn't defined on the questionnaire |
-| `Semantic: Likert item 'xyz' has no resolvable options` | Item has no `options`, no `optionSetId`, and no `defaultOptionSetId` on the questionnaire |
+| `Semantic: optionSetId 'xyz' not found` | A select item references an option set that isn't defined on the questionnaire |
+| `Semantic: select item 'xyz' has no resolvable options` | Item has no `options`, no `optionSetId`, and no `defaultOptionSetId` on the questionnaire |
 | `Schema: /questionnaires/N/id — must match pattern` | ID contains illegal characters (e.g. a hyphen) |
 
 ---
@@ -237,7 +248,7 @@ Walk through the full flow: instructions screen → all items → completion →
 
 Commit `standard.json` alone. If the Composer manifest (`public/composer/configs.json`) needs updating, include that too.
 
-No application code changes are required for standard Likert/binary instruments.
+No application code changes are required for standard select/binary instruments.
 
 ---
 
@@ -251,6 +262,10 @@ No application code changes are required for standard Likert/binary instruments.
 - [ ] All `optionSetId` references resolve to a defined option set on the questionnaire
 - [ ] `scoring.maxPerItem` is set if any item uses `reverse: true`
 - [ ] `interpretations.ranges` cover the full expected score range without gaps
-- [ ] Alert `condition` expressions reference valid item IDs (`item.X`) or scores (`score.Y`)
+- [ ] Alert `condition` expressions use `item.<id>` for within-questionnaire references, or `item.<questionnaireId>.<itemId>` for battery-level references
+- [ ] For `slider` items: `min < max` and `step > 0` if specified
+- [ ] For `multiselect` items: at least 2 options; no `value` field on options (label only)
+- [ ] For `text` items: `inputType` is one of `line`, `multiline`, `number`, `email`
+- [ ] Skippability: `select`, `binary`, `slider` are required by default; `text`, `multiselect`, `instructions` are skippable by default. Override with `required: true/false` as needed.
 - [ ] `npm run validate:configs` passes with no errors
 - [ ] Manual walkthrough completed and PDF verified

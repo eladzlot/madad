@@ -76,14 +76,14 @@ Called after every answer event and after every `mountItem`. Sets:
 
 ```js
 _shellEl.canGoBack    = engine.canGoBack() || orchestrator.currentEngine() !== _engine;
-_shellEl.canGoForward = hasAnswer && !engine.isComplete();
+_shellEl.canGoForward = canAdvance(item, answer) && !engine.isComplete();
 
 _progressEl.itemProgress      = engine.progress();
 _progressEl.batteryProgress   = orchestrator.progress();
 _progressEl.questionnaireName = questionnaire.title ?? '';
 ```
 
-The `canGoBack` expression is true when the engine can go back within the questionnaire, or when the patient is not on the first questionnaire (cross-battery back is possible).
+`canAdvance(item, answer)` is imported from `src/item-types.js`. It returns `true` when the item is skippable (regardless of answer) or when the item is required and has been answered. This means skippable items (`text`, `multiselect`, `instructions`) always show an enabled forward button.
 
 ### 2.6 Answer and Advance Flow
 
@@ -106,6 +106,8 @@ The 150ms delay gives the selected-state animation time to play before the scree
 
 The shell's `back` and `forward` buttons call `history.back()` / `history.forward()` — they never call engine or orchestrator directly. All navigation is driven by the router's `onBack` / `onForward` callbacks, which the controller registers at startup.
 
+**Exception — skippable unanswered items:** For items where `canAdvance(item, answer)` is true and `answer` is `null` (skippable, not yet answered), there is no forward history entry. In this case the shell's `forward` event handler calls `onAdvance()` directly instead of `history.forward()`. This covers both the Next button tap and the swipe-up gesture (both fire the same `forward` event).
+
 **`_onPopBack(screen)`:**
 - Returns immediately if `_locked`
 - If `screen === 'welcome'`: calls `location.reload()` (restarts the session)
@@ -115,7 +117,7 @@ The shell's `back` and `forward` buttons call `history.back()` / `history.forwar
 **`_onPopForward(screen)`:**
 - Returns immediately if `_locked`
 - If `screen === 'complete'`: remounts the completion screen if it isn't already present
-- If `screen === 'q'`: re-advances the engine (subject to the same 150ms/0ms delay as a normal advance event) — does nothing if the current item is unanswered
+- If `screen === 'q'`: re-advances the engine (subject to the same 150ms/0ms delay as a normal advance event) — does nothing if the current item is unanswered and required
 
 ### 2.8 Orchestrator Callbacks
 
@@ -308,7 +310,67 @@ Renders a non-scored instruction block with a continue button.
 
 ---
 
-### 4.6 `<welcome-screen>`
+### 4.6 `<item-text>`
+
+**File:** `src/components/item-text.js`  
+**Tag:** `item-text`
+
+Renders a free-text input question. Supports single-line, multiline, number, and email variants via the `inputType` field.
+
+**Properties:**
+
+| Property | Type | Description |
+|---|---|---|
+| `item` | Object | `{ id, text, inputType?, min?, max?, pattern? }` |
+| `selected` | string\|null | Current value, or `null` |
+
+Has an explicit submit button — never auto-advances. Fires `answer` on each input change. Fires `advance` on submit button tap or Enter (single-line only).
+
+Skippable by default — the forward button is enabled even with no answer.
+
+---
+
+### 4.7 `<item-slider>`
+
+**File:** `src/components/item-slider.js`  
+**Tag:** `item-slider`
+
+Renders a range slider with optional endpoint labels.
+
+**Properties:**
+
+| Property | Type | Description |
+|---|---|---|
+| `item` | Object | `{ id, text, min, max, step?, labels?: { min, max } }` |
+| `selected` | number\|null | Current value, or `null` |
+
+Has an explicit submit button — never auto-advances. Fires `answer` when the slider value changes. Fires `advance` on submit.
+
+Required by default — forward button is disabled until a value is set.
+
+---
+
+### 4.8 `<item-multiselect>`
+
+**File:** `src/components/item-multiselect.js`  
+**Tag:** `item-multiselect`
+
+Renders a checkbox list. Multiple options can be selected simultaneously.
+
+**Properties:**
+
+| Property | Type | Description |
+|---|---|---|
+| `item` | Object | `{ id, text, options: [{ label }, ...] }` |
+| `selected` | number[]\|null | Array of 1-based selected indices, or `null` |
+
+Each checkbox tap fires `answer` with the updated `number[]` of selected indices. Has an explicit submit button — never auto-advances. Fires `advance` on submit.
+
+Skippable by default — zero selections `[]` is a valid answer. The forward button is enabled even with no selections.
+
+---
+
+### 4.9 `<welcome-screen>`
 
 **File:** `src/components/welcome-screen.js`  
 **Tag:** `welcome-screen`
@@ -331,7 +393,7 @@ Shown before the session. Displays the battery title, introductory text, a name 
 
 ---
 
-### 4.7 `<completion-screen>`
+### 4.10 `<completion-screen>`
 
 **File:** `src/components/completion-screen.js`  
 **Tag:** `completion-screen`
@@ -350,7 +412,7 @@ The controller listens with `{ once: true }`. Navigation lock (`_locked = true`)
 
 ---
 
-### 4.8 `<results-screen>`
+### 4.11 `<results-screen>`
 
 **File:** `src/components/results-screen.js`  
 **Tag:** `results-screen`
