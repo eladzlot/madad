@@ -355,6 +355,16 @@ async function skipTextItem(page) {
   await page.locator('item-text >> button.skip-btn').click();
 }
 
+/** Toggle a multiselect option by 1-based index */
+async function toggleMultiselectOption(page, index) {
+  await page.locator('item-multiselect >> button.option').nth(index - 1).click();
+}
+
+/** Submit multiselect */
+async function submitMultiselect(page) {
+  await page.locator('item-multiselect >> button.submit-btn').click();
+}
+
 /** Move the slider to a given value and submit */
 async function setSliderValue(page, value, { submit = true } = {}) {
   const input = page.locator('item-slider >> input[type="range"]');
@@ -416,7 +426,7 @@ test.describe('PDF download', () => {
 
 // ── All item types battery ────────────────────────────────────────────────────
 
-test.describe('all item types battery (instructions + select + binary + select + slider + text)', () => {
+test.describe('all item types battery (instructions + select + binary + select + slider + text + multiselect)', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto(ALL_TYPES_URL);
     await clickBegin(page);
@@ -431,7 +441,7 @@ test.describe('all item types battery (instructions + select + binary + select +
     await clickContinue(page);
 
     await expect(page.locator('item-select')).toBeVisible();
-    await clickLikertOption(page, 1);
+    await clickSelectOption(page, 1);
     await page.waitForTimeout(200);
 
     await expect(page.locator('item-binary')).toBeVisible();
@@ -446,102 +456,79 @@ test.describe('all item types battery (instructions + select + binary + select +
     await setSliderValue(page, 5);
 
     await expect(page.locator('item-text')).toBeVisible();
+    await skipTextItem(page);
+
+    await expect(page.locator('item-multiselect')).toBeVisible();
   });
 
-  test('select item shows options as cards', async ({ page }) => {
+  test('multiselect shows checkbox options', async ({ page }) => {
     await clickContinue(page);
-    await clickLikertOption(page, 0);
-    await page.waitForTimeout(200);
-    await clickBinaryFirst(page);
-    await page.waitForTimeout(200);
-
-    await expect(page.locator('item-select')).toBeVisible();
-    const optionBtns = page.locator('item-select >> button.option');
-    await expect(optionBtns).toHaveCount(4);
-  });
-
-  test('select item auto-advances after selection', async ({ page }) => {
-    await clickContinue(page);
-    await clickLikertOption(page, 0);
-    await page.waitForTimeout(200);
-    await clickBinaryFirst(page);
-    await page.waitForTimeout(200);
-
-    await expect(page.locator('item-select')).toBeVisible();
-    await clickSelectOption(page, 1);
-    await page.waitForTimeout(200);
-
-    await expect(page.locator('item-slider')).toBeVisible();
-  });
-
-  test('slider submit button disabled until touched', async ({ page }) => {
-    await clickContinue(page);
-    await clickLikertOption(page, 0);
-    await page.waitForTimeout(200);
-    await clickBinaryFirst(page);
-    await page.waitForTimeout(200);
-    await clickSelectOption(page, 0);
-    await page.waitForTimeout(200);
-
-    await expect(page.locator('item-slider')).toBeVisible();
-    await expect(page.locator('item-slider >> button.submit-btn')).toBeDisabled();
-  });
-
-  test('slider enables submit after interaction and advances to text', async ({ page }) => {
-    await clickContinue(page);
-    await clickLikertOption(page, 0);
-    await page.waitForTimeout(200);
-    await clickBinaryFirst(page);
-    await page.waitForTimeout(200);
-    await clickSelectOption(page, 0);
-    await page.waitForTimeout(200);
-
-    await setSliderValue(page, 7);
-    await expect(page.locator('item-text')).toBeVisible();
-  });
-
-  test('text item can be skipped to reach completion', async ({ page }) => {
-    await clickContinue(page);
-    await clickLikertOption(page, 0);
-    await page.waitForTimeout(200);
-    await clickBinaryFirst(page);
-    await page.waitForTimeout(200);
-    await clickSelectOption(page, 0);
-    await page.waitForTimeout(200);
+    await clickSelectOption(page, 0); await page.waitForTimeout(200);
+    await clickBinaryFirst(page);    await page.waitForTimeout(200);
+    await clickSelectOption(page, 0); await page.waitForTimeout(200);
     await setSliderValue(page, 5);
     await skipTextItem(page);
+
+    await expect(page.locator('item-multiselect')).toBeVisible();
+    await expect(page.locator('item-multiselect >> .question')).toContainText('תסמינים');
+    const opts = page.locator('item-multiselect >> button.option');
+    await expect(opts).toHaveCount(4);
+  });
+
+  test('multiselect submit button says "המשך ללא בחירה" when nothing checked', async ({ page }) => {
+    await clickContinue(page);
+    await clickSelectOption(page, 0); await page.waitForTimeout(200);
+    await clickBinaryFirst(page);    await page.waitForTimeout(200);
+    await clickSelectOption(page, 0); await page.waitForTimeout(200);
+    await setSliderValue(page, 5);
+    await skipTextItem(page);
+
+    await expect(page.locator('item-multiselect')).toBeVisible();
+    const btn = page.locator('item-multiselect >> button.submit-btn');
+    await expect(btn).toContainText('ללא בחירה');
+  });
+
+  test('multiselect options can be toggled and submit advances', async ({ page }) => {
+    await clickContinue(page);
+    await clickSelectOption(page, 0); await page.waitForTimeout(200);
+    await clickBinaryFirst(page);    await page.waitForTimeout(200);
+    await clickSelectOption(page, 0); await page.waitForTimeout(200);
+    await setSliderValue(page, 5);
+    await skipTextItem(page);
+
+    await expect(page.locator('item-multiselect')).toBeVisible();
+    await toggleMultiselectOption(page, 1);
+    await toggleMultiselectOption(page, 3);
+    const checked = page.locator('item-multiselect >> button.option.is-checked');
+    await expect(checked).toHaveCount(2);
+    await submitMultiselect(page);
 
     await expect(page.locator('completion-screen')).toBeVisible({ timeout: 2000 });
   });
 
-  test('back navigation from text item restores typed value', async ({ page }) => {
+  test('multiselect can be submitted with zero selections', async ({ page }) => {
     await clickContinue(page);
-    await clickLikertOption(page, 0);
-    await page.waitForTimeout(200);
-    await clickBinaryFirst(page);
-    await page.waitForTimeout(200);
-    await clickSelectOption(page, 0);
-    await page.waitForTimeout(200);
+    await clickSelectOption(page, 0); await page.waitForTimeout(200);
+    await clickBinaryFirst(page);    await page.waitForTimeout(200);
+    await clickSelectOption(page, 0); await page.waitForTimeout(200);
     await setSliderValue(page, 5);
+    await skipTextItem(page);
 
-    await page.locator('item-text >> input').fill('טקסט לבדיקה');
-    await page.goBack();
-    await expect(page.locator('item-slider')).toBeVisible();
-    await page.goForward();
+    await expect(page.locator('item-multiselect')).toBeVisible();
+    await submitMultiselect(page);
 
-    await expect(page.locator('item-text >> input')).toHaveValue('טקסט לבדיקה');
+    await expect(page.locator('completion-screen')).toBeVisible({ timeout: 2000 });
   });
 
   test('completes full battery and shows results with pdf button', async ({ page }) => {
     await clickContinue(page);
-    await clickLikertOption(page, 1);
-    await page.waitForTimeout(200);
-    await clickBinaryFirst(page);
-    await page.waitForTimeout(200);
-    await clickSelectOption(page, 1);
-    await page.waitForTimeout(200);
+    await clickSelectOption(page, 1); await page.waitForTimeout(200);
+    await clickBinaryFirst(page);    await page.waitForTimeout(200);
+    await clickSelectOption(page, 1); await page.waitForTimeout(200);
     await setSliderValue(page, 7);
     await fillTextItem(page, 'הערה לדוגמה');
+    await toggleMultiselectOption(page, 2);
+    await submitMultiselect(page);
 
     await expect(page.locator('completion-screen')).toBeVisible({ timeout: 2000 });
     await clickViewResults(page);

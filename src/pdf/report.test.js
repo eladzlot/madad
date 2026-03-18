@@ -302,6 +302,7 @@ import {
   buildTableHeaderRow,
   buildItemRow,
   buildTextBlock,
+  buildMultiselectBlock,
   bidiNodes,
   initBidiForTesting,
 } from './report.js';
@@ -751,6 +752,47 @@ describe('buildTextBlock', () => {
       ? answerNodes.map(n => n.text ?? '').join('')
       : String(answerNodes);
     expect(joined.replace(/\u00a0/g, ' ')).toContain('שלום');
+  });
+});
+
+// ── buildMultiselectBlock ─────────────────────────────────────────────────────
+
+describe('buildMultiselectBlock', () => {
+  const msItem = {
+    id: 'symptoms',
+    type: 'multiselect',
+    text: 'אילו תסמינים חווית?',
+    options: [
+      { label: 'כאבי ראש' },
+      { label: 'עייפות' },
+      { label: 'חרדה' },
+    ],
+  };
+
+  it('returns a stack with bold question and answer below', () => {
+    const block = buildMultiselectBlock(msItem, [1, 3]);
+    expect(block.stack).toHaveLength(2);
+    expect(block.stack[0].bold).toBe(true);
+  });
+
+  it('renders em-dash when answer is null', () => {
+    const block = buildMultiselectBlock(msItem, null);
+    expect(block.stack[1].color).toBe('#999999');
+  });
+
+  it('renders em-dash when answer is empty array', () => {
+    const block = buildMultiselectBlock(msItem, []);
+    expect(block.stack[1].color).toBe('#999999');
+  });
+
+  it('renders selected option labels joined by separator', () => {
+    const block = buildMultiselectBlock(msItem, [1, 3]);
+    const answerText = block.stack[1].text;
+    const joined = Array.isArray(answerText)
+      ? answerText.map(n => n.text ?? '').join('')
+      : String(answerText);
+    expect(joined.replace(/\u00a0/g, ' ')).toContain('כאבי ראש');
+    expect(joined.replace(/\u00a0/g, ' ')).toContain('חרדה');
   });
 });
 

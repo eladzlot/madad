@@ -58,13 +58,22 @@ const REGISTRY = {
     pdfRenderer:        'scored',
   },
   select: {
-    tag:                'item-select',  // alias of item-select — same component, same behaviour
+    tag:                'item-select',
     autoAdvance:        true,
     skippableDefault:   false,
     contributesToScore: true,
     answerIsNumeric:    true,
     answerShape:        'scalar',
     pdfRenderer:        'scored',
+  },
+  multiselect: {
+    tag:                'item-multiselect',
+    autoAdvance:        false,   // requires explicit submit
+    skippableDefault:   true,    // zero selections is valid — skippable by default
+    contributesToScore: false,
+    answerIsNumeric:    false,
+    answerShape:        'array',
+    pdfRenderer:        'multiselect',
   },
 };
 
@@ -128,7 +137,11 @@ export function canAdvance(item, answer) {
   // Scalar types: need a non-null answer
   const shape = REGISTRY[item?.type]?.answerShape ?? 'scalar';
   if (shape === 'scalar') return answer != null;
-  if (shape === 'array')  return Array.isArray(answer); // [] is valid
+  if (shape === 'array') {
+    // [] is valid (zero selections) unless required: true forces at least one
+    if (item?.required === true) return Array.isArray(answer) && answer.length > 0;
+    return Array.isArray(answer);
+  }
   if (shape === 'object') return answer != null && typeof answer === 'object';
   return answer != null;
 }

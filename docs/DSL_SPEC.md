@@ -1,383 +1,452 @@
-# Render Layer Specification
+# DSL Specification
 
-Version 1.1
+**Status:** Current — derived from `src/engine/dsl.js` and `src/engine/dsl.test.js`.  
+**Version:** 2.0 (adds `count()` and `checked()` for multiselect items)
 
 ---
 
-## 1. Overview
+## 1. Purpose
 
-The render layer translates engine and orchestrator state into DOM. It is built on **Lit** (~6 kB gzipped) and follows a strict separation between:
+The DSL (Domain-Specific Language) is a small expression language used in two places:
 
-- **Components** (`src/components/`) — Lit custom elements. Purely declarative. They receive data as properties, emit custom events, and manage their own DOM lifecycle. No knowledge of the engine, orchestrator, or session state.
-- **Controller** (`src/controller.js`) — The single wiring layer. Reads from the engine and orchestrator, mounts and updates components, handles component events, calls back into the engine.
-- **Helpers** (`src/helpers/`) — Reusable DOM-adjacent utilities. No business logic. Currently: `gestures.js`.
+1. **Conditions** on `if` sequence nodes — decide at runtime whether a branch of items is shown to the patient. Must evaluate to `boolean`.
+2. **Alert conditions** on questionnaires — decide whether a clinical alert fires after scoring. Must evaluate to `boolean`.
 
-Components are independently testable in isolation (set properties, observe events). The controller can be tested by mocking components.
+It is intentionally minimal: no variables, no assignment, no loops. Every expression is a pure function of the current scoring context.
 
 ---
 
 ## 2. Architecture
 
-### 2.1 Data flow
+### 2.1 Pipeline
 
 ```
-Orchestrator ──┐
-               ├──▶ Controller ──▶ Components (Lit) ──▶ DOM
-Engine ────────┘         ▲
-                         │
-                    Custom events
+expression string
+      │
+      ▼
+  tokenize()          → Token[]
+      │
+      ▼
+   parse()            → AST node
+      │
+      ▼
+  evalNode()          → number | boolean
+      │
+      ▼
+  evaluate()          → number | boolean   (public API)
 ```
 
-The controller is the only place where engine/orchestrator methods are called in response to DOM events. Components never import or reference engine or orchestrator.
+All three stages are invoked by the single public function `evaluate(expression, context, expected)`. Errors at any stage throw a typed DSL error class (see §5).
 
-### 2.2 Component contract
+### 2.2 File location
 
-Every item component:
-- Accepts a resolved `item` property (fully resolved — no `optionSetId`, no template strings)
-- Accepts a `selected` property (`any | null`) — the current answer value, or `null`
-- Fires an `answer` custom event with `detail: { value: any }` when the user makes a selection
-- Fires an `advance` custom event when the user signals they want to move forward
-- Manages its own internal interaction state (hover, focus, swipe preview) without calling out
+`src/engine/dsl.js` — pure ES module, no side effects, no imports.
 
-`selected` and `answer.detail.value` are typed as `any` to accommodate current item types (single numeric value) and future types (arrays for select-many, objects for value+time, etc.).
-
-The controller listens for `answer` and `advance` and calls:
-```js
-engine.recordAnswer(item.id, e.detail.value); // on answer
-engine.advance();                              // on advance
-```
-
-For instructions items there is no `answer` event — only `advance`.
-
-### 2.3 Item resolution
-
-Before mounting a component, the controller runs the item through a resolution pipeline:
+### 2.3 Public API
 
 ```js
-function resolveItem(item, context) {
-  return [
-    resolveOptions,
-    // future resolvers added here (e.g. template string substitution, conditional display rules)
-  ].reduce((item, fn) => fn(item, context), item);
-}
+import { evaluate } from './dsl.js';
+
+evaluate(expression, context, expected?)
 ```
 
-`context` carries everything resolvers may need:
+| Parameter    | Type                        | Description |
+|--------------|-----------------------------|-------------|
+| `expression` | `string`                    | DSL expression to evaluate |
+| `context`    | `object`                    | Resolution context (see §3) |
+| `expected`   | `'number'|'boolean'|undefined` | If provided, throws `DSLTypeError` if result type does not match |
+
+Returns `number` or `boolean`.
+
+### 2.4 Tokenizer
+
+Scans the expression left-to-right, producing a flat array of typed tokens:
+
+| Token type | Examples |
+|------------|---------|
+| `NUMBER`   | `0`, `3`, `1.5`, `-2` |
+| `IDENT`    | `item`, `score`, `sum`, `if` |
+| `DOT`      | `.` |
+| `COMMA`    | `,` |
+| `LPAREN`   | `(` |
+| `RPAREN`   | `)` |
+| `OP`       | `+`, `-`, `*`, `/`, `<`, `>`, `<=`, `>=`, `==`, `!=`, `&&`, `||`, `!` |
+| `EOF`      | end of input (sentinel) |
+
+Whitespace is skipped. Unknown characters throw `DSLSyntaxError`.
+
+### 2.5 Parser
+
+Recursive-descent parser producing an AST. Operator precedence (highest to lowest):
+
+| Level | Operators | Associativity |
+|-------|-----------|---------------|
+| 1 (highest) | unary `-`, unary `!` | right |
+| 2 | `*`, `/` | left |
+| 3 | `+`, `-` | left |
+| 4 | `<`, `>`, `<=`, `>=`, `==`, `!=` | none (no chaining) |
+| 5 | `&&` | left |
+| 6 (lowest) | `||` | left |
+
+AST node shapes:
+
+```
+{ kind: 'literal',    value: number }
+{ kind: 'ref',        ref: 'item'|'subscale'|'score', id: string }
+{ kind: 'ref',        ref: 'subscale_q', questionnaireId: string, subscaleId: string }
+{ kind: 'unary',      op: '-'|'!', operand: node }
+{ kind: 'binary',     op: '+'|'-'|'*'|'/', left: node, right: node }
+{ kind: 'comparison', op: '<'|'>'|'<='|'>='|'=='|'!=', left: node, right: node }
+{ kind: 'logical',    op: '&&'|'||', left: node, right: node }
+{ kind: 'call',       name: string, args: node[] }
+```
+
+### 2.6 Evaluator
+
+Tree-walks the AST recursively. Enforces strict types — no implicit coercion. Short-circuits `&&` and `||`. Throws typed errors for type mismatches, missing references, and runtime errors.
+
+---
+
+## 3. Context
+
+The context object is built by the engine and passed into `evaluate()`. Its shape depends on where the expression is evaluated:
+
+### 3.1 Within a questionnaire (item conditions, alerts)
+
 ```js
 {
-  questionnaire,   // for option set lookup
-  session,         // for future use (e.g. patient name substitution in item text)
+  item: {
+    // Keyed by item id. Value type depends on item type:
+    // select / binary / slider → number
+    // text                     → string (not exposed to DSL — see §4.1)
+    // multiselect              → number[] of 1-based indices
+    '1': 2,
+    'phq9_9': 1,
+    'symptoms': [1, 3],
+  },
+  subscale: {
+    // Keyed by subscale id → number (score for that subscale)
+    'intrusion': 14,
+    'avoidance': 8,
+  }
 }
 ```
 
-Each resolver is a pure function `(item, context) → item`. Components always receive a fully resolved item and never perform resolution themselves.
-
-**`resolveOptions`** — for select items without inline `options`, looks up `item.optionSetId ?? questionnaire.defaultOptionSetId` in `questionnaire.optionSets` and inlines the result. Throws if the reference cannot be resolved (should not happen post-loader-validation).
-
-### 2.4 Duplicate option values
-
-Two options with the same `value` in the same item are a config error. Caught at load time by the loader's semantic validation (`ConfigError`). Components may assume option values are unique within an item.
-
-### 2.5 Option order
-
-Options are rendered in author-defined order — the order they appear in the config. No reordering is applied.
-
-### 2.6 Controller responsibilities
-
-```
-controller.mount(container, orchestrator)
-  — Calls orchestrator.start()
-  — On onQuestionnaireStart: stores engine reference, mounts first item
-  — Mounts and updates:
-      <progress-bar>  (battery + item progress)
-      <item-*>        (current item component, resolved)
-      back button     (visibility + enabled state)
-  — On answer event:  engine.recordAnswer(item.id, e.detail.value)
-  — On advance event: result = engine.advance()
-                      if result === null → orchestrator.engineComplete()
-                      else → mount next item
-  — On back:          engine.canGoBack()
-                        ? engine.back() → mount previous item
-                        : orchestrator.engineCrossBack()
-  — On onSessionComplete: navigate to completion screen
-```
-
-### 2.7 Item mounting
-
-Each time the engine returns a new item (from `advance()` or `back()`), the controller:
-
-1. Resolves the item through the pipeline
-2. Determines the component tag from `item.type` (`item-select`, `item-binary`, `item-instructions`)
-3. If the mounted component is the same type, updates its properties in place
-4. If the type changes, replaces the component entirely
-5. Sets `selected` from `engine.answers()[item.id] ?? null`
-
-Updating in place is preferred — it lets Lit animate between items without a full remount.
-
-### 2.8 Auto-advance delay
-
-After the `answer` event fires, the controller waits **150 ms** before calling `engine.advance()`. This gives the selection highlight time to render visibly before the screen transitions. The delay is a named constant in the controller (`ADVANCE_DELAY_MS = 150`). Instructions advance immediately on tap — no delay.
-
----
-
-## 3. Styling
-
-### 3.1 Approach
-
-- **Component styles** — defined inline in each Lit component using the `css` tagged template. Scoped to shadow DOM. No bleed between components.
-- **Design tokens** — CSS custom properties in `src/styles/tokens.css`, loaded globally. Components reference tokens via `var(--token)`.
-- **Global styles** — `src/styles/main.css` imports `tokens.css`, applies base reset, `html`/`body` layout, font stack, and `dir="rtl"`. Nothing component-specific lives here.
-
-No CSS preprocessor. Vite handles the imports.
-
-### 3.2 Design tokens
-
-Minimal initial values — enough to look reasonable during development. Visual design passes replace values without touching component code.
-
-```css
-/* Colour */
---color-bg:              #ffffff;
---color-surface:         #f5f5f5;
---color-border:          #d0d0d0;
---color-text:            #1a1a1a;
---color-text-muted:      #6b6b6b;
---color-primary:         #2563eb;
---color-primary-text:    #ffffff;
---color-selected-bg:     #eff6ff;
---color-selected-border: #2563eb;
---color-yes:             #16a34a;
---color-no:              #dc2626;
-
-/* Spacing */
---space-xs:  4px;
---space-sm:  8px;
---space-md:  16px;
---space-lg:  24px;
---space-xl:  40px;
-
-/* Typography */
---font-family:        system-ui, -apple-system, sans-serif;
---font-size-sm:       14px;
---font-size-md:       16px;
---font-size-lg:       20px;
---font-size-xl:       24px;
---font-weight-normal: 400;
---font-weight-bold:   600;
---line-height:        1.5;
-
-/* Shape */
---radius-sm:    6px;
---radius-md:    10px;
---radius-lg:    16px;
---border-width: 1.5px;
-
-/* Motion */
---transition-fast: 120ms ease;
---transition-med:  200ms ease;
-```
-
-All layout CSS uses logical properties (`inline-start`, `inline-end`, `block-start`, `block-end`). No `left`/`right` in layout rules.
-
----
-
-## 4. Components
-
-### 4.1 `<item-select>`
-
-Renders a question with an ordered list of response options.
-
-**Properties:**
-| Property | Type | Description |
-|---|---|---|
-| `item` | object | Resolved item — `{ id, text, options: [{label, value}, ...] }` |
-| `selected` | any\|null | Currently selected value, or null |
-
-**Options:** ≥ 2 entries, author-defined order, values unique within the item.
-
-**Rendering:**
-- Question text as a prominent block at the top
-- Options as a vertical list of tappable rows
-- Selected option: filled background (`--color-selected-bg`), coloured border (`--color-selected-border`), plus a non-colour indicator (checkmark or bold label)
-- Touch targets min 44px height, full width
-
-**Interaction:**
-- Tap/click → fires `answer`; controller waits 150 ms then calls `advance`
-- Arrow keys up/down → move focus between options (wraps)
-- Space on focused option → fires `answer` only (selects without advancing — allows review)
-- Enter on focused option → fires `answer`; controller advances after delay
-
-**ARIA:**
-- `role="radiogroup"` on container, `aria-label` = question text
-- Each option `role="radio"`, `aria-checked` reflects selected state
-
-**Events:**
-- `answer` — `detail: { value }` — on selection
-- `advance` — no detail — on tap or Enter (controller fires after 150 ms delay)
-
-**UI strings (inlined for now, extract to `src/strings.js` before release):**
-- No additional UI strings beyond item content for this component
-
----
-
-### 4.2 `<item-binary>`
-
-Renders a yes/no question with two large answer targets.
-
-**Properties:** same as `<item-select>`. Options always exactly two entries with values `0` (No) and `1` (Yes).
-
-**Rendering:**
-- Question text centered and prominent
-- Two large answer zones; vertical stack on mobile, side-by-side on wide screens
-- Yes zone accented with `--color-yes`; No zone with `--color-no`
-- During drag: card rotates (`calc(var(--drag-x) * 0.05deg)`), target zone opacity increases proportionally
-
-**Interaction:**
-- Tap answer zone → `answer` + `advance` (via controller delay)
-- Swipe right → Yes (1); swipe left → No (0) — via gesture utility, free horizontal swipe
-- Overscroll down (at top of scroll) → back; overscroll up (at bottom) → forward (only if already answered)
-- Arrow keys left/right → move focus; Enter → `answer` + `advance`
-
-**Swipe preview:** `onDrag` sets `--drag-x` CSS custom property on the host element. CSS responds to it via `transform` and opacity. On `phase: 'end'` below threshold, element transitions back to neutral.
-
-**ARIA:** same `radiogroup`/`radio` pattern.
-
-**Events:** same as `<item-select>`.
-
----
-
-### 4.3 `<item-instructions>`
-
-Renders a non-scored instruction screen.
-
-**Properties:**
-| Property | Type | Description |
-|---|---|---|
-| `item` | object | `{ id, text }` |
-
-No `selected` property.
-
-**Rendering:**
-- Text block, multi-paragraph (split on `\n`)
-- "המשך" continue button, full width
-
-**Interaction:**
-- Tap continue or Enter → `advance` immediately (no 150 ms delay)
-
-**Events:** `advance` only.
-
----
-
-### 4.4 `<progress-bar>`
-
-Display-only.
-
-**Properties:**
-| Property | Type | Description |
-|---|---|---|
-| `batteryProgress` | `{ current: number, total: number\|null }` | From `orchestrator.progress()` |
-| `itemProgress` | `{ current: number, total: number\|null }` | From `engine.progress()` |
-| `questionnaireName` | string | Display name of current questionnaire |
-
-**Rendering:**
-- Questionnaire name
-- "שאלה N מתוך M" — hidden when total is null
-- Filled progress bar — shown only when total is known
-- Battery position ("שאלון 2 מתוך 4") — shown only when battery total > 1
-
----
-
-## 5. Gesture Helper (`src/helpers/gestures.js`)
-
-### 5.1 API
+### 3.2 At battery level (battery sequence conditions)
 
 ```js
-attachSwipeListener(element, options) → detach()
-```
-
-| Option | Type | Default | Description |
-|---|---|---|---|
-| `onLeft` | fn | — | Confirmed left swipe |
-| `onRight` | fn | — | Confirmed right swipe |
-| `onUp` | fn | — | Confirmed up swipe (overscroll) |
-| `onDown` | fn | — | Confirmed down swipe (overscroll) |
-| `onDrag` | fn({dx, dy, phase}) | — | During drag; `phase`: `'start'`\|`'move'`\|`'end'` |
-| `threshold` | number | 40 | Min px delta to confirm |
-| `overscrollOnly` | boolean | false | If true, only trigger vertical gestures when the scroll container is already at its limit |
-| `scrollContainer` | Element\|null | null | The scrollable element to check scroll position against (required when `overscrollOnly: true`) |
-
-Returns `detach()` — removes all listeners. Must be called in `disconnectedCallback`.
-
-### 5.2 Direction semantics
-
-| Gesture | Direction | Mode | Target | Condition |
-|---|---|---|---|---|
-| Binary answer | left / right | free swipe | `<item-binary>` element | — |
-| Back navigation | down | overscroll | `document` | `scrollContainer.scrollTop === 0` |
-| Forward navigation | up | overscroll | `document` | at bottom of scroll AND item already answered |
-
-**Back:** user is at the top of the scrollable content and continues pulling down — overscroll triggers back navigation.
-
-**Forward:** user is at the bottom of the scrollable content and continues pulling up — overscroll triggers forward (only if the current item already has an answer recorded).
-
-Item screens must scroll freely. The gesture utility never suppresses vertical scroll. It only intercepts vertical movement when the scroll container has already reached its limit in that direction.
-
-### 5.3 Overscroll detection
-
-```js
-const atTop    = container.scrollTop === 0;
-const atBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 1;
-```
-
-On `touchstart`, the current scroll position is captured. On `touchmove`, if the container is at its limit and the drag direction matches, the gesture is recognised. `preventDefault()` is **not** called — the overscroll rubber-band effect (where present) may still occur visually, which is acceptable.
-
-### 5.4 Horizontal scroll conflict
-
-For binary swipes (horizontal), the gesture utility calls `preventDefault()` on `touchmove` once horizontal direction is confirmed (after 10 px of horizontal movement), suppressing vertical scroll for that touch. The `touchmove` listener must be registered as **non-passive** for binary items only.
-
-### 5.5 Reduced motion
-
-`onDrag` still fires under `prefers-reduced-motion: reduce` — state updates happen. Components suppress CSS transitions and transform animations via a `@media (prefers-reduced-motion: reduce)` block in their styles.
-
-### 5.6 Lit integration
-
-```js
-firstUpdated() {
-  this._detachSwipe = attachSwipeListener(this, { ... });
+{
+  score: {
+    // Keyed by questionnaire id → total score
+    'phq9': 17,
+    'gad7': 12,
+  },
+  subscale: {
+    // Keyed by questionnaire id → subscale map → number
+    'pcl5': { intrusion: 14, avoidance: 8 }
+  }
 }
-disconnectedCallback() {
-  super.disconnectedCallback();
-  this._detachSwipe?.();
+```
+
+**Note:** `item` is not available at battery level. `subscale` is available at both levels but has a different shape: flat at questionnaire level, nested under questionnaire ID at battery level.
+
+---
+
+## 4. Syntax Reference
+
+### 4.1 References
+
+References resolve values from the current context.
+
+#### `item.<id>`
+
+The patient's answer to item `<id>` within the current questionnaire.
+
+- For `select`, `binary`, `slider` items: resolves to `number`.
+- For `multiselect` items: resolves to `number[]` (1-based indices of selected options). Use `count()` or `checked()` to work with these — do not compare them directly with numeric operators.
+- `text` item answers are **not exposed** to the DSL (strings have no useful numeric semantics).
+- The `<id>` may be numeric (`item.1`, `item.9`) or alphanumeric with underscores (`item.phq9_9`).
+- Throws `DSLReferenceError` if the item has not been answered yet.
+
+```
+item.1          → the answer to item "1"
+item.phq9_9     → the answer to item "phq9_9"
+item.symptoms   → [1, 3] if options 1 and 3 were selected
+```
+
+#### `subscale.<id>`
+
+A subscale score within the current questionnaire.
+
+```
+subscale.intrusion    → number
+```
+
+#### `subscale.<questionnaireId>.<subscaleId>`
+
+A subscale score from a specific questionnaire. Used at battery level.
+
+```
+subscale.pcl5.intrusion    → number
+```
+
+#### `score.<questionnaireId>`
+
+The total score for a completed questionnaire. Used at battery level.
+
+```
+score.phq9    → number
+score.gad7    → number
+```
+
+### 4.2 Literals
+
+Only numeric literals are supported. There are no string literals or boolean literals.
+
+```
+0       integer zero
+3       positive integer
+1.5     float
+-2      negative (parsed as unary minus applied to literal)
+```
+
+### 4.3 Arithmetic operators
+
+All require `number` operands. Result is `number`.
+
+| Operator | Meaning | Example |
+|----------|---------|---------|
+| `+` | addition | `item.1 + item.2` |
+| `-` | subtraction | `score.phq9 - 5` |
+| `*` | multiplication | `item.1 * 2` |
+| `/` | division | `item.1 / 2` |
+| `-` (unary) | negation | `-item.1` |
+
+Division by zero throws `DSLRuntimeError`.
+
+### 4.4 Comparison operators
+
+Require `number` operands on both sides. Result is `boolean`. Comparisons cannot be chained (`1 < x < 3` is a syntax error).
+
+| Operator | Meaning |
+|----------|---------|
+| `<`  | less than |
+| `>`  | greater than |
+| `<=` | less than or equal |
+| `>=` | greater than or equal |
+| `==` | equal |
+| `!=` | not equal |
+
+```
+item.9 >= 1
+score.phq9 == 0
+subscale.intrusion != subscale.avoidance
+```
+
+### 4.5 Logical operators
+
+Require `boolean` operands. Result is `boolean`. Short-circuits: `&&` stops at the first `false`, `||` stops at the first `true`.
+
+| Operator | Meaning |
+|----------|---------|
+| `&&` | logical AND |
+| `||` | logical OR |
+| `!` (unary) | logical NOT |
+
+```
+item.9 >= 1 && score.phq9 >= 15
+score.phq9 >= 10 || score.gad7 >= 8
+!(item.1 == 0)
+```
+
+### 4.6 Parentheses
+
+Override default precedence.
+
+```
+(item.1 + item.2) * 3
+```
+
+### 4.7 Functions
+
+#### `sum(a, b, ...)` → `number`
+
+Sum of one or more numeric arguments.
+
+```
+sum(item.1, item.2, item.3)
+sum(subscale.intrusion, subscale.avoidance)
+```
+
+#### `avg(a, b, ...)` → `number`
+
+Arithmetic mean of one or more numeric arguments.
+
+```
+avg(item.1, item.2, item.3)
+```
+
+#### `min(a, b, ...)` → `number`
+
+Minimum of one or more numeric arguments.
+
+```
+min(item.1, item.2)
+```
+
+#### `max(a, b, ...)` → `number`
+
+Maximum of one or more numeric arguments.
+
+```
+max(subscale.intrusion, subscale.avoidance)
+```
+
+#### `if(condition, thenValue, elseValue)` → `number | boolean`
+
+Conditional expression. `condition` must be `boolean`. Both branches must return the same type.
+
+```
+if(item.9 >= 1, 1, 0)
+if(score.phq9 >= 10, sum(item.1, item.2), 0)
+```
+
+#### `count(ref)` → `number`
+
+Returns the number of selected options in a `multiselect` answer.
+
+- If `ref` resolves to an array: returns its length.
+- If `ref` resolves to `null` (unanswered): returns `0`.
+- If `ref` resolves to a non-null scalar: returns `1` (defensive, for non-multiselect items).
+
+```
+count(item.symptoms)          → 0 if nothing selected, 3 if three options selected
+count(item.symptoms) >= 2     → true if 2 or more options were checked
+count(item.symptoms) == 0     → true if the item was skipped or nothing checked
+```
+
+#### `checked(ref, n)` → `boolean`
+
+Returns `true` if the 1-based index `n` is among the selected options of a `multiselect` answer.
+
+- `n` must be a positive integer literal or numeric expression evaluating to a positive integer.
+- If `ref` resolves to `null` or an empty array: returns `false`.
+- If `ref` resolves to a non-array scalar: returns `false`.
+
+```
+checked(item.symptoms, 1)     → true if option 1 was selected
+checked(item.symptoms, 3)     → true if option 3 was selected
+checked(item.symptoms, 1) && checked(item.symptoms, 2)   → both options selected
+```
+
+---
+
+## 5. Error Types
+
+All errors include the original expression string in their message to aid debugging.
+
+| Class | Thrown when |
+|-------|------------|
+| `DSLSyntaxError` | Unexpected character, unexpected token, unknown function name, malformed expression |
+| `DSLReferenceError` | `item.x`, `subscale.x`, or `score.x` not found in context |
+| `DSLTypeError` | Wrong type for operator (e.g. adding booleans), wrong return type |
+| `DSLArgumentError` | Function called with wrong number or type of arguments |
+| `DSLRuntimeError` | Runtime fault: currently only division by zero |
+
+All are exported from `dsl.js` and can be caught individually:
+
+```js
+import { evaluate, DSLReferenceError } from './dsl.js';
+
+try {
+  evaluate('item.9 >= 1', context, 'boolean');
+} catch (e) {
+  if (e instanceof DSLReferenceError) { /* item not yet answered */ }
 }
 ```
 
 ---
 
-## 6. RTL and Localisation
+## 6. Usage Examples
 
-- `dir="rtl"` set on `<html>` at app load. Components inherit it automatically via shadow DOM.
-- UI strings (button labels, ARIA labels, progress format) are inlined as Hebrew directly in components for now. They will be extracted to `src/strings.js` before the first non-development release. `strings.js` will export a plain object keyed by string ID — a single-file change enables localisation.
-- All layout CSS uses logical properties exclusively.
+### Alert on a specific item value
+
+```json
+{ "condition": "item.9 >= 1", "message": "...", "severity": "critical" }
+```
+
+### Alert combining score and item
+
+```json
+{ "condition": "score.phq9 >= 15 && item.9 >= 1", "message": "...", "severity": "critical" }
+```
+
+### Conditional branch in a questionnaire
+
+```json
+{
+  "id": "branch_trauma",
+  "type": "if",
+  "condition": "item.phq9_screen >= 3",
+  "then": [ "..." ],
+  "else": []
+}
+```
+
+### Battery-level branch (show PCL-5 if PHQ-9 >= 10 or GAD-7 >= 8)
+
+```json
+{
+  "id": "branch_ptsd",
+  "type": "if",
+  "condition": "score.phq9 >= 10 || score.gad7 >= 8",
+  "then": [ { "questionnaireId": "pcl5" } ],
+  "else": []
+}
+```
+
+### Multiselect: alert if a specific symptom was checked
+
+```json
+{ "condition": "checked(item.symptoms, 3)", "message": "חרדה דווחה", "severity": "warning" }
+```
+
+### Multiselect: alert if 3 or more symptoms were selected
+
+```json
+{ "condition": "count(item.symptoms) >= 3", "message": "תסמינים מרובים", "severity": "warning" }
+```
+
+### Multiselect: conditional follow-up branch
+
+```json
+{
+  "id": "branch_sleep",
+  "type": "if",
+  "condition": "checked(item.symptoms, 4)",
+  "then": [ { "id": "sleep_followup", "type": "select", "text": "..." } ],
+  "else": []
+}
+```
 
 ---
 
-## 7. Accessibility
+## 7. Constraints and Limitations
 
-WCAG 2.1 AA target:
-
-- Touch targets ≥ 44×44 px
-- `:focus-visible` ring always present, never suppressed
-- Selected state communicated by shape/text in addition to colour
-- All swipe gestures have keyboard equivalents
-- `prefers-reduced-motion`: animations and transitions set to `0ms`
+- **No string values.** Text item answers are not available in the DSL.
+- **No boolean literals.** Write `1 == 1` not `true`. Conditions are always built from comparisons.
+- **No assignment.** The DSL is purely functional — no side effects.
+- **No chained comparisons.** `1 < x < 3` is a syntax error. Write `x > 1 && x < 3`.
+- **References must be present in context.** Referencing an unanswered item throws `DSLReferenceError`. When used in sequence conditions, the engine only evaluates conditions after the referenced items have been answered.
+- **`count` and `checked` are lenient on non-arrays.** This prevents crashes when a condition accidentally references a scalar item — `count` returns 1 and `checked` returns false.
+- **Integer check for `checked` second argument.** Floats (e.g. `1.5`) throw `DSLArgumentError`. Zero and negatives also throw.
 
 ---
 
-## 8. Implementation order
+## 8. Reserved Identifiers
 
-1. `src/styles/tokens.css` + `src/styles/main.css`
-2. `<item-select>` + minimal controller wiring (no gestures)
-3. `src/helpers/gestures.js`
-4. `<item-binary>`
-5. `<item-instructions>`
-6. `<progress-bar>`
-7. Full controller + app shell integration
+The following identifiers are reserved as function names and reference namespaces. They must not be used as item IDs in config files:
+
+**Reference namespaces:** `item`, `score`, `subscale`
+
+**Function names:** `sum`, `avg`, `min`, `max`, `if`, `count`, `checked`

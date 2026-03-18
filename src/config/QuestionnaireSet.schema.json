@@ -83,6 +83,7 @@
         { "$ref": "#/$defs/instructionsItem" },
         { "$ref": "#/$defs/textItem" },
         { "$ref": "#/$defs/sliderItem" },
+        { "$ref": "#/$defs/multiselectItem" },
         { "$ref": "#/$defs/ifNode" },
         { "$ref": "#/$defs/randomizeNode" }
       ]
@@ -170,6 +171,30 @@
         },
         "reverse":  { "type": "boolean" },
         "weight":   { "type": "number" },
+        "required": { "type": "boolean" }
+      }
+    },
+
+    "multiselectItem": {
+      "type": "object",
+      "required": ["id", "type", "text", "options"],
+      "additionalProperties": false,
+      "properties": {
+        "id":       { "$ref": "#/$defs/id" },
+        "type":     { "const": "multiselect" },
+        "text":     { "type": "string", "minLength": 1 },
+        "options":  {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "object",
+            "required": ["label"],
+            "additionalProperties": false,
+            "properties": {
+              "label": { "type": "string", "minLength": 1 }
+            }
+          }
+        },
         "required": { "type": "boolean" }
       }
     },

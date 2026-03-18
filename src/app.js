@@ -27,6 +27,7 @@ import './components/item-binary.js';
 import './components/item-instructions.js';
 import './components/item-text.js';
 import './components/item-slider.js';
+import './components/item-multiselect.js';
 import './components/app-shell.js';
 import './components/progress-bar.js';
 import './components/welcome-screen.js';

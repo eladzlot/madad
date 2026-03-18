@@ -119,6 +119,17 @@ describe('canAdvance', () => {
   it('required: true makes instructions require an answer', () => {
     expect(canAdvance({ type: 'instructions', required: true }, null)).toBe(false);
   });
+
+  it('multiselect: [] is valid by default (skippable)', () => {
+    expect(canAdvance({ type: 'multiselect' }, [])).toBe(true);
+    expect(canAdvance({ type: 'multiselect' }, null)).toBe(true);
+  });
+
+  it('multiselect required:true: [] is not valid, must have selection', () => {
+    expect(canAdvance({ type: 'multiselect', required: true }, [])).toBe(false);
+    expect(canAdvance({ type: 'multiselect', required: true }, [1])).toBe(true);
+    expect(canAdvance({ type: 'multiselect', required: true }, null)).toBe(false);
+  });
 });
 
 // ── tagForType ────────────────────────────────────────────────────────────────

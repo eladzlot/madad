@@ -375,6 +375,29 @@ function evalNode(node, context, expression) {
         if (name === 'max') return Math.max(...vals);
       }
 
+      // count(ref) — number of selected options in a multiselect answer.
+      // Returns the array length for arrays, 1 for non-null scalars, 0 for null.
+      if (name === 'count') {
+        if (args.length !== 1)
+          throw new DSLArgumentError('count', 'requires exactly 1 argument', expression);
+        const val = evalNode(args[0], context, expression);
+        if (Array.isArray(val)) return val.length;
+        if (val == null)        return 0;
+        return 1;
+      }
+
+      // checked(ref, n) — true if 1-based index n is selected in a multiselect answer.
+      if (name === 'checked') {
+        if (args.length !== 2)
+          throw new DSLArgumentError('checked', 'requires exactly 2 arguments', expression);
+        const collection = evalNode(args[0], context, expression);
+        const n          = evalNode(args[1], context, expression);
+        if (typeof n !== 'number' || !Number.isInteger(n) || n < 1)
+          throw new DSLArgumentError('checked', 'second argument must be a positive integer', expression);
+        if (!Array.isArray(collection)) return false;
+        return collection.includes(n);
+      }
+
       throw new DSLSyntaxError(`unknown function "${name}"`, expression);
     }
   }

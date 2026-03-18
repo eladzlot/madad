@@ -114,6 +114,51 @@ Add `"required": false` to make a binary item skippable. Default is required.
 ```
 Instructions items are not scored. They do not appear in the response table of the PDF. Multiple instructions items are allowed — place them anywhere in the items array.
 
+### Text item (free-text response)
+```json
+{ "id": "notes", "type": "text", "text": "הערות נוספות" }
+```
+Renders a single-line text input. The patient's response is printed verbatim in the PDF but is **not scored** and **not available in DSL expressions**. Skippable by default (add `"required": true` to force an answer).
+
+Optional properties:
+- `"inputType"`: `"line"` (default), `"multiline"`, `"number"`, `"email"`
+- `"min"` / `"max"`: numeric bounds when `inputType` is `"number"`
+- `"pattern"`: regex string for validation
+
+### Slider item (numeric scale)
+```json
+{ "id": "pain", "type": "slider", "text": "דרג את עוצמת הכאב", "min": 0, "max": 10 }
+```
+Renders a draggable range slider. The answer is a number in `[min, max]`. **Scored** like a select item — contributes to `sum`, `average`, and `subscale` scoring. Required by default.
+
+Optional properties:
+- `"step"`: granularity (default 1)
+- `"labels"`: `{ "min": "ללא כאב", "max": "כאב קשה" }` — endpoint labels shown below the track
+- `"reverse"`: reverse-score (requires `maxPerItem` in scoring)
+- `"weight"`: item weight multiplier
+
+### Multiselect item (multiple choice)
+```json
+{
+  "id": "symptoms",
+  "type": "multiselect",
+  "text": "אילו תסמינים חווית השבוע?",
+  "options": [
+    { "label": "כאבי ראש" },
+    { "label": "עייפות" },
+    { "label": "חרדה" },
+    { "label": "קשיי שינה" }
+  ]
+}
+```
+Renders a checkbox list. The patient may select any number of options, including none. **Not scored** — answers do not contribute to the questionnaire total. Skippable by default (add `"required": true` to disallow skipping).
+
+Key differences from `select`:
+- Options have only `"label"` — no `"value"` field.
+- The answer is stored as an array of **1-based indices** of selected options.
+- Use `count()` and `checked()` in DSL conditions to work with the answer (see DSL section).
+- At least 2 options required. No `optionSetId` — options must always be inline.
+
 ---
 
 ## Scoring
@@ -221,10 +266,11 @@ Conditions are small expressions evaluated after scoring. Reference values using
 
 | Reference | Meaning |
 |---|---|
-| `item.ID` | The numeric answer value for item with that ID |
-| `item.1` | Item IDs that are numbers work the same way |
-| `score.QUESTIONNAIRE_ID` | Total score of a questionnaire |
-| `subscale.QUESTIONNAIRE_ID.SUBSCALE_ID` | A subscale score |
+| `item.ID` | Answer to a `select`, `binary`, or `slider` item (number) |
+| `item.ID` | Answer to a `multiselect` item (array of 1-based indices) — use `count()`/`checked()` |
+| `score.QUESTIONNAIRE_ID` | Total score of a completed questionnaire (battery level) |
+| `subscale.SUBSCALE_ID` | A subscale score within the current questionnaire |
+| `subscale.QUESTIONNAIRE_ID.SUBSCALE_ID` | A subscale score from a specific questionnaire (battery level) |
 
 Comparison operators: `<`, `>`, `<=`, `>=`, `==`, `!=`
 
@@ -232,16 +278,29 @@ Logical operators: `&&` (and), `||` (or), `!` (not)
 
 Arithmetic: `+`, `-`, `*`, `/`
 
-Built-in functions: `sum(a, b, ...)`, `avg(a, b, ...)`, `min(a, b, ...)`, `max(a, b, ...)`, `if(condition, then_value, else_value)`
+Built-in functions:
+
+| Function | Returns | Notes |
+|---|---|---|
+| `sum(a, b, ...)` | number | Sum of numeric args |
+| `avg(a, b, ...)` | number | Mean of numeric args |
+| `min(a, b, ...)` | number | Minimum of numeric args |
+| `max(a, b, ...)` | number | Maximum of numeric args |
+| `if(cond, then, else)` | number or boolean | Conditional — both branches must return same type |
+| `count(item.ID)` | number | Number of selected options in a `multiselect` answer (0 if unanswered) |
+| `checked(item.ID, n)` | boolean | True if 1-based option `n` is selected in a `multiselect` answer |
 
 **Common alert patterns:**
 
 ```
-"item.9 >= 1"                          — item 9 answered non-zero
-"score.phq9 >= 10"                     — PHQ-9 total ≥ 10
-"score.phq9 >= 10 && score.gad7 >= 8"  — both elevated
-"subscale.pcl5.intrusion >= 12"        — subscale threshold
-"item.q1 == 1 || item.q2 == 1"        — either of two items triggered
+"item.9 >= 1"                               — select/binary item triggered
+"score.phq9 >= 10"                          — PHQ-9 total ≥ 10
+"score.phq9 >= 10 && score.gad7 >= 8"       — both elevated
+"subscale.pcl5.intrusion >= 12"             — subscale threshold
+"item.q1 == 1 || item.q2 == 1"             — either of two items triggered
+"count(item.symptoms) >= 3"                 — 3 or more symptoms checked
+"checked(item.symptoms, 2)"                 — specific symptom (option 2) was checked
+"checked(item.symptoms, 1) && count(item.symptoms) >= 2"  — option 1 plus others
 ```
 
 **IDs with numeric names:** Items named `"1"`, `"9"` etc. are valid and referenced as `item.1`, `item.9`. No quotes needed in DSL.

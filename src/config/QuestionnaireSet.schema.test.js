@@ -373,6 +373,55 @@ describe('select item', () => {
   })).toBe(true));
 });
 
+// ─── Multiselect item ─────────────────────────────────────────────────────────
+
+describe('multiselect item', () => {
+  const msItem = {
+    id: 'symptoms',
+    type: 'multiselect',
+    text: 'אילו תסמינים חווית?',
+    options: [{ label: 'כאבי ראש' }, { label: 'עייפות' }],
+  };
+
+  it('accepts valid multiselect item', () => expect(valid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire({ items: [msItem] })],
+  })).toBe(true));
+
+  it('accepts required: true on multiselect', () => expect(valid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire({ items: [{ ...msItem, required: true }] })],
+  })).toBe(true));
+
+  it('rejects multiselect missing options', () => expect(invalid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire({
+      items: [{ id: 'q1', type: 'multiselect', text: 'test' }],
+    })],
+  })).toBe(true));
+
+  it('rejects multiselect with only one option', () => expect(invalid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire({
+      items: [{ ...msItem, options: [{ label: 'only one' }] }],
+    })],
+  })).toBe(true));
+
+  it('rejects multiselect option with a value field', () => expect(invalid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire({
+      items: [{ ...msItem, options: [{ label: 'a', value: 1 }, { label: 'b' }] }],
+    })],
+  })).toBe(true));
+
+  it('rejects multiselect with extra fields', () => expect(invalid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire({
+      items: [{ ...msItem, reverse: true }],
+    })],
+  })).toBe(true));
+});
+
 // ─── If node (item level) ─────────────────────────────────────────────────────
 
 describe('if node (item level)', () => {

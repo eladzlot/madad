@@ -524,6 +524,14 @@ export function buildResponseTable(questionnaire, answers) {
         rowNum = 0;
       }
       blocks.push(buildTextBlock(item, answers[item.id]));
+    } else if (item.type === 'multiselect') {
+      // Multiselect renders outside the table — bold question then checked labels
+      if (tableRows.length > 0) {
+        blocks.push(buildTable([buildTableHeaderRow(), ...tableRows]));
+        tableRows.length = 0;
+        rowNum = 0;
+      }
+      blocks.push(buildMultiselectBlock(item, answers[item.id]));
     } else {
       rowNum++;
       tableRows.push(buildItemRow(item, rowNum, answers[item.id], questionnaire));
@@ -581,6 +589,42 @@ export function buildTextBlock(item, answer) {
         alignment: 'right',
         margin: [0, 0, 0, 0],
       },
+    ],
+    margin: [0, 6, 0, 10],
+  };
+}
+
+// ── Multiselect item block (outside table) ────────────────────────────────────
+
+export function buildMultiselectBlock(item, answer) {
+  const options = item.options ?? [];
+  const selected = Array.isArray(answer) ? answer : [];
+
+  // Build answer text: checked labels joined by comma, or em-dash if none
+  let answerNode;
+  if (selected.length === 0) {
+    answerNode = { text: '—', color: '#999999', fontSize: 10, alignment: 'right' };
+  } else {
+    const labels = selected
+      .filter(i => i >= 1 && i <= options.length)
+      .map(i => options[i - 1].label);
+    answerNode = {
+      text: bidiNodes(labels.join('، ')),
+      fontSize: 10,
+      alignment: 'right',
+    };
+  }
+
+  return {
+    stack: [
+      {
+        text: bidiNodes(item.text),
+        bold: true,
+        fontSize: 10,
+        alignment: 'right',
+        margin: [0, 0, 0, 4],
+      },
+      answerNode,
     ],
     margin: [0, 6, 0, 10],
   };

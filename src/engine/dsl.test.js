@@ -171,7 +171,63 @@ describe('if function', () => {
     expect(() => evaluate('foo(1, 2)', {}, 'number')).toThrow(DSLSyntaxError));
 });
 
-// ─── Type enforcement ─────────────────────────────────────────────────────────
+// ─── count() ─────────────────────────────────────────────────────────────────
+
+describe('count()', () => {
+  it('returns array length for a multiselect answer', () =>
+    expect(evaluate('count(item.symptoms)', itemCtx({ symptoms: [1, 3] }), 'number')).toBe(2));
+
+  it('returns 0 for empty array', () =>
+    expect(evaluate('count(item.symptoms)', itemCtx({ symptoms: [] }), 'number')).toBe(0));
+
+  it('returns 0 for null answer', () =>
+    expect(evaluate('count(item.symptoms)', itemCtx({ symptoms: null }), 'number')).toBe(0));
+
+  it('returns 1 for a non-null scalar (defensive)', () =>
+    expect(evaluate('count(item.q1)', itemCtx({ q1: 2 }), 'number')).toBe(1));
+
+  it('can be used in a comparison', () =>
+    expect(evaluate('count(item.symptoms) >= 2', itemCtx({ symptoms: [1, 2, 3] }), 'boolean')).toBe(true));
+
+  it('throws DSLArgumentError with wrong arg count', () =>
+    expect(() => evaluate('count(item.a, item.b)', itemCtx({ a: [], b: [] }), 'number'))
+      .toThrow(DSLArgumentError));
+});
+
+// ─── checked() ───────────────────────────────────────────────────────────────
+
+describe('checked()', () => {
+  it('returns true when 1-based index is in selection', () =>
+    expect(evaluate('checked(item.symptoms, 2)', itemCtx({ symptoms: [1, 2, 3] }), 'boolean')).toBe(true));
+
+  it('returns false when index is not in selection', () =>
+    expect(evaluate('checked(item.symptoms, 4)', itemCtx({ symptoms: [1, 2, 3] }), 'boolean')).toBe(false));
+
+  it('returns false for empty array', () =>
+    expect(evaluate('checked(item.symptoms, 1)', itemCtx({ symptoms: [] }), 'boolean')).toBe(false));
+
+  it('returns false for null answer (not answered)', () =>
+    expect(evaluate('checked(item.symptoms, 1)', itemCtx({ symptoms: null }), 'boolean')).toBe(false));
+
+  it('can be combined with logical operators', () =>
+    expect(evaluate(
+      'checked(item.symptoms, 1) && checked(item.symptoms, 3)',
+      itemCtx({ symptoms: [1, 3] }),
+      'boolean'
+    )).toBe(true));
+
+  it('throws DSLArgumentError with wrong arg count', () =>
+    expect(() => evaluate('checked(item.a)', itemCtx({ a: [1] }), 'boolean'))
+      .toThrow(DSLArgumentError));
+
+  it('throws DSLArgumentError when second arg is not a positive integer', () =>
+    expect(() => evaluate('checked(item.a, 0)', itemCtx({ a: [1] }), 'boolean'))
+      .toThrow(DSLArgumentError));
+
+  it('throws DSLArgumentError when second arg is a float', () =>
+    expect(() => evaluate('checked(item.a, 1.5)', itemCtx({ a: [1] }), 'boolean'))
+      .toThrow(DSLArgumentError));
+});
 
 describe('return type enforcement', () => {
   it('throws DSLTypeError when number expected but boolean returned', () =>

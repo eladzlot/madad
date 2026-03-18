@@ -296,6 +296,25 @@
           "type": "text",
           "text": "הערות נוספות",
           "inputType": "line"
+        },
+        {
+          "id": "multi1",
+          "type": "multiselect",
+          "text": "אילו תסמינים חווית השבוע?",
+          "options": [
+            {
+              "label": "כאבי ראש"
+            },
+            {
+              "label": "עייפות"
+            },
+            {
+              "label": "חרדה"
+            },
+            {
+              "label": "קשיי שינה"
+            }
+          ]
         }
       ],
       "scoring": {
