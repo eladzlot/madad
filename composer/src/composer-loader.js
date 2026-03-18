@@ -48,11 +48,11 @@ export async function loadAllConfigs(manifest) {
     const { entry, config } = result.value;
 
     for (const b of config.batteries) {
-      state.batteries.push({ id: b.id, title: b.title, description: b.description ?? '', keywords: b.keywords ?? [], sourceUrl: entry.url });
+      state.batteries.push({ id: b.id, title: b.title, description: b.description ?? '', keywords: b.keywords ?? [], sourceUrl: entry.url, hidden: !!entry.hidden });
       state.sourceByItem.set(b.id, entry.url);
     }
     for (const q of config.questionnaires) {
-      state.questionnaires.push({ id: q.id, title: q.title, description: q.description ?? '', keywords: q.keywords ?? [], sourceUrl: entry.url });
+      state.questionnaires.push({ id: q.id, title: q.title, description: q.description ?? '', keywords: q.keywords ?? [], sourceUrl: entry.url, hidden: !!entry.hidden });
       state.sourceByItem.set(q.id, entry.url);
     }
 

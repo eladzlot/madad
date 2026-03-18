@@ -142,6 +142,38 @@ describe('loadAllConfigs', () => {
     expect(state.warnings).toHaveLength(1);
   });
 
+  it('includes configs marked dev:true when running in dev mode (Vitest sets DEV=true)', async () => {
+    // Vitest runs with import.meta.env.DEV = true, so dev configs are included
+    mockFetch
+      .mockResolvedValueOnce(makeConfigResponse([minimalQ('phq9')]))
+      .mockResolvedValueOnce(makeConfigResponse([minimalQ('e2e_q')]));
+    await loadAllConfigs({
+      configs: [
+        { name: 'Prod', url: '/configs/prod/standard.json' },
+        { name: 'Dev only', url: '/configs/test/e2e.json', dev: true },
+      ],
+    });
+    // Both configs loaded because IS_DEV=true in test environment
+    expect(state.questionnaires.map(q => q.id)).toContain('phq9');
+    expect(state.questionnaires.map(q => q.id)).toContain('e2e_q');
+  });
+
+  it('marks questionnaires from hidden configs with hidden:true', async () => {
+    mockFetch.mockResolvedValueOnce(makeConfigResponse([minimalQ('e2e_q')]));
+    await loadAllConfigs({
+      configs: [{ name: 'E2E', url: '/configs/test/e2e.json', hidden: true }],
+    });
+    expect(state.questionnaires[0].hidden).toBe(true);
+  });
+
+  it('marks questionnaires from non-hidden configs with hidden:false', async () => {
+    mockFetch.mockResolvedValueOnce(makeConfigResponse([minimalQ('phq9')]));
+    await loadAllConfigs({
+      configs: [{ name: 'Prod', url: '/configs/prod/standard.json' }],
+    });
+    expect(state.questionnaires[0].hidden).toBe(false);
+  });
+
   it('adds a warning message for each failed config', async () => {
     mockFetch.mockRejectedValue(new TypeError('Failed to fetch'));
     await loadAllConfigs({

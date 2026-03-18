@@ -69,7 +69,7 @@ export function renderPartial() {
     urlBox.classList.toggle('c-url-box--empty', !url);
   }
 
-  _root.querySelectorAll('.c-btn[data-action="copy"], .c-btn[data-action="share"]').forEach(btn => {
+  _root.querySelectorAll('.c-btn[data-action="copy"], .c-btn[data-action="share"], .c-btn[data-action="test"]').forEach(btn => {
     btn.disabled = !url;
   });
 }
@@ -124,6 +124,14 @@ function renderUrlSection(url) {
   copyBtn.disabled = !url;
   copyBtn.addEventListener('click', () => handleCopy(copyBtn));
   btnRow.appendChild(copyBtn);
+
+  const testBtn = document.createElement('button');
+  testBtn.className = 'c-btn c-btn--secondary';
+  testBtn.dataset.action = 'test';
+  testBtn.textContent = 'פתח לבדיקה ↗';
+  testBtn.disabled = !url;
+  testBtn.addEventListener('click', () => url && window.open(url, '_blank', 'noopener'));
+  btnRow.appendChild(testBtn);
 
   if (navigator.share) {
     const shareBtn = document.createElement('button');
@@ -221,9 +229,9 @@ function renderSelectionSection() {
 export function renderSelectionGroups(inner) {
   inner.querySelectorAll('.c-group, .c-empty, .c-no-results').forEach(el => el.remove());
 
-  const filteredBatteries      = state.batteries.filter(b => matchesQuery(b, state.query));
-  const filteredQuestionnaires = state.questionnaires.filter(q => matchesQuery(q, state.query));
-  const total = state.batteries.length + state.questionnaires.length;
+  const filteredBatteries      = state.batteries.filter(b => !b.hidden && matchesQuery(b, state.query));
+  const filteredQuestionnaires = state.questionnaires.filter(q => !q.hidden && matchesQuery(q, state.query));
+  const total = state.batteries.filter(b => !b.hidden).length + state.questionnaires.filter(q => !q.hidden).length;
 
   if (total === 0) {
     const p = document.createElement('p');
@@ -281,6 +289,7 @@ export function renderItemGroup(title, items, isBattery) {
           <span class="c-item-name">${escapeHtml(item.title)}</span>
           <span class="c-item-id">${escapeHtml(item.id)}</span>
           ${item.description ? `<span class="c-item-desc">${escapeHtml(item.description)}</span>` : ''}
+          ${item.keywords?.length ? `<span class="c-item-keywords">${item.keywords.map(k => `<span class="c-item-keyword">${escapeHtml(k)}</span>`).join('')}</span>` : ''}
         </span>
         ${isBattery ? `<span class="c-badge">סוללה</span>` : ''}
       </label>
@@ -441,6 +450,18 @@ export function injectStyles() {
       direction: ltr; text-align: right;
     }
     .c-item-desc { font-size: var(--font-size-sm); color: var(--color-text-muted); }
+    .c-item-keywords { display: flex; flex-wrap: wrap; gap: 4px; margin-block-start: 4px; }
+    .c-item-keyword {
+      font-size: 11px;
+      color: var(--color-text-muted);
+      background: var(--color-surface);
+      border: var(--border-width) solid var(--color-border);
+      border-radius: var(--radius-sm);
+      padding-inline: var(--space-xs);
+      padding-block: 1px;
+      white-space: nowrap;
+      direction: ltr;
+    }
 
     .c-group { margin-block-end: var(--space-lg); }
     .c-group:last-child { margin-block-end: 0; }
