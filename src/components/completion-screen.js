@@ -22,8 +22,24 @@ export class CompletionScreen extends LitElement {
     }
 
     .icon {
-      font-size: 48px;
-      line-height: 1;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--color-yes-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .icon svg {
+      width: 28px;
+      height: 28px;
+      stroke: var(--color-yes);
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
     }
 
     .title {
@@ -81,7 +97,11 @@ export class CompletionScreen extends LitElement {
 
   render() {
     return html`
-      <span class="icon" aria-hidden="true">✓</span>
+      <span class="icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <polyline points="4 12 9 17 20 7"></polyline>
+        </svg>
+      </span>
       <h1 class="title">סיימת את השאלון</h1>
       <p class="subtitle">
         ניתן לחזור לשאלות קודמות באמצעות כפתור החזרה.

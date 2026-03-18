@@ -43,6 +43,61 @@ body {
   padding-block: var(--space-lg);
 }
 
+/* ── Transient boot screens (loading + error) ───────────────────────────── */
+
+.boot-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-block-size: 100dvh;
+  gap: var(--space-lg);
+  padding-inline: var(--space-md);
+  direction: rtl;
+  text-align: center;
+}
+
+.boot-screen__message {
+  font-size: var(--font-size-md);
+  color: var(--color-text-muted);
+}
+
+.boot-screen__title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+}
+
+.boot-screen__hint {
+  font-size: var(--font-size-md);
+  color: var(--color-text-muted);
+  max-inline-size: var(--content-max-width);
+  line-height: var(--line-height);
+}
+
+.boot-screen__retry {
+  min-block-size: var(--item-min-touch);
+  padding-inline: var(--space-xl);
+  background: var(--color-primary);
+  color: var(--color-primary-text);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  font-family: inherit;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.boot-screen__retry:hover {
+  background: var(--color-primary-hover);
+}
+
+.boot-screen__retry:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
 /* Utility: visually hidden but accessible */
 .sr-only {
   position: absolute;

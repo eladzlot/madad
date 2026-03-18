@@ -169,14 +169,19 @@ export class ItemBinary extends LitElement {
       : '';
 
     return html`
-      <p class="question">${this.item.text}</p>
+      <p class="question" id="binary-question">${this.item.text}</p>
       <div class="card ${dragging ? 'dragging' : ''}" style=${cardStyle}>
-        <div class="buttons ${hasSelection ? 'has-selection' : ''}">
+        <div
+          class="buttons ${hasSelection ? 'has-selection' : ''}"
+          role="group"
+          aria-labelledby="binary-question"
+        >
           <button
             class="opt-btn positive
               ${this.selected === opt0?.value ? 'selected' : ''}
               ${dragRight ? 'drag-commit' : ''}
               ${dragging && !dragRight && this._dragDx > 10 ? 'drag-target' : ''}"
+            aria-pressed=${this.selected === opt0?.value ? 'true' : 'false'}
             @click=${() => opt0 && this._select(opt0.value)}
           >${opt0?.label}</button>
           <button
@@ -184,6 +189,7 @@ export class ItemBinary extends LitElement {
               ${this.selected === opt1?.value ? 'selected' : ''}
               ${dragLeft ? 'drag-commit' : ''}
               ${dragging && !dragLeft && this._dragDx < -10 ? 'drag-target' : ''}"
+            aria-pressed=${this.selected === opt1?.value ? 'true' : 'false'}
             @click=${() => opt1 && this._select(opt1.value)}
           >${opt1?.label}</button>
         </div>

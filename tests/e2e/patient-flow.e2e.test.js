@@ -392,12 +392,12 @@ test.describe('error handling', () => {
 
   test('unknown item token shows Hebrew error', async ({ page }) => {
     await page.goto(`/?configs=${E2E_CONFIG}&items=nonexistent_xyz`);
-    await expect(page.locator('#app')).toContainText('שגיאה');
+    await expect(page.locator('#app')).toContainText('הקישור שגוי או פג תוקף');
   });
 
   test('invalid config URL shows Hebrew error', async ({ page }) => {
     await page.goto('/?configs=/configs/nonexistent_xyz.json&items=phq9');
-    await expect(page.locator('#app')).toContainText('שגיאה');
+    await expect(page.locator('#app')).toContainText('לא ניתן לטעון את השאלון');
   });
 });
 

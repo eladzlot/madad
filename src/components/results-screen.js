@@ -75,13 +75,23 @@ export class ResultsScreen extends LitElement {
       min-block-size: var(--item-min-touch);
       padding-block: var(--space-sm);
       background: var(--color-primary);
-      color: #ffffff;
+      color: var(--color-primary-text);
       border: none;
       border-radius: var(--radius-md);
       font-size: var(--font-size-md);
       font-weight: var(--font-weight-medium);
       font-family: inherit;
       cursor: pointer;
+      transition: background var(--transition-fast);
+    }
+
+    .pdf-btn:not(:disabled):hover {
+      background: var(--color-primary-hover);
+    }
+
+    .pdf-btn:focus-visible {
+      outline: 2px solid var(--color-border-focus);
+      outline-offset: 2px;
     }
 
     .pdf-btn:disabled {

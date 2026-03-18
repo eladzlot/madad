@@ -59,7 +59,49 @@ describe('rendering', () => {
   });
 });
 
-// ─── Selection state ──────────────────────────────────────────────────────────
+// ─── Accessibility ────────────────────────────────────────────────────────────
+
+describe('accessibility', () => {
+  it('question has an id for aria-labelledby', async () => {
+    const el = await makeEl();
+    expect(el.shadowRoot.querySelector('.question').id).toBe('binary-question');
+  });
+
+  it('buttons container has role="group"', async () => {
+    const el = await makeEl();
+    expect(el.shadowRoot.querySelector('.buttons').getAttribute('role')).toBe('group');
+  });
+
+  it('buttons container is labelled by the question', async () => {
+    const el = await makeEl();
+    expect(el.shadowRoot.querySelector('.buttons').getAttribute('aria-labelledby')).toBe('binary-question');
+  });
+
+  it('buttons have aria-pressed="false" when nothing is selected', async () => {
+    const el = await makeEl({ selected: null });
+    const btns = el.shadowRoot.querySelectorAll('.opt-btn');
+    expect(btns[0].getAttribute('aria-pressed')).toBe('false');
+    expect(btns[1].getAttribute('aria-pressed')).toBe('false');
+  });
+
+  it('selected button has aria-pressed="true"', async () => {
+    const el = await makeEl({ selected: true });
+    const btns = el.shadowRoot.querySelectorAll('.opt-btn');
+    expect(btns[0].getAttribute('aria-pressed')).toBe('true');
+    expect(btns[1].getAttribute('aria-pressed')).toBe('false');
+  });
+
+  it('aria-pressed updates when selected property changes', async () => {
+    const el = await makeEl({ selected: null });
+    el.selected = false;
+    await el.updateComplete;
+    const btns = el.shadowRoot.querySelectorAll('.opt-btn');
+    expect(btns[0].getAttribute('aria-pressed')).toBe('false');
+    expect(btns[1].getAttribute('aria-pressed')).toBe('true');
+  });
+});
+
+
 
 describe('selection state', () => {
   it('no button is selected when selected is null', async () => {

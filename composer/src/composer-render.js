@@ -118,11 +118,11 @@ function renderUrlSection(url) {
   btnRow.className = 'c-btn-row';
 
   const copyBtn = document.createElement('button');
-  copyBtn.className = 'c-btn c-btn--primary';
+  copyBtn.className = `c-btn c-btn--primary${state.copied ? ' c-btn--copied' : ''}`;
   copyBtn.dataset.action = 'copy';
-  copyBtn.textContent = 'העתק קישור';
+  copyBtn.textContent = state.copied ? 'הועתק ✓' : 'העתק קישור';
   copyBtn.disabled = !url;
-  copyBtn.addEventListener('click', () => handleCopy(copyBtn));
+  copyBtn.addEventListener('click', handleCopy);
   btnRow.appendChild(copyBtn);
 
   const testBtn = document.createElement('button');
@@ -407,6 +407,7 @@ export function injectStyles() {
     .c-btn--secondary:not(:disabled):hover { border-color: var(--color-primary); color: var(--color-primary); }
     .c-btn--ghost { background: transparent; color: var(--color-text-muted); }
     .c-btn--ghost:hover { color: var(--color-no); }
+    .c-btn--copied { background: var(--color-yes); color: #fff; }
 
     .c-pid-input {
       display: block; width: 100%; max-width: 320px;

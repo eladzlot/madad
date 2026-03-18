@@ -16,6 +16,7 @@ export const state = {
   query:                 '',
   currentUrl:            null,     // kept in sync on every render/partial
   warnings:              [],       // string[] — load-time warnings only
+  copied:                false,    // true for 2s after a successful clipboard write
 };
 
 // ── URL generation ────────────────────────────────────────────────────────────

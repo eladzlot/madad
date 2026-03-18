@@ -22,17 +22,16 @@ export function handleToggle(id, checked) {
 
 // ── Copy ──────────────────────────────────────────────────────────────────────
 
-export async function handleCopy(btn) {
+export async function handleCopy() {
   const url = state.currentUrl;
   if (!url) return;
   try {
     await navigator.clipboard.writeText(url);
-    const orig = btn.textContent;
-    btn.textContent = '✓ הועתק';
-    btn.disabled = true;
-    setTimeout(() => { btn.textContent = orig; btn.disabled = false; }, 2000);
+    state.copied = true;
+    _render();
+    setTimeout(() => { state.copied = false; _render(); }, 2000);
   } catch {
-    // Fallback: select text in the URL box
+    // Fallback: select text in the URL box so the user can copy manually
     const urlBox = document.querySelector('.c-url-box');
     if (urlBox) {
       const range = document.createRange();

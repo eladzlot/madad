@@ -36,26 +36,54 @@ import './components/results-screen.js';
 
 const DEFAULT_CONFIG = 'prod/standard';
 
+// ── Loading screen ────────────────────────────────────────────────────────────
+
+export function showLoading(container) {
+  container.innerHTML = `
+    <div class="boot-screen" role="status" aria-label="טוען שאלון">
+      <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true">
+        <circle cx="20" cy="20" r="16"
+          fill="none" stroke="var(--color-border)" stroke-width="3"/>
+        <circle cx="20" cy="20" r="16"
+          fill="none" stroke="var(--color-primary)" stroke-width="3"
+          stroke-linecap="round" stroke-dasharray="28 72"
+          transform-origin="20 20">
+          <animateTransform attributeName="transform" type="rotate"
+            from="0" to="360" dur="0.9s" repeatCount="indefinite"/>
+        </circle>
+      </svg>
+      <p class="boot-screen__message">טוען שאלון…</p>
+    </div>
+  `;
+}
+
 // ── Error screen ──────────────────────────────────────────────────────────────
 
-function showError(container, message, detail = '') {
-  const wrap = document.createElement('div');
-  wrap.className = 'content-column';
-  wrap.style.cssText = 'direction:rtl; color: var(--color-no)';
+export function showError(container, message, detail = '', { retryable = false } = {}) {
+  const hintText = detail || 'אנא פנה למטפל שלך לקבלת קישור חדש.';
+  const retryBtn = retryable
+    ? `<button class="boot-screen__retry" data-action="retry">נסה שוב</button>`
+    : '';
 
-  const msg = document.createElement('p');
-  msg.textContent = message;
-  wrap.appendChild(msg);
+  container.innerHTML = `
+    <div class="boot-screen" role="alert">
+      <svg width="48" height="48" viewBox="0 0 24 24" aria-hidden="true"
+        fill="none" stroke="var(--color-no)" stroke-width="1.5"
+        stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      <p class="boot-screen__title">${message}</p>
+      <p class="boot-screen__hint">${hintText}</p>
+      ${retryBtn}
+    </div>
+  `;
 
-  if (detail) {
-    const pre = document.createElement('pre');
-    pre.style.cssText = 'font-size:12px; margin-top:1rem; white-space:pre-wrap';
-    pre.textContent = detail;
-    wrap.appendChild(pre);
+  if (retryable) {
+    container.querySelector('[data-action="retry"]')
+      .addEventListener('click', () => location.reload());
   }
-
-  container.innerHTML = '';
-  container.appendChild(wrap);
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────
@@ -90,14 +118,19 @@ async function main() {
     return;
   }
 
-  container.innerHTML = `<div class="content-column" style="direction:rtl">טוען...</div>`;
+  showLoading(container);
 
   // Load config(s)
   let config;
   try {
     config = await loadConfig(configSources);
   } catch (err) {
-    showError(container, 'שגיאה בטעינת התצורה.', err.message);
+    showError(
+      container,
+      'לא ניתן לטעון את השאלון.',
+      'בדוק את חיבור האינטרנט ונסה שנית, או פנה למטפל לקבלת קישור חדש.',
+      { retryable: true },
+    );
     console.error(err);
     return;
   }
@@ -107,7 +140,11 @@ async function main() {
   try {
     sequence = resolveItems(itemTokens, config);
   } catch (err) {
-    showError(container, 'שגיאה בבניית מפגש השאלונים.', err.message);
+    showError(
+      container,
+      'הקישור שגוי או פג תוקף.',
+      'אנא פנה למטפל שלך לקבלת קישור חדש.',
+    );
     console.error(err);
     return;
   }
@@ -132,4 +169,6 @@ async function main() {
   }, { once: true });
 }
 
-main();
+if (document.getElementById('app')) {
+  main();
+}
