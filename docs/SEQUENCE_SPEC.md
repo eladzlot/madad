@@ -29,7 +29,7 @@ At battery level, leaves are questionnaire references:
 
 At item level, leaves are item definitions:
 ```json
-{ "id": "q1", "type": "likert", "text": "..." }
+{ "id": "q1", "type": "select", "text": "..." }
 { "id": "i1", "type": "instructions", "text": "..." }
 ```
 

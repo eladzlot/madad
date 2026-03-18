@@ -27,9 +27,9 @@ const baseQ = (overrides = {}) => ({
   id: 'test',
   title: 'Test',
   items: [
-    { id: '1', type: 'likert', text: 'q1' },
-    { id: '2', type: 'likert', text: 'q2' },
-    { id: '3', type: 'likert', text: 'q3' },
+    { id: '1', type: 'select', text: 'q1' },
+    { id: '2', type: 'select', text: 'q2' },
+    { id: '3', type: 'select', text: 'q3' },
     { id: 'intro', type: 'instructions', text: 'instructions' },
   ],
   ...overrides,
@@ -136,9 +136,9 @@ describe('reverse scoring', () => {
         maxPerItem: 4,
       },
       items: [
-        { id: '1', type: 'likert', text: 'q1', reverse: true },
-        { id: '2', type: 'likert', text: 'q2' },
-        { id: '3', type: 'likert', text: 'q3' },
+        { id: '1', type: 'select', text: 'q1', reverse: true },
+        { id: '2', type: 'select', text: 'q2' },
+        { id: '3', type: 'select', text: 'q3' },
       ],
     });
     // item 1 raw=1 → reversed=4-1=3; item 2=2; item 3=0 → total=5
@@ -148,7 +148,7 @@ describe('reverse scoring', () => {
   it('throws when reverse=true but maxPerItem is missing', () => {
     const q = baseQ({
       scoring: { method: 'sum' },
-      items: [{ id: '1', type: 'likert', text: 'q1', reverse: true }],
+      items: [{ id: '1', type: 'select', text: 'q1', reverse: true }],
     });
     expect(() => score(q, { '1': 1 })).toThrow(/maxPerItem/);
   });
@@ -159,9 +159,9 @@ describe('item weight', () => {
     const q = baseQ({
       scoring: { method: 'sum' },
       items: [
-        { id: '1', type: 'likert', text: 'q1', weight: 2 },
-        { id: '2', type: 'likert', text: 'q2' },
-        { id: '3', type: 'likert', text: 'q3' },
+        { id: '1', type: 'select', text: 'q1', weight: 2 },
+        { id: '2', type: 'select', text: 'q2' },
+        { id: '3', type: 'select', text: 'q3' },
       ],
     });
     // item 1: 3×2=6; item 2: 1×1=1; item 3: 0 → total=7
@@ -172,9 +172,9 @@ describe('item weight', () => {
     const q = baseQ({
       scoring: { method: 'sum', maxPerItem: 4 },
       items: [
-        { id: '1', type: 'likert', text: 'q1', reverse: true, weight: 2 },
-        { id: '2', type: 'likert', text: 'q2' },
-        { id: '3', type: 'likert', text: 'q3' },
+        { id: '1', type: 'select', text: 'q1', reverse: true, weight: 2 },
+        { id: '2', type: 'select', text: 'q2' },
+        { id: '3', type: 'select', text: 'q3' },
       ],
     });
     // item 1: raw=1 → reversed=3 → ×2=6; item 2=1; item 3=0 → total=7
@@ -188,7 +188,7 @@ describe('binary items', () => {
       id: 'test', title: 'Test',
       items: [
         { id: '1', type: 'binary', text: 'yes/no' },
-        { id: '2', type: 'likert', text: 'q2' },
+        { id: '2', type: 'select', text: 'q2' },
       ],
       scoring: { method: 'sum' },
     };
@@ -218,9 +218,9 @@ describe('interpretations', () => {
     const qHigh = baseQ({
       scoring: { method: 'sum' },
       items: [
-        { id: '1', type: 'likert', text: 'q1', weight: 10 },
-        { id: '2', type: 'likert', text: 'q2' },
-        { id: '3', type: 'likert', text: 'q3' },
+        { id: '1', type: 'select', text: 'q1', weight: 10 },
+        { id: '2', type: 'select', text: 'q2' },
+        { id: '3', type: 'select', text: 'q3' },
       ],
       interpretations: {
         target: 'total',
@@ -258,7 +258,7 @@ describe('interpretations', () => {
 
 // ── slider items ──────────────────────────────────────────────────────────────
 
-describe('slider items contribute to scoring like likert', () => {
+describe('slider items contribute to scoring like select', () => {
   const sliderQ = {
     id: 'pain_q',
     items: [
@@ -286,12 +286,12 @@ describe('slider items contribute to scoring like likert', () => {
     expect(score(q, { pain: 3 }).total).toBe(7);
   });
 
-  it('mixed slider and likert items are both summed', () => {
+  it('mixed slider and select items are both summed', () => {
     const q = {
       id: 'mixed',
       items: [
         { id: 's1', type: 'slider', text: 'slider', min: 0, max: 10 },
-        { id: 'l1', type: 'likert', text: 'likert',
+        { id: 'l1', type: 'select', text: 'select',
           options: [{ label: 'a', value: 0 }, { label: 'b', value: 3 }] },
       ],
       scoring: { method: 'sum' },

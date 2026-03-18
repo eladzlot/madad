@@ -4,7 +4,7 @@ import { createSequenceRunner, NotImplementedError } from './sequence-runner.js'
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const q    = (id) => ({ questionnaireId: id });
-const item = (id) => ({ id, type: 'likert', text: `item ${id}` });
+const item = (id) => ({ id, type: 'select', text: `item ${id}` });
 const ifNode = (condition, then_, else_) =>
   ({ type: 'if', condition, then: then_, else: else_ });
 

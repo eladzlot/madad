@@ -28,9 +28,9 @@ const minimalConfig = {
   questionnaires: [],
 };
 
-const likertItem = {
+const selectItem = {
   id: '1',
-  type: 'likert',
+  type: 'select',
   text: 'שאלה',
   options: [
     { label: 'כלל לא', value: 0 },
@@ -54,7 +54,7 @@ function makeQuestionnaire(overrides = {}) {
   return {
     id: 'q1',
     title: 'שאלון',
-    items: [likertItem],
+    items: [selectItem],
     ...overrides,
   };
 }
@@ -133,7 +133,7 @@ describe('questionnaire', () => {
 
   it('rejects questionnaire without title', () => expect(invalid({
     ...minimalConfig,
-    questionnaires: [{ id: 'q1', items: [likertItem] }],
+    questionnaires: [{ id: 'q1', items: [selectItem] }],
   })).toBe(true));
 
   it('rejects questionnaire with empty items array', () => expect(invalid({
@@ -144,16 +144,16 @@ describe('questionnaire', () => {
 
 // ─── Likert item ──────────────────────────────────────────────────────────────
 
-describe('likert item', () => {
+describe('select item', () => {
   it('accepts inline options', () => expect(valid({
     ...minimalConfig,
-    questionnaires: [makeQuestionnaire({ items: [likertItem] })],
+    questionnaires: [makeQuestionnaire({ items: [selectItem] })],
   })).toBe(true));
 
   it('accepts optionSetId', () => expect(valid({
     ...minimalConfig,
     questionnaires: [makeQuestionnaire({
-      items: [{ id: '1', type: 'likert', text: 'שאלה', optionSetId: 'freq_4' }],
+      items: [{ id: '1', type: 'select', text: 'שאלה', optionSetId: 'freq_4' }],
     })],
   })).toBe(true));
 
@@ -161,7 +161,7 @@ describe('likert item', () => {
     ...minimalConfig,
     questionnaires: [makeQuestionnaire({
       defaultOptionSetId: 'freq_4',
-      items: [{ id: '1', type: 'likert', text: 'שאלה' }],
+      items: [{ id: '1', type: 'select', text: 'שאלה' }],
     })],
   })).toBe(true));
 
@@ -169,7 +169,7 @@ describe('likert item', () => {
     ...minimalConfig,
     questionnaires: [makeQuestionnaire({
       items: [{
-        id: '1', type: 'likert', text: 'שאלה',
+        id: '1', type: 'select', text: 'שאלה',
         options: [{ label: 'x', value: 0 }, { label: 'y', value: 1 }],
         optionSetId: 'freq_4',
       }],
@@ -179,35 +179,35 @@ describe('likert item', () => {
   it('rejects missing text', () => expect(invalid({
     ...minimalConfig,
     questionnaires: [makeQuestionnaire({
-      items: [{ id: '1', type: 'likert', options: [{ label: 'x', value: 0 }, { label: 'y', value: 1 }] }],
+      items: [{ id: '1', type: 'select', options: [{ label: 'x', value: 0 }, { label: 'y', value: 1 }] }],
     })],
   })).toBe(true));
 
   it('accepts reverse and weight', () => expect(valid({
     ...minimalConfig,
     questionnaires: [makeQuestionnaire({
-      items: [{ ...likertItem, reverse: true, weight: 2 }],
+      items: [{ ...selectItem, reverse: true, weight: 2 }],
     })],
   })).toBe(true));
 
-  it('accepts required: false on likert (makes it skippable)', () => expect(valid({
+  it('accepts required: false on select (makes it skippable)', () => expect(valid({
     ...minimalConfig,
     questionnaires: [makeQuestionnaire({
-      items: [{ ...likertItem, required: false }],
+      items: [{ ...selectItem, required: false }],
     })],
   })).toBe(true));
 
-  it('accepts required: true on likert', () => expect(valid({
+  it('accepts required: true on select', () => expect(valid({
     ...minimalConfig,
     questionnaires: [makeQuestionnaire({
-      items: [{ ...likertItem, required: true }],
+      items: [{ ...selectItem, required: true }],
     })],
   })).toBe(true));
 
-  it('rejects non-boolean required on likert', () => expect(invalid({
+  it('rejects non-boolean required on select', () => expect(invalid({
     ...minimalConfig,
     questionnaires: [makeQuestionnaire({
-      items: [{ ...likertItem, required: 'yes' }],
+      items: [{ ...selectItem, required: 'yes' }],
     })],
   })).toBe(true));
 });
@@ -337,6 +337,42 @@ describe('slider item', () => {
   })).toBe(true));
 });
 
+// ─── Select item ──────────────────────────────────────────────────────────────
+
+describe('select item', () => {
+  const selectItem = { id: 'mood', type: 'select', text: 'מצב הרוח' };
+  const opts = [{ label: 'טוב', value: 1 }, { label: 'גרוע', value: 0 }];
+
+  it('accepts select with inline options', () => expect(valid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire({ items: [{ ...selectItem, options: opts }] })],
+  })).toBe(true));
+
+  it('accepts select with optionSetId', () => expect(valid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire({
+      optionSets: { mood: opts },
+      defaultOptionSetId: 'mood',
+      items: [selectItem],
+    })],
+  })).toBe(true));
+
+  it('accepts select with reverse and weight', () => expect(valid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire({
+      items: [{ ...selectItem, options: opts, reverse: true, weight: 2 }],
+    })],
+  })).toBe(true));
+
+  it('rejects select with both options and optionSetId', () => expect(invalid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire({
+      optionSets: { mood: opts },
+      items: [{ ...selectItem, options: opts, optionSetId: 'mood' }],
+    })],
+  })).toBe(true));
+});
+
 // ─── If node (item level) ─────────────────────────────────────────────────────
 
 describe('if node (item level)', () => {
@@ -344,10 +380,10 @@ describe('if node (item level)', () => {
     ...minimalConfig,
     questionnaires: [makeQuestionnaire({
       items: [
-        likertItem,
+        selectItem,
         { id: 'branch', type: 'if', condition: 'item.1 >= 2',
-          then: [{ id: '2a', type: 'likert', text: 'follow-up' }],
-          else: [{ id: '2b', type: 'likert', text: 'alternate' }] },
+          then: [{ id: '2a', type: 'select', text: 'follow-up' }],
+          else: [{ id: '2b', type: 'select', text: 'alternate' }] },
       ],
     })],
   })).toBe(true));
@@ -356,9 +392,9 @@ describe('if node (item level)', () => {
     ...minimalConfig,
     questionnaires: [makeQuestionnaire({
       items: [
-        likertItem,
+        selectItem,
         { id: 'branch', type: 'if', condition: 'item.1 >= 2',
-          then: [{ id: '2a', type: 'likert', text: 'follow-up' }],
+          then: [{ id: '2a', type: 'select', text: 'follow-up' }],
           else: [] },
       ],
     })],
@@ -368,9 +404,9 @@ describe('if node (item level)', () => {
     ...minimalConfig,
     questionnaires: [makeQuestionnaire({
       items: [
-        likertItem,
+        selectItem,
         { id: 'branch', type: 'if', condition: 'item.1 >= 2',
-          then: [{ id: '2a', type: 'likert', text: 'follow-up' }] },
+          then: [{ id: '2a', type: 'select', text: 'follow-up' }] },
       ],
     })],
   })).toBe(true));
@@ -384,10 +420,10 @@ describe('randomize node', () => {
     questionnaires: [makeQuestionnaire({
       items: [
         { id: 'rand', type: 'randomize', ids: [
-          { id: '1', type: 'likert', text: 'שאלה א' },
+          { id: '1', type: 'select', text: 'שאלה א' },
           { id: '2', type: 'binary', text: 'שאלה ב' },
         ]},
-        likertItem,
+        selectItem,
       ],
     })],
   })).toBe(true));
@@ -397,9 +433,9 @@ describe('randomize node', () => {
     questionnaires: [makeQuestionnaire({
       items: [
         { id: 'rand', type: 'randomize', ids: [
-          { id: '1', type: 'likert', text: 'שאלה' },
+          { id: '1', type: 'select', text: 'שאלה' },
         ]},
-        likertItem,
+        selectItem,
       ],
     })],
   })).toBe(true));
@@ -594,8 +630,8 @@ describe('full example', () => {
         },
         items: [
           { id: 'intro', type: 'instructions', text: 'הוראות' },
-          { id: '1', type: 'likert', text: 'חוסר עניין' },
-          { id: '9', type: 'likert', text: 'מחשבות אובדניות' },
+          { id: '1', type: 'select', text: 'חוסר עניין' },
+          { id: '9', type: 'select', text: 'מחשבות אובדניות' },
         ],
         scoring: { method: 'sum', maxPerItem: 3 },
         interpretations: {

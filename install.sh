@@ -60,8 +60,8 @@ copy "router.test.js"                  "src/router.test.js"
 
 
 # ── Components ─────────────────────────────────────────────────────────────────
-copy "item-likert.js"                  "src/components/item-likert.js"
-copy "item-likert.test.js"             "src/components/item-likert.test.js"
+copy "item-select.js"                  "src/components/item-select.js"
+copy "item-select.test.js"             "src/components/item-select.test.js"
 copy "item-binary.js"                  "src/components/item-binary.js"
 copy "item-binary.test.js"             "src/components/item-binary.test.js"
 copy "item-instructions.js"            "src/components/item-instructions.js"

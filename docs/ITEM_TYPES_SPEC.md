@@ -1,7 +1,7 @@
 # Item Types Expansion Spec
 **Version:** 1.0
 **Status:** Design — not yet implemented
-**Scope:** New answerable item types beyond `likert` and `binary`
+**Scope:** New answerable item types beyond `select` and `binary`
 
 ---
 
@@ -9,13 +9,13 @@
 
 ### 1. Problem Statement
 
-The platform currently supports two answerable item types: `likert` (numeric scale) and `binary` (yes/no). Both produce a single numeric value. This assumption is embedded throughout the system — in the scoring engine, the DSL, the PDF renderer, and the schema validator.
+The platform currently supports two answerable item types: `select` (numeric scale) and `binary` (yes/no). Both produce a single numeric value. This assumption is embedded throughout the system — in the scoring engine, the DSL, the PDF renderer, and the schema validator.
 
 The goal is to expand the type vocabulary to include:
 
 - **`text`** — free-text input (single line or multiline), with optional format validation
 - **`slider`** — continuous or stepped numeric input with explicit range
-- **`select`** — choose one from a list (visual alternative to Likert)
+- **`select`** — choose one from a list (visual alternative to select)
 - **`multiselect`** — choose zero or more from a list
 - **`composite`** — a list of options where each selected option spawns a sub-item (e.g. "which meals did you eat, and what did you eat at each")
 
@@ -34,7 +34,7 @@ Every item type has four cross-cutting concerns:
 | PDF row rendering | `report.js` (`buildItemRow`, `calcRiskLevel`) |
 | Config validation | `config-validation.js`, `QuestionnaireSet.schema.json` |
 
-Currently each concern is handled by its own ad-hoc `type === 'likert'` conditional. Adding a type means touching all four files independently, with no central record of what a type is supposed to do.
+Currently each concern is handled by its own ad-hoc `type === 'select'` conditional. Adding a type means touching all four files independently, with no central record of what a type is supposed to do.
 
 **The registry** is a single module, `src/item-types.js`, that declares the complete contract for each type. Every concern queries this registry instead of embedding type checks. Adding a type means adding one entry to the registry.
 
@@ -47,7 +47,7 @@ Currently each concern is handled by its own ad-hoc `type === 'likert'` conditio
 
   // Rendering
   tag: 'item-text',                // custom element tag name
-  autoAdvance: false,              // whether selection auto-advances (true for likert/binary)
+  autoAdvance: false,              // whether selection auto-advances (true for select/binary)
 
   // Answer model
   answerShape: 'scalar',           // 'scalar' | 'array' | 'object'
@@ -90,7 +90,7 @@ The PDF response table currently assumes all rows are `(#, itemText, label, nume
 
 | Renderer key | Layout | Used by |
 |---|---|---|
-| `'scored'` | `# | text | label | value` — current layout | `likert`, `binary`, `slider`, `select` |
+| `'scored'` | `# | text | label | value` — current layout | `select`, `binary`, `slider`, `select` |
 | `'text'` | Rendered outside the response table entirely. The item text appears in bold, the answer appears below it in normal weight. Both wrap freely. No row in the scored table. | `text` |
 | `'multiselect'` | `# | text | [checked labels, stacked vertically] | —` | `multiselect` |
 | `'composite'` | `# | text` header row, then indented sub-rows one per selected option | `composite` |
@@ -116,10 +116,10 @@ Default values per type (from registry `skippableByDefault`):
 
 | Type | Default | Rationale |
 |---|---|---|
-| `likert` | required | Clinical scale — missing items corrupt the score |
+| `select` | required | Clinical scale — missing items corrupt the score |
 | `binary` | required | Same |
 | `slider` | required | Numeric — skipping breaks scoring |
-| `select` | required | Equivalent to Likert |
+| `select` | required | Equivalent to select |
 | `text` | **skippable** | Free-text is supplemental; shouldn't block |
 | `multiselect` | **skippable** | Zero selections is a valid answer |
 | `composite` | **skippable** | Sub-answers depend on which options are selected |
@@ -165,7 +165,7 @@ function buildContext() {
     if (!item) continue;
     const typeDesc = TYPE_REGISTRY[item.type];
     if (typeDesc.answerShape === 'scalar' && typeDesc.answerIsNumeric) {
-      itemContext[id] = val;           // numeric scalars: likert, binary, slider, select
+      itemContext[id] = val;           // numeric scalars: select, binary, slider, select
     } else if (typeDesc.answerShape === 'array') {
       itemContext[id] = val ?? [];     // multiselect: exposed as number[]
     }
@@ -210,7 +210,7 @@ Answer value: string (or null if skipped). Never contributes to scoring. Never i
 }
 ```
 
-Answer value: number. Contributes to scoring exactly like Likert. `reverse` and `weight` are supported. `required: true` by default (same as Likert). No `options` — scoring uses the raw numeric value directly. Risk highlighting: top 20% of range = high, top 40% = med.
+Answer value: number. Contributes to scoring exactly like select. `reverse` and `weight` are supported. `required: true` by default (same as select). No `options` — scoring uses the raw numeric value directly. Risk highlighting: top 20% of range = high, top 40% = med.
 
 ##### `select`
 ```json
@@ -227,7 +227,7 @@ Answer value: number. Contributes to scoring exactly like Likert. `reverse` and 
 }
 ```
 
-Semantically identical to Likert (single numeric choice from a list), but rendered as a vertical list of tappable cards rather than a horizontal scale. Useful when labels are long or when there are more than 5 options. Shares the `scored` PDF renderer. Fully interchangeable with Likert in scoring.
+The `select` type is a single-choice question rendered as a vertical card list. Shares the `scored` PDF renderer.
 
 ##### `multiselect`
 ```json
@@ -312,7 +312,7 @@ Config JSON
 The registry. Exports:
 - `TYPE_REGISTRY` — `{ [type]: TypeDescriptor }` — the full registry
 - `getType(type)` — safe lookup, throws `ConfigError` for unknown types
-- `isScored(item)` — replaces all `type === 'likert' || type === 'binary'` checks
+- `isScored(item)` — replaces all `type === 'select' || type === 'binary'` checks
 - `isNumericAnswer(item)` — whether answer can appear in DSL context
 - `autoAdvances(item)` — replaces ADVANCE_DELAY_MS logic in controller
 - `isRequiredByDefault(item)` — default skip/require behaviour
@@ -340,7 +340,7 @@ Add `compositeItem` fields: `options` (array of `{label, value}` where value is 
 
 Add `validateItem` dispatch: loop items, call `TYPE_REGISTRY[item.type].validateItem(item, q, errors)` if defined.
 
-Current `checkItemOptions` hardcodes `type === 'likert' || type === 'binary'`. Replace with `isScored(item) && hasOptions(item)` — or better, let each type's `validateItem` handle its own option validation.
+Current `checkItemOptions` hardcodes `type === 'select' || type === 'binary'`. Replace with `isScored(item) && hasOptions(item)` — or better, let each type's `validateItem` handle its own option validation.
 
 Add slider validation: `min < max`, `step > 0 if defined`, `step divides (max-min) evenly` (warning, not error).
 
@@ -352,7 +352,7 @@ Replace `isAnswerable`:
 ```js
 // Before
 function isAnswerable(item) {
-  return item.type === 'likert' || item.type === 'binary';
+  return item.type === 'select' || item.type === 'binary';
 }
 
 // After
@@ -471,7 +471,7 @@ Text rows need different column widths. Two strategies:
 
 ### 6. Schema Version Impact
 
-Adding new item types to `QuestionnaireSet.schema.json` is a **backward-compatible change** — existing config files remain valid. The new `$defs` are additive. However, `required` as a new optional field on existing types requires updating the AJV schema for `likertItem`, `binaryItem` etc. — also backward-compatible since it's optional.
+Adding new item types to `QuestionnaireSet.schema.json` is a **backward-compatible change** — existing config files remain valid. The new `$defs` are additive. However, `required` as a new optional field on existing types requires updating the AJV schema for `selectItem`, `binaryItem` etc. — also backward-compatible since it's optional.
 
 Bump `CONFIG_SCHEMA_SPEC.md` to v1.2 when this lands.
 
@@ -483,7 +483,7 @@ Each step is independently mergeable and testable. Steps are ordered so the syst
 
 #### Step 1 — Type registry scaffold (no behaviour change)
 
-Create `src/item-types.js` with only the existing four types (`likert`, `binary`, `instructions`, `if`, `randomize`). Migrate all existing `type === 'likert'` checks in `scoring.js`, `controller.js`, and `report.js` to use registry helpers. All tests must pass with no observable change.
+Create `src/item-types.js` with only the existing four types (`select`, `binary`, `instructions`, `if`, `randomize`). Migrate all existing `type === 'select'` checks in `scoring.js`, `controller.js`, and `report.js` to use registry helpers. All tests must pass with no observable change.
 
 **Tests:** Existing 641 tests pass unchanged. Add unit tests for each registry helper with existing types.
 
@@ -491,9 +491,9 @@ Create `src/item-types.js` with only the existing four types (`likert`, `binary`
 
 #### Step 2 — `required` field and skip semantics
 
-Add `required?: boolean` to all answerable item types in the schema. Update controller `canAdvance` to use `canAdvance(item, answer)` from the registry. Existing likert/binary remain required-by-default (no behaviour change).
+Add `required?: boolean` to all answerable item types in the schema. Update controller `canAdvance` to use `canAdvance(item, answer)` from the registry. Existing select/binary remain required-by-default (no behaviour change).
 
-**Tests:** Unit tests for `canAdvance` with and without `required` override. Schema tests: `required: false` is valid on a likert item. E2E: existing patient flow unaffected.
+**Tests:** Unit tests for `canAdvance` with and without `required` override. Schema tests: `required: false` is valid on a select item. E2E: existing patient flow unaffected.
 
 ---
 
@@ -509,19 +509,19 @@ No scoring changes. Text items excluded from scoring naturally (not in `isScored
 
 #### Step 4 — `slider` item type
 
-Add `sliderItem` to schema. Add `slider` to registry (scored, required by default). Build `item-slider` Lit component (range input with labels). Add slider to scoring — identical path to Likert since answer is a number. Add slider to `scored` PDF renderer (no change needed — already handles any numeric value).
+Add `sliderItem` to schema. Add `slider` to registry (scored, required by default). Build `item-slider` Lit component (range input with labels). Add slider to scoring — identical path to select since answer is a number. Add slider to `scored` PDF renderer (no change needed — already handles any numeric value).
 
 Add schema validation: `min < max`.
 
-**Tests:** Slider unit tests in scoring (behaves like Likert). Schema validation test: `min >= max` is an error. Component tests. E2E: a slider item in a config scores correctly.
+**Tests:** Slider unit tests in scoring (behaves like select). Schema validation test: `min >= max` is an error. Component tests. E2E: a slider item in a config scores correctly.
 
 ---
 
 #### Step 5 — `select` item type
 
-Trivial — identical to Likert in all non-rendering respects. Add `selectItem` to schema and registry. Build `item-select` Lit component (tappable card list). Reuse `scored` PDF renderer.
+Trivial — identical to select in all non-rendering respects. Add `selectItem` to schema and registry. Build `item-select` Lit component (tappable card list). Reuse `scored` PDF renderer.
 
-**Tests:** Verify `select` items score identically to equivalent `likert` items with the same options. Component tests.
+**Tests:** Verify `select` items score identically to equivalent `select` items with the same options. Component tests.
 
 ---
 

@@ -1,5 +1,5 @@
 # RENDER_SPEC.md
-**Status:** Current — derived from `controller.js`, `app-shell.js`, `item-likert.js`, `item-binary.js`, `item-instructions.js`, `progress-bar.js`, `welcome-screen.js`, `completion-screen.js`, `results-screen.js`, `gestures.js`, and their test files.
+**Status:** Current — derived from `controller.js`, `app-shell.js`, `item-select.js`, `item-binary.js`, `item-instructions.js`, `progress-bar.js`, `welcome-screen.js`, `completion-screen.js`, `results-screen.js`, `gestures.js`, and their test files.
 
 ---
 
@@ -64,7 +64,7 @@ controller.start(config, batteryId, { createOrchestrator, session });
 
 Items in config may reference a shared option set by ID rather than inlining options. The controller resolves this before passing the item to a component:
 
-- If `item.type` is not `likert` or `binary`, the item is returned unchanged.
+- If `item.type` is not `select` or `binary`, the item is returned unchanged.
 - If `item.options` already exists, the item is returned unchanged.
 - Otherwise: `setId = item.optionSetId ?? questionnaire.defaultOptionSetId`, then `options = questionnaire.optionSets[setId] ?? []` is merged into a new item object.
 
@@ -92,7 +92,7 @@ The `canGoBack` expression is true when the engine can go back within the questi
 2. Sets `_itemEl.selected = value` immediately (no wait for re-render)
 3. Calls `updateNav()`
 
-**`advance` event** fires from item components when the patient commits a response (tap on Likert/binary, continue button on instructions). The controller:
+**`advance` event** fires from item components when the patient commits a response (tap on select/binary, continue button on instructions). The controller:
 1. Clears any pending timer
 2. Immediately sets `_shellEl.canGoForward = false` (prevents a flash of the forward button during the delay)
 3. Sets a timer: 0ms for instructions items, 150ms for all others
@@ -234,12 +234,12 @@ Rendering rules:
 
 ---
 
-### 4.3 `<item-likert>`
+### 4.3 `<item-select>`
 
-**File:** `src/components/item-likert.js`  
-**Tag:** `item-likert`
+**File:** `src/components/item-select.js`  
+**Tag:** `item-select`
 
-Renders a Likert-scale question with selectable option buttons.
+Renders a single-choice question with selectable option buttons.
 
 **Properties:**
 
@@ -279,7 +279,7 @@ Renders a binary yes/no question with two large buttons and swipe gesture suppor
 
 The first option (`options[0]`) is the positive/yes button (green tones); the second (`options[1]`) is the negative/no button (red tones). When one is selected, the other fades to 40% opacity.
 
-**Events fired:** Same as `<item-likert>` — `answer` then `advance` on selection.
+**Events fired:** Same as `<item-select>` — `answer` then `advance` on selection.
 
 **Swipe gesture:** On `firstUpdated`, attaches `attachSwipe(this, ...)`. Swipe right → selects `options[0]`; swipe left → selects `options[1]`. The card translates and rotates during dragging (via `_dragDx` and `_dragPhase` internal state). Commitment threshold: 40% of element width (`SWIPE_THRESHOLD`). The visual drag transform uses `translateX(dx) rotate(dx * 0.04deg)` clamped to ±12°.
 

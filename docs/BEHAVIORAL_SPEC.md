@@ -88,7 +88,7 @@ The patient must tap the button to proceed. The screen does not auto-advance.
 #### 5.2.2 Items
 Items are presented one at a time, full screen.
 
-**Likert items** — the patient taps a response option. Selection immediately advances to the next item. No separate confirm step.
+**select items** — the patient taps a response option. Selection immediately advances to the next item. No separate confirm step.
 
 **Binary items** — the patient taps a yes/no button, or swipes left/right. Selection immediately advances.
 
@@ -196,7 +196,7 @@ All standard instruments are defined in a single canonical config file (`standar
 | PDSS-SR | Panic Disorder Severity Scale — Self Report | `standard.json` | — |
 | ASI-3 | Anxiety Sensitivity Index — 3 | `standard.json` | — |
 
-Additional instruments using Likert or Binary item types may be added by editing `standard.json`. See `docs/INSTRUMENTS.md` for the step-by-step process. Support for other item types (e.g. free text, numeric input) is planned for a future phase.
+Additional instruments using select or binary item types may be added by editing `standard.json`. See `docs/INSTRUMENTS.md` for the step-by-step process. Support for other item types (e.g. free text, numeric input) is planned for a future phase.
 
 ---
 

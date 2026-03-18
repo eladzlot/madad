@@ -95,7 +95,7 @@ Every entry in the `items` array is a node. Nodes have a `type` field that deter
 | Field | Type | Required | Description |
 |---|---|---|---|
 | `id` | string (ID) | yes | Local to this questionnaire |
-| `type` | `"likert"` | yes | |
+| `type` | `"select"` | yes | |
 | `text` | string | yes | Question text shown to patient |
 | `options` | array | yes* | Array of option objects. Required unless `optionSetId` is set. |
 | `optionSetId` | string (ID) | no | References a shared option set. Mutually exclusive with `options`. |
@@ -296,9 +296,9 @@ DSL expressions (`condition`, `customFormula`) are validated lazily — they are
       },
       "items": [
         { "id": "intro", "type": "instructions", "text": "במשך השבועיים האחרונים, עד כמה סבלת מהבעיות הבאות?" },
-        { "id": "1", "type": "likert", "text": "חוסר עניין או הנאה מדברים" },
-        { "id": "2", "type": "likert", "text": "תחושת עצבות, דיכאון או ייאוש" },
-        { "id": "9", "type": "likert", "text": "מחשבות שעדיף לך למות או לפגוע בעצמך" }
+        { "id": "1", "type": "select", "text": "חוסר עניין או הנאה מדברים" },
+        { "id": "2", "type": "select", "text": "תחושת עצבות, דיכאון או ייאוש" },
+        { "id": "9", "type": "select", "text": "מחשבות שעדיף לך למות או לפגוע בעצמך" }
       ],
       "scoring": { "method": "sum", "maxPerItem": 3 },
       "interpretations": {

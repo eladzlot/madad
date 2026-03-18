@@ -3,9 +3,9 @@ import { createOrchestrator } from './orchestrator.js';
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
-const likert = (id) => ({ id, type: 'likert', text: `Q${id}` });
+const select = (id) => ({ id, type: 'select', text: `Q${id}` });
 
-const makeQ = (id, items = [likert('q1'), likert('q2')], extras = {}) => ({
+const makeQ = (id, items = [select('q1'), select('q2')], extras = {}) => ({
   id, title: id, items, scoring: { method: 'sum' }, alerts: [], ...extras,
 });
 
@@ -199,7 +199,7 @@ describe('conditional battery (if node)', () => {
 
   it('takes then branch when score meets threshold', () => {
     const config = makeConfig(
-      [makeQ('phq9', [likert('q1')]), makeQ('pcl5')],
+      [makeQ('phq9', [select('q1')]), makeQ('pcl5')],
       [conditionalBattery]
     );
     const starts = [];
@@ -216,7 +216,7 @@ describe('conditional battery (if node)', () => {
 
   it('skips then branch when score below threshold', () => {
     const config = makeConfig(
-      [makeQ('phq9', [likert('q1')]), makeQ('pcl5')],
+      [makeQ('phq9', [select('q1')]), makeQ('pcl5')],
       [conditionalBattery]
     );
     const onComplete = vi.fn();
@@ -284,7 +284,7 @@ describe('engineCrossBack()', () => {
     drainEngine(orc.currentEngine());
     orc.engineComplete();
     orc.engineCrossBack();
-    expect(orc.currentEngine().currentItem()).toEqual(likert('q2'));
+    expect(orc.currentEngine().currentItem()).toEqual(select('q2'));
   });
 
   it('preserves answers from first pass on re-entry', () => {

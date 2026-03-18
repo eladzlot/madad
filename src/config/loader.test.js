@@ -5,7 +5,7 @@ import { loadConfig, ConfigFetchError, ConfigValidationError, ConfigError } from
 
 const minimalQ = (id = 'phq9') => ({
   id, title: 'Test',
-  items: [{ id: 'q1', type: 'likert', text: 'Q1', options: [{ label: 'No', value: 0 }, { label: 'Yes', value: 1 }] }],
+  items: [{ id: 'q1', type: 'select', text: 'Q1', options: [{ label: 'No', value: 0 }, { label: 'Yes', value: 1 }] }],
   scoring: { method: 'none' }, alerts: [],
 });
 
@@ -189,13 +189,13 @@ describe('duplicate session key validation', () => {
 // ─── Option set validation ────────────────────────────────────────────────────
 
 describe('option set validation', () => {
-  it('throws ConfigError for likert with no options and no defaultOptionSetId', async () => {
-    const q = { id: 'test', title: 'Test', items: [{ id: 'q1', type: 'likert', text: 'Q1' }], scoring: { method: 'none' }, alerts: [] };
+  it('throws ConfigError for select with no options and no defaultOptionSetId', async () => {
+    const q = { id: 'test', title: 'Test', items: [{ id: 'q1', type: 'select', text: 'Q1' }], scoring: { method: 'none' }, alerts: [] };
     const fetch = makeFetch({ 'configs/a.json': { body: minimalConfig([q]) } });
     await expect(loadConfig(['a'], { fetch })).rejects.toBeInstanceOf(ConfigError);
   });
 
-  it('accepts likert with inline options', async () => {
+  it('accepts select with inline options', async () => {
     const fetch = makeFetch({ 'configs/a.json': { body: minimalConfig([minimalQ()]) } });
     await expect(loadConfig(['a'], { fetch })).resolves.toBeTruthy();
   });
@@ -203,7 +203,7 @@ describe('option set validation', () => {
   it('throws ConfigError for duplicate option values', async () => {
     const q = {
       id: 'test', title: 'Test',
-      items: [{ id: 'q1', type: 'likert', text: 'Q1', options: [{ label: 'No', value: 0 }, { label: 'Also No', value: 0 }, { label: 'Yes', value: 1 }] }],
+      items: [{ id: 'q1', type: 'select', text: 'Q1', options: [{ label: 'No', value: 0 }, { label: 'Also No', value: 0 }, { label: 'Yes', value: 1 }] }],
       scoring: { method: 'none' }, alerts: [],
     };
     const fetch = makeFetch({ 'configs/a.json': { body: minimalConfig([q]) } });

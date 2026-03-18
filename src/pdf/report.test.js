@@ -35,7 +35,7 @@ function calcRiskLevel(item, value, options) {
   const max    = values[values.length - 1];
   const second = values[values.length - 2];
   if (value === max)                              return 'high';
-  if (item.type === 'likert' && value === second) return 'med';
+  if (item.type === 'select' && value === second) return 'med';
   return null;
 }
 
@@ -75,8 +75,8 @@ const QUESTIONNAIRE = {
   optionSets: { freq: FREQ_OPTIONS },
   defaultOptionSetId: 'freq',
   items: [
-    { id: 'q1', type: 'likert', text: 'שאלה 1' },
-    { id: 'q2', type: 'likert', text: 'שאלה 2' },
+    { id: 'q1', type: 'select', text: 'שאלה 1' },
+    { id: 'q2', type: 'select', text: 'שאלה 2' },
   ],
   scoring: { method: 'sum', subscales: {} },
   alerts: [],
@@ -86,16 +86,16 @@ const QUESTIONNAIRE = {
 
 describe('calcRiskLevel', () => {
   it('returns "high" when value equals max option value', () => {
-    expect(calcRiskLevel({ type: 'likert' }, 3, FREQ_OPTIONS)).toBe('high');
+    expect(calcRiskLevel({ type: 'select' }, 3, FREQ_OPTIONS)).toBe('high');
   });
 
-  it('returns "med" when likert value equals second-highest', () => {
-    expect(calcRiskLevel({ type: 'likert' }, 2, FREQ_OPTIONS)).toBe('med');
+  it('returns "med" when select value equals second-highest', () => {
+    expect(calcRiskLevel({ type: 'select' }, 2, FREQ_OPTIONS)).toBe('med');
   });
 
-  it('returns null for middle values on likert', () => {
-    expect(calcRiskLevel({ type: 'likert' }, 1, FREQ_OPTIONS)).toBeNull();
-    expect(calcRiskLevel({ type: 'likert' }, 0, FREQ_OPTIONS)).toBeNull();
+  it('returns null for middle values on select', () => {
+    expect(calcRiskLevel({ type: 'select' }, 1, FREQ_OPTIONS)).toBeNull();
+    expect(calcRiskLevel({ type: 'select' }, 0, FREQ_OPTIONS)).toBeNull();
   });
 
   it('returns "high" on binary when value equals max', () => {
@@ -108,19 +108,19 @@ describe('calcRiskLevel', () => {
   });
 
   it('returns null when options is empty', () => {
-    expect(calcRiskLevel({ type: 'likert' }, 3, [])).toBeNull();
+    expect(calcRiskLevel({ type: 'select' }, 3, [])).toBeNull();
   });
 
   it('returns null when value is not answered (null)', () => {
     // Caller should not call with null value, but be safe
-    expect(calcRiskLevel({ type: 'likert' }, null, FREQ_OPTIONS)).toBeNull();
+    expect(calcRiskLevel({ type: 'select' }, null, FREQ_OPTIONS)).toBeNull();
   });
 
   it('handles non-sequential option values correctly', () => {
     const opts = [{ value: 0 }, { value: 5 }, { value: 10 }];
-    expect(calcRiskLevel({ type: 'likert' }, 10, opts)).toBe('high');
-    expect(calcRiskLevel({ type: 'likert' }, 5,  opts)).toBe('med');
-    expect(calcRiskLevel({ type: 'likert' }, 0,  opts)).toBeNull();
+    expect(calcRiskLevel({ type: 'select' }, 10, opts)).toBe('high');
+    expect(calcRiskLevel({ type: 'select' }, 5,  opts)).toBe('med');
+    expect(calcRiskLevel({ type: 'select' }, 0,  opts)).toBeNull();
   });
 
   // ── slider (range-based) ──
@@ -165,7 +165,7 @@ describe('resolveOptions', () => {
   });
 
   it('resolves from defaultOptionSetId when no optionSetId on item', () => {
-    const item = { type: 'likert' };  // no optionSetId
+    const item = { type: 'select' };  // no optionSetId
     expect(resolveOptions(item, QUESTIONNAIRE)).toBe(FREQ_OPTIONS);
   });
 
@@ -175,7 +175,7 @@ describe('resolveOptions', () => {
   });
 
   it('returns empty array when questionnaire has no optionSets', () => {
-    const item = { type: 'likert' };
+    const item = { type: 'select' };
     expect(resolveOptions(item, { ...QUESTIONNAIRE, optionSets: undefined })).toEqual([]);
   });
 });
@@ -270,7 +270,7 @@ describe('response table item filtering', () => {
   it('excludes instruction items from the response table', () => {
     const items = [
       { id: 'intro', type: 'instructions', text: 'הוראות' },
-      { id: 'q1',    type: 'likert',       text: 'שאלה 1' },
+      { id: 'q1',    type: 'select',       text: 'שאלה 1' },
       { id: 'q2',    type: 'binary',       text: 'שאלה 2' },
     ];
     const answerable = items.filter(i => i.type !== 'instructions');
@@ -327,8 +327,8 @@ const Q = {
   defaultOptionSetId: 'freq',
   optionSets: { freq: OPTIONS_FREQ },
   items: [
-    { id: 'i1', type: 'likert', text: 'האם ישנת טוב הלילה?' },
-    { id: 'i2', type: 'likert', text: 'האם הרגשת רגוע היום?' },
+    { id: 'i1', type: 'select', text: 'האם ישנת טוב הלילה?' },
+    { id: 'i2', type: 'select', text: 'האם הרגשת רגוע היום?' },
     { id: 'i3', type: 'instructions', text: 'הוראות כלליות' },
   ],
   scoring: { method: 'sum' },
@@ -703,8 +703,8 @@ describe('buildResponseTable', () => {
 
   it('returns a bare table (no stack) when there are no instructions', () => {
     const q = { ...Q, items: [
-      { id: 'i1', type: 'likert', text: 'שאלה' },
-      { id: 'i2', type: 'likert', text: 'שאלה נוספת' },
+      { id: 'i1', type: 'select', text: 'שאלה' },
+      { id: 'i2', type: 'select', text: 'שאלה נוספת' },
     ]};
     const result = buildResponseTable(q, { i1: 1, i2: 2 });
     expect(result.table).toBeDefined();
@@ -713,7 +713,7 @@ describe('buildResponseTable', () => {
 
   it('renders text items outside the table as a stack block', () => {
     const q = { ...Q, items: [
-      { id: 'i1', type: 'likert', text: 'שאלה' },
+      { id: 'i1', type: 'select', text: 'שאלה' },
       { id: 'notes', type: 'text', text: 'הערות' },
     ]};
     const result = buildResponseTable(q, { i1: 2, notes: 'some note' });
@@ -757,7 +757,7 @@ describe('buildTextBlock', () => {
 // ── buildItemRow ──────────────────────────────────────────────────────────────
 
 describe('buildItemRow', () => {
-  const item = { id: 'i1', type: 'likert', text: 'האם ישנת טוב הלילה?' };
+  const item = { id: 'i1', type: 'select', text: 'האם ישנת טוב הלילה?' };
 
   it('item text uses NBSP not bare spaces', () => {
     const row = buildItemRow(item, 1, 2, Q);
@@ -788,8 +788,8 @@ describe('buildItemRow', () => {
     expect(row[0].fillColor).toBe('#FCE8E8');
   });
 
-  it('med risk item gets yellow fill (likert second-highest)', () => {
-    // value 2 is second-highest in OPTIONS_FREQ → med risk for likert
+  it('med risk item gets yellow fill (select second-highest)', () => {
+    // value 2 is second-highest in OPTIONS_FREQ → med risk for select
     const row = buildItemRow(item, 1, 2, Q);
     expect(row[0].fillColor).toBe('#FFF6DB');
   });

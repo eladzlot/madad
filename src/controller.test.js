@@ -8,7 +8,7 @@ import { createController } from './controller.js';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function findItem(container, tag = 'item-likert') {
+function findItem(container, tag = 'item-select') {
   return container.querySelector(tag);
 }
 
@@ -27,8 +27,8 @@ function makeQuestionnaire(id = 'phq9') {
     },
     defaultOptionSetId: 'freq',
     items: [
-      { id: 'q1', type: 'likert', text: 'שאלה 1' },
-      { id: 'q2', type: 'likert', text: 'שאלה 2' },
+      { id: 'q1', type: 'select', text: 'שאלה 1' },
+      { id: 'q2', type: 'select', text: 'שאלה 2' },
     ],
     scoring: { method: 'none' },
     alerts: [],
@@ -116,36 +116,36 @@ function makeSetup(overrides = {}) {
 // ─── Mounting ─────────────────────────────────────────────────────────────────
 
 describe('item mounting', () => {
-  it('mounts item-likert for first item on start', () => {
+  it('mounts item-select for first item on start', () => {
     const { container } = makeSetup();
-    expect(container.querySelector('item-likert')).toBeTruthy();
+    expect(container.querySelector('item-select')).toBeTruthy();
   });
 
   it('sets resolved item with inlined options on the component', () => {
     const { container } = makeSetup();
-    const el = container.querySelector('item-likert');
+    const el = container.querySelector('item-select');
     expect(el.item.options).toHaveLength(4);
     expect(el.item.text).toBe('שאלה 1');
   });
 
   it('sets selected to null when no prior answer', () => {
     const { container } = makeSetup();
-    expect(container.querySelector('item-likert').selected).toBeNull();
+    expect(container.querySelector('item-select').selected).toBeNull();
   });
 
   it('sets selected from existing answers', () => {
     const { container } = makeSetup({ existingAnswers: { q1: 2 } });
-    expect(container.querySelector('item-likert').selected).toBe(2);
+    expect(container.querySelector('item-select').selected).toBe(2);
   });
 
   it('reuses same element when next item is same type', () => {
     const { container } = makeSetup();
-    const first = container.querySelector('item-likert');
+    const first = container.querySelector('item-select');
     first.dispatchEvent(new CustomEvent('advance', { bubbles: true }));
     vi.useFakeTimers();
     vi.advanceTimersByTime(150);
     vi.useRealTimers();
-    expect(container.querySelector('item-likert')).toBe(first);
+    expect(container.querySelector('item-select')).toBe(first);
   });
 });
 
@@ -154,14 +154,14 @@ describe('item mounting', () => {
 describe('answer and advance', () => {
   it('calls engine.recordAnswer when answer event fires', () => {
     const { container, engine } = makeSetup();
-    container.querySelector('item-likert')
+    container.querySelector('item-select')
       .dispatchEvent(new CustomEvent('answer', { detail: { value: 2 }, bubbles: true }));
     expect(engine.recordAnswer).toHaveBeenCalledWith('q1', 2);
   });
 
   it('updates selected on the element immediately on answer', () => {
     const { container } = makeSetup();
-    const el = container.querySelector('item-likert');
+    const el = container.querySelector('item-select');
     el.dispatchEvent(new CustomEvent('answer', { detail: { value: 3 }, bubbles: true }));
     expect(el.selected).toBe(3);
   });
@@ -170,7 +170,7 @@ describe('answer and advance', () => {
     vi.useFakeTimers();
     const { container, engine } = makeSetup();
     const callsBefore = engine.advance.mock.calls.length;
-    container.querySelector('item-likert')
+    container.querySelector('item-select')
       .dispatchEvent(new CustomEvent('advance', { bubbles: true }));
     expect(engine.advance.mock.calls.length).toBe(callsBefore); // not yet
     vi.advanceTimersByTime(150);
@@ -181,10 +181,10 @@ describe('answer and advance', () => {
   it('mounts next item after advance', () => {
     vi.useFakeTimers();
     const { container } = makeSetup();
-    container.querySelector('item-likert')
+    container.querySelector('item-select')
       .dispatchEvent(new CustomEvent('advance', { bubbles: true }));
     vi.advanceTimersByTime(150);
-    expect(container.querySelector('item-likert').item.text).toBe('שאלה 2');
+    expect(container.querySelector('item-select').item.text).toBe('שאלה 2');
     vi.useRealTimers();
   });
 
@@ -192,7 +192,7 @@ describe('answer and advance', () => {
     vi.useFakeTimers();
     const { container, engine, orchestrator } = makeSetup();
     engine.advance.mockReturnValueOnce(null);
-    container.querySelector('item-likert')
+    container.querySelector('item-select')
       .dispatchEvent(new CustomEvent('advance', { bubbles: true }));
     vi.advanceTimersByTime(150);
     expect(orchestrator.engineComplete).toHaveBeenCalledOnce();
@@ -203,7 +203,7 @@ describe('answer and advance', () => {
     const { container } = makeSetup();
     const shell = container.querySelector('app-shell');
     expect(shell.canGoForward).toBe(false);
-    container.querySelector('item-likert')
+    container.querySelector('item-select')
       .dispatchEvent(new CustomEvent('answer', { detail: { value: 1 }, bubbles: true }));
     expect(shell.canGoForward).toBe(true);
   });
@@ -212,10 +212,10 @@ describe('answer and advance', () => {
     vi.useFakeTimers();
     const { container } = makeSetup();
     const shell = container.querySelector('app-shell');
-    container.querySelector('item-likert')
+    container.querySelector('item-select')
       .dispatchEvent(new CustomEvent('answer', { detail: { value: 1 }, bubbles: true }));
     expect(shell.canGoForward).toBe(true);
-    container.querySelector('item-likert')
+    container.querySelector('item-select')
       .dispatchEvent(new CustomEvent('advance', { bubbles: true }));
     expect(shell.canGoForward).toBe(false); // cleared immediately, not after 150ms
     vi.useRealTimers();
@@ -234,7 +234,7 @@ describe('router push on advance', () => {
     vi.useFakeTimers();
     const { container, router } = makeSetup();
     const countBefore = router.push.mock.calls.filter(c => c[0] === 'q').length;
-    container.querySelector('item-likert')
+    container.querySelector('item-select')
       .dispatchEvent(new CustomEvent('advance', { bubbles: true }));
     vi.advanceTimersByTime(150);
     const countAfter = router.push.mock.calls.filter(c => c[0] === 'q').length;
@@ -267,7 +267,7 @@ describe('router back — shell back event calls history.back()', () => {
     const { container, engine } = makeSetup();
     // Advance to second item so canGoBack is true
     vi.useFakeTimers();
-    container.querySelector('item-likert')
+    container.querySelector('item-select')
       .dispatchEvent(new CustomEvent('advance', { bubbles: true }));
     vi.advanceTimersByTime(150);
     vi.useRealTimers();
@@ -283,7 +283,7 @@ describe('router back — shell back event calls history.back()', () => {
   it('engine.back() is called after popstate fires via router._fireBack', () => {
     const { container, engine, router } = makeSetup();
     vi.useFakeTimers();
-    container.querySelector('item-likert')
+    container.querySelector('item-select')
       .dispatchEvent(new CustomEvent('advance', { bubbles: true }));
     vi.advanceTimersByTime(150);
     vi.useRealTimers();
@@ -296,14 +296,14 @@ describe('router back — shell back event calls history.back()', () => {
   it('mounts previous item after popstate back', () => {
     const { container, router } = makeSetup();
     vi.useFakeTimers();
-    container.querySelector('item-likert')
+    container.querySelector('item-select')
       .dispatchEvent(new CustomEvent('advance', { bubbles: true }));
     vi.advanceTimersByTime(150);
     vi.useRealTimers();
-    expect(container.querySelector('item-likert').item.text).toBe('שאלה 2');
+    expect(container.querySelector('item-select').item.text).toBe('שאלה 2');
 
     router._fireBack('q');
-    expect(container.querySelector('item-likert').item.text).toBe('שאלה 1');
+    expect(container.querySelector('item-select').item.text).toBe('שאלה 1');
   });
 
   it('calls orchestrator.engineCrossBack when at first item and popstate fires', () => {
@@ -364,7 +364,7 @@ describe('router forward — shell forward event calls history.forward()', () =>
   it('shell forward event does not call engine.advance() synchronously', () => {
     const { container, engine } = makeSetup();
     // Answer the first item so forward button is enabled
-    container.querySelector('item-likert')
+    container.querySelector('item-select')
       .dispatchEvent(new CustomEvent('answer', { detail: { value: 1 }, bubbles: true }));
 
     const advanceBefore = engine.advance.mock.calls.length;
@@ -380,7 +380,7 @@ describe('router forward — popstate forward advances to next item', () => {
     vi.useFakeTimers();
     const { container, engine, router } = makeSetup();
     // Answer first item
-    container.querySelector('item-likert')
+    container.querySelector('item-select')
       .dispatchEvent(new CustomEvent('answer', { detail: { value: 1 }, bubbles: true }));
 
     const advanceBefore = engine.advance.mock.calls.length;
@@ -396,7 +396,7 @@ describe('router forward — popstate forward advances to next item', () => {
     const questionnaire = makeQuestionnaire();
     questionnaire.items = [
       { id: 'intro', type: 'instructions', text: 'הוראות' },
-      { id: 'q1', type: 'likert', text: 'שאלה 1' },
+      { id: 'q1', type: 'select', text: 'שאלה 1' },
     ];
     const engine = makeEngine(questionnaire);
     const { router } = makeSetup({ questionnaire, engine });
@@ -429,22 +429,22 @@ describe('router forward — popstate forward advances to next item', () => {
     vi.useFakeTimers();
     const { container, engine, router } = makeSetup();
     // Answer first item so forward is valid
-    container.querySelector('item-likert')
+    container.querySelector('item-select')
       .dispatchEvent(new CustomEvent('answer', { detail: { value: 2 }, bubbles: true }));
     // Make engine return the second item on next advance
-    engine.advance.mockReturnValueOnce({ id: 'q2', type: 'likert', text: 'שאלה 2', options: [] });
+    engine.advance.mockReturnValueOnce({ id: 'q2', type: 'select', text: 'שאלה 2', options: [] });
 
     router._fireForward('q');
     vi.advanceTimersByTime(150);
 
-    expect(container.querySelector('item-likert').item.text).toBe('שאלה 2');
+    expect(container.querySelector('item-select').item.text).toBe('שאלה 2');
     vi.useRealTimers();
   });
 
   it('does not push a new history entry on forward popstate advance', () => {
     vi.useFakeTimers();
     const { container, router } = makeSetup();
-    container.querySelector('item-likert')
+    container.querySelector('item-select')
       .dispatchEvent(new CustomEvent('answer', { detail: { value: 1 }, bubbles: true }));
 
     const pushCountBefore = router.push.mock.calls.length;

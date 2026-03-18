@@ -2,7 +2,7 @@
 import '../../tests/setup-dom.js';
 import { describe, it, expect, vi } from 'vitest';
 import { fixture, html as testHtml } from '@open-wc/testing';
-import './item-likert.js';
+import './item-select.js';
 
 // ─── Fixture ──────────────────────────────────────────────────────────────────
 
@@ -18,7 +18,7 @@ const item = {
 };
 
 async function makeEl(props = {}) {
-  const el = await fixture(testHtml`<item-likert></item-likert>`);
+  const el = await fixture(testHtml`<item-select></item-select>`);
   Object.assign(el, { item, selected: null, ...props });
   await el.updateComplete;
   return el;
@@ -199,3 +199,5 @@ describe('property reactivity', () => {
     expect(options(el)).toHaveLength(2);
   });
 });
+
+

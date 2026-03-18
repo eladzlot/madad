@@ -72,7 +72,7 @@ function resolveItem(item, context) {
 
 Each resolver is a pure function `(item, context) → item`. Components always receive a fully resolved item and never perform resolution themselves.
 
-**`resolveOptions`** — for likert items without inline `options`, looks up `item.optionSetId ?? questionnaire.defaultOptionSetId` in `questionnaire.optionSets` and inlines the result. Throws if the reference cannot be resolved (should not happen post-loader-validation).
+**`resolveOptions`** — for select items without inline `options`, looks up `item.optionSetId ?? questionnaire.defaultOptionSetId` in `questionnaire.optionSets` and inlines the result. Throws if the reference cannot be resolved (should not happen post-loader-validation).
 
 ### 2.4 Duplicate option values
 
@@ -107,7 +107,7 @@ controller.mount(container, orchestrator)
 Each time the engine returns a new item (from `advance()` or `back()`), the controller:
 
 1. Resolves the item through the pipeline
-2. Determines the component tag from `item.type` (`item-likert`, `item-binary`, `item-instructions`)
+2. Determines the component tag from `item.type` (`item-select`, `item-binary`, `item-instructions`)
 3. If the mounted component is the same type, updates its properties in place
 4. If the type changes, replaces the component entirely
 5. Sets `selected` from `engine.answers()[item.id] ?? null`
@@ -182,7 +182,7 @@ All layout CSS uses logical properties (`inline-start`, `inline-end`, `block-sta
 
 ## 4. Components
 
-### 4.1 `<item-likert>`
+### 4.1 `<item-select>`
 
 Renders a question with an ordered list of response options.
 
@@ -223,7 +223,7 @@ Renders a question with an ordered list of response options.
 
 Renders a yes/no question with two large answer targets.
 
-**Properties:** same as `<item-likert>`. Options always exactly two entries with values `0` (No) and `1` (Yes).
+**Properties:** same as `<item-select>`. Options always exactly two entries with values `0` (No) and `1` (Yes).
 
 **Rendering:**
 - Question text centered and prominent
@@ -241,7 +241,7 @@ Renders a yes/no question with two large answer targets.
 
 **ARIA:** same `radiogroup`/`radio` pattern.
 
-**Events:** same as `<item-likert>`.
+**Events:** same as `<item-select>`.
 
 ---
 
@@ -375,7 +375,7 @@ WCAG 2.1 AA target:
 ## 8. Implementation order
 
 1. `src/styles/tokens.css` + `src/styles/main.css`
-2. `<item-likert>` + minimal controller wiring (no gestures)
+2. `<item-select>` + minimal controller wiring (no gestures)
 3. `src/helpers/gestures.js`
 4. `<item-binary>`
 5. `<item-instructions>`

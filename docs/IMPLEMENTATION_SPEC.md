@@ -56,7 +56,7 @@ This document specifies how Madad is to be built. It is intended for the develop
 │   │   ├── welcome-screen.js / .test.js
 │   │   ├── completion-screen.js / .test.js
 │   │   ├── results-screen.js / .test.js
-│   │   ├── item-likert.js / .test.js
+│   │   ├── item-select.js / .test.js
 │   │   ├── item-binary.js / .test.js
 │   │   ├── item-instructions.js / .test.js
 │   │   └── progress-bar.js / .test.js
@@ -122,7 +122,7 @@ These conventions apply uniformly across config JSON, JS source code, and the DS
 |---|---|---|
 | Config JSON field names | camelCase | `questionnaireId`, `itemId`, `optionSets` |
 | JS variables, functions, properties | camelCase | `currentItem`, `evaluateAlerts()` |
-| JS module filenames | kebab-case | `sequence-runner.js`, `render-likert.js` |
+| JS module filenames | kebab-case | `sequence-runner.js`, `render-select.js` |
 | CSS class names | kebab-case | `results-screen`, `progress-bar` |
 
 ### 5.2 Identifiers in Config
@@ -252,8 +252,8 @@ A set contains:
 A questionnaire contains:
 - A unique identifier within the set
 - A display title
-- An optional map of option set definitions (`optionSets`) — reusable Likert scale definitions scoped to this questionnaire
-- An optional `defaultOptionSetId` — the option set used by any Likert item that declares neither `options` nor `optionSetId`. If a Likert item has no options and no default is set, the config loader throws a descriptive error.
+- An optional map of option set definitions (`optionSets`) — reusable select scale definitions scoped to this questionnaire
+- An optional `defaultOptionSetId` — the option set used by any select item that declares neither `options` nor `optionSetId`. If a select item has no options and no default is set, the config loader throws a descriptive error.
 - A flat array of items (see 5.3)
 - An optional scoring specification (see 5.4)
 - An optional array of interpretation ranges (see 5.5)
@@ -265,7 +265,7 @@ Every entry in the items array is an item. Items have a type that determines how
 
 **Supported types:**
 
-`likert` — a question with an ordered numeric scale. Contains the question text and either an inline `options` array (each option with a display label and numeric value), or an `optionSetId` referencing a named option set on the questionnaire. If neither is present, the questionnaire's `defaultOptionSetId` is used. Optional flags for reverse scoring and item weight.
+`select` — a question with an ordered numeric scale. Contains the question text and either an inline `options` array (each option with a display label and numeric value), or an `optionSetId` referencing a named option set on the questionnaire. If neither is present, the questionnaire's `defaultOptionSetId` is used. Optional flags for reverse scoring and item weight.
 
 `binary` — a yes/no question. Contains the question text and optional custom labels for the two options (defaults to כן/לא). Stores values as 1 (yes) and 0 (no).
 
@@ -299,12 +299,12 @@ Future item types (not yet implemented) should be added here as new type values.
         },
         {
           "id": "1",
-          "type": "likert",
+          "type": "select",
           "text": "חוסר עניין או הנאה מדברים"
         },
         {
           "id": "9",
-          "type": "likert",
+          "type": "select",
           "text": "מחשבות שעדיף לך למות או לפגוע בעצמך"
         }
       ],
@@ -538,7 +538,7 @@ Example item-level `if`:
 {
   "type": "if",
   "condition": "item.3 >= 2",
-  "then": [{ "id": "3a", "type": "likert", "text": "..." }],
+  "then": [{ "id": "3a", "type": "select", "text": "..." }],
   "else": []
 }
 ```
@@ -709,7 +709,7 @@ Complex example:
 
 Each item type has a dedicated Lit web component. Components are passive — they receive resolved item data as properties, display it, and fire events. They contain no navigation logic.
 
-**`<item-likert>`** — receives a resolved item (with options array). Renders the question text and one button per option. On tap or Enter, fires `answer` (with value) then `advance`. The controller delays 150 ms between `answer` and calling `engine.advance()`.
+**`<item-select>`** — receives a resolved item (with options array). Renders the question text and one button per option. On tap or Enter, fires `answer` (with value) then `advance`. The controller delays 150 ms between `answer` and calling `engine.advance()`.
 
 **`<item-binary>`** — renders the question text and two buttons. Also listens for horizontal pointer swipe events via `gestures.js` (threshold: 40% of element width). On selection or committed swipe, fires `answer` then `advance`.
 
@@ -864,7 +864,7 @@ Keeping the category on its own line is essential — mixing a Hebrew category s
 3. **Questionnaire results** — for each instrument: bold total score line, category line (if defined), subscale line (if defined).
 4. **Response table** — one row per answerable item (instruction items excluded): item number, item text, response label, numeric value. Risk highlighting:
    - Maximum possible value: soft red background (`#FCE8E8`, text `#8A1C1C`)
-   - Second-highest value (Likert only): soft yellow background (`#FFF6DB`, text `#8A6A00`)
+   - Second-highest value (select only): soft yellow background (`#FFF6DB`, text `#8A6A00`)
 5. **Footer** — generation timestamp, app version, config version, app URL (`window.location.origin`).
 
 ### 19.6 Future: replace bidiNodes() with bidi-js
@@ -937,7 +937,7 @@ Vitest is configured to include `src/**/*.test.js` in its test glob.
 
 ### E2E tests (Playwright, Chromium + WebKit)
 Located in `tests/e2e/`. Cover full flows that span multiple modules and require a real browser.
-- Full patient flow: welcome → name entry → Likert advance → binary → instruction item → completion screen → back navigation → results → PDF download
+- Full patient flow: welcome → name entry → select item advance → binary → instruction item → completion screen → back navigation → results → PDF download
 - PDF content assertions: text extraction to verify Hebrew content, patient ID, scores, and alert presence
 - Composer flow: config load → battery/questionnaire selection → URL generation → copy
 - Accessibility: axe-core injected on each screen, asserting WCAG AA

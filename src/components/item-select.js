@@ -2,7 +2,7 @@ import { LitElement, html, css } from 'lit';
 import { classMap } from 'lit/directives/class-map.js';
 
 /**
- * <item-likert>
+ * <item-select>
  *
  * Renders a single Likert-scale question with selectable options.
  *
@@ -16,7 +16,7 @@ import { classMap } from 'lit/directives/class-map.js';
  *             The controller delays 150 ms between answer and calling engine.advance().
  *             This component fires 'advance' immediately; the controller owns the delay.
  */
-export class ItemLikert extends LitElement {
+export class ItemSelect extends LitElement {
   static properties = {
     item:     { type: Object },
     selected: { type: Object },  // 'any' — could be number, array, etc.
@@ -221,4 +221,4 @@ export class ItemLikert extends LitElement {
   }
 }
 
-customElements.define('item-likert', ItemLikert);
+customElements.define('item-select', ItemSelect);

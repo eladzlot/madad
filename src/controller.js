@@ -22,7 +22,7 @@ const ADVANCE_DELAY_MS = 150;
 // ── Item resolution ───────────────────────────────────────────────────────────
 
 function resolveOptions(item, { questionnaire }) {
-  if (item.type !== 'likert' && item.type !== 'binary') return item;
+  if (item.type !== 'select' && item.type !== 'binary') return item;
   if (item.options) return item;
   const setId = item.optionSetId ?? questionnaire.defaultOptionSetId;
   const options = questionnaire.optionSets?.[setId] ?? [];

@@ -20,7 +20,7 @@ const { loadManifest, loadAllConfigs } = await import('./composer-loader.js');
 
 const minimalQ = (id, title = id, description = '') => ({
   id, title, description,
-  items: [{ id: 'q1', type: 'likert', text: 'Q', options: [{ label: 'No', value: 0 }, { label: 'Yes', value: 1 }] }],
+  items: [{ id: 'q1', type: 'select', text: 'Q', options: [{ label: 'No', value: 0 }, { label: 'Yes', value: 1 }] }],
   scoring: { method: 'none' }, alerts: [],
 });
 

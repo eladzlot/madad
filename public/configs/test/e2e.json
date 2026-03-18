@@ -40,47 +40,47 @@
         },
         {
           "id": "1",
-          "type": "likert",
+          "type": "select",
           "text": "עניין או הנאה מועטים מעשיית דברים"
         },
         {
           "id": "2",
-          "type": "likert",
+          "type": "select",
           "text": "תחושת דכדוך, דיכאון, או חוסר תקווה"
         },
         {
           "id": "3",
-          "type": "likert",
+          "type": "select",
           "text": "קשיים בהירדמות או בשינה רציפה"
         },
         {
           "id": "4",
-          "type": "likert",
+          "type": "select",
           "text": "תחושה של עייפות או אנרגיה מועטה"
         },
         {
           "id": "5",
-          "type": "likert",
+          "type": "select",
           "text": "תיאבון מועט או אכילת יתר"
         },
         {
           "id": "6",
-          "type": "likert",
+          "type": "select",
           "text": "מרגיש רע לגבי עצמך"
         },
         {
           "id": "7",
-          "type": "likert",
+          "type": "select",
           "text": "קושי להתרכז בדברים"
         },
         {
           "id": "8",
-          "type": "likert",
+          "type": "select",
           "text": "היית מדבר או נע באיטיות"
         },
         {
           "id": "9",
-          "type": "likert",
+          "type": "select",
           "text": "מחשבות שהיה עדיף לו היית מת"
         }
       ],
@@ -186,12 +186,12 @@
         },
         {
           "id": "l1",
-          "type": "likert",
+          "type": "select",
           "text": "הרגשתי ממוקד ופרודוקטיבי במהלך היום"
         },
         {
           "id": "l2",
-          "type": "likert",
+          "type": "select",
           "text": "הרגשתי קשר ותמיכה מאנשים סביבי"
         }
       ],
@@ -246,8 +246,8 @@
           "text": "זהו שאלון בדיקה הכולל פריט אחד מכל סוג."
         },
         {
-          "id": "likert1",
-          "type": "likert",
+          "id": "select1",
+          "type": "select",
           "text": "הרגשתי טוב היום"
         },
         {
@@ -255,6 +255,29 @@
           "type": "binary",
           "text": "ישנתי טוב הלילה",
           "optionSetId": "yesno"
+        },
+        {
+          "id": "select_mood",
+          "type": "select",
+          "text": "כיצד היה מצב הרוח שלך היום?",
+          "options": [
+            {
+              "label": "מצוין",
+              "value": 3
+            },
+            {
+              "label": "טוב",
+              "value": 2
+            },
+            {
+              "label": "סביר",
+              "value": 1
+            },
+            {
+              "label": "גרוע",
+              "value": 0
+            }
+          ]
         },
         {
           "id": "slider1",
@@ -302,7 +325,7 @@
       "keywords": [
         "test",
         "binary",
-        "likert"
+        "select"
       ],
       "sequence": [
         {

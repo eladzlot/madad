@@ -3,7 +3,7 @@ import { collectConfigErrors, ConfigError, validateConfigData } from './config-v
 
 const minimalQ = (id = 'phq9') => ({
   id, title: 'Test',
-  items: [{ id: 'q1', type: 'likert', text: 'Q1', options: [{ label: 'No', value: 0 }, { label: 'Yes', value: 1 }] }],
+  items: [{ id: 'q1', type: 'select', text: 'Q1', options: [{ label: 'No', value: 0 }, { label: 'Yes', value: 1 }] }],
   scoring: { method: 'none' }, alerts: [],
 });
 const minimalBattery = (id, qId = 'phq9') => ({ id, title: id, sequence: [{ questionnaireId: qId }] });

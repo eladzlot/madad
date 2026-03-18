@@ -5,7 +5,7 @@ import { getType, isScored, isNumericAnswer, autoAdvances, isSkippable, canAdvan
 
 describe('getType', () => {
   it('returns descriptor for known types', () => {
-    expect(getType('likert').tag).toBe('item-likert');
+    expect(getType('select').tag).toBe('item-select');
     expect(getType('binary').tag).toBe('item-binary');
     expect(getType('instructions').tag).toBe('item-instructions');
   });
@@ -23,8 +23,8 @@ describe('getType', () => {
 // ── isScored ──────────────────────────────────────────────────────────────────
 
 describe('isScored', () => {
-  it('returns true for likert and binary', () => {
-    expect(isScored({ type: 'likert' })).toBe(true);
+  it('returns true for select and binary', () => {
+    expect(isScored({ type: 'select' })).toBe(true);
     expect(isScored({ type: 'binary' })).toBe(true);
   });
 
@@ -45,8 +45,8 @@ describe('isScored', () => {
 // ── isNumericAnswer ───────────────────────────────────────────────────────────
 
 describe('isNumericAnswer', () => {
-  it('returns true for likert and binary', () => {
-    expect(isNumericAnswer({ type: 'likert' })).toBe(true);
+  it('returns true for select and binary', () => {
+    expect(isNumericAnswer({ type: 'select' })).toBe(true);
     expect(isNumericAnswer({ type: 'binary' })).toBe(true);
   });
 
@@ -58,8 +58,8 @@ describe('isNumericAnswer', () => {
 // ── autoAdvances ──────────────────────────────────────────────────────────────
 
 describe('autoAdvances', () => {
-  it('returns true for likert and binary', () => {
-    expect(autoAdvances({ type: 'likert' })).toBe(true);
+  it('returns true for select and binary', () => {
+    expect(autoAdvances({ type: 'select' })).toBe(true);
     expect(autoAdvances({ type: 'binary' })).toBe(true);
   });
 
@@ -71,8 +71,8 @@ describe('autoAdvances', () => {
 // ── isSkippable ───────────────────────────────────────────────────────────────
 
 describe('isSkippable', () => {
-  it('likert and binary are not skippable by default', () => {
-    expect(isSkippable({ type: 'likert' })).toBe(false);
+  it('select and binary are not skippable by default', () => {
+    expect(isSkippable({ type: 'select' })).toBe(false);
     expect(isSkippable({ type: 'binary' })).toBe(false);
   });
 
@@ -85,7 +85,7 @@ describe('isSkippable', () => {
   });
 
   it('required: false overrides non-skippable default', () => {
-    expect(isSkippable({ type: 'likert', required: false })).toBe(true);
+    expect(isSkippable({ type: 'select', required: false })).toBe(true);
     expect(isSkippable({ type: 'binary', required: false })).toBe(true);
   });
 });
@@ -98,11 +98,11 @@ describe('canAdvance', () => {
     expect(canAdvance({ type: 'instructions' }, undefined)).toBe(true);
   });
 
-  it('likert requires a non-null answer', () => {
-    expect(canAdvance({ type: 'likert' }, null)).toBe(false);
-    expect(canAdvance({ type: 'likert' }, undefined)).toBe(false);
-    expect(canAdvance({ type: 'likert' }, 0)).toBe(true);   // 0 is a valid answer
-    expect(canAdvance({ type: 'likert' }, 3)).toBe(true);
+  it('select requires a non-null answer', () => {
+    expect(canAdvance({ type: 'select' }, null)).toBe(false);
+    expect(canAdvance({ type: 'select' }, undefined)).toBe(false);
+    expect(canAdvance({ type: 'select' }, 0)).toBe(true);   // 0 is a valid answer
+    expect(canAdvance({ type: 'select' }, 3)).toBe(true);
   });
 
   it('binary requires a non-null answer', () => {
@@ -112,7 +112,7 @@ describe('canAdvance', () => {
   });
 
   it('required: false makes any item skippable', () => {
-    expect(canAdvance({ type: 'likert', required: false }, null)).toBe(true);
+    expect(canAdvance({ type: 'select', required: false }, null)).toBe(true);
     expect(canAdvance({ type: 'binary', required: false }, null)).toBe(true);
   });
 
@@ -125,12 +125,12 @@ describe('canAdvance', () => {
 
 describe('tagForType', () => {
   it('returns correct tags for existing types', () => {
-    expect(tagForType('likert')).toBe('item-likert');
+    expect(tagForType('select')).toBe('item-select');
     expect(tagForType('binary')).toBe('item-binary');
     expect(tagForType('instructions')).toBe('item-instructions');
   });
 
-  it('falls back to item-likert for unknown types', () => {
-    expect(tagForType('unknown')).toBe('item-likert');
+  it('falls back to item-select for unknown types', () => {
+    expect(tagForType('unknown')).toBe('item-select');
   });
 });

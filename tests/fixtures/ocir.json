@@ -35,92 +35,92 @@
       },
       {
         "id": "1",
-        "type": "likert",
+        "type": "select",
         "text": "פריט 1"
       },
       {
         "id": "2",
-        "type": "likert",
+        "type": "select",
         "text": "פריט 2"
       },
       {
         "id": "3",
-        "type": "likert",
+        "type": "select",
         "text": "פריט 3"
       },
       {
         "id": "4",
-        "type": "likert",
+        "type": "select",
         "text": "פריט 4"
       },
       {
         "id": "5",
-        "type": "likert",
+        "type": "select",
         "text": "פריט 5"
       },
       {
         "id": "6",
-        "type": "likert",
+        "type": "select",
         "text": "פריט 6"
       },
       {
         "id": "7",
-        "type": "likert",
+        "type": "select",
         "text": "פריט 7"
       },
       {
         "id": "8",
-        "type": "likert",
+        "type": "select",
         "text": "פריט 8"
       },
       {
         "id": "9",
-        "type": "likert",
+        "type": "select",
         "text": "פריט 9"
       },
       {
         "id": "10",
-        "type": "likert",
+        "type": "select",
         "text": "פריט 10"
       },
       {
         "id": "11",
-        "type": "likert",
+        "type": "select",
         "text": "פריט 11"
       },
       {
         "id": "12",
-        "type": "likert",
+        "type": "select",
         "text": "פריט 12"
       },
       {
         "id": "13",
-        "type": "likert",
+        "type": "select",
         "text": "פריט 13"
       },
       {
         "id": "14",
-        "type": "likert",
+        "type": "select",
         "text": "פריט 14"
       },
       {
         "id": "15",
-        "type": "likert",
+        "type": "select",
         "text": "פריט 15"
       },
       {
         "id": "16",
-        "type": "likert",
+        "type": "select",
         "text": "פריט 16"
       },
       {
         "id": "17",
-        "type": "likert",
+        "type": "select",
         "text": "פריט 17"
       },
       {
         "id": "18",
-        "type": "likert",
+        "type": "select",
         "text": "פריט 18"
       }
     ],

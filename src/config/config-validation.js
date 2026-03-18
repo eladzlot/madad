@@ -113,7 +113,7 @@ function checkItemOptions(items, q, optionSetIds, errors) {
       checkItemOptions(item.ids, q, optionSetIds, errors);
       continue;
     }
-    if (item.type !== 'likert' && item.type !== 'binary') continue;
+    if (item.type !== 'select' && item.type !== 'binary' && item.type !== 'select') continue;
 
     const label = `Questionnaire "${q.id}" › item "${item.id}"`;
 

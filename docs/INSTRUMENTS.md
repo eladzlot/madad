@@ -46,13 +46,13 @@ A questionnaire definition is a JSON object. Here is a minimal working example f
       "type": "instructions",
       "text": "במשך השבועיים האחרונים, עד כמה סבלת מהבעיות הבאות?"
     },
-    { "id": "1", "type": "likert", "text": "תחושת עצבנות, חרדה או מתח" },
-    { "id": "2", "type": "likert", "text": "אי-יכולת לעצור את הדאגה או לשלוט בה" },
-    { "id": "3", "type": "likert", "text": "דאגה מוגזמת לגבי דברים שונים" },
-    { "id": "4", "type": "likert", "text": "קושי להירגע" },
-    { "id": "5", "type": "likert", "text": "חוסר-מנוחה עד כדי קושי לשבת בשקט" },
-    { "id": "6", "type": "likert", "text": "נטייה להתרגז ולהתעצבן בקלות" },
-    { "id": "7", "type": "likert", "text": "פחד שמשהו נורא עלול לקרות" }
+    { "id": "1", "type": "select", "text": "תחושת עצבנות, חרדה או מתח" },
+    { "id": "2", "type": "select", "text": "אי-יכולת לעצור את הדאגה או לשלוט בה" },
+    { "id": "3", "type": "select", "text": "דאגה מוגזמת לגבי דברים שונים" },
+    { "id": "4", "type": "select", "text": "קושי להירגע" },
+    { "id": "5", "type": "select", "text": "חוסר-מנוחה עד כדי קושי לשבת בשקט" },
+    { "id": "6", "type": "select", "text": "נטייה להתרגז ולהתעצבן בקלות" },
+    { "id": "7", "type": "select", "text": "פחד שמשהו נורא עלול לקרות" }
   ],
   "scoring": {
     "method": "sum",
@@ -100,17 +100,17 @@ A questionnaire definition is a JSON object. Here is a minimal working example f
       "type": "instructions",
       "text": "הוראות הפתיחה מופיעות כאן."
     },
-    { "id": "q1", "type": "likert", "text": "שאלה ראשונה" },
-    { "id": "q2", "type": "likert", "text": "שאלה שנייה (סולם אחר)", "optionSetId": "agreement_5" },
-    { "id": "q3", "type": "likert", "text": "שאלה שלישית — ניקוד הפוך", "reverse": true },
+    { "id": "q1", "type": "select", "text": "שאלה ראשונה" },
+    { "id": "q2", "type": "select", "text": "שאלה שנייה (סולם אחר)", "optionSetId": "agreement_5" },
+    { "id": "q3", "type": "select", "text": "שאלה שלישית — ניקוד הפוך", "reverse": true },
     { "id": "q4", "type": "binary", "text": "שאלה בינארית — כן/לא" },
     {
       "id": "mid_instructions",
       "type": "instructions",
       "text": "הוראות אמצע שאלון — מופיעות כפריט רגיל."
     },
-    { "id": "q5", "type": "likert", "text": "שאלה חמישית" },
-    { "id": "q6", "type": "likert", "text": "שאלה שישית" }
+    { "id": "q5", "type": "select", "text": "שאלה חמישית" },
+    { "id": "q6", "type": "select", "text": "שאלה שישית" }
   ],
   "scoring": {
     "method": "subscales",

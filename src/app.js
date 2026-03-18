@@ -22,7 +22,7 @@ import { createController } from './controller.js';
 import { createOrchestrator } from './engine/orchestrator.js';
 import { createRouter } from './router.js';
 import { preloadPdf } from './pdf/report.js';
-import './components/item-likert.js';
+import './components/item-select.js';
 import './components/item-binary.js';
 import './components/item-instructions.js';
 import './components/item-text.js';

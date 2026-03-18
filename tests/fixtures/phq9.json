@@ -31,47 +31,47 @@
       },
       {
         "id": "1",
-        "type": "likert",
+        "type": "select",
         "text": "עניין מועט"
       },
       {
         "id": "2",
-        "type": "likert",
+        "type": "select",
         "text": "דכדוך"
       },
       {
         "id": "3",
-        "type": "likert",
+        "type": "select",
         "text": "שינה"
       },
       {
         "id": "4",
-        "type": "likert",
+        "type": "select",
         "text": "עייפות"
       },
       {
         "id": "5",
-        "type": "likert",
+        "type": "select",
         "text": "תיאבון"
       },
       {
         "id": "6",
-        "type": "likert",
+        "type": "select",
         "text": "מרגיש רע"
       },
       {
         "id": "7",
-        "type": "likert",
+        "type": "select",
         "text": "ריכוז"
       },
       {
         "id": "8",
-        "type": "likert",
+        "type": "select",
         "text": "איטיות"
       },
       {
         "id": "9",
-        "type": "likert",
+        "type": "select",
         "text": "מחשבות אובדניות"
       }
     ],

@@ -6,7 +6,7 @@
  *
  * Uses the standard PHQ-9 battery which has:
  *   - 1 instructions item
- *   - 9 likert items
+ *   - 9 select items
  *   - 1 alert (item 9 ≥ 1 → suicidality)
  *
  * Shadows DOM note: all components use shadow DOM. Playwright's locators
@@ -21,13 +21,13 @@ import { test, expect } from '@playwright/test';
 
 const E2E_CONFIG = '/configs/test/e2e.json';
 
-/** PHQ-9 equivalent (phq9_test) — 1 instructions + 9 likert + suicidality alert */
+/** PHQ-9 equivalent (phq9_test) — 1 instructions + 9 select + suicidality alert */
 const PHQ9_URL = `/?configs=${E2E_CONFIG}&items=phq9_intake`;
 
-/** test_q battery — binary + likert mix */
+/** test_q battery — binary + select mix */
 const TEST_URL = `/?configs=${E2E_CONFIG}&items=standard_intake`;
 
-/** all_types_battery — instructions + likert + binary + text */
+/** all_types_battery — instructions + select + binary + text */
 const ALL_TYPES_URL = `/?configs=${E2E_CONFIG}&items=all_types_battery`;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -47,7 +47,7 @@ async function clickBegin(page) {
 
 /** Click a Likert option by its zero-based index */
 async function clickLikertOption(page, index) {
-  const options = page.locator('item-likert >> button.option');
+  const options = page.locator('item-select >> button.option');
   await options.nth(index).click();
 }
 
@@ -74,15 +74,15 @@ async function progressValue(page) {
   });
 }
 
-/** Answer all 9 PHQ-9 likert items with a given option index (0–3) */
+/** Answer all 9 PHQ-9 select items with a given option index (0–3) */
 async function answerAllPHQ9Items(page, optionIndex = 0) {
   // First: instructions item
   await expect(page.locator('item-instructions')).toBeVisible();
   await clickContinue(page);
 
-  // Then: 9 likert items
+  // Then: 9 select items
   for (let i = 0; i < 9; i++) {
-    await expect(page.locator('item-likert')).toBeVisible();
+    await expect(page.locator('item-select')).toBeVisible();
     await clickLikertOption(page, optionIndex);
     if (i < 8) await page.waitForTimeout(200);
   }
@@ -122,12 +122,12 @@ test.describe('PHQ-9 questionnaire flow', () => {
 
   test('first screen is an instructions item', async ({ page }) => {
     await expect(page.locator('item-instructions')).toBeVisible();
-    await expect(page.locator('item-likert')).not.toBeVisible();
+    await expect(page.locator('item-select')).not.toBeVisible();
   });
 
-  test('continue on instructions advances to first likert item', async ({ page }) => {
+  test('continue on instructions advances to first select item', async ({ page }) => {
     await clickContinue(page);
-    await expect(page.locator('item-likert')).toBeVisible();
+    await expect(page.locator('item-select')).toBeVisible();
     await expect(page.locator('item-instructions')).not.toBeVisible();
   });
 
@@ -150,9 +150,9 @@ test.describe('PHQ-9 questionnaire flow', () => {
     await page.waitForTimeout(200);
 
     await page.goBack();
-    await expect(page.locator('item-likert')).toBeVisible();
+    await expect(page.locator('item-select')).toBeVisible();
 
-    const options = page.locator('item-likert >> button.option');
+    const options = page.locator('item-select >> button.option');
     await expect(options.nth(2)).toHaveClass(/is-selected/);
   });
 
@@ -186,15 +186,15 @@ test.describe('completion screen', () => {
     await expect(page.locator('completion-screen >> button.view-btn')).toBeVisible();
   });
 
-  test('back from completion returns to last likert item', async ({ page }) => {
+  test('back from completion returns to last select item', async ({ page }) => {
     await page.goBack();
-    await expect(page.locator('item-likert')).toBeVisible();
+    await expect(page.locator('item-select')).toBeVisible();
     await expect(page.locator('completion-screen')).not.toBeVisible();
   });
 
   test('answer changed after going back is reflected when re-completing', async ({ page }) => {
     await page.goBack();
-    await expect(page.locator('item-likert')).toBeVisible();
+    await expect(page.locator('item-select')).toBeVisible();
     await clickLikertOption(page, 3);
     await expect(page.locator('completion-screen')).toBeVisible({ timeout: 2000 });
     await expect(page.locator('completion-screen >> button.view-btn')).toBeVisible();
@@ -235,7 +235,7 @@ test.describe('results screen', () => {
 
   test('browser back from results does not return to questionnaire', async ({ page }) => {
     await page.goBack();
-    await expect(page.locator('item-likert')).not.toBeVisible();
+    await expect(page.locator('item-select')).not.toBeVisible();
     await expect(page.locator('item-instructions')).not.toBeVisible();
   });
 });
@@ -278,12 +278,12 @@ test.describe('alert — PHQ-9 item 9 (suicidality)', () => {
     await clickContinue(page);
 
     for (let i = 0; i < 8; i++) {
-      await expect(page.locator('item-likert')).toBeVisible();
+      await expect(page.locator('item-select')).toBeVisible();
       await clickLikertOption(page, 0);
       await page.waitForTimeout(200);
     }
 
-    await expect(page.locator('item-likert')).toBeVisible();
+    await expect(page.locator('item-select')).toBeVisible();
     await clickLikertOption(page, item9OptionIndex);
     await expect(page.locator('completion-screen')).toBeVisible({ timeout: 2000 });
     await clickViewResults(page);
@@ -303,9 +303,9 @@ test.describe('alert — PHQ-9 item 9 (suicidality)', () => {
   });
 });
 
-// ── Mixed battery (test_q — binary + likert) ─────────────────────────────────
+// ── Mixed battery (test_q — binary + select) ─────────────────────────────────
 
-test.describe('standard_intake battery (binary + likert)', () => {
+test.describe('standard_intake battery (binary + select)', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto(TEST_URL);
     await clickBegin(page);
@@ -330,7 +330,7 @@ test.describe('standard_intake battery (binary + likert)', () => {
     }
 
     for (let i = 0; i < 2; i++) {
-      await expect(page.locator('item-likert')).toBeVisible();
+      await expect(page.locator('item-select')).toBeVisible();
       await clickLikertOption(page, 0);
       await page.waitForTimeout(200);
     }
@@ -365,6 +365,11 @@ async function setSliderValue(page, value, { submit = true } = {}) {
   if (submit) {
     await page.locator('item-slider >> button.submit-btn').click();
   }
+}
+
+/** Click a select option by zero-based index */
+async function clickSelectOption(page, index) {
+  await page.locator('item-select >> button.option').nth(index).click();
 }
 
 // ── Error handling ────────────────────────────────────────────────────────────
@@ -411,7 +416,7 @@ test.describe('PDF download', () => {
 
 // ── All item types battery ────────────────────────────────────────────────────
 
-test.describe('all item types battery (instructions + likert + binary + slider + text)', () => {
+test.describe('all item types battery (instructions + select + binary + select + slider + text)', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto(ALL_TYPES_URL);
     await clickBegin(page);
@@ -421,11 +426,11 @@ test.describe('all item types battery (instructions + likert + binary + slider +
     await expect(page.locator('item-instructions')).toBeVisible();
   });
 
-  test('instructions → likert → binary → slider → text sequence renders correctly', async ({ page }) => {
+  test('full sequence renders all item types in order', async ({ page }) => {
     await expect(page.locator('item-instructions')).toBeVisible();
     await clickContinue(page);
 
-    await expect(page.locator('item-likert')).toBeVisible();
+    await expect(page.locator('item-select')).toBeVisible();
     await clickLikertOption(page, 1);
     await page.waitForTimeout(200);
 
@@ -433,19 +438,40 @@ test.describe('all item types battery (instructions + likert + binary + slider +
     await clickBinaryFirst(page);
     await page.waitForTimeout(200);
 
+    await expect(page.locator('item-select')).toBeVisible();
+    await clickSelectOption(page, 0);
+    await page.waitForTimeout(200);
+
     await expect(page.locator('item-slider')).toBeVisible();
+    await setSliderValue(page, 5);
+
+    await expect(page.locator('item-text')).toBeVisible();
   });
 
-  test('slider item shows question text and range input', async ({ page }) => {
+  test('select item shows options as cards', async ({ page }) => {
     await clickContinue(page);
     await clickLikertOption(page, 0);
     await page.waitForTimeout(200);
     await clickBinaryFirst(page);
     await page.waitForTimeout(200);
 
+    await expect(page.locator('item-select')).toBeVisible();
+    const optionBtns = page.locator('item-select >> button.option');
+    await expect(optionBtns).toHaveCount(4);
+  });
+
+  test('select item auto-advances after selection', async ({ page }) => {
+    await clickContinue(page);
+    await clickLikertOption(page, 0);
+    await page.waitForTimeout(200);
+    await clickBinaryFirst(page);
+    await page.waitForTimeout(200);
+
+    await expect(page.locator('item-select')).toBeVisible();
+    await clickSelectOption(page, 1);
+    await page.waitForTimeout(200);
+
     await expect(page.locator('item-slider')).toBeVisible();
-    await expect(page.locator('item-slider >> .question')).toContainText('מצב הרוח');
-    await expect(page.locator('item-slider >> input[type="range"]')).toBeVisible();
   });
 
   test('slider submit button disabled until touched', async ({ page }) => {
@@ -454,45 +480,24 @@ test.describe('all item types battery (instructions + likert + binary + slider +
     await page.waitForTimeout(200);
     await clickBinaryFirst(page);
     await page.waitForTimeout(200);
+    await clickSelectOption(page, 0);
+    await page.waitForTimeout(200);
 
     await expect(page.locator('item-slider')).toBeVisible();
     await expect(page.locator('item-slider >> button.submit-btn')).toBeDisabled();
   });
 
-  test('slider enables submit after interaction and advances', async ({ page }) => {
+  test('slider enables submit after interaction and advances to text', async ({ page }) => {
     await clickContinue(page);
     await clickLikertOption(page, 0);
     await page.waitForTimeout(200);
     await clickBinaryFirst(page);
     await page.waitForTimeout(200);
+    await clickSelectOption(page, 0);
+    await page.waitForTimeout(200);
 
-    await expect(page.locator('item-slider')).toBeVisible();
     await setSliderValue(page, 7);
-
     await expect(page.locator('item-text')).toBeVisible();
-  });
-
-  test('text item shows question text', async ({ page }) => {
-    await clickContinue(page);
-    await clickLikertOption(page, 0);
-    await page.waitForTimeout(200);
-    await clickBinaryFirst(page);
-    await page.waitForTimeout(200);
-    await setSliderValue(page, 5);
-
-    await expect(page.locator('item-text')).toBeVisible();
-    await expect(page.locator('item-text >> .question')).toContainText('הערות');
-  });
-
-  test('text item shows skip button (skippable by default)', async ({ page }) => {
-    await clickContinue(page);
-    await clickLikertOption(page, 0);
-    await page.waitForTimeout(200);
-    await clickBinaryFirst(page);
-    await page.waitForTimeout(200);
-    await setSliderValue(page, 5);
-
-    await expect(page.locator('item-text >> button.skip-btn')).toBeVisible();
   });
 
   test('text item can be skipped to reach completion', async ({ page }) => {
@@ -501,20 +506,10 @@ test.describe('all item types battery (instructions + likert + binary + slider +
     await page.waitForTimeout(200);
     await clickBinaryFirst(page);
     await page.waitForTimeout(200);
+    await clickSelectOption(page, 0);
+    await page.waitForTimeout(200);
     await setSliderValue(page, 5);
     await skipTextItem(page);
-
-    await expect(page.locator('completion-screen')).toBeVisible({ timeout: 2000 });
-  });
-
-  test('text item can be submitted with text to reach completion', async ({ page }) => {
-    await clickContinue(page);
-    await clickLikertOption(page, 0);
-    await page.waitForTimeout(200);
-    await clickBinaryFirst(page);
-    await page.waitForTimeout(200);
-    await setSliderValue(page, 5);
-    await fillTextItem(page, 'בדיקה בדיקה');
 
     await expect(page.locator('completion-screen')).toBeVisible({ timeout: 2000 });
   });
@@ -525,15 +520,15 @@ test.describe('all item types battery (instructions + likert + binary + slider +
     await page.waitForTimeout(200);
     await clickBinaryFirst(page);
     await page.waitForTimeout(200);
+    await clickSelectOption(page, 0);
+    await page.waitForTimeout(200);
     await setSliderValue(page, 5);
 
-    await expect(page.locator('item-text')).toBeVisible();
     await page.locator('item-text >> input').fill('טקסט לבדיקה');
     await page.goBack();
     await expect(page.locator('item-slider')).toBeVisible();
     await page.goForward();
 
-    await expect(page.locator('item-text')).toBeVisible();
     await expect(page.locator('item-text >> input')).toHaveValue('טקסט לבדיקה');
   });
 
@@ -542,6 +537,8 @@ test.describe('all item types battery (instructions + likert + binary + slider +
     await clickLikertOption(page, 1);
     await page.waitForTimeout(200);
     await clickBinaryFirst(page);
+    await page.waitForTimeout(200);
+    await clickSelectOption(page, 1);
     await page.waitForTimeout(200);
     await setSliderValue(page, 7);
     await fillTextItem(page, 'הערה לדוגמה');

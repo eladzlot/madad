@@ -4,7 +4,7 @@
 //
 // Each entry declares:
 //   tag              — custom element tag name
-//   autoAdvance      — fires 'advance' immediately after 'answer' (likert/binary pattern)
+//   autoAdvance      — fires 'advance' immediately after 'answer' (select/binary pattern)
 //   skippableDefault — whether unanswered = valid to advance (overridden by item.required)
 //   contributesToScore — whether scoring engine counts this type
 //   answerIsNumeric  — whether answer is always a number (for DSL context)
@@ -12,8 +12,8 @@
 //   pdfRenderer      — key into PDF_RENDERERS (see report.js)
 
 const REGISTRY = {
-  likert: {
-    tag:                'item-likert',
+  select: {
+    tag:                'item-select',
     autoAdvance:        true,
     skippableDefault:   false,
     contributesToScore: true,
@@ -51,7 +51,16 @@ const REGISTRY = {
   slider: {
     tag:                'item-slider',
     autoAdvance:        false,  // requires explicit submit
-    skippableDefault:   false,  // required by default like likert
+    skippableDefault:   false,  // required by default like select
+    contributesToScore: true,
+    answerIsNumeric:    true,
+    answerShape:        'scalar',
+    pdfRenderer:        'scored',
+  },
+  select: {
+    tag:                'item-select',  // alias of item-select — same component, same behaviour
+    autoAdvance:        true,
+    skippableDefault:   false,
     contributesToScore: true,
     answerIsNumeric:    true,
     answerShape:        'scalar',
@@ -76,7 +85,7 @@ export function getType(type) {
 
 /**
  * Whether this item type contributes to questionnaire scoring.
- * Replaces scattered `item.type === 'likert' || item.type === 'binary'` checks.
+ * Replaces scattered `item.type === 'select' || item.type === 'binary'` checks.
  */
 export function isScored(item) {
   return REGISTRY[item?.type]?.contributesToScore === true;
@@ -126,8 +135,8 @@ export function canAdvance(item, answer) {
 
 /**
  * The custom element tag for this item type.
- * Falls back to 'item-likert' for unknown types (defensive — should not happen).
+ * Falls back to 'item-select' for unknown types (defensive — should not happen).
  */
 export function tagForType(type) {
-  return REGISTRY[type]?.tag ?? 'item-likert';
+  return REGISTRY[type]?.tag ?? 'item-select';
 }

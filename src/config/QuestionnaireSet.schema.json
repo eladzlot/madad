@@ -78,7 +78,7 @@
 
     "item": {
       "oneOf": [
-        { "$ref": "#/$defs/likertItem" },
+        { "$ref": "#/$defs/selectItem" },
         { "$ref": "#/$defs/binaryItem" },
         { "$ref": "#/$defs/instructionsItem" },
         { "$ref": "#/$defs/textItem" },
@@ -88,13 +88,13 @@
       ]
     },
 
-    "likertItem": {
+    "selectItem": {
       "type": "object",
       "required": ["id", "type", "text"],
       "additionalProperties": false,
       "properties": {
         "id":          { "$ref": "#/$defs/id" },
-        "type":        { "const": "likert" },
+        "type":        { "const": "select" },
         "text":        { "type": "string", "minLength": 1 },
         "options":     { "$ref": "#/$defs/optionList" },
         "optionSetId": { "$ref": "#/$defs/id" },
@@ -172,6 +172,23 @@
         "weight":   { "type": "number" },
         "required": { "type": "boolean" }
       }
+    },
+
+    "selectItem": {
+      "type": "object",
+      "required": ["id", "type", "text"],
+      "additionalProperties": false,
+      "properties": {
+        "id":          { "$ref": "#/$defs/id" },
+        "type":        { "const": "select" },
+        "text":        { "type": "string", "minLength": 1 },
+        "options":     { "$ref": "#/$defs/optionList" },
+        "optionSetId": { "$ref": "#/$defs/id" },
+        "reverse":     { "type": "boolean" },
+        "weight":      { "type": "number" },
+        "required":    { "type": "boolean" }
+      },
+      "not": { "required": ["options", "optionSetId"] }
     },
 
     "ifNode": {

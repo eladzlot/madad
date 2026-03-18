@@ -87,15 +87,16 @@ Option values must be unique within each item. Values do not need to be consecut
 
 Every item requires `id`, `type`, and `text`. The `id` is local to the questionnaire.
 
-### Likert item
+### Select item (single choice from a list)
 ```json
-{ "id": "1", "type": "likert", "text": "Item text shown to patient" }
+{ "id": "1", "type": "select", "text": "Item text shown to patient" }
 ```
+The canonical type for single-choice questions. Renders as a vertical list of tappable cards.
 Uses `defaultOptionSetId` by default. Override with `"optionSetId": "other_scale"` or inline `"options": [...]`.
 
 Add `"reverse": true` to reverse-score an item. If any item uses `reverse`, you must set `maxPerItem` in the scoring spec.
 
-Add `"required": false` to make a likert item skippable (patient can advance without answering). Default is required.
+Add `"required": false` to make an item skippable. Default is required.
 
 ### Binary item (yes/no)
 ```json
@@ -302,13 +303,13 @@ The `else` array must be present even if empty. DSL expressions in battery condi
       "type": "instructions",
       "text": "במשך השבועיים האחרונים, עד כמה סבלת מהבעיות הבאות?"
     },
-    { "id": "1", "type": "likert", "text": "תחושת עצבנות, חרדה או מתח" },
-    { "id": "2", "type": "likert", "text": "אי-יכולת לעצור את הדאגה או לשלוט בה" },
-    { "id": "3", "type": "likert", "text": "דאגה מוגזמת לגבי דברים שונים" },
-    { "id": "4", "type": "likert", "text": "קושי להירגע" },
-    { "id": "5", "type": "likert", "text": "חוסר-מנוחה עד כדי קושי לשבת בשקט" },
-    { "id": "6", "type": "likert", "text": "נטייה להתרגז ולהתעצבן בקלות" },
-    { "id": "7", "type": "likert", "text": "פחד שמשהו נורא עלול לקרות" }
+    { "id": "1", "type": "select", "text": "תחושת עצבנות, חרדה או מתח" },
+    { "id": "2", "type": "select", "text": "אי-יכולת לעצור את הדאגה או לשלוט בה" },
+    { "id": "3", "type": "select", "text": "דאגה מוגזמת לגבי דברים שונים" },
+    { "id": "4", "type": "select", "text": "קושי להירגע" },
+    { "id": "5", "type": "select", "text": "חוסר-מנוחה עד כדי קושי לשבת בשקט" },
+    { "id": "6", "type": "select", "text": "נטייה להתרגז ולהתעצבן בקלות" },
+    { "id": "7", "type": "select", "text": "פחד שמשהו נורא עלול לקרות" }
   ],
   "scoring": {
     "method": "sum",

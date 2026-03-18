@@ -649,7 +649,7 @@ export function calcRiskLevel(item, value, options) {
   const second = values[values.length - 2];
 
   if (value === max) return 'high';
-  if (item.type === 'likert' && value === second) return 'med';
+  if (item.type === 'select' && value === second) return 'med';
   return null;
 }
 
