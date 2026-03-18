@@ -102,8 +102,10 @@ export function createEngine(questionnaire, sessionKey, existingAnswers = {}) {
   // ── progress() ─────────────────────────────────────────────────────────────
 
   function progress() {
-    const pos = runner.currentNode() === null ? 0 : (runner.resolvedPath().length);
-    const remaining = runner.remainingCount();
+    // Count only answerable (non-instructions) items in the resolved path
+    const path = runner.resolvedPath();
+    const pos = path.filter(n => n.type !== 'instructions').length;
+    const remaining = runner.remainingCount();  // already excludes instructions
     const total = remaining === null ? null : pos + remaining;
     return { current: pos, total };
   }

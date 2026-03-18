@@ -53,9 +53,19 @@ export function createController(container, router) {
     _shellEl = document.createElement('app-shell');
     _shellEl.canGoBack    = false;
     _shellEl.canGoForward = false;
-    // Delegate to history — popstate drives actual navigation
-    _shellEl.addEventListener('back',    () => history.back());
-    _shellEl.addEventListener('forward', () => history.forward());
+    _shellEl.addEventListener('back', () => history.back());
+    // Delegate to history for already-answered items (back-nav replay).
+    // For skippable items with no answer yet, there's no forward history entry,
+    // so we trigger onAdvance() directly instead.
+    _shellEl.addEventListener('forward', () => {
+      const item = _engine?.currentItem();
+      const answer = item ? _engine.answers()[item.id] : null;
+      if (item && canAdvance(item, answer) && answer == null) {
+        onAdvance();
+      } else {
+        history.forward();
+      }
+    });
 
     _progressEl = document.createElement('progress-bar');
     _progressEl.slot = 'progress';

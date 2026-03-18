@@ -246,6 +246,37 @@ describe('progress()', () => {
     // before advancing through if — still indeterminate
     expect(engine.progress().total).toBeNull();
   });
+
+  it('instructions items are not counted in current or total', () => {
+    const engine = createEngine(
+      makeQ([instr('intro'), select('q1'), select('q2')]),
+      SESSION_KEY
+    );
+    // Before any advance
+    expect(engine.progress()).toEqual({ current: 0, total: 2 });
+    // Advance through instructions — current stays 0
+    engine.advance();
+    expect(engine.progress()).toEqual({ current: 0, total: 2 });
+    // Advance to q1 — current becomes 1
+    engine.advance();
+    expect(engine.progress()).toEqual({ current: 1, total: 2 });
+    // Advance to q2 — current becomes 2
+    engine.advance();
+    expect(engine.progress()).toEqual({ current: 2, total: 2 });
+  });
+
+  it('instructions mid-sequence are transparent to progress', () => {
+    const engine = createEngine(
+      makeQ([select('q1'), instr('mid'), select('q2')]),
+      SESSION_KEY
+    );
+    engine.advance(); // q1
+    expect(engine.progress()).toEqual({ current: 1, total: 2 });
+    engine.advance(); // mid (instructions)
+    expect(engine.progress()).toEqual({ current: 1, total: 2 });
+    engine.advance(); // q2
+    expect(engine.progress()).toEqual({ current: 2, total: 2 });
+  });
 });
 
 // ─── if-node branching at item level ─────────────────────────────────────────

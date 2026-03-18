@@ -137,7 +137,7 @@ function countLeaves(nodes) {
   let count = 0;
   for (const n of nodes) {
     if (isRandomizeNode(n)) count += countLeaves(n.ids);
-    else if (!isControlFlow(n)) count++;
+    else if (!isControlFlow(n) && n.type !== 'instructions') count++;
   }
   return count;
 }

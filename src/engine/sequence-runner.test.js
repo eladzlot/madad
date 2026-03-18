@@ -366,4 +366,18 @@ describe('remainingCount()', () => {
     runner.back();       // → a, pending restored to [b, c]
     expect(runner.remainingCount()).toBe(2);
   });
+
+  it('does not count instructions items in the total', () => {
+    const instr = { id: 'intro', type: 'instructions', text: 'intro' };
+    expect(createSequenceRunner([instr, q('a'), q('b')]).remainingCount()).toBe(2);
+  });
+
+  it('instructions consumed mid-sequence do not affect remaining scored count', () => {
+    const instr = { id: 'intro', type: 'instructions', text: 'intro' };
+    const runner = createSequenceRunner([instr, q('a'), q('b')]);
+    runner.advance(ctx); // intro
+    expect(runner.remainingCount()).toBe(2);
+    runner.advance(ctx); // a
+    expect(runner.remainingCount()).toBe(1);
+  });
 });

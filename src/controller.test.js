@@ -373,6 +373,28 @@ describe('router forward — shell forward event calls history.forward()', () =>
     // engine.advance() must NOT have been called yet — history.forward() was called instead
     expect(engine.advance.mock.calls.length).toBe(advanceBefore);
   });
+
+  it('shell forward event on skippable unanswered item calls onAdvance() directly', () => {
+    vi.useFakeTimers();
+    const questionnaire = makeQuestionnaire();
+    questionnaire.items = [
+      { id: 't1', type: 'text', text: 'הערות' },  // text is skippable by default
+      { id: 'q1', type: 'select', text: 'שאלה 1' },
+    ];
+    const engine = makeEngine(questionnaire);
+    // No answer recorded for the text item
+    engine.answers.mockReturnValue({});
+    const { container } = makeSetup({ questionnaire, engine });
+
+    const advanceBefore = engine.advance.mock.calls.length;
+    container.querySelector('app-shell')
+      .dispatchEvent(new CustomEvent('forward', { bubbles: true }));
+    vi.advanceTimersByTime(200);
+
+    // engine.advance() must have been called — onAdvance() triggered directly
+    expect(engine.advance.mock.calls.length).toBeGreaterThan(advanceBefore);
+    vi.useRealTimers();
+  });
 });
 
 describe('router forward — popstate forward advances to next item', () => {
