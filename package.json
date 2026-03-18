@@ -15,7 +15,8 @@
     "lint": "eslint src tests composer/src",
     "lint:fix": "eslint src tests composer/src --fix",
     "validate:configs": "node scripts/validate-configs.mjs",
-    "size": "node scripts/check-size.mjs"
+    "size": "node scripts/check-size.mjs",
+    "ci": "npm run lint && npm test && npm run validate:configs && npm run build && npm run size && npm run e2e"
   },
   "dependencies": {
     "ajv": "^8.18.0",

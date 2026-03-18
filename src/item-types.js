@@ -57,15 +57,6 @@ const REGISTRY = {
     answerShape:        'scalar',
     pdfRenderer:        'scored',
   },
-  select: {
-    tag:                'item-select',
-    autoAdvance:        true,
-    skippableDefault:   false,
-    contributesToScore: true,
-    answerIsNumeric:    true,
-    answerShape:        'scalar',
-    pdfRenderer:        'scored',
-  },
   multiselect: {
     tag:                'item-multiselect',
     autoAdvance:        false,   // requires explicit submit

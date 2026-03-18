@@ -154,7 +154,7 @@ export class ItemText extends LitElement {
     if (pattern) {
       try {
         if (!new RegExp(pattern).test(value)) return 'הערך אינו בפורמט הנדרש';
-      } catch (_) { /* invalid pattern — skip */ }
+      } catch { /* invalid pattern — skip */ }
     }
     return '';
   }
