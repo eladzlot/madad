@@ -138,6 +138,7 @@ export async function loadConfig(sources, options = {}) {
   return {
     questionnaires,
     batteries,
+    dependencies: results[0].data.dependencies ?? [],
     version:    results[0].data.version ?? null,
     resolvedAt: new Date().toISOString(),
   };

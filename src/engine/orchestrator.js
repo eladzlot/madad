@@ -77,11 +77,18 @@ export function createOrchestrator(config, source, callbacks = {}) {
   function buildBatteryContext() {
     const score = {};
     const subscale = {};
+    // item.<questionnaireId>.<itemId> — qualified cross-questionnaire references.
+    // Each completed questionnaire's answers are stored under its session key,
+    // so battery if-conditions can reference e.g. item.diamond_sr.q11
+    const item = {};
     for (const [key, result] of Object.entries(state.scores)) {
-      score[key] = result.total;
+      score[key]    = result.total;
       subscale[key] = result.subscales;
     }
-    return { score, subscale };
+    for (const [key, answers] of Object.entries(state.answers)) {
+      item[key] = answers;
+    }
+    return { score, subscale, item };
   }
 
   // ── Start a questionnaire node ───────────────────────────────────────────

@@ -3,14 +3,15 @@ import { state, buildUrl, pidWarning, matchesQuery } from './composer-state.js';
 
 // Reset state before each test
 beforeEach(() => {
-  state.batteries      = [];
-  state.questionnaires = [];
-  state.sourceByItem   = new Map();
-  state.selected       = [];
-  state.pid            = '';
-  state.query          = '';
-  state.currentUrl     = null;
-  state.warnings       = [];
+  state.batteries             = [];
+  state.questionnaires        = [];
+  state.sourceByItem          = new Map();
+  state.dependenciesBySource  = new Map();
+  state.selected              = [];
+  state.pid                   = '';
+  state.query                 = '';
+  state.currentUrl            = null;
+  state.warnings              = [];
 });
 
 // ── buildUrl ──────────────────────────────────────────────────────────────────
@@ -88,6 +89,19 @@ describe('buildUrl', () => {
     expect(configs).toHaveLength(2);
     expect(configs).toContain('/configs/a.json');
     expect(configs).toContain('/configs/b.json');
+  });
+
+  it('includes transitive questionnaire sources when a battery references another config', () => {
+    // battery lives in intake.json but references questionnaires from standard.json
+    state.selected = ['clinical_intake'];
+    state.sourceByItem.set('clinical_intake', 'configs/prod/intake.json');
+    state.dependenciesBySource.set(
+      'configs/prod/intake.json',
+      ['configs/prod/standard.json']
+    );
+    const configs = new URL(buildUrl(ORIGIN)).searchParams.get('configs').split(',');
+    expect(configs).toContain('configs/prod/intake.json');
+    expect(configs).toContain('configs/prod/standard.json');
   });
 });
 

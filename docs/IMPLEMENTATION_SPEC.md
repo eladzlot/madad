@@ -143,7 +143,7 @@ Item IDs are local to their questionnaire. The same ID may appear in two differe
 
 ### 5.4 Reserved Words
 
-The following are reserved and must not be used as IDs: `item`, `score`, `subscale`, `sum`, `avg`, `min`, `max`, `if`.
+The following are reserved and must not be used as IDs: `item`, `score`, `subscale`, `sum`, `avg`, `min`, `max`, `if`, `count`, `checked`.
 
 ---
 
@@ -246,6 +246,7 @@ A set contains:
 - A unique identifier and version string
 - An array of questionnaire definitions
 - An optional array of battery definitions (each with an ID and a sequence of nodes — see section 9)
+- An optional `dependencies` array — relative paths to other config files that must be loaded alongside this one. The Composer reads this field and automatically includes dependency sources in generated patient URLs. Example: a battery in `intake.json` that references questionnaires from `standard.json` declares `"dependencies": ["configs/prod/standard.json"]`.
 
 ### 7.2 Questionnaire
 
@@ -265,13 +266,25 @@ Every entry in the items array is an item. Items have a type that determines how
 
 **Supported types:**
 
-`select` — a question with an ordered numeric scale. Contains the question text and either an inline `options` array (each option with a display label and numeric value), or an `optionSetId` referencing a named option set on the questionnaire. If neither is present, the questionnaire's `defaultOptionSetId` is used. Optional flags for reverse scoring and item weight.
+`select` — a question with an ordered numeric scale. Contains the question text and either an inline `options` array (each option with a display label and numeric value), or an `optionSetId` referencing a named option set on the questionnaire. If neither is present, the questionnaire's `defaultOptionSetId` is used. Optional flags for reverse scoring (`reverse`) and item weight (`weight`). Contributes to scoring. Required by default.
 
-`binary` — a yes/no question. Contains the question text and optional custom labels for the two options (defaults to כן/לא). Stores values as 1 (yes) and 0 (no).
+`binary` — a yes/no question. Contains the question text and optional custom labels for the two options (defaults to כן/לא). Stores values as 1 (yes) and 0 (no). Contributes to scoring. Required by default.
 
-`instructions` — a non-scored display item. Contains only a text body. Rendered as an instruction screen with a continue button. Ignored by scoring, excluded from the response table in the PDF.
+`instructions` — a non-scored display item. Contains only a text body. Rendered as an instruction screen with a continue button. Ignored by scoring, excluded from the response table in the PDF. Skippable (never requires an answer).
 
-Future item types (not yet implemented) should be added here as new type values. The engine must fail with a clear error message if it encounters an unknown type.
+`text` — a free-text input. Contains the question text and an optional `inputType` (`"line"`, `"multiline"`, `"number"`, `"email"`). Optional `min`/`max` bounds for numeric inputs, optional `pattern` regex. Not scored, not available in DSL expressions. Skippable by default; set `required: true` to force an answer.
+
+`slider` — a continuous or stepped numeric input with explicit `min` and `max`. Optional `step` (default 1), optional `labels` object with `min`/`max` display strings. Contributes to scoring like a select item. Supports `reverse` and `weight`. Required by default.
+
+`multiselect` — multiple-choice from a list. Options are label-only (no `value` field) — identity is positional. Answer is stored as an array of 1-based indices of selected options. Zero selections `[]` is valid. Not scored. Available in DSL via `count()` and `checked()`. Skippable by default; set `required: true` to require at least one selection.
+
+All item types support an optional `required` boolean that overrides the type's default skippability. `required: true` forces an answer; `required: false` makes the item skippable.
+
+**Control-flow nodes** (not rendered as items):
+
+`if` — evaluates a DSL condition and branches to `then` or `else` item arrays. Has an `id` field.
+
+`randomize` — shuffles a set of items or sub-sequences. Has an `id` field and an `ids` array.
 
 **Example — a partial PHQ-9 config:**
 ```json
@@ -376,13 +389,26 @@ Adding a new instrument means adding a new questionnaire definition to `standard
 
 ### 8.2 Specialised config files
 
-Some future instruments will require their own config files rather than being added to `standard.json`. The criteria for a separate file:
+Some instruments and workflows live in their own config files rather than `standard.json`. The criteria for a separate file:
 
-- **Structured diagnostic interviews** (e.g. DIAMOND) — complex branching logic, conditional item sequences, or administrative overhead that would make `standard.json` difficult to maintain
-- **Worksheet-style content** (e.g. CPT worksheets) — not scored assessments; different lifecycle and authoring process
-- **Research instruments** — instruments used only in specific study contexts, not general clinical practice
+- **Intake workflows** — batteries that combine a screener with conditional follow-ups, demographic questionnaires, and cross-file references. Example: `intake.json` contains the DIAMOND screener, the demographics questionnaire, and the `clinical_intake` battery, which references instruments from `standard.json` via a `dependencies` declaration.
+- **Structured diagnostic interviews** — complex branching logic or administrative overhead that would make `standard.json` difficult to maintain.
+- **Worksheet-style content** (e.g. CPT worksheets) — not scored assessments; different lifecycle and authoring process.
+- **Research instruments** — instruments used only in specific study contexts, not general clinical practice.
 
 Separate config files are loaded alongside `standard.json` via the `configs` URL parameter. All IDs must remain globally unique across all loaded files — the loader enforces this at runtime.
+
+When a config file references questionnaires from another file (e.g. a battery in `intake.json` referencing instruments in `standard.json`), declare the dependency explicitly:
+
+```json
+{
+  "id": "intake",
+  "dependencies": ["configs/prod/standard.json"],
+  ...
+}
+```
+
+The Composer reads this field and automatically appends the dependency to the `configs=` URL parameter when generating patient links. Without this declaration, the Composer would generate a URL missing the required config, causing a runtime resolution error.
 
 ### 8.3 What does not belong in a config file
 
@@ -394,7 +420,8 @@ Separate config files are loaded alongside `standard.json` via the `configs` URL
 
 | Path | Purpose |
 |---|---|
-| `public/configs/prod/` | Production instruments — loaded by live sessions |
+| `public/configs/prod/standard.json` | Production instruments — all standard clinical questionnaires |
+| `public/configs/prod/intake.json` | Intake workflow — DIAMOND screener, demographics, `clinical_intake` battery |
 | `public/configs/test/` | Test fixtures — used in automated tests and staging only |
 
 Never put test fixtures in `prod/`. The `validate:configs` script runs over all files in `public/configs/` — test fixtures must still be schema-valid.
@@ -614,16 +641,21 @@ The engine exposes to the UI:
 
 ## 13. DSL Interpreter
 
-The DSL interpreter is used in two contexts: evaluating scoring formulas and evaluating conditions in `if` nodes and alert specifications. It is the single expression language used throughout the system. It never uses `eval`.
+The DSL interpreter is used in two contexts: evaluating scoring formulas and evaluating conditions in `if` nodes and alert specifications. It is the single expression language used throughout the system. It never uses `eval`. See `docs/DSL_SPEC.md` for full architecture and syntax reference.
 
 ### 12.1 Capabilities
 
 **Numeric functions:** `sum`, `avg`, `min`, `max`
 
-**Conditional expression:** `if(condition, valueIfTrue, valueIfFalse)` — returns a numeric value. Not to be confused with the `if` sequence node, which uses a DSL condition string.
+**Conditional expression:** `if(condition, valueIfTrue, valueIfFalse)` — returns a numeric or boolean value. Not to be confused with the `if` sequence node, which uses a DSL condition string.
+
+**Multiselect functions:**
+- `count(item.<id>)` — returns the number of selected options in a `multiselect` answer (0 if unanswered, array length if answered)
+- `checked(item.<id>, n)` — returns `true` if 1-based option index `n` is among the selected options
 
 **References:**
-- `item.<id>` — response value of a named item in the current questionnaire
+- `item.<id>` — response value of a named item in the **current questionnaire** (questionnaire-level expressions only). For `select`/`binary`/`slider`: a number. For `multiselect`: an array of 1-based indices. For `text`: not exposed.
+- `item.<questionnaireId>.<itemId>` — response value of a specific item from a specific completed questionnaire (**battery-level expressions only**). Required at battery level to avoid ambiguity when multiple questionnaires share item IDs.
 - `subscale.<id>` — computed subscale value of the current questionnaire
 - `score.<questionnaireId>` — total score of a completed questionnaire (battery-level context only)
 - `subscale.<questionnaireId>.<subscaleId>` — subscale score of a completed questionnaire (battery-level context only)
@@ -632,7 +664,7 @@ The DSL interpreter is used in two contexts: evaluating scoring formulas and eva
 
 **Boolean operators:** `&&`, `||`, `!`
 
-**Literals:** numeric values
+**Literals:** numeric values only (no string or boolean literals)
 
 ### 12.2 Return Types
 
@@ -651,6 +683,15 @@ item.phq9_3 >= 2 && item.phq9_4 == 0
 ```
 
 Battery-level condition in an `if` node:
+```
+score.phq9 >= 10 || score.gad7 >= 8
+```
+
+Multiselect conditions:
+```
+count(item.symptoms) >= 3
+checked(item.symptoms, 2) && checked(item.symptoms, 4)
+```
 ```
 score.phq9 >= 10 || score.gad7 >= 8
 ```
@@ -758,6 +799,8 @@ Session state is a plain in-memory object. It is never written to `localStorage`
 - **Conflicted token** (same ID in multiple configs) → throws `ItemResolutionError`.
 - **Both-type token** (ID present as both questionnaire and battery across configs) → throws `ItemResolutionError`.
 - **Not found** → throws `ItemResolutionError`.
+
+All `ItemResolutionError` messages are in Hebrew and are shown directly to the patient as the detail line of the error screen.
 
 Tokens are resolved in URL order, which defines the session order.
 

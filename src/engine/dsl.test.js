@@ -30,7 +30,27 @@ describe('references', () => {
   it('resolves item.<id> with underscore id', () =>
     expect(evaluate('item.sleep_disturbance', itemCtx({ 'sleep_disturbance': 2 }), 'number')).toBe(2));
 
+  it('resolves item.<questionnaireId>.<itemId> (battery-level qualified reference)', () =>
+    expect(evaluate(
+      'item.diamond_sr.q11',
+      { item: { diamond_sr: { q11: 1 } } },
+      'number'
+    )).toBe(1));
 
+  it('resolves item.<questionnaireId>.<itemId> with numeric item id', () =>
+    expect(evaluate(
+      'item.phq9.9',
+      { item: { phq9: { '9': 2 } } },
+      'number'
+    )).toBe(2));
+
+  it('throws DSLReferenceError for missing qualified questionnaire', () =>
+    expect(() => evaluate('item.missing_q.q1', { item: {} }, 'number'))
+      .toThrow(DSLReferenceError));
+
+  it('throws DSLReferenceError for missing qualified item id', () =>
+    expect(() => evaluate('item.phq9.missing', { item: { phq9: {} } }, 'number'))
+      .toThrow(DSLReferenceError));
 
   it('resolves subscale.<id> (current questionnaire)', () =>
     expect(evaluate('subscale.somatic', itemCtx({}, { somatic: 7 }), 'number')).toBe(7));

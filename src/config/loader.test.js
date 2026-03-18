@@ -93,6 +93,19 @@ describe('resolved config shape', () => {
     expect(config).toMatchObject({ version: expect.any(String), resolvedAt: expect.any(String) });
   });
 
+  it('exposes dependencies array from config file', async () => {
+    const body = { ...minimalConfig([minimalQ()]), dependencies: ['configs/prod/standard.json'] };
+    const fetch = makeFetch({ 'configs/a.json': { body } });
+    const config = await loadConfig(['a'], { fetch });
+    expect(config.dependencies).toEqual(['configs/prod/standard.json']);
+  });
+
+  it('returns empty dependencies array when not declared', async () => {
+    const fetch = makeFetch({ 'configs/a.json': { body: minimalConfig([minimalQ()]) } });
+    const config = await loadConfig(['a'], { fetch });
+    expect(config.dependencies).toEqual([]);
+  });
+
   it('throws when no sources provided', async () => {
     await expect(loadConfig([], { fetch: vi.fn() })).rejects.toBeInstanceOf(ConfigError);
   });

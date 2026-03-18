@@ -55,5 +55,13 @@ export async function loadAllConfigs(manifest) {
       state.questionnaires.push({ id: q.id, title: q.title, description: q.description ?? '', keywords: q.keywords ?? [], sourceUrl: entry.url });
       state.sourceByItem.set(q.id, entry.url);
     }
+
+    // Record declared dependencies so buildUrl can include them automatically
+    const deps = (config.dependencies ?? []).map(dep =>
+      dep.startsWith('/') ? dep.slice(1) : dep
+    );
+    if (deps.length) {
+      state.dependenciesBySource.set(entry.url, deps);
+    }
   }
 }

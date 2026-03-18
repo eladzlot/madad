@@ -121,7 +121,7 @@ describe('cross-entity collision (token is both questionnaire and battery)', () 
     const config = makeConfig({ questionnaires: [makeQ('foo')], batteries: [makeBattery('foo', [])] });
     let err;
     try { resolveItems(['foo'], config); } catch (e) { err = e; }
-    expect(err.message).toMatch(/both a questionnaire and a battery/);
+    expect(err.message).toMatch(/גם כשאלון וגם כסוללה/);
   });
 });
 

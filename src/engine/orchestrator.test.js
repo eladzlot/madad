@@ -230,6 +230,108 @@ describe('conditional battery (if node)', () => {
   });
 });
 
+// ─── item-level battery branching ─────────────────────────────────────────────
+
+describe('conditional battery branching on item answers (regression)', () => {
+  // This tests the fix for: DSLReferenceError "cannot resolve reference item.q11"
+  // Battery if-conditions must be able to reference individual item answers from
+  // completed questionnaires, not just aggregate scores.
+
+  const binary = (id) => ({
+    id, type: 'binary', text: `Q${id}`,
+    options: [{ label: 'לא', value: 0 }, { label: 'כן', value: 1 }],
+  });
+
+  it('branches on item answer from previous questionnaire', () => {
+    const screener = makeQ('screener', [binary('q11'), binary('q12')]);
+    const followup = makeQ('followup');
+    const battery = {
+      id: 'b', title: 'b',
+      sequence: [
+        { questionnaireId: 'screener' },
+        { type: 'if', condition: 'item.screener.q11 == 1 || item.screener.q12 == 1',
+          then: [{ questionnaireId: 'followup' }],
+          else: [] },
+      ],
+    };
+    const starts = [];
+    const orc = createOrchestrator(
+      makeConfig([screener, followup], [battery]),
+      { batteryId: 'b' },
+      { onQuestionnaireStart: (_, key) => starts.push(key) }
+    );
+    orc.start();
+    // Answer q11=1 (yes), q12=0
+    orc.currentEngine().advance();
+    orc.currentEngine().recordAnswer('q11', 1);
+    orc.currentEngine().advance();
+    orc.currentEngine().recordAnswer('q12', 0);
+    orc.currentEngine().advance();
+    orc.engineComplete();
+    expect(starts).toEqual(['screener', 'followup']);
+  });
+
+  it('skips branch when screener item answers are all zero', () => {
+    const screener = makeQ('screener', [binary('q11'), binary('q12')]);
+    const followup = makeQ('followup');
+    const battery = {
+      id: 'b', title: 'b',
+      sequence: [
+        { questionnaireId: 'screener' },
+        { type: 'if', condition: 'item.screener.q11 == 1 || item.screener.q12 == 1',
+          then: [{ questionnaireId: 'followup' }],
+          else: [] },
+      ],
+    };
+    const onComplete = vi.fn();
+    const orc = createOrchestrator(
+      makeConfig([screener, followup], [battery]),
+      { batteryId: 'b' },
+      { onSessionComplete: onComplete }
+    );
+    orc.start();
+    orc.currentEngine().advance();
+    orc.currentEngine().recordAnswer('q11', 0);
+    orc.currentEngine().advance();
+    orc.currentEngine().recordAnswer('q12', 0);
+    orc.currentEngine().advance();
+    orc.engineComplete();
+    expect(onComplete).toHaveBeenCalledOnce();
+  });
+
+  it('item context accumulates across multiple completed questionnaires', () => {
+    const q1 = makeQ('q1', [binary('a1')]);
+    const q2 = makeQ('q2', [binary('b1')]);
+    const q3 = makeQ('q3');
+    const battery = {
+      id: 'b', title: 'b',
+      sequence: [
+        { questionnaireId: 'q1' },
+        { questionnaireId: 'q2' },
+        { type: 'if', condition: 'item.q1.a1 == 1 && item.q2.b1 == 1',
+          then: [{ questionnaireId: 'q3' }],
+          else: [] },
+      ],
+    };
+    const starts = [];
+    const orc = createOrchestrator(
+      makeConfig([q1, q2, q3], [battery]),
+      { batteryId: 'b' },
+      { onQuestionnaireStart: (_, key) => starts.push(key) }
+    );
+    orc.start();
+    orc.currentEngine().advance();
+    orc.currentEngine().recordAnswer('a1', 1);
+    orc.currentEngine().advance();
+    orc.engineComplete();
+    orc.currentEngine().advance();
+    orc.currentEngine().recordAnswer('b1', 1);
+    orc.currentEngine().advance();
+    orc.engineComplete();
+    expect(starts).toEqual(['q1', 'q2', 'q3']);
+  });
+});
+
 // ─── instanceId / session key ─────────────────────────────────────────────────
 
 describe('instanceId', () => {

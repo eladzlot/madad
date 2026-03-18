@@ -18,6 +18,12 @@
     "batteries": {
       "type": "array",
       "items": { "$ref": "#/$defs/battery" }
+    },
+
+    "dependencies": {
+      "type": "array",
+      "description": "Config files that must be loaded alongside this one. Paths relative to the app root, without leading slash. The composer will automatically include these when generating patient URLs.",
+      "items": { "type": "string", "minLength": 1 }
     }
   },
 

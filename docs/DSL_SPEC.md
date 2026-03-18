@@ -111,15 +111,15 @@ Tree-walks the AST recursively. Enforces strict types — no implicit coercion. 
 
 The context object is built by the engine and passed into `evaluate()`. Its shape depends on where the expression is evaluated:
 
-### 3.1 Within a questionnaire (item conditions, alerts)
+### 3.1 Within a questionnaire (item conditions, alerts, scoring formulas)
 
 ```js
 {
   item: {
-    // Keyed by item id. Value type depends on item type:
+    // Keyed by item id — answers in the CURRENT questionnaire only.
     // select / binary / slider → number
-    // text                     → string (not exposed to DSL — see §4.1)
     // multiselect              → number[] of 1-based indices
+    // text                     → not exposed
     '1': 2,
     'phq9_9': 1,
     'symptoms': [1, 3],
@@ -144,11 +144,19 @@ The context object is built by the engine and passed into `evaluate()`. Its shap
   subscale: {
     // Keyed by questionnaire id → subscale map → number
     'pcl5': { intrusion: 14, avoidance: 8 }
+  },
+  item: {
+    // Keyed by questionnaire id → item id → value
+    // Use as item.<questionnaireId>.<itemId> in expressions
+    'diamond_sr': { q11: 1, q12: 0, q19: 0, ... },
+    'phq9':       { '1': 2, '9': 1, ... },
   }
 }
 ```
 
-**Note:** `item` is not available at battery level. `subscale` is available at both levels but has a different shape: flat at questionnaire level, nested under questionnaire ID at battery level.
+**Key distinction:**
+- Within a questionnaire: `item.<id>` (unqualified) — refers to the current questionnaire's items.
+- At battery level: `item.<questionnaireId>.<itemId>` (qualified) — refers to a specific item from a specific completed questionnaire. The unqualified `item.<id>` form is not available at battery level.
 
 ---
 
@@ -158,20 +166,34 @@ The context object is built by the engine and passed into `evaluate()`. Its shap
 
 References resolve values from the current context.
 
-#### `item.<id>`
+#### `item.<id>` — within a questionnaire
 
-The patient's answer to item `<id>` within the current questionnaire.
+The patient's answer to item `<id>` within the **current questionnaire**. Only valid in questionnaire-level expressions (item `if` conditions, alert conditions, custom scoring formulas).
 
 - For `select`, `binary`, `slider` items: resolves to `number`.
-- For `multiselect` items: resolves to `number[]` (1-based indices of selected options). Use `count()` or `checked()` to work with these — do not compare them directly with numeric operators.
-- `text` item answers are **not exposed** to the DSL (strings have no useful numeric semantics).
+- For `multiselect` items: resolves to `number[]`. Use `count()` or `checked()`.
+- `text` item answers are **not exposed** to the DSL.
 - The `<id>` may be numeric (`item.1`, `item.9`) or alphanumeric with underscores (`item.phq9_9`).
 - Throws `DSLReferenceError` if the item has not been answered yet.
 
 ```
-item.1          → the answer to item "1"
-item.phq9_9     → the answer to item "phq9_9"
-item.symptoms   → [1, 3] if options 1 and 3 were selected
+item.1          → the answer to item "1" in the current questionnaire
+item.phq9_9     → the answer to item "phq9_9" in the current questionnaire
+item.symptoms   → [1, 3] if multiselect options 1 and 3 were selected
+```
+
+#### `item.<questionnaireId>.<itemId>` — at battery level
+
+The patient's answer to a specific item in a **specific completed questionnaire**. Only valid in battery-level expressions (battery `if` conditions).
+
+This form is required at battery level because multiple questionnaires may share item IDs (e.g. both PHQ-9 and GAD-7 have an `item.1`). The qualified form is unambiguous.
+
+- The questionnaire must have already completed before this expression is evaluated.
+- Throws `DSLReferenceError` if the questionnaire or item is not found in the context.
+
+```
+item.diamond_sr.q11   → answer to item "q11" in the completed "diamond_sr" questionnaire
+item.phq9.9           → answer to item "9" in the completed "phq9" questionnaire
 ```
 
 #### `subscale.<id>`
@@ -393,11 +415,10 @@ try {
 }
 ```
 
-### Battery-level branch (show PCL-5 if PHQ-9 >= 10 or GAD-7 >= 8)
+### Battery-level branch (show PCL-5 if PHQ-9 ≥ 10 or GAD-7 ≥ 8)
 
 ```json
 {
-  "id": "branch_ptsd",
   "type": "if",
   "condition": "score.phq9 >= 10 || score.gad7 >= 8",
   "then": [ { "questionnaireId": "pcl5" } ],
@@ -405,7 +426,18 @@ try {
 }
 ```
 
-### Multiselect: alert if a specific symptom was checked
+### Battery-level branch on individual screener item (qualified form required)
+
+```json
+{
+  "type": "if",
+  "condition": "item.diamond_sr.q11 == 1 || item.diamond_sr.q12 == 1",
+  "then": [ { "questionnaireId": "oci_r" } ],
+  "else": []
+}
+```
+
+### Multiselect alert: patient selected a specific symptom
 
 ```json
 { "condition": "checked(item.symptoms, 3)", "message": "חרדה דווחה", "severity": "warning" }
@@ -433,6 +465,7 @@ try {
 
 ## 7. Constraints and Limitations
 
+- **`item.<id>` is questionnaire-scoped.** Within a questionnaire, `item.<id>` always refers to the current questionnaire's items. At battery level, you must use the qualified form `item.<questionnaireId>.<itemId>` — the unqualified form is not available.
 - **No string values.** Text item answers are not available in the DSL.
 - **No boolean literals.** Write `1 == 1` not `true`. Conditions are always built from comparisons.
 - **No assignment.** The DSL is purely functional — no side effects.

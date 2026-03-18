@@ -7,14 +7,15 @@ export const MANIFEST_URL = 'configs.json';
 export const PID_PATTERN  = /^[a-zA-Z0-9\u0590-\u05FF_-]*$/;
 
 export const state = {
-  batteries:      [],       // [{ id, title, description, sourceUrl }]
-  questionnaires: [],       // [{ id, title, description, sourceUrl }]
-  sourceByItem:   new Map(),// id → sourceUrl
-  selected:       [],       // string[] in selection order
-  pid:            '',
-  query:          '',
-  currentUrl:     null,     // kept in sync on every render/partial
-  warnings:       [],       // string[] — load-time warnings only
+  batteries:             [],       // [{ id, title, description, sourceUrl }]
+  questionnaires:        [],       // [{ id, title, description, sourceUrl }]
+  sourceByItem:          new Map(),// id → sourceUrl
+  dependenciesBySource:  new Map(),// sourceUrl → sourceUrl[]
+  selected:              [],       // string[] in selection order
+  pid:                   '',
+  query:                 '',
+  currentUrl:            null,     // kept in sync on every render/partial
+  warnings:              [],       // string[] — load-time warnings only
 };
 
 // ── URL generation ────────────────────────────────────────────────────────────
@@ -25,6 +26,13 @@ export function buildUrl(base = getAppRoot()) {
   const neededSources = new Set(
     state.selected.map(id => state.sourceByItem.get(id)).filter(Boolean)
   );
+
+  // Follow declared dependencies: if a selected item's source config declares
+  // dependencies, include those config sources too.
+  for (const src of [...neededSources]) {
+    const deps = state.dependenciesBySource.get(src) ?? [];
+    for (const dep of deps) neededSources.add(dep);
+  }
 
   const parts = [
     `configs=${[...neededSources].join(',')}`,

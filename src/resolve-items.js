@@ -16,7 +16,7 @@
 
 export class ItemResolutionError extends Error {
   constructor(token, reason) {
-    super(`Cannot resolve item "${token}": ${reason}`);
+    super(`שגיאה בפתרון הפריט "${token}": ${reason}`);
     this.name = 'ItemResolutionError';
     this.token = token;
   }
@@ -42,8 +42,7 @@ export function resolveItems(tokens, config) {
         if (!qMap.has(node.questionnaireId)) {
           throw new ItemResolutionError(
             node.questionnaireId,
-            `questionnaire "${node.questionnaireId}" referenced inside battery "${batteryId}" ` +
-            `was not found in any loaded config`
+            `שאלון "${node.questionnaireId}" המופיע בסוללה "${batteryId}" לא נמצא בשום קובץ תצורה שנטען`
           );
         }
         return node;
@@ -61,7 +60,7 @@ export function resolveItems(tokens, config) {
     if (inQ && inB) {
       throw new ItemResolutionError(
         token,
-        `"${token}" exists as both a questionnaire and a battery — IDs must be unique across both types`
+        `"${token}" קיים גם כשאלון וגם כסוללה — המזהים חייבים להיות ייחודיים`
       );
     }
 
@@ -77,7 +76,7 @@ export function resolveItems(tokens, config) {
 
     throw new ItemResolutionError(
       token,
-      `"${token}" was not found as a questionnaire or battery in any loaded config`
+      `"${token}" לא נמצא כשאלון או סוללה בשום קובץ תצורה שנטען`
     );
   }
 

@@ -238,6 +238,17 @@ function parse(tokens, expression) {
           return { kind: 'ref', ref: 'subscale_q', questionnaireId: part1, subscaleId: part2 };
         }
 
+        // item.<questionnaireId>.<itemId> — qualified cross-questionnaire reference (battery level)
+        if (name === 'item' && peek().type === TOKEN.DOT) {
+          consume(); // second dot
+          const tok2 = peek();
+          if (tok2.type !== TOKEN.IDENT && tok2.type !== TOKEN.NUMBER)
+            throw new DSLSyntaxError(`expected identifier after "."`, expression);
+          consume();
+          const part2 = String(tok2.value);
+          return { kind: 'ref', ref: 'item_q', questionnaireId: part1, itemId: part2 };
+        }
+
         return { kind: 'ref', ref: name, id: part1 };
       }
 
@@ -269,6 +280,14 @@ function evalNode(node, context, expression) {
             !(subscaleId in context.subscale[questionnaireId]))
           throw new DSLReferenceError(`subscale.${questionnaireId}.${subscaleId}`, expression);
         return context.subscale[questionnaireId][subscaleId];
+      }
+      if (ref === 'item_q') {
+        // Qualified: item.<questionnaireId>.<itemId> — battery-level cross-questionnaire reference
+        const { questionnaireId, itemId } = node;
+        if (!context.item || !context.item[questionnaireId] ||
+            !(itemId in context.item[questionnaireId]))
+          throw new DSLReferenceError(`item.${questionnaireId}.${itemId}`, expression);
+        return context.item[questionnaireId][itemId];
       }
       if (ref === 'item') {
         if (!context.item || !(id in context.item))

@@ -1,7 +1,149 @@
 {
   "id": "intake",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "questionnaires": [
+    {
+      "id": "demographics",
+      "title": "פרטים אישיים",
+      "description": "פרטים אישיים ותיאור קצר של הפנייה.",
+      "keywords": [
+        "demographics",
+        "intake",
+        "personal"
+      ],
+      "items": [
+        {
+          "id": "name",
+          "type": "text",
+          "text": "שם מלא",
+          "inputType": "line",
+          "required": true
+        },
+        {
+          "id": "phone",
+          "type": "text",
+          "text": "מספר טלפון",
+          "inputType": "line"
+        },
+        {
+          "id": "email",
+          "type": "text",
+          "text": "כתובת דוא\"ל",
+          "inputType": "email"
+        },
+        {
+          "id": "age",
+          "type": "text",
+          "text": "גיל",
+          "inputType": "number",
+          "min": 0,
+          "max": 120
+        },
+        {
+          "id": "gender",
+          "type": "select",
+          "text": "מין",
+          "options": [
+            {
+              "label": "זכר",
+              "value": 1
+            },
+            {
+              "label": "נקבה",
+              "value": 2
+            },
+            {
+              "label": "אחר",
+              "value": 3
+            }
+          ],
+          "required": false
+        },
+        {
+          "id": "referral_source",
+          "type": "select",
+          "text": "כיצד הגעת אלינו?",
+          "options": [
+            {
+              "label": "הפניית רופא / מטפל",
+              "value": 1
+            },
+            {
+              "label": "המלצה של מכר",
+              "value": 2
+            },
+            {
+              "label": "חיפוש באינטרנט",
+              "value": 3
+            },
+            {
+              "label": "קופת חולים / ביטוח לאומי",
+              "value": 4
+            },
+            {
+              "label": "אחר",
+              "value": 5
+            }
+          ],
+          "required": false
+        },
+        {
+          "id": "presenting_problem",
+          "type": "text",
+          "text": "תאר/י בקצרה מה מביא אותך לפנות לטיפול כעת",
+          "inputType": "multiline"
+        },
+        {
+          "id": "previous_treatment",
+          "type": "select",
+          "text": "האם קיבלת טיפול נפשי בעבר?",
+          "options": [
+            {
+              "label": "לא",
+              "value": 0
+            },
+            {
+              "label": "כן, בעבר הרחוק",
+              "value": 1
+            },
+            {
+              "label": "כן, לאחרונה (עד שנה אחרונה)",
+              "value": 2
+            },
+            {
+              "label": "כן, כרגע מקבל/ת טיפול",
+              "value": 3
+            }
+          ],
+          "required": false
+        },
+        {
+          "id": "medication",
+          "type": "select",
+          "text": "האם את/ה נוטל/ת תרופות פסיכיאטריות כרגע?",
+          "options": [
+            {
+              "label": "לא",
+              "value": 0
+            },
+            {
+              "label": "כן",
+              "value": 1
+            }
+          ],
+          "required": false
+        },
+        {
+          "id": "medication_details",
+          "type": "text",
+          "text": "אם כן, אילו תרופות? (שם ומינון)",
+          "inputType": "line"
+        }
+      ],
+      "scoring": {
+        "method": "none"
+      }
+    },
     {
       "id": "diamond_sr",
       "title": "DIAMOND Self Report Screener",
@@ -17,6 +159,19 @@
         "psychosis",
         "PTSD"
       ],
+      "defaultOptionSetId": "yesno",
+      "optionSets": {
+        "yesno": [
+          {
+            "label": "לא",
+            "value": 0
+          },
+          {
+            "label": "כן",
+            "value": 1
+          }
+        ]
+      },
       "items": [
         {
           "id": "intro",
@@ -181,7 +336,7 @@
         {
           "id": "psychotic_ideation",
           "condition": "item.q29 == 1 || item.q30 == 1",
-          "message": "פריטים 29-30 — דיווח על חוויות פסיכוטיות אפשריות (אמונות חריגות או חוויות חושיות). מומלץ הערכה קלינית מפורטת.",
+          "message": "פריטים 29–30 — דיווח על חוויות פסיכוטיות אפשריות (אמונות חריגות או חוויות חושיות). מומלץ הערכה קלינית מפורטת.",
           "severity": "critical"
         },
         {
@@ -199,24 +354,81 @@
         {
           "id": "substance_use",
           "condition": "item.q24 == 1 || item.q25 == 1",
-          "message": "פריטים 24-25 — דיווח על שימוש באלכוהול או סמים. מומלץ הערכת שימוש בחומרים.",
+          "message": "פריטים 24–25 — דיווח על שימוש באלכוהול או סמים. מומלץ הערכת שימוש בחומרים.",
           "severity": "warning"
         }
-      ],
-      "defaultOptionSetId": "yesno",
-      "optionSets": {
-        "yesno": [
-          {
-            "label": "לא",
-            "value": 0
-          },
-          {
-            "label": "כן",
-            "value": 1
-          }
-        ]
-      }
+      ]
     }
   ],
-  "batteries": []
+  "batteries": [
+    {
+      "id": "clinical_intake",
+      "title": "הערכה ראשונית",
+      "description": "סוללת הערכה ראשונית: שאלון סינון DIAMOND ושאלונים ממוקדים בהתאם לתסמינים שדווחו.",
+      "keywords": [
+        "intake",
+        "screening",
+        "clinical",
+        "DIAMOND"
+      ],
+      "sequence": [
+        {
+          "questionnaireId": "diamond_sr"
+        },
+        {
+          "type": "if",
+          "condition": "item.diamond_sr.q11 == 1 || item.diamond_sr.q12 == 1",
+          "then": [
+            {
+              "questionnaireId": "oci_r"
+            }
+          ],
+          "else": []
+        },
+        {
+          "type": "if",
+          "condition": "item.diamond_sr.q19 == 1",
+          "then": [
+            {
+              "questionnaireId": "pcl5"
+            }
+          ],
+          "else": []
+        },
+        {
+          "type": "if",
+          "condition": "item.diamond_sr.q2 == 1 || item.diamond_sr.q3 == 1",
+          "then": [
+            {
+              "questionnaireId": "pdss_sr"
+            }
+          ],
+          "else": []
+        },
+        {
+          "type": "if",
+          "condition": "item.diamond_sr.q4 == 1",
+          "then": [
+            {
+              "questionnaireId": "gad7"
+            }
+          ],
+          "else": []
+        },
+        {
+          "type": "if",
+          "condition": "item.diamond_sr.q8 == 1 || item.diamond_sr.q9 == 1",
+          "then": [
+            {
+              "questionnaireId": "phq9"
+            }
+          ],
+          "else": []
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    "configs/prod/standard.json"
+  ]
 }

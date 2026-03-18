@@ -3,11 +3,12 @@ import { state } from './composer-state.js';
 
 // Reset state before each test
 beforeEach(() => {
-  state.batteries      = [];
-  state.questionnaires = [];
-  state.sourceByItem   = new Map();
-  state.selected       = [];
-  state.warnings       = [];
+  state.batteries             = [];
+  state.questionnaires        = [];
+  state.sourceByItem          = new Map();
+  state.dependenciesBySource  = new Map();
+  state.selected              = [];
+  state.warnings              = [];
 });
 
 // We need to mock fetch before importing loader functions
@@ -32,6 +33,13 @@ function makeConfigResponse(questionnaires = [], batteries = []) {
   return {
     ok: true, status: 200,
     json: async () => ({ id: 'test', version: '1.0', questionnaires, batteries }),
+  };
+}
+
+function makeConfigResponseWithDeps(questionnaires = [], batteries = [], dependencies = []) {
+  return {
+    ok: true, status: 200,
+    json: async () => ({ id: 'test', version: '1.0', questionnaires, batteries, dependencies }),
   };
 }
 
@@ -143,5 +151,49 @@ describe('loadAllConfigs', () => {
       ],
     });
     expect(state.warnings).toHaveLength(2);
+  });
+
+  // ── dependency declaration ────────────────────────────────────────────────────
+
+  it('populates dependenciesBySource when config declares dependencies', async () => {
+    mockFetch.mockResolvedValueOnce(
+      makeConfigResponseWithDeps([minimalQ('diamond_sr')], [minimalBattery('clinical_intake', 'Clinical Intake', 'diamond_sr')], ['configs/prod/standard.json'])
+    );
+    await loadAllConfigs({ configs: [{ name: 'Intake', url: '/configs/prod/intake.json' }] });
+    expect(state.dependenciesBySource.get('configs/prod/intake.json')).toEqual(['configs/prod/standard.json']);
+  });
+
+  it('strips leading slash from declared dependency paths', async () => {
+    mockFetch.mockResolvedValueOnce(
+      makeConfigResponseWithDeps([minimalQ('q1')], [], ['/configs/prod/standard.json'])
+    );
+    await loadAllConfigs({ configs: [{ name: 'Test', url: '/configs/a.json' }] });
+    expect(state.dependenciesBySource.get('configs/a.json')).toEqual(['configs/prod/standard.json']);
+  });
+
+  it('does not set dependenciesBySource entry when no dependencies declared', async () => {
+    mockFetch.mockResolvedValueOnce(makeConfigResponse([minimalQ('phq9')]));
+    await loadAllConfigs({ configs: [{ name: 'Test', url: '/configs/a.json' }] });
+    expect(state.dependenciesBySource.has('configs/a.json')).toBe(false);
+  });
+
+  it('buildUrl includes dependency source when battery config declares it', async () => {
+    // Load intake.json which has clinical_intake battery and depends on standard.json
+    mockFetch.mockResolvedValueOnce(
+      makeConfigResponseWithDeps(
+        [minimalQ('diamond_sr')],
+        [minimalBattery('clinical_intake', 'Clinical Intake', 'diamond_sr')],
+        ['configs/prod/standard.json']
+      )
+    );
+    await loadAllConfigs({ configs: [{ name: 'Intake', url: '/configs/prod/intake.json' }] });
+
+    // Select the battery
+    const { buildUrl } = await import('./composer-state.js');
+    state.selected = ['clinical_intake'];
+    const url = buildUrl('http://localhost');
+    const configs = new URL(url).searchParams.get('configs').split(',');
+    expect(configs).toContain('configs/prod/intake.json');
+    expect(configs).toContain('configs/prod/standard.json');
   });
 });
