@@ -45,12 +45,103 @@ export class ItemSlider extends LitElement {
       gap: var(--space-md);
     }
 
+    /* ── Custom range track — RTL-native via scaleX(-1) ──────────────────────
+       dir="ltr" keeps value/thumb logic consistent across all browsers.
+       transform: scaleX(-1) flips the element visually so the fill grows from
+       the right and the thumb moves right-to-left, matching RTL conventions.
+       The thumb is a circle so the mirror is invisible. ---------------------- */
+
     input[type="range"] {
       flex: 1;
-      height: 6px;
+      height: 44px;           /* full touch target height */
       cursor: pointer;
-      accent-color: var(--color-primary);
-      /* custom track fallback for browsers that don't support accent-color fully */
+      -webkit-appearance: none;
+      appearance: none;
+      background: transparent;
+      margin: 0;
+      padding: 0;
+      transform: scaleX(-1);  /* visual RTL flip — value logic unaffected */
+    }
+
+    /* ── Track ── */
+    input[type="range"]::-webkit-slider-runnable-track {
+      height: 6px;
+      border-radius: 3px;
+      background: linear-gradient(
+        to right,
+        var(--color-primary) var(--range-pct, 0%),
+        var(--color-border)  var(--range-pct, 0%)
+      );
+    }
+
+    input[type="range"]::-moz-range-track {
+      height: 6px;
+      border-radius: 3px;
+      background: var(--color-border);
+    }
+
+    input[type="range"]::-moz-range-progress {
+      height: 6px;
+      border-radius: 3px 0 0 3px;
+      background: var(--color-primary);
+    }
+
+    /* ── Thumb ── */
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--color-primary);
+      border: 2px solid var(--color-bg);
+      box-shadow: 0 0 0 1.5px var(--color-primary);
+      margin-top: -7px;       /* centre on 6px track: (20 - 6) / 2 = 7 */
+      cursor: pointer;
+      transition: box-shadow var(--transition-fast);
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--color-primary);
+      border: 2px solid var(--color-bg);
+      box-shadow: 0 0 0 1.5px var(--color-primary);
+      cursor: pointer;
+      transition: box-shadow var(--transition-fast);
+    }
+
+    input[type="range"]:focus-visible::-webkit-slider-thumb {
+      box-shadow: 0 0 0 3px var(--color-border-focus);
+    }
+
+    input[type="range"]:focus-visible::-moz-range-thumb {
+      box-shadow: 0 0 0 3px var(--color-border-focus);
+    }
+
+    /* ── Untouched state — hide thumb, fade track ── */
+    input[type="range"].untouched::-webkit-slider-runnable-track {
+      background: var(--color-border);
+      opacity: 0.5;
+    }
+
+    input[type="range"].untouched::-moz-range-track {
+      opacity: 0.5;
+    }
+
+    input[type="range"].untouched::-webkit-slider-thumb {
+      opacity: 0;
+    }
+
+    input[type="range"].untouched::-moz-range-thumb {
+      opacity: 0;
+    }
+
+    .drag-hint {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+      text-align: center;
+      margin-block-start: var(--space-xs);
     }
 
     .value-display {
@@ -126,6 +217,16 @@ export class ItemSlider extends LitElement {
     }
   }
 
+  // ── Helpers ────────────────────────────────────────────────────────────────
+
+  // Percentage of the way from min→max, used to drive the fill gradient.
+  _pct() {
+    if (!this.item) return '0%';
+    const { min, max } = this.item;
+    const pct = ((this._value - min) / (max - min)) * 100;
+    return `${Math.round(Math.max(0, Math.min(100, pct)))}%`;
+  }
+
   // ── Event helpers ──────────────────────────────────────────────────────────
 
   _onInput(e) {
@@ -158,6 +259,9 @@ export class ItemSlider extends LitElement {
         <div class="track-row">
           <input
             type="range"
+            dir="ltr"
+            class=${this._touched ? '' : 'untouched'}
+            style="--range-pct: ${this._pct()}"
             min=${min}
             max=${max}
             step=${step}
@@ -172,10 +276,13 @@ export class ItemSlider extends LitElement {
             ${this._touched ? this._value : '—'}
           </span>
         </div>
+        ${!this._touched ? html`
+          <p class="drag-hint">גרור כדי לבחור ערך</p>
+        ` : ''}
         ${(labels?.min || labels?.max) ? html`
           <div class="labels-row">
-            <span>${labels?.max ?? ''}</span>
             <span>${labels?.min ?? ''}</span>
+            <span>${labels?.max ?? ''}</span>
           </div>
         ` : ''}
       </div>

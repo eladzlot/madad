@@ -45,6 +45,21 @@ describe('rendering', () => {
     expect(labels.textContent).toContain('כאב קשה');
   });
 
+  it('min label appears before max label in DOM order (left side of LTR track)', async () => {
+    const el = await makeEl({
+      item: { ...item, labels: { min: 'ללא כאב', max: 'כאב קשה' } },
+    });
+    const spans = el.shadowRoot.querySelectorAll('.labels-row span');
+    expect(spans[0].textContent).toBe('ללא כאב');
+    expect(spans[1].textContent).toBe('כאב קשה');
+  });
+
+  it('range input has dir="ltr" to normalise track direction across browsers', async () => {
+    const el = await makeEl();
+    const input = el.shadowRoot.querySelector('input[type="range"]');
+    expect(input.getAttribute('dir')).toBe('ltr');
+  });
+
   it('does not render labels row when no labels defined', async () => {
     const el = await makeEl();
     expect(el.shadowRoot.querySelector('.labels-row')).toBeNull();
@@ -62,7 +77,82 @@ describe('rendering', () => {
   });
 });
 
-// ─── Selected state ───────────────────────────────────────────────────────────
+// ─── Untouched state ──────────────────────────────────────────────────────────
+
+describe('untouched state', () => {
+  it('input has untouched class before interaction', async () => {
+    const el = await makeEl();
+    const input = el.shadowRoot.querySelector('input[type="range"]');
+    expect(input.classList.contains('untouched')).toBe(true);
+  });
+
+  it('shows a drag hint before interaction', async () => {
+    const el = await makeEl();
+    expect(el.shadowRoot.querySelector('.drag-hint')).not.toBeNull();
+  });
+
+  it('drag hint is removed after interaction', async () => {
+    const el = await makeEl();
+    const input = el.shadowRoot.querySelector('input[type="range"]');
+    input.value = '5';
+    input.dispatchEvent(new Event('input'));
+    await el.updateComplete;
+    expect(el.shadowRoot.querySelector('.drag-hint')).toBeNull();
+  });
+
+  it('input loses untouched class after interaction', async () => {
+    const el = await makeEl();
+    const input = el.shadowRoot.querySelector('input[type="range"]');
+    input.value = '5';
+    input.dispatchEvent(new Event('input'));
+    await el.updateComplete;
+    expect(input.classList.contains('untouched')).toBe(false);
+  });
+
+  it('no untouched class when selected is pre-set', async () => {
+    const el = await makeEl({ selected: 3 });
+    const input = el.shadowRoot.querySelector('input[type="range"]');
+    expect(input.classList.contains('untouched')).toBe(false);
+  });
+
+  it('no drag hint when selected is pre-set', async () => {
+    const el = await makeEl({ selected: 3 });
+    expect(el.shadowRoot.querySelector('.drag-hint')).toBeNull();
+  });
+});
+
+// ─── Fill gradient ────────────────────────────────────────────────────────────
+
+describe('fill gradient', () => {
+  it('--range-pct is 0% at min value', async () => {
+    const el = await makeEl({ selected: 0 });
+    const input = el.shadowRoot.querySelector('input[type="range"]');
+    expect(input.style.getPropertyValue('--range-pct')).toBe('0%');
+  });
+
+  it('--range-pct is 100% at max value', async () => {
+    const el = await makeEl({ selected: 10 });
+    const input = el.shadowRoot.querySelector('input[type="range"]');
+    expect(input.style.getPropertyValue('--range-pct')).toBe('100%');
+  });
+
+  it('--range-pct is 50% at midpoint', async () => {
+    const el = await makeEl({ selected: 5 });
+    const input = el.shadowRoot.querySelector('input[type="range"]');
+    expect(input.style.getPropertyValue('--range-pct')).toBe('50%');
+  });
+
+  it('--range-pct updates after interaction', async () => {
+    const el = await makeEl();
+    const input = el.shadowRoot.querySelector('input[type="range"]');
+    input.value = '8';
+    input.dispatchEvent(new Event('input'));
+    await el.updateComplete;
+    expect(input.style.getPropertyValue('--range-pct')).toBe('80%');
+  });
+});
+
+
 
 describe('selected state', () => {
   it('restores value and enables submit when selected is set', async () => {
