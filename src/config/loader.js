@@ -32,8 +32,7 @@
 //   ConfigValidationError — AJV schema violation
 //   ConfigError           — semantic violation (duplicate ID, missing option set, etc.)
 
-import Ajv from 'ajv/dist/2020.js';
-import schema from './QuestionnaireSet.schema.json' with { type: 'json' };
+import validate from './validate-schema.js';
 import { validateConfigData, ConfigError } from './config-validation.js';
 
 export { ConfigError };
@@ -57,11 +56,6 @@ export class ConfigValidationError extends Error {
     this.validationErrors = errors;
   }
 }
-
-// ─── AJV setup ────────────────────────────────────────────────────────────────
-
-const ajv = new Ajv({ allErrors: true });
-const validate = ajv.compile(schema);
 
 // ─── URL resolution ───────────────────────────────────────────────────────────
 

@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host --mode development",
-    "build": "vite build",
+    "build:validator": "node scripts/build-validator.mjs",
+    "build": "npm run build:validator && vite build",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",

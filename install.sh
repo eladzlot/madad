@@ -144,6 +144,7 @@ copy "composer.e2e.test.js"            "tests/e2e/composer.e2e.test.js"
 # ── Scripts ────────────────────────────────────────────────────────────────────
 copy "validate-configs.mjs"            "scripts/validate-configs.mjs"
 copy "check-size.mjs"                  "scripts/check-size.mjs"
+copy "build-validator.mjs"             "scripts/build-validator.mjs"
 
 # ── Config data ────────────────────────────────────────────────────────────────
 copy "standard.json"                   "public/configs/prod/standard.json"
