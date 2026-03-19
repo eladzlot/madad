@@ -51,16 +51,6 @@ describe('rendering', () => {
     expect(el.shadowRoot.querySelector('.question')).toBeNull();
   });
 
-  it('shows skip button when not required (default)', async () => {
-    const el = await makeEl();
-    expect(el.shadowRoot.querySelector('.skip-btn')).not.toBeNull();
-  });
-
-  it('hides skip button when required: true', async () => {
-    const el = await makeEl({ item: { ...item, required: true } });
-    expect(el.shadowRoot.querySelector('.skip-btn')).toBeNull();
-  });
-
   it('submit button says "המשך ללא בחירה" when nothing checked', async () => {
     const el = await makeEl();
     expect(el.shadowRoot.querySelector('.submit-btn').textContent.trim()).toBe('המשך ללא בחירה');
@@ -167,14 +157,25 @@ describe('advance event', () => {
     expect(spy).toHaveBeenCalledOnce();
   });
 
-  it('skip button fires answer([]) then advance', async () => {
+  it('submit with no selection fires answer([]) then advance', async () => {
     const el = await makeEl();
     const answerSpy = vi.fn();
     const advanceSpy = vi.fn();
     el.addEventListener('answer', answerSpy);
     el.addEventListener('advance', advanceSpy);
-    el.shadowRoot.querySelector('.skip-btn').click();
+    el.shadowRoot.querySelector('.submit-btn').click();
     expect(answerSpy.mock.calls[0][0].detail.value).toEqual([]);
+    expect(advanceSpy).toHaveBeenCalledOnce();
+  });
+
+  it('submit with selections fires advance only (no redundant answer event)', async () => {
+    const el = await makeEl({ selected: [1, 2] });
+    const answerSpy = vi.fn();
+    const advanceSpy = vi.fn();
+    el.addEventListener('answer', answerSpy);
+    el.addEventListener('advance', advanceSpy);
+    el.shadowRoot.querySelector('.submit-btn').click();
+    expect(answerSpy).not.toHaveBeenCalled();
     expect(advanceSpy).toHaveBeenCalledOnce();
   });
 });

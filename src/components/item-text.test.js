@@ -42,13 +42,23 @@ describe('rendering', () => {
     expect(el.shadowRoot.querySelector('.question')).toBeNull();
   });
 
-  it('shows skip button when not required (default)', async () => {
+  it('submit button says "המשך ללא מילוי" when field is empty and not required', async () => {
     const el = await makeEl();
-    expect(el.shadowRoot.querySelector('.skip-btn')).not.toBeNull();
+    expect(el.shadowRoot.querySelector('.submit-btn').textContent.trim()).toBe('המשך ללא מילוי');
   });
 
-  it('hides skip button when required: true', async () => {
+  it('submit button says "המשך" when field has a value', async () => {
+    const el = await makeEl({ selected: 'תשובה' });
+    expect(el.shadowRoot.querySelector('.submit-btn').textContent.trim()).toBe('המשך');
+  });
+
+  it('submit button says "המשך" when required, regardless of value', async () => {
     const el = await makeEl({ item: { ...item, required: true } });
+    expect(el.shadowRoot.querySelector('.submit-btn').textContent.trim()).toBe('המשך');
+  });
+
+  it('no skip button rendered', async () => {
+    const el = await makeEl();
     expect(el.shadowRoot.querySelector('.skip-btn')).toBeNull();
   });
 });
@@ -124,14 +134,25 @@ describe('advance event', () => {
     expect(spy).not.toHaveBeenCalled();
   });
 
-  it('skip button fires answer(null) then advance', async () => {
+  it('submit with empty field fires answer(null) then advance', async () => {
     const el = await makeEl();
     const answerSpy = vi.fn();
     const advanceSpy = vi.fn();
     el.addEventListener('answer', answerSpy);
     el.addEventListener('advance', advanceSpy);
-    el.shadowRoot.querySelector('.skip-btn').click();
+    el.shadowRoot.querySelector('.submit-btn').click();
     expect(answerSpy.mock.calls[0][0].detail.value).toBeNull();
+    expect(advanceSpy).toHaveBeenCalledOnce();
+  });
+
+  it('submit with a value fires advance only (no redundant answer event)', async () => {
+    const el = await makeEl({ selected: 'תשובה' });
+    const answerSpy = vi.fn();
+    const advanceSpy = vi.fn();
+    el.addEventListener('answer', answerSpy);
+    el.addEventListener('advance', advanceSpy);
+    el.shadowRoot.querySelector('.submit-btn').click();
+    expect(answerSpy).not.toHaveBeenCalled();
     expect(advanceSpy).toHaveBeenCalledOnce();
   });
 });

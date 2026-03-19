@@ -146,25 +146,6 @@ export class ItemMultiselect extends LitElement {
       outline: 2px solid var(--color-border-focus);
       outline-offset: 2px;
     }
-
-    .skip-btn {
-      display: block;
-      width: 100%;
-      margin-block-start: var(--space-sm);
-      padding-block: var(--space-xs);
-      background: none;
-      border: none;
-      font-size: var(--font-size-sm);
-      color: var(--color-text-muted);
-      font-family: inherit;
-      cursor: pointer;
-      text-align: center;
-      text-decoration: underline;
-    }
-
-    .skip-btn:hover {
-      color: var(--color-text);
-    }
   `;
 
   constructor() {
@@ -197,19 +178,15 @@ export class ItemMultiselect extends LitElement {
   }
 
   _submit() {
-    this.dispatchEvent(new CustomEvent('advance', {
-      bubbles: true,
-      composed: true,
-    }));
-  }
-
-  _skip() {
-    this._checked = [];
-    this.dispatchEvent(new CustomEvent('answer', {
-      detail: { value: [] },
-      bubbles: true,
-      composed: true,
-    }));
+    // If nothing is checked, emit answer:[] to clear any previously recorded
+    // partial selection (e.g. patient navigated back and unchecked everything).
+    if (this._checked.length === 0) {
+      this.dispatchEvent(new CustomEvent('answer', {
+        detail: { value: [] },
+        bubbles: true,
+        composed: true,
+      }));
+    }
     this.dispatchEvent(new CustomEvent('advance', {
       bubbles: true,
       composed: true,
@@ -257,7 +234,6 @@ export class ItemMultiselect extends LitElement {
       <button class="submit-btn" @click=${this._submit}>
         ${this._checked.length > 0 ? 'המשך' : 'המשך ללא בחירה'}
       </button>
-      ${!isRequired ? html`<button class="skip-btn" @click=${this._skip}>דלג</button>` : ''}
     `;
   }
 }

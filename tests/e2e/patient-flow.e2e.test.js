@@ -350,9 +350,9 @@ async function fillTextItem(page, text, { submit = true } = {}) {
   }
 }
 
-/** Click skip on a text item */
+/** Advance past a text item without filling it in (submit with empty field) */
 async function skipTextItem(page) {
-  await page.locator('item-text >> button.skip-btn').click();
+  await page.locator('item-text >> button.submit-btn').click();
 }
 
 /** Toggle a multiselect option by 1-based index */

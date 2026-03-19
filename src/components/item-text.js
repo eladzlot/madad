@@ -114,25 +114,6 @@ export class ItemText extends LitElement {
       outline: 2px solid var(--color-border-focus);
       outline-offset: 2px;
     }
-
-    .skip-btn {
-      display: block;
-      width: 100%;
-      margin-block-start: var(--space-sm);
-      padding-block: var(--space-xs);
-      background: none;
-      border: none;
-      font-size: var(--font-size-sm);
-      color: var(--color-text-muted);
-      font-family: inherit;
-      cursor: pointer;
-      text-align: center;
-      text-decoration: underline;
-    }
-
-    .skip-btn:hover {
-      color: var(--color-text);
-    }
   `;
 
   constructor() {
@@ -192,19 +173,15 @@ export class ItemText extends LitElement {
   _submit() {
     const error = this._validate(this._value);
     if (error) { this._error = error; return; }
-    this.dispatchEvent(new CustomEvent('advance', {
-      bubbles: true,
-      composed: true,
-    }));
-  }
-
-  _skip() {
-    // Emit null answer then advance
-    this.dispatchEvent(new CustomEvent('answer', {
-      detail: { value: null },
-      bubbles: true,
-      composed: true,
-    }));
+    // If the field is empty, emit answer(null) to clear any previously typed
+    // value (e.g. patient navigated back and cleared the input).
+    if (!this._value) {
+      this.dispatchEvent(new CustomEvent('answer', {
+        detail: { value: null },
+        bubbles: true,
+        composed: true,
+      }));
+    }
     this.dispatchEvent(new CustomEvent('advance', {
       bubbles: true,
       composed: true,
@@ -252,9 +229,8 @@ export class ItemText extends LitElement {
         ${this._error ? html`<span class="error" role="alert">${this._error}</span>` : ''}
       </div>
       <button class="submit-btn" @click=${this._submit}>
-        ${isRequired ? 'המשך' : 'שמור והמשך'}
+        ${isRequired || this._value ? 'המשך' : 'המשך ללא מילוי'}
       </button>
-      ${!isRequired ? html`<button class="skip-btn" @click=${this._skip}>דלג</button>` : ''}
     `;
   }
 }
