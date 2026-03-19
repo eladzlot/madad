@@ -211,8 +211,7 @@ export class ItemMultiselect extends LitElement {
 
   render() {
     if (!this.item) return html``;
-    const { text, options = [], required } = this.item;
-    const isRequired = required === true;
+    const { text, options = [] } = this.item;
 
     return html`
       <p class="question">${text}</p>
