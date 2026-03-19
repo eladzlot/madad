@@ -7,7 +7,7 @@ import { resetCSS } from '../styles/reset.js';
  * Shown after patient confirms they are done. Navigation is locked.
  *
  * Properties:
- *   results  {Array<{ title: string, total: number|null }>}
+ *   results  {Array<{ title: string, total: number|null, category: string|null }>}
  *
  * Events:
  *   download-pdf  CustomEvent  — patient taps download (not yet implemented)
@@ -21,18 +21,39 @@ export class ResultsScreen extends LitElement {
 
   static styles = [resetCSS, css`
     :host {
-      display: block;
+      display: flex;
+      flex-direction: column;
+      min-block-size: 100%;
+    }
+
+    /* ── Header ─────────────────────────────────────────────────────── */
+
+    .header {
+      padding-block-end: var(--space-lg);
+      border-block-end: var(--border-width) solid var(--color-border);
+      margin-block-end: var(--space-lg);
+    }
+
+    .eyebrow {
+      font-size: var(--font-size-sm);
+      font-weight: var(--font-weight-bold);
+      color: var(--color-accent);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-block-end: var(--space-xs);
     }
 
     .title {
       font-size: var(--font-size-xl);
       font-weight: var(--font-weight-bold);
       color: var(--color-text);
-      margin-block-end: var(--space-lg);
       line-height: var(--line-height-tight);
     }
 
+    /* ── Score rows ──────────────────────────────────────────────────── */
+
     .scores {
+      flex: 1;
       display: flex;
       flex-direction: column;
       gap: var(--space-sm);
@@ -51,24 +72,41 @@ export class ResultsScreen extends LitElement {
       gap: var(--space-md);
     }
 
+    .score-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      flex: 1;
+      min-width: 0;
+    }
+
     .score-name {
       font-size: var(--font-size-md);
+      font-weight: var(--font-weight-medium);
       color: var(--color-text);
-      flex: 1;
+    }
+
+    .score-category {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
     }
 
     .score-value {
-      font-size: var(--font-size-lg);
+      font-size: var(--font-size-xl);
       font-weight: var(--font-weight-bold);
       color: var(--color-primary);
       flex-shrink: 0;
+      min-inline-size: 2.5ch;
+      text-align: center;
     }
 
     .score-value.no-score {
       color: var(--color-text-muted);
-      font-size: var(--font-size-md);
+      font-size: var(--font-size-lg);
       font-weight: var(--font-weight-normal);
     }
+
+    /* ── Sticky PDF button ───────────────────────────────────────────── */
 
     .pdf-btn {
       display: block;
@@ -80,10 +118,12 @@ export class ResultsScreen extends LitElement {
       border: none;
       border-radius: var(--radius-pill);
       font-size: var(--font-size-md);
-      font-weight: var(--font-weight-medium);
+      font-weight: var(--font-weight-bold);
       font-family: inherit;
       cursor: pointer;
       transition: background var(--transition-fast);
+      position: sticky;
+      bottom: var(--space-lg);
     }
 
     .pdf-btn:not(:disabled):hover {
@@ -111,12 +151,20 @@ export class ResultsScreen extends LitElement {
 
   render() {
     return html`
-      <h1 class="title">תוצאות</h1>
+      <div class="header">
+        <p class="eyebrow">סיכום הערכה</p>
+        <h1 class="title">התוצאות שלך</h1>
+      </div>
 
       <div class="scores">
         ${this.results.map(r => html`
           <div class="score-row">
-            <span class="score-name">${r.title}</span>
+            <div class="score-info">
+              <span class="score-name">${r.title}</span>
+              ${r.category ? html`
+                <span class="score-category">${r.category}</span>
+              ` : ''}
+            </div>
             <span class="${r.total != null ? 'score-value' : 'score-value no-score'}">
               ${r.total != null ? r.total : '—'}
             </span>
@@ -135,6 +183,7 @@ export class ResultsScreen extends LitElement {
       </button>
     `;
   }
+
   async _handleDownload() {
     if (!this.onDownload || this.loading) return;
     this.loading = true;

@@ -35,40 +35,55 @@ export class WelcomeScreen extends LitElement {
       max-width: var(--content-max-width);
       display: flex;
       flex-direction: column;
-      gap: var(--space-lg);
     }
 
+    /* ── Brand mark ─────────────────────────────────────────────────── */
+
     .app-name {
-      font-size: var(--font-size-sm);
+      font-size: var(--font-size-xl);
       font-weight: var(--font-weight-bold);
-      color: var(--color-text-muted);
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
+      color: var(--color-primary);
+      line-height: 1;
+      margin-block-end: var(--space-xs);
+      letter-spacing: -0.02em;
     }
+
+    .app-tagline {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+      margin-block-end: var(--space-2xl);
+    }
+
+    /* ── Battery title ──────────────────────────────────────────────── */
 
     .battery-title {
       font-size: var(--font-size-xl);
       font-weight: var(--font-weight-bold);
       color: var(--color-text);
       line-height: var(--line-height-tight);
+      margin-block-end: var(--space-sm);
     }
 
     .intro {
       font-size: var(--font-size-md);
       color: var(--color-text-muted);
       line-height: var(--line-height);
+      margin-block-end: var(--space-xl);
     }
+
+    /* ── Name field ─────────────────────────────────────────────────── */
 
     .field {
       display: flex;
       flex-direction: column;
       gap: var(--space-xs);
+      margin-block-end: var(--space-md);
     }
 
     label {
       font-size: var(--font-size-sm);
       font-weight: var(--font-weight-medium);
-      color: var(--color-text);
+      color: var(--color-text-muted);
     }
 
     input {
@@ -82,7 +97,6 @@ export class WelcomeScreen extends LitElement {
       color: var(--color-text);
       transition: border-color var(--transition-fast);
       width: 100%;
-      box-sizing: border-box;
     }
 
     input:focus {
@@ -93,6 +107,8 @@ export class WelcomeScreen extends LitElement {
     input::placeholder {
       color: var(--color-text-muted);
     }
+
+    /* ── CTA ────────────────────────────────────────────────────────── */
 
     .begin-btn {
       display: block;
@@ -149,22 +165,23 @@ export class WelcomeScreen extends LitElement {
   render() {
     return html`
       <div class="card">
-        <span class="app-name">Measure</span>
+        <span class="app-name">מדד</span>
+        <span class="app-tagline">הערכה קלינית דיגיטלית</span>
 
         ${this.batteryTitle ? html`
           <h1 class="battery-title">${this.batteryTitle}</h1>
         ` : ''}
 
         <p class="intro">
-          אנא מלא את השאלון הבא. התשובות שלך יסייעו לצוות המטפל.
+          התשובות שלך יעזרו לצוות המטפל להבין אותך טוב יותר.
         </p>
 
         <div class="field">
-          <label for="patient-name">שם מלא</label>
+          <label for="patient-name">שמך</label>
           <input
             id="patient-name"
             type="text"
-            placeholder="הכנס שמך"
+            placeholder="שמך המלא"
             .value=${this._name}
             @input=${this._onInput}
             @keydown=${this._onKeyDown}

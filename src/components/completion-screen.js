@@ -15,27 +15,37 @@ export class CompletionScreen extends LitElement {
     :host {
       display: flex;
       flex-direction: column;
-      align-items: center;
-      justify-content: center;
       min-block-size: 60dvh;
-      gap: var(--space-lg);
+      padding-inline: var(--space-md);
+      padding-block: var(--space-2xl);
+    }
+
+    /* Pushes content toward the lower third */
+    .spacer { flex: 1; }
+
+    .content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       text-align: center;
+      gap: 0;
     }
 
     .icon {
-      width: 48px;
-      height: 48px;
+      width: 72px;
+      height: 72px;
       border-radius: 50%;
       background: var(--color-selected-bg);
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
+      margin-block-end: var(--space-lg);
     }
 
     .icon svg {
-      width: 28px;
-      height: 28px;
+      width: 36px;
+      height: 36px;
       stroke: var(--color-accent);
       stroke-width: 2.5;
       stroke-linecap: round;
@@ -48,13 +58,15 @@ export class CompletionScreen extends LitElement {
       font-weight: var(--font-weight-bold);
       color: var(--color-text);
       line-height: var(--line-height-tight);
+      margin-block-end: var(--space-sm);
     }
 
     .subtitle {
       font-size: var(--font-size-md);
       color: var(--color-text-muted);
       line-height: var(--line-height);
-      max-inline-size: 340px;
+      max-inline-size: 320px;
+      margin-block-end: var(--space-xl);
     }
 
     .view-btn {
@@ -72,6 +84,7 @@ export class CompletionScreen extends LitElement {
       font-family: inherit;
       cursor: pointer;
       transition: background var(--transition-fast);
+      margin-block-end: var(--space-lg);
     }
 
     .view-btn:hover {
@@ -86,6 +99,10 @@ export class CompletionScreen extends LitElement {
     .back-hint {
       font-size: var(--font-size-sm);
       color: var(--color-text-muted);
+      max-inline-size: 300px;
+      padding-block-start: var(--space-md);
+      border-block-start: var(--border-width) solid var(--color-border);
+      line-height: var(--line-height);
     }
   `];
 
@@ -98,19 +115,22 @@ export class CompletionScreen extends LitElement {
 
   render() {
     return html`
-      <span class="icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <polyline points="4 12 9 17 20 7"></polyline>
-        </svg>
-      </span>
-      <h1 class="title">סיימת את השאלון</h1>
-      <p class="subtitle">
-        ניתן לחזור לשאלות קודמות באמצעות כפתור החזרה.
-      </p>
-      <button class="view-btn" @click=${this._viewResults}>
-        צפה בתוצאות
-      </button>
-      <p class="back-hint">לאחר צפייה בתוצאות לא ניתן לחזור לשאלות</p>
+      <div class="spacer"></div>
+      <div class="content">
+        <span class="icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <polyline points="4 12 9 17 20 7"></polyline>
+          </svg>
+        </span>
+        <h1 class="title">סיימת את השאלון</h1>
+        <p class="subtitle">
+          תשובותיך נשמרו. תוכל לחזור ולשנות תשובות לפני שתראה את התוצאות.
+        </p>
+        <button class="view-btn" @click=${this._viewResults}>
+          צפה בתוצאות
+        </button>
+        <p class="back-hint">לאחר צפייה בתוצאות לא ניתן לחזור לשאלות</p>
+      </div>
     `;
   }
 }

@@ -64,8 +64,7 @@ describe('events', () => {
     const el = await makeEl();
     const handler = vi.fn();
     el.addEventListener('advance', handler);
-    el.shadowRoot.querySelector('.continue-btn')
-      .dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
     expect(handler).toHaveBeenCalledOnce();
   });
 
@@ -73,8 +72,7 @@ describe('events', () => {
     const el = await makeEl();
     const handler = vi.fn();
     el.addEventListener('advance', handler);
-    el.shadowRoot.querySelector('.continue-btn')
-      .dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
     expect(handler).toHaveBeenCalledOnce();
   });
 

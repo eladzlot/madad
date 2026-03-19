@@ -22,7 +22,7 @@ export class ItemBinary extends LitElement {
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: var(--font-size-lg);
+      font-size: var(--font-size-xl);
       font-weight: var(--font-weight-bold);
       color: var(--color-text);
       line-height: var(--line-height-tight);
@@ -49,12 +49,12 @@ export class ItemBinary extends LitElement {
       display: flex;
       align-items: center;
       justify-content: center;
-      min-block-size: calc(var(--item-min-touch) * 2);
-      padding-block: var(--space-md);
+      min-block-size: calc(var(--item-min-touch) * 2.5);
+      padding-block: var(--space-lg);
       padding-inline: var(--space-sm);
       border: 2px solid transparent;
-      border-radius: var(--radius-md);
-      font-size: var(--font-size-md);
+      border-radius: var(--radius-lg);
+      font-size: var(--font-size-lg);
       font-weight: var(--font-weight-bold);
       font-family: inherit;
       cursor: pointer;

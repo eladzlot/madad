@@ -32,10 +32,10 @@ export class ItemMultiselect extends LitElement {
 
     .question {
       font-size: var(--font-size-lg);
-      font-weight: var(--font-weight-medium);
+      font-weight: var(--font-weight-bold);
       line-height: var(--line-height-tight);
       color: var(--color-text);
-      margin-block-end: var(--space-lg);
+      margin-block-end: var(--space-xl);
     }
 
     .options {
@@ -60,7 +60,9 @@ export class ItemMultiselect extends LitElement {
       user-select: none;
       transition:
         background var(--transition-fast),
-        border-color var(--transition-fast);
+        border-color var(--transition-fast),
+        transform var(--transition-fast),
+        box-shadow var(--transition-fast);
       width: 100%;
       text-align: start;
       font-size: var(--font-size-md);
@@ -71,6 +73,7 @@ export class ItemMultiselect extends LitElement {
     .option:hover {
       background: var(--color-selected-bg);
       border-color: var(--color-border-focus);
+      transform: translateX(2px);
     }
 
     .option:focus-visible {
@@ -81,7 +84,10 @@ export class ItemMultiselect extends LitElement {
     .option.is-checked {
       background: var(--color-selected-bg);
       border-color: var(--color-selected-border);
+      border-width: 2px;
       font-weight: var(--font-weight-medium);
+      transform: translateX(3px);
+      box-shadow: -3px 0 0 0 var(--color-accent);
     }
 
     .option__check {

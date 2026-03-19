@@ -45,10 +45,10 @@ export class ItemText extends LitElement {
 
     .question {
       font-size: var(--font-size-lg);
-      font-weight: var(--font-weight-medium);
+      font-weight: var(--font-weight-bold);
       line-height: var(--line-height-tight);
       color: var(--color-text);
-      margin-block-end: var(--space-lg);
+      margin-block-end: var(--space-xl);
     }
 
     .input-wrap {

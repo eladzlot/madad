@@ -207,8 +207,9 @@ export function createController(container, router) {
     const results = Object.entries((sessionState ?? {}).scores ?? {}).map(([key, scoreResult]) => {
       const q = _config.questionnaires.find(q => q.id === key || key.startsWith(q.id));
       return {
-        title: q?.title ?? key,
-        total: scoreResult?.total ?? null,
+        title:    q?.title ?? key,
+        total:    scoreResult?.total ?? null,
+        category: scoreResult?.category ?? null,
       };
     });
 

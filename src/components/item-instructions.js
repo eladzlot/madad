@@ -25,13 +25,17 @@ export class ItemInstructions extends LitElement {
 
     .paragraphs {
       margin-block-end: var(--space-xl);
+      padding: var(--space-lg);
+      background: var(--color-surface);
+      border-radius: var(--radius-md);
+      border-inline-start: 3px solid var(--color-accent);
     }
 
     p {
-      font-size: var(--font-size-md);
+      font-size: var(--font-size-lg);
       line-height: var(--line-height);
       color: var(--color-text);
-      margin-block-end: var(--space-md);
+      margin-block-end: var(--space-lg);
     }
 
     p:last-child {
@@ -68,6 +72,17 @@ export class ItemInstructions extends LitElement {
   constructor() {
     super();
     this.item = null;
+    this._boundKeyDown = this._onKeyDown.bind(this);
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    window.addEventListener('keydown', this._boundKeyDown);
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    window.removeEventListener('keydown', this._boundKeyDown);
   }
 
   _advance() {
@@ -79,6 +94,12 @@ export class ItemInstructions extends LitElement {
 
   _onKeyDown(e) {
     if (e.key === 'Enter' || e.key === ' ') {
+      // Don't intercept Space when a form control or link has focus —
+      // those elements handle Space themselves (scroll, checkbox, button click).
+      if (e.key === ' ') {
+        const tag = document.activeElement?.tagName?.toLowerCase();
+        if (tag && ['input', 'textarea', 'select', 'button', 'a'].includes(tag)) return;
+      }
       e.preventDefault();
       this._advance();
     }
@@ -96,7 +117,6 @@ export class ItemInstructions extends LitElement {
       <button
         class="continue-btn"
         @click=${this._advance}
-        @keydown=${this._onKeyDown}
       >
         המשך
       </button>
