@@ -86,6 +86,7 @@ copy "results-screen.test.js"          "src/components/results-screen.test.js"
 copy "item-types.js"                   "src/item-types.js"
 copy "item-types.test.js"              "src/item-types.test.js"
 
+copy "reset.js"                        "src/styles/reset.js"
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
 copy "gestures.js"                     "src/helpers/gestures.js"

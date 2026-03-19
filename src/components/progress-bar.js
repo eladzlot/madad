@@ -1,4 +1,5 @@
 import { LitElement, html, css } from 'lit';
+import { resetCSS } from '../styles/reset.js';
 
 /**
  * <progress-bar>
@@ -17,7 +18,7 @@ export class ProgressBar extends LitElement {
     questionnaireName: { type: String },
   };
 
-  static styles = css`
+  static styles = [resetCSS, css`
     :host {
       display: block;
     }
@@ -42,6 +43,7 @@ export class ProgressBar extends LitElement {
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      min-width: 0;
     }
 
     .item-count {
@@ -71,7 +73,7 @@ export class ProgressBar extends LitElement {
       color: var(--color-text-muted);
       text-align: center;
     }
-  `;
+  `];
 
   constructor() {
     super();

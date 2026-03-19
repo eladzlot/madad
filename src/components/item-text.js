@@ -1,4 +1,5 @@
 import { LitElement, html, css } from 'lit';
+import { resetCSS } from '../styles/reset.js';
 
 // ─── ReDoS guard ─────────────────────────────────────────────────────────────
 // Rejects regex patterns that contain nested/chained quantifiers which can
@@ -37,7 +38,7 @@ export class ItemText extends LitElement {
     _error:      { type: String, state: true },
   };
 
-  static styles = css`
+  static styles = [resetCSS, css`
     :host {
       display: block;
     }
@@ -114,7 +115,7 @@ export class ItemText extends LitElement {
       outline: 2px solid var(--color-border-focus);
       outline-offset: 2px;
     }
-  `;
+  `];
 
   constructor() {
     super();

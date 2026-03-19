@@ -1,4 +1,5 @@
 import { LitElement, html, css } from 'lit';
+import { resetCSS } from '../styles/reset.js';
 import { classMap } from 'lit/directives/class-map.js';
 
 /**
@@ -24,7 +25,7 @@ export class ItemMultiselect extends LitElement {
     _checked:  { type: Array, state: true },
   };
 
-  static styles = css`
+  static styles = [resetCSS, css`
     :host {
       display: block;
     }
@@ -146,7 +147,7 @@ export class ItemMultiselect extends LitElement {
       outline: 2px solid var(--color-border-focus);
       outline-offset: 2px;
     }
-  `;
+  `];
 
   constructor() {
     super();

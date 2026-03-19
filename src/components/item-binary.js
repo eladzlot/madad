@@ -1,4 +1,5 @@
 import { LitElement, html, css } from 'lit';
+import { resetCSS } from '../styles/reset.js';
 import { attachSwipe, SWIPE_THRESHOLD } from '../helpers/gestures.js';
 
 export class ItemBinary extends LitElement {
@@ -9,7 +10,7 @@ export class ItemBinary extends LitElement {
     _dragPhase: { type: String, state: true },
   };
 
-  static styles = css`
+  static styles = [resetCSS, css`
     :host {
       display: flex;
       flex-direction: column;
@@ -106,7 +107,7 @@ export class ItemBinary extends LitElement {
     .buttons.has-selection .opt-btn:not(.selected) {
       opacity: 0.4;
     }
-  `;
+  `];
 
   constructor() {
     super();

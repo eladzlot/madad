@@ -1,4 +1,5 @@
 import { LitElement, html, css } from 'lit';
+import { resetCSS } from '../styles/reset.js';
 
 /**
  * <completion-screen>
@@ -10,7 +11,7 @@ import { LitElement, html, css } from 'lit';
  *   view-results  CustomEvent  — patient is ready to see results
  */
 export class CompletionScreen extends LitElement {
-  static styles = css`
+  static styles = [resetCSS, css`
     :host {
       display: flex;
       flex-direction: column;
@@ -86,7 +87,7 @@ export class CompletionScreen extends LitElement {
       font-size: var(--font-size-sm);
       color: var(--color-text-muted);
     }
-  `;
+  `];
 
   _viewResults() {
     this.dispatchEvent(new CustomEvent('view-results', {

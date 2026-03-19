@@ -1,4 +1,5 @@
 import { LitElement, html, css } from 'lit';
+import { resetCSS } from '../styles/reset.js';
 import { attachOverscroll } from '../helpers/gestures.js';
 
 /**
@@ -23,7 +24,7 @@ export class AppShell extends LitElement {
     gesturesEnabled: { type: Boolean },
   };
 
-  static styles = css`
+  static styles = [resetCSS, css`
     :host {
       display: flex;
       flex-direction: column;
@@ -97,6 +98,7 @@ export class AppShell extends LitElement {
     .content {
       flex: 1;
       overflow-y: auto;
+      overflow-x: hidden;
       overscroll-behavior-y: contain;
     }
 
@@ -106,8 +108,9 @@ export class AppShell extends LitElement {
       margin-inline: auto;
       padding-inline: var(--space-md);
       padding-block: var(--space-lg);
+      overflow: hidden;
     }
-  `;
+  `];
 
   constructor() {
     super();

@@ -1,4 +1,5 @@
 import { LitElement, html, css } from 'lit';
+import { resetCSS } from '../styles/reset.js';
 
 /**
  * <item-instructions>
@@ -17,7 +18,7 @@ export class ItemInstructions extends LitElement {
     item: { type: Object },
   };
 
-  static styles = css`
+  static styles = [resetCSS, css`
     :host {
       display: block;
     }
@@ -62,7 +63,7 @@ export class ItemInstructions extends LitElement {
       outline: 2px solid var(--color-border-focus);
       outline-offset: 2px;
     }
-  `;
+  `];
 
   constructor() {
     super();

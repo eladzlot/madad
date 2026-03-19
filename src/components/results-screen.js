@@ -1,4 +1,5 @@
 import { LitElement, html, css } from 'lit';
+import { resetCSS } from '../styles/reset.js';
 
 /**
  * <results-screen>
@@ -18,7 +19,7 @@ export class ResultsScreen extends LitElement {
     loading:  { type: Boolean },
   };
 
-  static styles = css`
+  static styles = [resetCSS, css`
     :host {
       display: block;
     }
@@ -98,7 +99,7 @@ export class ResultsScreen extends LitElement {
       opacity: 0.6;
       cursor: not-allowed;
     }
-  `;
+  `];
 
   constructor() {
     super();

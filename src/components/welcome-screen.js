@@ -1,4 +1,5 @@
 import { LitElement, html, css } from 'lit';
+import { resetCSS } from '../styles/reset.js';
 
 /**
  * <welcome-screen>
@@ -18,7 +19,7 @@ export class WelcomeScreen extends LitElement {
     _name: { type: String, state: true },
   };
 
-  static styles = css`
+  static styles = [resetCSS, css`
     :host {
       display: flex;
       flex-direction: column;
@@ -117,7 +118,7 @@ export class WelcomeScreen extends LitElement {
       outline: 2px solid var(--color-border-focus);
       outline-offset: 2px;
     }
-  `;
+  `];
 
   constructor() {
     super();

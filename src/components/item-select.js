@@ -1,4 +1,5 @@
 import { LitElement, html, css } from 'lit';
+import { resetCSS } from '../styles/reset.js';
 import { classMap } from 'lit/directives/class-map.js';
 
 /**
@@ -23,7 +24,7 @@ export class ItemSelect extends LitElement {
     _focused: { type: Number, state: true },  // index of keyboard-focused option
   };
 
-  static styles = css`
+  static styles = [resetCSS, css`
     :host {
       display: block;
     }
@@ -117,7 +118,7 @@ export class ItemSelect extends LitElement {
       flex: 1;
       line-height: var(--line-height);
     }
-  `;
+  `];
 
   constructor() {
     super();
