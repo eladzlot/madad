@@ -99,7 +99,7 @@ export class ItemText extends LitElement {
       background: var(--color-primary);
       color: var(--color-primary-text);
       border: none;
-      border-radius: var(--radius-md);
+      border-radius: var(--radius-pill);
       font-size: var(--font-size-md);
       font-weight: var(--font-weight-bold);
       font-family: inherit;

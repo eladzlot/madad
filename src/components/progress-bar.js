@@ -54,7 +54,7 @@ export class ProgressBar extends LitElement {
     }
 
     .track {
-      block-size: 4px;
+      block-size: var(--progress-height);
       border-radius: 999px;
       background: var(--color-border);
       overflow: hidden;
