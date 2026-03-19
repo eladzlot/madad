@@ -67,7 +67,6 @@
       display: inline-flex; align-items: center; gap: 8px;
       font-size: 13px; font-weight: 600;
       color: rgba(255,255,255,0.75);
-      letter-spacing: 0.08em; text-transform: uppercase;
       margin-block-end: 24px;
     }
     .hero-eyebrow::before { content: ''; width: 24px; height: 2px; background: rgba(255,255,255,0.5); display: block; flex-shrink: 0; }
@@ -110,7 +109,7 @@
     .hero-note-dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,0.4); flex-shrink: 0; }
 
     /* ── SECTION HEADERS ── */
-    .section-label { font-size: 12px; font-weight: 700; color: var(--teal-mid); letter-spacing: 0.08em; text-transform: uppercase; margin-block-end: 12px; }
+    .section-label { font-size: 12px; font-weight: 700; color: var(--teal-mid); margin-block-end: 12px; }
     .section-title { font-size: clamp(24px, 3.5vw, 36px); font-weight: 700; letter-spacing: -0.02em; color: var(--text); line-height: 1.2; margin-block-end: 16px; }
     .section-body { font-size: 17px; color: var(--text-muted); line-height: 1.7; max-width: 580px; }
 
@@ -128,9 +127,8 @@
       padding: 32px 28px;
     }
     .step-num {
-      font-size: 11px; font-weight: 700;
-      color: var(--teal-mid); letter-spacing: 0.08em;
-      text-transform: uppercase;
+      font-size: 12px; font-weight: 700;
+      color: var(--teal-mid);
       margin-block-end: 20px;
       display: flex; align-items: center; gap: 8px;
     }
@@ -156,7 +154,6 @@
     .why-content p:last-child { margin-block-end: 0; }
     @media (max-width: 780px) { .why-inner { grid-template-columns: 1fr; gap: 40px; } }
 
-    /* ── INSTRUMENTS — teal bg ── */
     .instruments-section { background: var(--teal-mid); }
     .instruments-section .section-label { color: rgba(255,255,255,0.65); }
     .instruments-section .section-title { color: #fff; }
@@ -211,7 +208,7 @@
       border-radius: var(--radius);
       padding: 28px;
     }
-    .about-card-label { font-size: 11px; font-weight: 700; color: var(--teal-mid); letter-spacing: 0.08em; text-transform: uppercase; margin-block-end: 12px; }
+    .about-card-label { font-size: 11px; font-weight: 700; color: var(--teal-mid); margin-block-end: 12px; }
     .about-card-name { font-size: 17px; font-weight: 700; color: var(--text); margin-block-end: 8px; line-height: 1.3; }
     .about-card-body { font-size: 14px; color: var(--text-muted); line-height: 1.65; margin-block-end: 16px; }
     .about-card-link { font-size: 13px; font-weight: 600; color: var(--navy); text-decoration: none; }
@@ -219,10 +216,11 @@
     @media (max-width: 780px) { .about-inner { grid-template-columns: 1fr; gap: 40px; } }
 
     /* ── CTA BAND — deep navy ── */
-    .cta-band { background: var(--navy-deep); padding-block: clamp(56px, 8vw, 96px); text-align: center; }
+    .cta-band { background: var(--navy-deep); padding-block: clamp(56px, 8vw, 96px); }
+    .cta-band .container { display: flex; flex-direction: column; align-items: center; text-align: center; }
     .cta-band .section-label { color: rgba(255,255,255,0.45); }
-    .cta-band .section-title { color: #fff; margin-inline: auto; }
-    .cta-band .section-body { color: rgba(255,255,255,0.65); margin-inline: auto; margin-block-end: 40px; }
+    .cta-band .section-title { color: #fff; }
+    .cta-band .section-body { color: rgba(255,255,255,0.65); margin-block-end: 36px; }
     .btn-teal {
       display: inline-flex; align-items: center; gap: 8px;
       padding: 15px 36px; background: var(--teal); color: #fff;
@@ -267,7 +265,7 @@
       <a href="#why" class="nav-link">למה למדוד</a>
       <a href="#instruments" class="nav-link">שאלונים</a>
       <a href="#about" class="nav-link">אודות</a>
-      <a href="../composer/" class="nav-cta">מחולל קישורים ←</a>
+      <a href="../composer/" class="nav-cta">מחולל קישורים</a>
     </div>
   </div>
 </nav>
@@ -278,13 +276,13 @@
     <div class="hero-eyebrow">כלי הערכה קלינית</div>
     <h1 class="hero-headline">
       מדידה היא חלק מהטיפול.<br>
-      <em>עכשיו גם קל.</em>
+      <em>עכשיו זה גם קל.</em>
     </h1>
     <p class="hero-body">
-      שלחו שאלוני מדידה מבוססי ראיות למטופלים לפני הפגישה. תוצאות מסוכמות בדוח PDF — ללא הרשמה, ללא שמירת נתונים.
+      שלחו שאלונים מבוססי ראיות למטופלים לפני הפגישה. התוצאות מסוכמות בדוח PDF — ללא הרשמה, ללא שמירת נתונים.
     </p>
     <div class="hero-actions">
-      <a href="../composer/" class="btn-primary">צרו קישור לשאלון ←</a>
+      <a href="../composer/" class="btn-primary">צרו קישור לשאלון</a>
       <a href="../?configs=configs/prod/standard.json&items=phq9" class="btn-ghost-hero">נסו דוגמה</a>
     </div>
     <p class="hero-note">
@@ -299,12 +297,12 @@
   <div class="container">
     <div class="section-label">תהליך פשוט</div>
     <h2 class="section-title">שלושה צעדים בלבד</h2>
-    <p class="section-body">ממחולל הקישורים ועד דוח מוכן — הכל קורה בדפדפן, ללא כניסה לחשבון.</p>
+    <p class="section-body">ממחולל הקישורים ועד דוח מוכן — הכל קורה בדפדפן, ללא צורך בחשבון.</p>
     <div class="steps">
       <div class="step">
         <div class="step-num">01 בחירה</div>
         <div class="step-title">בחרו שאלונים</div>
-        <p class="step-body">פתחו את מחולל הקישורים, בחרו את השאלונים הרלוונטיים והוסיפו מזהה מטופל. המערכת מייצרת קישור ייחודי.</p>
+        <p class="step-body">פתחו את מחולל הקישורים, בחרו את השאלונים הרלוונטיים והוסיפו שם מטופל. המערכת מייצרת קישור ייחודי.</p>
       </div>
       <div class="step">
         <div class="step-num">02 שליחה</div>
@@ -325,13 +323,13 @@
   <div class="container">
     <div class="why-inner">
       <div class="why-quote">
-        מדידה שיטתית של תסמינים אינה עוד — היא חלק בלתי נפרד מטיפול מבוסס ראיות.
+        מדידה שיטתית של תסמינים אינה רק יתרון — היא חלק בלתי נפרד מטיפול מבוסס ראיות.
       </div>
       <div class="why-content">
         <div class="section-label">למה למדוד</div>
         <h2 class="section-title">הנתונים משפרים את הטיפול</h2>
-        <p>מחקרים מראים כי מטפלים המשתמשים בשאלוני מדידה שיטתיים מזהים מוקדם יותר מטופלים שאינם מתקדמים, ומשיגים תוצאות טיפוליות טובות יותר.</p>
-        <p>מדד מאפשר לכם לקבל נתונים כמותיים לפני כל פגישה — בלי להכביד על המטופל ובלי מנגנוני הרשמה מסורבלים.</p>
+        <p>מחקרים מראים כי מטפלים המשתמשים בשאלונים שיטתיים מזהים מוקדם יותר מטופלים שאינם מתקדמים, ומשיגים תוצאות טיפוליות טובות יותר.</p>
+        <p>מדד מאפשר לכם לקבל נתונים כמותיים לפני כל פגישה — בלי להכביד על המטופל ובלי תהליכי הרשמה מסורבלים.</p>
       </div>
     </div>
   </div>
@@ -342,7 +340,7 @@
   <div class="container">
     <div class="section-label">שאלונים זמינים</div>
     <h2 class="section-title">מכשירי הערכה מבוססי ראיות</h2>
-    <p class="section-body">כל השאלונים תורגמו לעברית. לחצו על שאלון לניסוי עצמאי.</p>
+    <p class="section-body">כל השאלונים תורגמו לעברית. לחצו על שאלון לניסיון עצמאי.</p>
     <div class="instruments-grid">
       <a href="../?configs=configs/prod/standard.json&items=phq9" class="instrument">
         <span class="instrument-abbr">PHQ-9</span>
@@ -408,7 +406,7 @@
         <div class="about-card-label">המרכז להחלמה מטראומה</div>
         <div class="about-card-name">האוניברסיטה העברית בירושלים</div>
         <p class="about-card-body">המרכז מתמחה בהתערבויות מבוססות ראיות לטיפול בטראומה, ופועל לקידום הידע בתחום ולהנגשת שיטות טיפול יעילות לאנשי מקצוע.</p>
-        <a href="https://ctr.huji.ac.il" target="_blank" rel="noopener" class="about-card-link">לאתר המרכז ←</a>
+        <a href="https://ctr.huji.ac.il" target="_blank" rel="noopener" class="about-card-link">לאתר המרכז</a>
       </div>
     </div>
   </div>
@@ -420,7 +418,7 @@
     <div class="section-label">מוכנים להתחיל?</div>
     <h2 class="section-title">שלחו את השאלון הראשון עוד היום</h2>
     <p class="section-body">פתחו את מחולל הקישורים, בחרו שאלונים, והקישור מוכן בשניות.</p>
-    <a href="../composer/" class="btn-teal">פתחו את המחולל ←</a>
+    <a href="../composer/" class="btn-teal">פתחו את המחולל</a>
   </div>
 </section>
 
