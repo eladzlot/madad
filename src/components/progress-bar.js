@@ -63,7 +63,7 @@ export class ProgressBar extends LitElement {
     .fill {
       block-size: 100%;
       border-radius: 999px;
-      background: var(--color-primary);
+      background: var(--color-accent);
       transition: inline-size var(--transition-med);
       transform-origin: inline-start;
     }

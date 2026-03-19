@@ -26,7 +26,7 @@ export class CompletionScreen extends LitElement {
       width: 48px;
       height: 48px;
       border-radius: 50%;
-      background: var(--color-yes-bg);
+      background: var(--color-selected-bg);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -36,7 +36,7 @@ export class CompletionScreen extends LitElement {
     .icon svg {
       width: 28px;
       height: 28px;
-      stroke: var(--color-yes);
+      stroke: var(--color-accent);
       stroke-width: 2.5;
       stroke-linecap: round;
       stroke-linejoin: round;

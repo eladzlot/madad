@@ -5,20 +5,22 @@
 :root {
   /* Colour */
   --color-bg:              #ffffff;
-  --color-surface:         #f7f7f8;
-  --color-border:          #d4d4d8;
-  --color-border-focus:    #2563eb;
-  --color-text:            #18181b;
-  --color-text-muted:      #71717a;
-  --color-primary:         #2563eb;
-  --color-primary-hover:   #1d4ed8;
+  --color-surface:         #F5F7FA;
+  --color-border:          #E5E7EB;
+  --color-border-focus:    #2BB3C0;
+  --color-text:            #333333;
+  --color-text-muted:      #6B7280;
+  --color-primary:         #0056A6;
+  --color-primary-hover:   #003A8F;
   --color-primary-text:    #ffffff;
-  --color-selected-bg:     #eff6ff;
-  --color-selected-border: #2563eb;
-  --color-yes:             #16a34a;
-  --color-yes-bg:          #f0fdf4;
-  --color-no:              #dc2626;
-  --color-no-bg:           #fef2f2;
+  --color-accent:          #2BB3C0;
+  --color-accent-hover:    #5BC0BE;
+  --color-selected-bg:     #EBF8FA;
+  --color-selected-border: #2BB3C0;
+  --color-yes:             #276749;
+  --color-yes-bg:          #F0FBF4;
+  --color-no:              #8B3A3A;
+  --color-no-bg:           #FDF3F3;
 
   /* Spacing */
   --space-xs:  4px;
@@ -29,7 +31,7 @@
   --space-2xl: 64px;
 
   /* Typography */
-  --font-family:        system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-family:        'Noto Sans Hebrew', system-ui, -apple-system, sans-serif;
   --font-size-sm:       14px;
   --font-size-md:       16px;
   --font-size-lg:       20px;
@@ -60,19 +62,21 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-bg:              #09090b;
-    --color-surface:         #18181b;
-    --color-border:          #3f3f46;
-    --color-border-focus:    #60a5fa;
-    --color-text:            #fafafa;
-    --color-text-muted:      #a1a1aa;
-    --color-primary:         #3b82f6;
-    --color-primary-hover:   #60a5fa;
+    --color-bg:              #0d1117;
+    --color-surface:         #161b22;
+    --color-border:          #30363d;
+    --color-border-focus:    #5BC0BE;
+    --color-text:            #e6edf3;
+    --color-text-muted:      #8b949e;
+    --color-primary:         #4BA3D4;
+    --color-primary-hover:   #5BC0BE;
     --color-primary-text:    #ffffff;
-    --color-selected-bg:     #1e3a5f;
-    --color-selected-border: #60a5fa;
-    --color-yes-bg:          #052e16;
-    --color-no-bg:           #450a0a;
+    --color-accent:          #5BC0BE;
+    --color-accent-hover:    #2BB3C0;
+    --color-selected-bg:     #0d2a3a;
+    --color-selected-border: #5BC0BE;
+    --color-yes-bg:          #0d2b1e;
+    --color-no-bg:           #2d1515;
   }
 }
 
