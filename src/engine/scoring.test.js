@@ -3,6 +3,7 @@ import { score } from './scoring.js';
 import phq9Fixture from '../../tests/fixtures/phq9.json' with { type: 'json' };
 import pcl5Fixture from '../../tests/fixtures/pcl5.json' with { type: 'json' };
 import ocirFixture from '../../tests/fixtures/ocir.json' with { type: 'json' };
+import top3Fixture from '../../tests/fixtures/top3.json' with { type: 'json' };
 
 // ─── Fixture-driven tests ─────────────────────────────────────────────────────
 
@@ -20,6 +21,7 @@ function runFixture(fixture) {
 describe('PHQ-9', () => runFixture(phq9Fixture));
 describe('PCL-5', () => runFixture(pcl5Fixture));
 describe('OCI-R', () => runFixture(ocirFixture));
+describe('top3 (3-problem questionnaire)', () => runFixture(top3Fixture));
 
 // ─── Unit tests for scoring mechanics ────────────────────────────────────────
 
@@ -102,6 +104,49 @@ describe('method: subscales', () => {
     const result = score(q, { '1': 2 });
     expect(result.subscales).toEqual({ a: 2, b: 0 });
     expect(result.total).toBe(2);
+  });
+});
+
+describe('subscaleMethod: mean', () => {
+  const q = baseQ({
+    scoring: {
+      method: 'subscales',
+      subscaleMethod: 'mean',
+      subscales: { a: ['1', '2'], b: ['3'] },
+    },
+  });
+
+  it('computes subscale scores as means', () => {
+    const result = score(q, { '1': 2, '2': 4, '3': 3 });
+    expect(result.subscales).toEqual({ a: 3, b: 3 });
+  });
+
+  it('total is sum of subscale means', () => {
+    const result = score(q, { '1': 2, '2': 4, '3': 3 });
+    expect(result.total).toBe(6);
+  });
+
+  it('mean excludes unanswered items from denominator', () => {
+    // subscale a: only item 1 answered → mean = 2/1 = 2 (not 2/2)
+    const result = score(q, { '1': 2, '3': 3 });
+    expect(result.subscales.a).toBe(2);
+    expect(result.subscales.b).toBe(3);
+  });
+
+  it('mean of fully-unanswered subscale is 0', () => {
+    const result = score(q, { '3': 3 });
+    expect(result.subscales.a).toBe(0);
+  });
+
+  it('defaults to sum when subscaleMethod is absent', () => {
+    const qSum = baseQ({
+      scoring: {
+        method: 'subscales',
+        subscales: { a: ['1', '2'] },
+      },
+    });
+    const result = score(qSum, { '1': 2, '2': 4 });
+    expect(result.subscales.a).toBe(6);  // sum, not mean (3)
   });
 });
 

@@ -1,0 +1,72 @@
+{
+  "questionnaire": {
+    "id": "top3",
+    "title": "שלושת הבעיות המרכזיות",
+    "items": [
+      { "id": "intro", "type": "instructions", "text": "..." },
+      { "id": "p1_label",   "type": "text",   "inputType": "multiline", "text": "בעיה ראשונה", "required": true },
+      { "id": "p1_severity","type": "slider",  "text": "חומרה 1", "min": 1, "max": 12, "required": true },
+      { "id": "p1_coping",  "type": "text",   "inputType": "multiline", "text": "התמודדות 1", "required": false },
+      { "id": "p2_label",   "type": "text",   "inputType": "multiline", "text": "בעיה שנייה", "required": false },
+      { "id": "if_p2", "type": "if", "condition": "count(item.p2_label) >= 1",
+        "then": [
+          { "id": "p2_severity","type": "slider", "text": "חומרה 2", "min": 1, "max": 12, "required": false },
+          { "id": "p2_coping",  "type": "text",   "inputType": "multiline", "text": "התמודדות 2", "required": false },
+          { "id": "p3_label",   "type": "text",   "inputType": "multiline", "text": "בעיה שלישית", "required": false },
+          { "id": "if_p3", "type": "if", "condition": "count(item.p3_label) >= 1",
+            "then": [
+              { "id": "p3_severity","type": "slider", "text": "חומרה 3", "min": 1, "max": 12, "required": false },
+              { "id": "p3_coping",  "type": "text",   "inputType": "multiline", "text": "התמודדות 3", "required": false }
+            ],
+            "else": []
+          }
+        ],
+        "else": []
+      }
+    ],
+    "scoring": {
+      "method": "average",
+      "maxPerItem": 12
+    }
+  },
+  "cases": [
+    {
+      "description": "one problem — score is that problem's severity",
+      "answers": { "p1_label": "חרדה חברתית", "p1_severity": 8 },
+      "expected": { "total": 8, "subscales": {}, "category": null }
+    },
+    {
+      "description": "two problems — score is mean of two severities",
+      "answers": {
+        "p1_label": "חרדה חברתית", "p1_severity": 8,
+        "p2_label": "נדודי שינה",   "p2_severity": 6
+      },
+      "expected": { "total": 7, "subscales": {}, "category": null }
+    },
+    {
+      "description": "three problems — score is mean of three severities",
+      "answers": {
+        "p1_label": "חרדה חברתית", "p1_severity": 9,
+        "p2_label": "נדודי שינה",   "p2_severity": 6,
+        "p3_label": "קונפליקט",     "p3_severity": 3
+      },
+      "expected": { "total": 6, "subscales": {}, "category": null }
+    },
+    {
+      "description": "coping answers do not affect score",
+      "answers": {
+        "p1_label": "חרדה חברתית", "p1_severity": 10, "p1_coping": "הימנעות",
+        "p2_label": "נדודי שינה",   "p2_severity": 4,  "p2_coping": "תרופות"
+      },
+      "expected": { "total": 7, "subscales": {}, "category": null }
+    },
+    {
+      "description": "unanswered severity sliders excluded from mean denominator",
+      "answers": {
+        "p1_label": "חרדה חברתית", "p1_severity": 12,
+        "p2_label": "נדודי שינה"
+      },
+      "expected": { "total": 12, "subscales": {}, "category": null }
+    }
+  ]
+}

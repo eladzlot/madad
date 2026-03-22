@@ -387,6 +387,7 @@ Supported methods:
 Additional fields:
 - `maxPerItem` — used for reverse scoring calculation: `reversedValue = maxPerItem - rawValue`
 - `subscales` — a map of subscale identifiers to arrays of item IDs
+- `subscaleMethod` — how each individual subscale score is computed. One of `"sum"` (default) or `"mean"`. When `"mean"`, unanswered items are excluded from both numerator and denominator. The overall total is always the sum of the subscale scores regardless of `subscaleMethod`. Use `"mean"` for instruments whose published norms report subscale means (e.g. PCL-5, PTCI).
 - `customFormula` — a string expression evaluated by the DSL interpreter (see section 12)
 
 Reverse scoring and item weights are defined per item, not in the scoring spec.

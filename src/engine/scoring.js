@@ -9,6 +9,25 @@ import { isScored } from '../item-types.js';
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 /**
+ * Recursively collects all leaf items from a sequence that may contain if-nodes.
+ * Since scoring runs after the questionnaire completes (all answers known),
+ * we don't need to evaluate conditions — we collect items from all branches
+ * and let the answer map determine which ones actually have values.
+ */
+function flattenItems(nodes) {
+  const result = [];
+  for (const node of nodes) {
+    if (node.type === 'if') {
+      result.push(...flattenItems(node.then));
+      result.push(...flattenItems(node.else ?? []));
+    } else if (node.type !== 'randomize') {
+      result.push(node);
+    }
+  }
+  return result;
+}
+
+/**
  * Returns true for item types that contribute to scoring.
  */
 function isAnswerable(item) {
@@ -55,27 +74,35 @@ function interpret(ranges, score) {
  * }}
  */
 export function score(questionnaire, answers) {
-  const { items, scoring, interpretations } = questionnaire;
+  const { items: rawItems, scoring, interpretations } = questionnaire;
 
   // No scoring spec — return nulls
   if (!scoring || scoring.method === 'none') {
     return { total: null, subscales: {}, category: null };
   }
 
+  // Flatten if-nodes so items nested in branches are visible to scoring.
+  // All branches are included — the answer map determines which have values.
+  const items = flattenItems(rawItems ?? []);
   const answerableItems = items.filter(isAnswerable);
-  const { method, maxPerItem, subscales: subscaleDefs, customFormula } = scoring;
+  const { method, maxPerItem, subscaleMethod = 'sum', subscales: subscaleDefs, customFormula } = scoring;
 
   // ── Subscales ────────────────────────────────────────────────────────────────
 
   const subscales = {};
   if (subscaleDefs) {
     for (const [subscaleId, itemIds] of Object.entries(subscaleDefs)) {
-      subscales[subscaleId] = itemIds.reduce((sum, id) => {
+      const values = itemIds.reduce((acc, id) => {
         const raw = answers[id];
-        if (typeof raw !== 'number') return sum;
+        if (typeof raw !== 'number') return acc;
         const item = items.find(i => i.id === id);
-        return sum + adjustValue(raw, item ?? {}, maxPerItem);
-      }, 0);
+        acc.push(adjustValue(raw, item ?? {}, maxPerItem));
+        return acc;
+      }, []);
+      const subscaleSum = values.reduce((a, b) => a + b, 0);
+      subscales[subscaleId] = subscaleMethod === 'mean'
+        ? (values.length > 0 ? subscaleSum / values.length : 0)
+        : subscaleSum;
     }
   }
 

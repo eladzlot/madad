@@ -257,6 +257,7 @@
       "properties": {
         "method":        { "enum": ["none", "sum", "average", "subscales", "custom"] },
         "maxPerItem":    { "type": "number" },
+        "subscaleMethod": { "enum": ["sum", "mean"] },
         "subscales":     {
           "type": "object",
           "propertyNames": { "type": "string", "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_]*$" },

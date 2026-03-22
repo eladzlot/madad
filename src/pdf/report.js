@@ -609,7 +609,7 @@ export function buildMultiselectBlock(item, answer) {
       .filter(i => i >= 1 && i <= options.length)
       .map(i => options[i - 1].label);
     answerNode = {
-      text: bidiNodes(labels.join('، ')),
+      text: bidiNodes(labels.join(', ')),
       fontSize: 10,
       alignment: 'right',
     };

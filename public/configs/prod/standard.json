@@ -1,6 +1,6 @@
 {
   "id": "standard",
-  "version": "1.2.0",
+  "version": "1.6.0",
   "questionnaires": [
     {
       "id": "asi_3",
@@ -644,7 +644,8 @@
             "19",
             "20"
           ]
-        }
+        },
+        "subscaleMethod": "mean"
       },
       "interpretations": {
         "target": "total",
@@ -1835,6 +1836,1363 @@
           "severity": "warning"
         }
       ]
+    },
+    {
+      "id": "spin",
+      "title": "שאלון פוביה חברתית (SPIN)",
+      "description": "17-item social phobia severity scale. Screens for social anxiety disorder and measures symptom severity. (Social Phobia Inventory)",
+      "keywords": [
+        "social anxiety",
+        "social phobia",
+        "SPIN",
+        "חרדה חברתית",
+        "פוביה חברתית",
+        "screening"
+      ],
+      "defaultOptionSetId": "severity_5",
+      "optionSets": {
+        "severity_5": [
+          {
+            "label": "בכלל לא",
+            "value": 0
+          },
+          {
+            "label": "במידה מעטה",
+            "value": 1
+          },
+          {
+            "label": "במידה בינונית",
+            "value": 2
+          },
+          {
+            "label": "במידה רבה",
+            "value": 3
+          },
+          {
+            "label": "במידה רבה מאד",
+            "value": 4
+          }
+        ]
+      },
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "אנא ציינו באיזו מידה הטרידו אתכם הבעיות הבאות במהלך השבוע האחרון."
+        },
+        {
+          "id": "1",
+          "type": "select",
+          "text": "אני מפחד/ת מאנשים בעלי סמכות."
+        },
+        {
+          "id": "2",
+          "type": "select",
+          "text": "אני מוטרד/ת מהסמקה בפני אנשים."
+        },
+        {
+          "id": "3",
+          "type": "select",
+          "text": "מסיבות ואירועים חברתיים מפחידים אותי."
+        },
+        {
+          "id": "4",
+          "type": "select",
+          "text": "אני נמנע/ת מלדבר עם אנשים שאני לא מכיר/ה."
+        },
+        {
+          "id": "5",
+          "type": "select",
+          "text": "מפחיד אותי להיות תחת ביקורת."
+        },
+        {
+          "id": "6",
+          "type": "select",
+          "text": "הפחד ממבוכה גורם לי להימנע מלעשות דברים או לדבר עם אנשים."
+        },
+        {
+          "id": "7",
+          "type": "select",
+          "text": "להזיע מול אנשים גורם לי מצוקה."
+        },
+        {
+          "id": "8",
+          "type": "select",
+          "text": "אני נמנע/ת מללכת למסיבות."
+        },
+        {
+          "id": "9",
+          "type": "select",
+          "text": "אני נמנע/ת מפעילויות שבהן אני במרכז תשומת לב."
+        },
+        {
+          "id": "10",
+          "type": "select",
+          "text": "מפחיד אותי לדבר עם זרים."
+        },
+        {
+          "id": "11",
+          "type": "select",
+          "text": "אני נמנע/ת מלתת נאום."
+        },
+        {
+          "id": "12",
+          "type": "select",
+          "text": "אני מוכן/ה לעשות כל דבר כדי למנוע ביקורת."
+        },
+        {
+          "id": "13",
+          "type": "select",
+          "text": "דפיקות לב מפריעות לי כאשר אני ליד אנשים."
+        },
+        {
+          "id": "14",
+          "type": "select",
+          "text": "אני מפחד/ת לעשות דברים כאשר אנשים עלולים לראות אותי."
+        },
+        {
+          "id": "15",
+          "type": "select",
+          "text": "להיות נבוך/ה או להראות טיפשי/ת הם בין הפחדים הגרועים ביותר שלי."
+        },
+        {
+          "id": "16",
+          "type": "select",
+          "text": "אני נמנע/ת מלדבר עם כל אדם בעל סמכות."
+        },
+        {
+          "id": "17",
+          "type": "select",
+          "text": "לרעוד מול אנשים זה דבר שגורם לי מצוקה."
+        }
+      ],
+      "scoring": {
+        "method": "subscales",
+        "maxPerItem": 4,
+        "subscales": {
+          "fear": [
+            "1",
+            "2",
+            "5",
+            "10",
+            "12",
+            "14",
+            "15"
+          ],
+          "avoidance": [
+            "4",
+            "6",
+            "8",
+            "9",
+            "11",
+            "16"
+          ],
+          "physiological": [
+            "3",
+            "7",
+            "13",
+            "17"
+          ]
+        }
+      },
+      "subscaleLabels": {
+        "fear": "פחד (Fear)",
+        "avoidance": "הימנעות (Avoidance)",
+        "physiological": "עוררות פיזיולוגית (Physiological Arousal)"
+      },
+      "interpretations": {
+        "target": "total",
+        "ranges": [
+          {
+            "min": 0,
+            "max": 20,
+            "label": "ללא פוביה חברתית"
+          },
+          {
+            "min": 21,
+            "max": 30,
+            "label": "קל"
+          },
+          {
+            "min": 31,
+            "max": 40,
+            "label": "בינוני"
+          },
+          {
+            "min": 41,
+            "max": 52,
+            "label": "חמור"
+          },
+          {
+            "min": 53,
+            "max": 68,
+            "label": "חמור מאד"
+          }
+        ]
+      },
+      "alerts": [
+        {
+          "id": "high_social_anxiety",
+          "condition": "score.spin >= 21",
+          "message": "ציון SPIN ≥ 21 — ייתכן שהמטופל סובל מפוביה חברתית קלינית",
+          "severity": "warning"
+        }
+      ]
+    },
+    {
+      "id": "isi",
+      "title": "מדד חומרת נדודי שינה (ISI)",
+      "description": "7-item insomnia severity scale assessing sleep difficulty, satisfaction, and daytime impact over the past 2 weeks. (Insomnia Severity Index)",
+      "keywords": [
+        "insomnia",
+        "sleep",
+        "ISI",
+        "נדודי שינה",
+        "שינה",
+        "screening"
+      ],
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "אנא דרג/י את חומרת הבעיות הבאות הקשורות לשינה שלך בשבועיים האחרונים."
+        },
+        {
+          "id": "1",
+          "type": "select",
+          "text": "קושי בהירדמות",
+          "options": [
+            {
+              "label": "ללא",
+              "value": 0
+            },
+            {
+              "label": "קלה",
+              "value": 1
+            },
+            {
+              "label": "בינונית",
+              "value": 2
+            },
+            {
+              "label": "חמורה",
+              "value": 3
+            },
+            {
+              "label": "חמורה מאד",
+              "value": 4
+            }
+          ]
+        },
+        {
+          "id": "2",
+          "type": "select",
+          "text": "קושי בשמירה על שינה רציפה",
+          "options": [
+            {
+              "label": "ללא",
+              "value": 0
+            },
+            {
+              "label": "קלה",
+              "value": 1
+            },
+            {
+              "label": "בינונית",
+              "value": 2
+            },
+            {
+              "label": "חמורה",
+              "value": 3
+            },
+            {
+              "label": "חמורה מאד",
+              "value": 4
+            }
+          ]
+        },
+        {
+          "id": "3",
+          "type": "select",
+          "text": "בעיית יקיצה מוקדמת מדי",
+          "options": [
+            {
+              "label": "ללא",
+              "value": 0
+            },
+            {
+              "label": "קלה",
+              "value": 1
+            },
+            {
+              "label": "בינונית",
+              "value": 2
+            },
+            {
+              "label": "חמורה",
+              "value": 3
+            },
+            {
+              "label": "חמורה מאד",
+              "value": 4
+            }
+          ]
+        },
+        {
+          "id": "4",
+          "type": "select",
+          "text": "עד כמה את/ה מרוצה/ה מדפוס השינה הנוכחי שלך?",
+          "options": [
+            {
+              "label": "מרוצה מאד",
+              "value": 0
+            },
+            {
+              "label": "מרוצה",
+              "value": 1
+            },
+            {
+              "label": "מרוצה בינוני",
+              "value": 2
+            },
+            {
+              "label": "לא מרוצה",
+              "value": 3
+            },
+            {
+              "label": "לא מרוצה כלל",
+              "value": 4
+            }
+          ]
+        },
+        {
+          "id": "5",
+          "type": "select",
+          "text": "עד כמה, לדעתך, בעיית השינה שלך ניכרת לאחרים מבחינת פגיעה באיכות חייך?",
+          "options": [
+            {
+              "label": "כלל לא",
+              "value": 0
+            },
+            {
+              "label": "מעט",
+              "value": 1
+            },
+            {
+              "label": "במידה מסוימת",
+              "value": 2
+            },
+            {
+              "label": "במידה רבה",
+              "value": 3
+            },
+            {
+              "label": "במידה רבה מאד",
+              "value": 4
+            }
+          ]
+        },
+        {
+          "id": "6",
+          "type": "select",
+          "text": "עד כמה את/ה חרד/ה או מוטרד/ת מבעיית השינה הנוכחית שלך?",
+          "options": [
+            {
+              "label": "כלל לא",
+              "value": 0
+            },
+            {
+              "label": "מעט",
+              "value": 1
+            },
+            {
+              "label": "במידה מסוימת",
+              "value": 2
+            },
+            {
+              "label": "במידה רבה",
+              "value": 3
+            },
+            {
+              "label": "במידה רבה מאד",
+              "value": 4
+            }
+          ]
+        },
+        {
+          "id": "7",
+          "type": "select",
+          "text": "עד כמה בעיית השינה שלך מפריעה לתפקוד היומיומי שלך (כגון: עייפות ביום, מצב רוח, ריכוז, עבודה)?",
+          "options": [
+            {
+              "label": "כלל לא",
+              "value": 0
+            },
+            {
+              "label": "מעט",
+              "value": 1
+            },
+            {
+              "label": "במידה מסוימת",
+              "value": 2
+            },
+            {
+              "label": "במידה רבה",
+              "value": 3
+            },
+            {
+              "label": "במידה רבה מאד",
+              "value": 4
+            }
+          ]
+        }
+      ],
+      "scoring": {
+        "method": "sum",
+        "maxPerItem": 4
+      },
+      "interpretations": {
+        "target": "total",
+        "ranges": [
+          {
+            "min": 0,
+            "max": 7,
+            "label": "ללא נדודי שינה משמעותיים"
+          },
+          {
+            "min": 8,
+            "max": 14,
+            "label": "נדודי שינה תת-סף"
+          },
+          {
+            "min": 15,
+            "max": 21,
+            "label": "נדודי שינה קליניים (בינוניים)"
+          },
+          {
+            "min": 22,
+            "max": 28,
+            "label": "נדודי שינה קליניים (חמורים)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "dar5",
+      "title": "שאלון תגובות כעס (DAR-5)",
+      "description": "5-item anger reactions scale assessing frequency, intensity, duration, aggression, and social interference over the past 4 weeks. (Dimensions of Anger Reactions)",
+      "keywords": [
+        "anger",
+        "aggression",
+        "DAR-5",
+        "כעס",
+        "תוקפנות",
+        "screening"
+      ],
+      "defaultOptionSetId": "frequency_5",
+      "optionSets": {
+        "frequency_5": [
+          {
+            "label": "לעולם או כמעט לעולם לא",
+            "value": 1
+          },
+          {
+            "label": "לפעמים",
+            "value": 2
+          },
+          {
+            "label": "לעיתים קרובות",
+            "value": 3
+          },
+          {
+            "label": "רוב הזמן",
+            "value": 4
+          },
+          {
+            "label": "תמיד או כמעט תמיד",
+            "value": 5
+          }
+        ]
+      },
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "חשוב/י על ארבעת השבועות האחרונים וסמן/י את המספר המתאר ביותר את תחושותיך."
+        },
+        {
+          "id": "1",
+          "type": "select",
+          "text": "מצאתי את עצמי כועס/ת על אנשים או מצבים."
+        },
+        {
+          "id": "2",
+          "type": "select",
+          "text": "כאשר כעסתי, הגעתי לכעס עז מאד."
+        },
+        {
+          "id": "3",
+          "type": "select",
+          "text": "כאשר כעסתי, הכעס נשאר איתי זמן רב."
+        },
+        {
+          "id": "4",
+          "type": "select",
+          "text": "כאשר כעסתי על מישהו, רציתי להכות אותו."
+        },
+        {
+          "id": "5",
+          "type": "select",
+          "text": "הכעס שלי מנע ממני להסתדר עם אנשים כפי שהייתי רוצה/ה."
+        }
+      ],
+      "scoring": {
+        "method": "sum",
+        "maxPerItem": 5
+      },
+      "interpretations": {
+        "target": "total",
+        "ranges": [
+          {
+            "min": 5,
+            "max": 11,
+            "label": "כעס בטווח התקין"
+          },
+          {
+            "min": 12,
+            "max": 25,
+            "label": "כעס בעייתי — מומלץ הערכה נוספת"
+          }
+        ]
+      }
+    },
+    {
+      "id": "oasis",
+      "title": "שאלון חומרת חרדה ופגיעה תפקודית (OASIS)",
+      "description": "5-item transdiagnostic scale assessing anxiety severity and functional impairment over the past week. Applicable across anxiety disorders.",
+      "keywords": [
+        "anxiety",
+        "OASIS",
+        "impairment",
+        "transdiagnostic",
+        "חרדה",
+        "תפקוד"
+      ],
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "השאלות הבאות עוסקות בחרדה ופחד. תסמינים אלו עשויים לכלול התקפי פאניקה, חרדות מצביות, דאגות, פלאשבקים ורגישות יתר. כלול את כל תסמיני החרדה שלך בעת מענה על שאלות אלו. עבור כל שאלה, בחר את התשובה המתארת בצורה הטובה ביותר את חווייתך במהלך השבוע האחרון."
+        },
+        {
+          "id": "1",
+          "type": "select",
+          "text": "במהלך השבוע האחרון, כמה פעמים חשת חרדה?",
+          "options": [
+            {
+              "label": "ללא — לא חשתי חרדה בשבוע האחרון",
+              "value": 0
+            },
+            {
+              "label": "לעיתים נדירות — חשתי חרדה מספר פעמים",
+              "value": 1
+            },
+            {
+              "label": "לפעמים — חשתי חרדה כמחצית הזמן, קשה היה להירגע",
+              "value": 2
+            },
+            {
+              "label": "לעיתים קרובות — חשתי חרדה רוב הזמן, היה קשה מאוד להירגע",
+              "value": 3
+            },
+            {
+              "label": "כל הזמן — חשתי חרדה כל הזמן ולא הצלחתי להירגע כלל",
+              "value": 4
+            }
+          ]
+        },
+        {
+          "id": "2",
+          "type": "select",
+          "text": "במהלך השבוע האחרון, כשחשת חרדה, עד כמה הייתה עזה או חמורה?",
+          "options": [
+            {
+              "label": "מעטה מאוד — החרדה לא הייתה ניכרת כמעט",
+              "value": 0
+            },
+            {
+              "label": "קלה — החרדה הייתה ברמה נמוכה, יכולתי להירגע",
+              "value": 1
+            },
+            {
+              "label": "בינונית — החרדה הייתה מטרידה לפעמים, היה קשה להתרכז",
+              "value": 2
+            },
+            {
+              "label": "חמורה — החרדה הייתה עזה רוב הזמן, כמעט בלתי אפשרי להירגע",
+              "value": 3
+            },
+            {
+              "label": "קיצונית — החרדה הייתה מכריעה לחלוטין, לא יכולתי להירגע כלל",
+              "value": 4
+            }
+          ]
+        },
+        {
+          "id": "3",
+          "type": "select",
+          "text": "במהלך השבוע האחרון, כמה פעמים נמנעת ממצבים, מקומות, עצמים או פעילויות בגלל חרדה או פחד?",
+          "options": [
+            {
+              "label": "ללא — לא נמנעתי",
+              "value": 0
+            },
+            {
+              "label": "לעיתים נדירות — נמנעתי לפעמים אך בדרך כלל התמודדתי עם הסיטואציה",
+              "value": 1
+            },
+            {
+              "label": "לפעמים — נמנעתי ממספר מצבים, אך השינוי באורח חיי היה קטן",
+              "value": 2
+            },
+            {
+              "label": "לעיתים קרובות — נמנעתי משמעותית ושיניתי את אורח חיי כדי להימנע",
+              "value": 3
+            },
+            {
+              "label": "כל הזמן — הימנעות השתלטה על חיי, חדלתי מפעילויות שנהניתי מהן",
+              "value": 4
+            }
+          ]
+        },
+        {
+          "id": "4",
+          "type": "select",
+          "text": "במהלך השבוע האחרון, עד כמה הפריעה החרדה ליכולתך לבצע את מה שנדרש ממך בעבודה, בלימודים או בבית?",
+          "options": [
+            {
+              "label": "ללא — החרדה לא הפריעה לתפקודי",
+              "value": 0
+            },
+            {
+              "label": "מעט — הפריעה קצת, אך רוב הדברים הושלמו",
+              "value": 1
+            },
+            {
+              "label": "במידה בינונית — החרדה הפריעה לביצוע משימות, אך רוב הדברים הושלמו",
+              "value": 2
+            },
+            {
+              "label": "הרבה — לא הצלחתי לבצע חלק ניכר מהמשימות בשל החרדה",
+              "value": 3
+            },
+            {
+              "label": "קיצונית — לא הצלחתי לתפקד כמעט כלל",
+              "value": 4
+            }
+          ]
+        },
+        {
+          "id": "5",
+          "type": "select",
+          "text": "במהלך השבוע האחרון, עד כמה הפריעה החרדה לחיי החברה וליחסים שלך עם אחרים?",
+          "options": [
+            {
+              "label": "ללא — החרדה לא השפיעה על יחסיי עם אחרים",
+              "value": 0
+            },
+            {
+              "label": "מעט — הפריעה מעט; חלק מהיחסים נפגעו אך חיי החברה עדיין מספקים",
+              "value": 1
+            },
+            {
+              "label": "במידה בינונית — יש הפרעה מסוימת, אך עדיין יש לי מספר קשרים קרובים",
+              "value": 2
+            },
+            {
+              "label": "הרבה — יחסיי נפגעו קשות, אני נמנע מפעילות חברתית",
+              "value": 3
+            },
+            {
+              "label": "קיצונית — החרדה שיבשה לחלוטין את חיי החברה",
+              "value": 4
+            }
+          ]
+        }
+      ],
+      "scoring": {
+        "method": "sum",
+        "maxPerItem": 4
+      },
+      "interpretations": {
+        "target": "total",
+        "ranges": [
+          {
+            "min": 0,
+            "max": 7,
+            "label": "תת-סף קליני"
+          },
+          {
+            "min": 8,
+            "max": 12,
+            "label": "חרדה קלה"
+          },
+          {
+            "min": 13,
+            "max": 17,
+            "label": "חרדה בינונית"
+          },
+          {
+            "min": 18,
+            "max": 20,
+            "label": "חרדה חמורה"
+          }
+        ]
+      },
+      "alerts": [
+        {
+          "id": "significant_anxiety",
+          "condition": "item.1 >= 2 || item.2 >= 2",
+          "message": "ניכרת חרדה בעצימות בינונית או יותר — מומלץ להעריך ולתכנן התערבות",
+          "severity": "warning"
+        }
+      ]
+    },
+    {
+      "id": "wsas",
+      "title": "סולם עבודה והתאמה חברתית (WSAS)",
+      "description": "5-item scale measuring functional impairment in work, home management, social leisure, private leisure, and relationships. Scores 0-40; higher is worse.",
+      "keywords": [
+        "functioning",
+        "impairment",
+        "disability",
+        "WSAS",
+        "תפקוד",
+        "פגיעה"
+      ],
+      "defaultOptionSetId": "wsas_scale",
+      "optionSets": {
+        "wsas_scale": [
+          {
+            "label": "0 — ללא פגיעה",
+            "value": 0
+          },
+          {
+            "label": "1",
+            "value": 1
+          },
+          {
+            "label": "2",
+            "value": 2
+          },
+          {
+            "label": "3",
+            "value": 3
+          },
+          {
+            "label": "4 — פגיעה בינונית",
+            "value": 4
+          },
+          {
+            "label": "5",
+            "value": 5
+          },
+          {
+            "label": "6",
+            "value": 6
+          },
+          {
+            "label": "7",
+            "value": 7
+          },
+          {
+            "label": "8 — פגיעה חמורה מאוד",
+            "value": 8
+          }
+        ]
+      },
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "בעיותיו של אדם לפעמים משפיעות על יכולתו לבצע משימות יומיומיות שונות. דרג/י עד כמה הבעיה שלך פוגעת ביכולתך לבצע כל אחת מהפעילויות הבאות. 0 = ללא פגיעה כלל, 8 = פגיעה חמורה מאוד — לא יכול לבצע את הפעילות."
+        },
+        {
+          "id": "1",
+          "type": "select",
+          "text": "בשל הבעיה שלי, יכולתי לעבוד פגועה.",
+          "required": false
+        },
+        {
+          "id": "2",
+          "type": "select",
+          "text": "בשל הבעיה שלי, ניהול הבית שלי פגוע (ניקיון, סדר, קניות, בישול, טיפול בבית או בילדים, תשלום חשבונות)."
+        },
+        {
+          "id": "3",
+          "type": "select",
+          "text": "בשל הבעיה שלי, פעילויות הפנאי החברתיות שלי פגועות (עם אחרים, כגון: מסיבות, בתי קפה, טיולים, ביקורים, היכרויות, אירוח בבית)."
+        },
+        {
+          "id": "4",
+          "type": "select",
+          "text": "בשל הבעיה שלי, פעילויות הפנאי הפרטיות שלי פגועות (בעצמי, כגון: קריאה, גינון, אוספים, תפירה, הליכה לבד)."
+        },
+        {
+          "id": "5",
+          "type": "select",
+          "text": "בשל הבעיה שלי, יכולתי ליצור ולקיים קשרים קרובים עם אחרים, כולל אלה שאני חי/ה איתם, פגועה."
+        }
+      ],
+      "scoring": {
+        "method": "sum",
+        "maxPerItem": 8
+      },
+      "interpretations": {
+        "target": "total",
+        "ranges": [
+          {
+            "min": 0,
+            "max": 9,
+            "label": "תת-קליני"
+          },
+          {
+            "min": 10,
+            "max": 20,
+            "label": "פגיעה תפקודית משמעותית"
+          },
+          {
+            "min": 21,
+            "max": 40,
+            "label": "פסיכופתולוגיה בינונית-חמורה"
+          }
+        ]
+      }
+    },
+    {
+      "id": "wai6",
+      "title": "שאלון ברית טיפולית (WAI-6)",
+      "description": "6-item working alliance measure assessing bond and goal/task agreement between patient and therapist. Administered after therapy sessions.",
+      "keywords": [
+        "alliance",
+        "therapeutic",
+        "bond",
+        "WAI",
+        "ברית טיפולית",
+        "קשר"
+      ],
+      "defaultOptionSetId": "wai_scale",
+      "optionSets": {
+        "wai_scale": [
+          {
+            "label": "לעיתים נדירות",
+            "value": 1
+          },
+          {
+            "label": "לפעמים",
+            "value": 2
+          },
+          {
+            "label": "לעיתים מדי",
+            "value": 3
+          },
+          {
+            "label": "לעיתים קרובות",
+            "value": 4
+          },
+          {
+            "label": "תמיד",
+            "value": 5
+          }
+        ]
+      },
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "להלן מספר אמירות על חוויותיך בטיפול. חשוב/י על חוויתך בטיפול ובחר/י את הקטגוריה המתארת בצורה הטובה ביותר את חוויתך האישית."
+        },
+        {
+          "id": "1",
+          "type": "select",
+          "text": "כתוצאה מהמפגשים הללו, אני ברור/ה יותר לגבי איך אוכל לשנות."
+        },
+        {
+          "id": "2",
+          "type": "select",
+          "text": "המטפל/ת ואני עובדים לקראת מטרות שסוכמו ביננו."
+        },
+        {
+          "id": "3",
+          "type": "select",
+          "text": "אני מאמין/ה שהמטפל/ת אוהב/ת אותי."
+        },
+        {
+          "id": "4",
+          "type": "select",
+          "text": "אני מרגיש/ה שהמטפל/ת מעריך/ה אותי."
+        },
+        {
+          "id": "5",
+          "type": "select",
+          "text": "אני מרגיש/ה שהדברים שאני עושה בטיפול יעזרו לי להשיג את השינויים שאני רוצה."
+        },
+        {
+          "id": "6",
+          "type": "select",
+          "text": "המטפל/ת ואני מסכימים מהם הדברים החשובים שעלי לעבוד עליהם."
+        }
+      ],
+      "scoring": {
+        "method": "sum",
+        "maxPerItem": 5
+      },
+      "interpretations": {
+        "target": "total",
+        "ranges": [
+          {
+            "min": 6,
+            "max": 15,
+            "label": "ברית טיפולית חלשה"
+          },
+          {
+            "min": 16,
+            "max": 24,
+            "label": "ברית טיפולית בינונית"
+          },
+          {
+            "min": 25,
+            "max": 30,
+            "label": "ברית טיפולית חזקה"
+          }
+        ]
+      }
+    },
+    {
+      "id": "ptci",
+      "title": "שאלון קוגניציות פוסט-טראומטיות (PTCI)",
+      "description": "33-item measure of trauma-related thoughts and beliefs across three subscales: negative cognitions about self, the world, and self-blame.",
+      "keywords": [
+        "PTSD",
+        "trauma",
+        "cognitions",
+        "PTCI",
+        "פוסט טראומה",
+        "קוגניציות",
+        "אמונות"
+      ],
+      "defaultOptionSetId": "ptci_scale",
+      "optionSets": {
+        "ptci_scale": [
+          {
+            "label": "לא מסכים/ה כלל",
+            "value": 1
+          },
+          {
+            "label": "לא מסכים/ה מאוד",
+            "value": 2
+          },
+          {
+            "label": "לא מסכים/ה במקצת",
+            "value": 3
+          },
+          {
+            "label": "ניטרלי/ת",
+            "value": 4
+          },
+          {
+            "label": "מסכים/ה במקצת",
+            "value": 5
+          },
+          {
+            "label": "מסכים/ה מאוד",
+            "value": 6
+          },
+          {
+            "label": "מסכים/ה לחלוטין",
+            "value": 7
+          }
+        ]
+      },
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "אנו מתעניינים במחשבות שעשויות להיות לך לאחר חוויה טראומטית. להלן מספר אמירות שעשויות לייצג את חשיבתך או לא. קרא/י כל אמירה בעיון וציין/י עד כמה אתה/את מסכים/ה או לא מסכים/ה איתה. אנשים מגיבים לאירועים טראומטיים בדרכים שונות. אין תשובות נכונות או שגויות."
+        },
+        {
+          "id": "1",
+          "type": "select",
+          "text": "האירוע קרה בגלל אופן התנהגותי."
+        },
+        {
+          "id": "2",
+          "type": "select",
+          "text": "אני לא יכול/ה לסמוך על עצמי שאעשה את הדבר הנכון."
+        },
+        {
+          "id": "3",
+          "type": "select",
+          "text": "אני אדם חלש."
+        },
+        {
+          "id": "4",
+          "type": "select",
+          "text": "לא אוכל לשלוט בכעסי ואעשה משהו נורא."
+        },
+        {
+          "id": "5",
+          "type": "select",
+          "text": "אני לא יכול/ה להתמודד אפילו עם הטרדה הקטנה ביותר."
+        },
+        {
+          "id": "6",
+          "type": "select",
+          "text": "פעם הייתי אדם מאושר/ת אך עכשיו אני תמיד אומלל/ת."
+        },
+        {
+          "id": "7",
+          "type": "select",
+          "text": "לא ניתן לסמוך על אנשים."
+        },
+        {
+          "id": "8",
+          "type": "select",
+          "text": "אני חייב/ת להיות על המשמר כל הזמן."
+        },
+        {
+          "id": "9",
+          "type": "select",
+          "text": "אני מרגיש/ה מת/ה מבפנים."
+        },
+        {
+          "id": "10",
+          "type": "select",
+          "text": "לעולם לא תדע מי עלול לפגוע בך."
+        },
+        {
+          "id": "11",
+          "type": "select",
+          "text": "עלי להיות זהיר/ה במיוחד כי לעולם לא ידוע מה עלול לקרות."
+        },
+        {
+          "id": "12",
+          "type": "select",
+          "text": "אני לא מסוגל/ת."
+        },
+        {
+          "id": "13",
+          "type": "select",
+          "text": "לא אוכל לשלוט ברגשותי ומשהו נורא יקרה.",
+          "required": false
+        },
+        {
+          "id": "14",
+          "type": "select",
+          "text": "אם אחשוב על האירוע, לא אוכל להתמודד עם כך."
+        },
+        {
+          "id": "15",
+          "type": "select",
+          "text": "האירוע קרה לי בגלל סוג האדם שאני."
+        },
+        {
+          "id": "16",
+          "type": "select",
+          "text": "תגובותיי מאז האירוע מראות שאני משתגע/ת."
+        },
+        {
+          "id": "17",
+          "type": "select",
+          "text": "לעולם לא אוכל לחוש רגשות רגילים שוב."
+        },
+        {
+          "id": "18",
+          "type": "select",
+          "text": "העולם הוא מקום מסוכן."
+        },
+        {
+          "id": "19",
+          "type": "select",
+          "text": "מישהו אחר היה עוצר את האירוע מלקרות."
+        },
+        {
+          "id": "20",
+          "type": "select",
+          "text": "השתניתי לרעה באופן קבוע."
+        },
+        {
+          "id": "21",
+          "type": "select",
+          "text": "אני מרגיש/ה כמו חפץ, לא כמו אדם."
+        },
+        {
+          "id": "22",
+          "type": "select",
+          "text": "אדם אחר לא היה נקלע למצב הזה."
+        },
+        {
+          "id": "23",
+          "type": "select",
+          "text": "אני לא יכול/ה לסמוך על אנשים אחרים."
+        },
+        {
+          "id": "24",
+          "type": "select",
+          "text": "אני מרגיש/ה מבודד/ת ומנותק/ת מאחרים."
+        },
+        {
+          "id": "25",
+          "type": "select",
+          "text": "אין לי עתיד."
+        },
+        {
+          "id": "26",
+          "type": "select",
+          "text": "אני לא יכול/ה למנוע מדברים רעים לקרות."
+        },
+        {
+          "id": "27",
+          "type": "select",
+          "text": "אנשים אינם כפי שנראים."
+        },
+        {
+          "id": "28",
+          "type": "select",
+          "text": "חיי נהרסו בגלל הטראומה."
+        },
+        {
+          "id": "29",
+          "type": "select",
+          "text": "יש משהו לא בסדר אצלי כאדם."
+        },
+        {
+          "id": "30",
+          "type": "select",
+          "text": "תגובותיי מאז האירוע מראות שאני מתמודד/ת בצורה גרועה."
+        },
+        {
+          "id": "31",
+          "type": "select",
+          "text": "יש בי משהו שגרם לאירוע לקרות."
+        },
+        {
+          "id": "32",
+          "type": "select",
+          "text": "לא אוכל לסבול את מחשבותיי על האירוע ואני אתמוטט/תתמוטט.",
+          "required": false
+        },
+        {
+          "id": "33",
+          "type": "select",
+          "text": "אני מרגיש/ה שאני כבר לא מכיר/ה את עצמי."
+        },
+        {
+          "id": "34",
+          "type": "select",
+          "text": "לעולם לא ידוע מתי משהו נורא יקרה.",
+          "required": false
+        },
+        {
+          "id": "35",
+          "type": "select",
+          "text": "אני לא יכול/ה לסמוך על עצמי."
+        },
+        {
+          "id": "36",
+          "type": "select",
+          "text": "שום דבר טוב לא יכול לקרות לי יותר."
+        }
+      ],
+      "scoring": {
+        "method": "subscales",
+        "maxPerItem": 7,
+        "subscales": {
+          "self": [
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "9",
+            "12",
+            "14",
+            "16",
+            "17",
+            "20",
+            "21",
+            "24",
+            "25",
+            "26",
+            "28",
+            "29",
+            "30",
+            "33",
+            "35",
+            "36"
+          ],
+          "world": [
+            "7",
+            "8",
+            "10",
+            "11",
+            "18",
+            "23",
+            "27"
+          ],
+          "blame": [
+            "1",
+            "15",
+            "19",
+            "22",
+            "31"
+          ]
+        },
+        "subscaleMethod": "mean"
+      },
+      "subscaleLabels": {
+        "self": "קוגניציות שליליות על העצמי (Negative Cognitions About Self)",
+        "world": "קוגניציות שליליות על העולם (Negative Cognitions About the World)",
+        "blame": "האשמה עצמית (Self-Blame)"
+      },
+      "interpretations": {
+        "target": "total",
+        "ranges": [
+          {
+            "min": 33,
+            "max": 99,
+            "label": "קוגניציות שליליות נמוכות"
+          },
+          {
+            "min": 100,
+            "max": 165,
+            "label": "קוגניציות שליליות בינוניות"
+          },
+          {
+            "min": 166,
+            "max": 231,
+            "label": "קוגניציות שליליות גבוהות"
+          }
+        ]
+      }
+    },
+    {
+      "id": "top3",
+      "title": "שלושת הבעיות המרכזיות",
+      "description": "Idiographic 3-problem questionnaire. Patient names up to three main problems and rates the severity of each on a 1–12 scale, with an optional coping description per problem.",
+      "keywords": [
+        "problems",
+        "idiographic",
+        "severity",
+        "coping",
+        "בעיות",
+        "התמודדות"
+      ],
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "אנא ציין את שלושת הבעיות העיקריות עבורן אתה מבקש עזרה בטיפול. עבור כל אחת מהבעיות סמן על סולם מ-1 עד 12 באיזו מידה היא מטרידה אותך."
+        },
+        {
+          "id": "p1_label",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "בעיה ראשונה — תאר/י בקצרה:",
+          "required": true
+        },
+        {
+          "id": "p1_severity",
+          "type": "slider",
+          "text": "עד כמה הבעיה הראשונה מטרידה אותך?",
+          "min": 1,
+          "max": 12,
+          "labels": {
+            "min": "במידה מועטה מאד",
+            "max": "במידה רבה מאד"
+          },
+          "required": true
+        },
+        {
+          "id": "p1_coping",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "כיצד התמודדת עם בעיה זו עד כה?",
+          "required": false
+        },
+        {
+          "id": "p2_label",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "בעיה שנייה — תאר/י בקצרה (אם יש):",
+          "required": false
+        },
+        {
+          "id": "if_p2",
+          "type": "if",
+          "condition": "count(item.p2_label) >= 1",
+          "then": [
+            {
+              "id": "p2_severity",
+              "type": "slider",
+              "text": "עד כמה הבעיה השנייה מטרידה אותך?",
+              "min": 1,
+              "max": 12,
+              "labels": {
+                "min": "במידה מועטה מאד",
+                "max": "במידה רבה מאד"
+              },
+              "required": false
+            },
+            {
+              "id": "p2_coping",
+              "type": "text",
+              "inputType": "multiline",
+              "text": "כיצד התמודדת עם בעיה זו עד כה?",
+              "required": false
+            },
+            {
+              "id": "p3_label",
+              "type": "text",
+              "inputType": "multiline",
+              "text": "בעיה שלישית — תאר/י בקצרה (אם יש):",
+              "required": false
+            },
+            {
+              "id": "if_p3",
+              "type": "if",
+              "condition": "count(item.p3_label) >= 1",
+              "then": [
+                {
+                  "id": "p3_severity",
+                  "type": "slider",
+                  "text": "עד כמה הבעיה השלישית מטרידה אותך?",
+                  "min": 1,
+                  "max": 12,
+                  "labels": {
+                    "min": "במידה מועטה מאד",
+                    "max": "במידה רבה מאד"
+                  },
+                  "required": false
+                },
+                {
+                  "id": "p3_coping",
+                  "type": "text",
+                  "inputType": "multiline",
+                  "text": "כיצד התמודדת עם בעיה זו עד כה?",
+                  "required": false
+                }
+              ],
+              "else": []
+            }
+          ],
+          "else": []
+        }
+      ],
+      "scoring": {
+        "method": "average",
+        "maxPerItem": 12
+      }
     }
   ]
 }

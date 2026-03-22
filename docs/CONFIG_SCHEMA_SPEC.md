@@ -202,6 +202,7 @@ Not scored. Answer stored as `number[]` of 1-based indices. Available in DSL via
 |---|---|---|---|
 | `method` | string | yes | One of: `none`, `sum`, `average`, `subscales`, `custom` |
 | `maxPerItem` | number | no | Required when any item uses reverse scoring |
+| `subscaleMethod` | string | no | How each subscale score is computed. One of: `sum` (default), `mean`. Applies only when `subscales` is defined. Use `mean` for instruments like PCL-5 and PTCI whose published norms report subscale means. The total score is always the sum of the subscale scores (whether those are sums or means). |
 | `subscales` | object | no | Map of subscale ID → array of item IDs. Required when method is `subscales`. |
 | `customFormula` | string | no | DSL expression returning a number. Required when method is `custom`. |
 

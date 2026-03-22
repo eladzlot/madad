@@ -132,10 +132,11 @@ copy "setup.js"                        "tests/setup.js"
 copy "setup-dom.js"                    "tests/setup-dom.js"
 
 # ── Test fixtures ──────────────────────────────────────────────────────────────
-copy "fixture-phq9.json"               "tests/fixtures/phq9.json"
-copy "fixture-gad7.json"               "tests/fixtures/gad7.json"
-copy "fixture-pcl5.json"               "tests/fixtures/pcl5.json"
-copy "fixture-ocir.json"               "tests/fixtures/ocir.json"
+copy "phq9.json"               "tests/fixtures/phq9.json"
+copy "gad7.json"               "tests/fixtures/gad7.json"
+copy "pcl5.json"               "tests/fixtures/pcl5.json"
+copy "ocir.json"               "tests/fixtures/ocir.json"
+copy "top3.json"               "tests/fixtures/top3.json"
 
 # ── E2E tests ──────────────────────────────────────────────────────────────────
 copy "patient-flow.e2e.test.js"        "tests/e2e/patient-flow.e2e.test.js"

@@ -206,6 +206,18 @@ Each item ID in the subscale arrays must match an item defined in the `items` ar
 
 `subscaleLabels` values are displayed in the PDF. Format: `"Hebrew name (English name)"`.
 
+**`subscaleMethod`** controls how each individual subscale score is computed. Default is `"sum"`. Use `"mean"` for instruments whose published norms report subscale means rather than sums (e.g. PCL-5, PTCI):
+
+```json
+"scoring": {
+  "method": "subscales",
+  "subscaleMethod": "mean",
+  "subscales": { ... }
+}
+```
+
+The total score is always the sum of the subscale scores (whether those are sums or means). Unanswered items are excluded from both the numerator and denominator when computing means.
+
 ### Custom scoring (advanced)
 ```json
 "scoring": {
