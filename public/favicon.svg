@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect width="32" height="32" rx="7" fill="#1E9BAA"/>
+  <text x="16" y="22" font-family="'Noto Sans Hebrew',system-ui,sans-serif" font-size="20" font-weight="700" fill="white" text-anchor="middle">מ</text>
+  <rect x="6" y="25.5" width="20" height="2" rx="1" fill="rgba(255,255,255,0.45)"/>
+</svg>

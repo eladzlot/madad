@@ -103,6 +103,7 @@ copy "report.test.js"                  "src/pdf/report.test.js"
 # ── App shell ──────────────────────────────────────────────────────────────────
 copy "index.html"                      "index.html"
 copy "landing-index.html"              "landing/index.html"
+copy "composer-index.html"             "composer/index.html"
 copy "app.js"                          "src/app.js"
 copy "app.test.js"                     "src/app.test.js"
 copy "controller.js"                   "src/controller.js"
