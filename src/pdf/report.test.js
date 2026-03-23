@@ -962,3 +962,76 @@ describe('RTL invariants', () => {
     expect(row1[3].text).toBe('1');                          // row number
   });
 });
+
+// ── calcRiskLevel edge cases ─────────────────────────────────────────────────
+
+describe('calcRiskLevel — slider edge cases', () => {
+  it('returns null when slider range is zero (min === max)', () => {
+    const item = { type: 'slider', min: 5, max: 5 };
+    expect(calcRiskLevel(item, 5, [])).toBeNull();
+  });
+
+  it('returns null when slider range is negative', () => {
+    const item = { type: 'slider', min: 10, max: 0 };
+    expect(calcRiskLevel(item, 5, [])).toBeNull();
+  });
+
+  it('slider defaults min to 0 when not provided', () => {
+    const item = { type: 'slider', max: 10 };
+    expect(calcRiskLevel(item, 9, [])).toBe('high'); // 9/10 = 90% > 80%
+  });
+});
+
+// ── buildResponseTable — text/multiselect before select items ────────────────
+
+describe('buildResponseTable — text and multiselect at start', () => {
+  it('text item before select items renders outside table then table', () => {
+    const q = {
+      id: 'q', title: 'Q',
+      items: [
+        { id: 'notes', type: 'text', text: 'הערות' },
+        { id: 'i1', type: 'select', text: 'שאלה',
+          options: [{ label: 'כן', value: 1 }, { label: 'לא', value: 0 }] },
+      ],
+      scoring: { method: 'none' }, alerts: [],
+    };
+    const result = buildResponseTable(q, { notes: 'some note', i1: 1 });
+    expect(result.stack).toBeDefined();
+    const textBlock  = result.stack.find(b => b.stack);
+    const tableBlock = result.stack.find(b => b.table);
+    expect(textBlock).toBeDefined();
+    expect(tableBlock).toBeDefined();
+  });
+
+  it('multiselect item before select items renders outside table then table', () => {
+    const q = {
+      id: 'q', title: 'Q',
+      items: [
+        { id: 'ms', type: 'multiselect', text: 'מה?',
+          options: [{ label: 'א' }, { label: 'ב' }] },
+        { id: 'i1', type: 'select', text: 'שאלה',
+          options: [{ label: 'כן', value: 1 }, { label: 'לא', value: 0 }] },
+      ],
+      scoring: { method: 'none' }, alerts: [],
+    };
+    const result = buildResponseTable(q, { ms: [1], i1: 1 });
+    expect(result.stack).toBeDefined();
+    const msBlock    = result.stack.find(b => b.stack);
+    const tableBlock = result.stack.find(b => b.table);
+    expect(msBlock).toBeDefined();
+    expect(tableBlock).toBeDefined();
+  });
+
+  it('multiselect-only questionnaire returns a block with no table', () => {
+    const q = {
+      id: 'q', title: 'Q',
+      items: [{ id: 'ms', type: 'multiselect', text: 'מה?',
+        options: [{ label: 'א' }, { label: 'ב' }] }],
+      scoring: { method: 'none' }, alerts: [],
+    };
+    const result = buildResponseTable(q, { ms: [1, 2] });
+    expect(result).not.toBeNull();
+    expect(result.stack).toBeDefined();
+    expect(result.stack.find(b => b.table)).toBeUndefined();
+  });
+});

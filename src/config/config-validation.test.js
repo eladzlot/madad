@@ -138,3 +138,186 @@ describe('duplicate session key check', () => {
     expect(errors).toEqual([]);
   });
 });
+
+// ─── checkScoringRefs ─────────────────────────────────────────────────────────
+
+describe('scoring subscale item references', () => {
+  const subscaleQ = (subscales, items) => ({
+    id: 'q', title: 'Q',
+    items,
+    scoring: { method: 'subscales', subscales },
+    alerts: [],
+  });
+
+  it('no error when all subscale item IDs exist', () => {
+    const q = subscaleQ(
+      { a: ['1', '2'] },
+      [{ id: '1', type: 'select', text: 'Q1', options: [{ label: 'A', value: 0 }] },
+       { id: '2', type: 'select', text: 'Q2', options: [{ label: 'A', value: 0 }] }]
+    );
+    expect(collectConfigErrors(minimalConfig([q]))).toEqual([]);
+  });
+
+  it('error when subscale references a non-existent item ID', () => {
+    const q = subscaleQ(
+      { a: ['1', 'ghost'] },
+      [{ id: '1', type: 'select', text: 'Q1', options: [{ label: 'A', value: 0 }] }]
+    );
+    const errors = collectConfigErrors(minimalConfig([q]));
+    expect(errors.some(e => e.includes('"ghost"'))).toBe(true);
+  });
+
+  it('includes questionnaire ID and subscale name in error message', () => {
+    const q = subscaleQ({ mysub: ['missing'] }, [
+      { id: '1', type: 'select', text: 'Q1', options: [{ label: 'A', value: 0 }] }
+    ]);
+    const errors = collectConfigErrors(minimalConfig([q]));
+    expect(errors[0]).toContain('"q"');
+    expect(errors[0]).toContain('"mysub"');
+    expect(errors[0]).toContain('"missing"');
+  });
+
+  it('skips questionnaires without subscales scoring', () => {
+    const q = {
+      id: 'q', title: 'Q',
+      items: [{ id: '1', type: 'select', text: 'Q1', options: [{ label: 'A', value: 0 }] }],
+      scoring: { method: 'sum' }, alerts: [],
+    };
+    expect(collectConfigErrors(minimalConfig([q]))).toEqual([]);
+  });
+
+  it('finds item IDs inside if-node branches', () => {
+    const q = {
+      id: 'q', title: 'Q',
+      items: [
+        { id: 'gate', type: 'binary', text: 'Gate?' },
+        { id: 'cond', type: 'if', condition: 'item.gate == 1',
+          then: [{ id: 'nested', type: 'select', text: 'N', options: [{ label: 'A', value: 0 }] }],
+          else: [] }
+      ],
+      scoring: { method: 'subscales', subscales: { a: ['nested'] } },
+      alerts: [],
+    };
+    expect(collectConfigErrors(minimalConfig([q]))).toEqual([]);
+  });
+});
+
+// ─── checkSliderItems ─────────────────────────────────────────────────────────
+
+describe('slider item validation', () => {
+  const sliderQ = (itemOverrides = {}) => ({
+    id: 'q', title: 'Q',
+    items: [{ id: 's1', type: 'slider', text: 'Rate it', min: 0, max: 10, ...itemOverrides }],
+    scoring: { method: 'none' }, alerts: [],
+  });
+
+  it('valid slider has no errors', () => {
+    expect(collectConfigErrors(minimalConfig([sliderQ()]))).toEqual([]);
+  });
+
+  it('error when min equals max', () => {
+    const errors = collectConfigErrors(minimalConfig([sliderQ({ min: 5, max: 5 })]));
+    expect(errors.some(e => e.includes('min') && e.includes('max'))).toBe(true);
+  });
+
+  it('error when min is greater than max', () => {
+    const errors = collectConfigErrors(minimalConfig([sliderQ({ min: 10, max: 0 })]));
+    expect(errors.some(e => e.includes('min'))).toBe(true);
+  });
+
+  it('error when step is zero', () => {
+    const errors = collectConfigErrors(minimalConfig([sliderQ({ step: 0 })]));
+    expect(errors.some(e => e.includes('step'))).toBe(true);
+  });
+
+  it('error when step is negative', () => {
+    const errors = collectConfigErrors(minimalConfig([sliderQ({ step: -1 })]));
+    expect(errors.some(e => e.includes('step'))).toBe(true);
+  });
+
+  it('no error when step is positive', () => {
+    expect(collectConfigErrors(minimalConfig([sliderQ({ step: 0.5 })]))).toEqual([]);
+  });
+
+  it('no error when step is absent', () => {
+    expect(collectConfigErrors(minimalConfig([sliderQ()]))).toEqual([]);
+  });
+
+  it('error message includes questionnaire ID and item ID', () => {
+    const errors = collectConfigErrors(minimalConfig([sliderQ({ min: 10, max: 0 })]));
+    expect(errors[0]).toContain('"q"');
+    expect(errors[0]).toContain('"s1"');
+  });
+});
+
+// ─── select item — no options error ──────────────────────────────────────────
+
+describe('select item without options', () => {
+  it('error when select item has no options, no optionSetId, no defaultOptionSetId', () => {
+    const q = {
+      id: 'q', title: 'Q',
+      items: [{ id: '1', type: 'select', text: 'Q1' }],
+      scoring: { method: 'none' }, alerts: [],
+    };
+    const errors = collectConfigErrors(minimalConfig([q]));
+    expect(errors.some(e => e.includes('no options'))).toBe(true);
+  });
+
+  it('no error when select item uses defaultOptionSetId', () => {
+    const q = {
+      id: 'q', title: 'Q',
+      defaultOptionSetId: 'scale',
+      optionSets: { scale: [{ label: 'A', value: 0 }, { label: 'B', value: 1 }] },
+      items: [{ id: '1', type: 'select', text: 'Q1' }],
+      scoring: { method: 'none' }, alerts: [],
+    };
+    expect(collectConfigErrors(minimalConfig([q]))).toEqual([]);
+  });
+
+  it('error when select item references missing optionSetId', () => {
+    const q = {
+      id: 'q', title: 'Q',
+      optionSets: {},
+      items: [{ id: '1', type: 'select', text: 'Q1', optionSetId: 'missing' }],
+      scoring: { method: 'none' }, alerts: [],
+    };
+    const errors = collectConfigErrors(minimalConfig([q]));
+    expect(errors.some(e => e.includes('"missing"'))).toBe(true);
+  });
+
+  it('error on duplicate option values within same item', () => {
+    const q = {
+      id: 'q', title: 'Q',
+      items: [{ id: '1', type: 'select', text: 'Q1',
+        options: [{ label: 'A', value: 0 }, { label: 'B', value: 0 }] }],
+      scoring: { method: 'none' }, alerts: [],
+    };
+    const errors = collectConfigErrors(minimalConfig([q]));
+    expect(errors.some(e => e.includes('duplicate'))).toBe(true);
+  });
+});
+
+// ─── binary via optionSetId ───────────────────────────────────────────────────
+
+describe('binary item via optionSetId', () => {
+  it('error when binary references optionSetId with wrong count', () => {
+    const q = {
+      id: 'q', title: 'Q',
+      optionSets: { yesno: [{ label: 'Yes', value: 1 }] }, // only 1 option — wrong
+      items: [{ id: '1', type: 'binary', text: 'Q?', optionSetId: 'yesno' }],
+      scoring: { method: 'none' }, alerts: [],
+    };
+    const errors = collectConfigErrors(minimalConfig([q]));
+    expect(errors.some(e => e.includes('exactly 2'))).toBe(true);
+  });
+
+  it('no error when binary via optionSetId has exactly 2 options', () => {
+    const q = {
+      id: 'q', title: 'Q',
+      optionSets: { yesno: [{ label: 'Yes', value: 1 }, { label: 'No', value: 0 }] },
+      items: [{ id: '1', type: 'binary', text: 'Q?', optionSetId: 'yesno' }],
+      scoring: { method: 'none' }, alerts: [],
+    };
+    expect(collectConfigErrors(minimalConfig([q]))).toEqual([]);
+  });
+});

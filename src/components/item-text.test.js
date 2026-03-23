@@ -156,3 +156,95 @@ describe('advance event', () => {
     expect(advanceSpy).toHaveBeenCalledOnce();
   });
 });
+
+// ─── validation ──────────────────────────────────────────────────────────────
+
+// helper: type into input then submit, await render
+async function typeAndSubmit(el, value) {
+  const input = el.shadowRoot.querySelector('input');
+  input.value = value;
+  input.dispatchEvent(new Event('input'));
+  await el.updateComplete;
+  el.shadowRoot.querySelector('.submit-btn').click();
+  await el.updateComplete;
+}
+
+describe('validation', () => {
+  it('shows no error for valid free-text input after submit', async () => {
+    const el = await makeEl({ item: { ...item, inputType: 'line' } });
+    await typeAndSubmit(el, 'hello');
+    expect(el.shadowRoot.querySelector('.error')).toBeNull();
+  });
+
+  it('number: shows error when value is not a number', async () => {
+    const el = await makeEl({ item: { ...item, inputType: 'number', required: true } });
+    await typeAndSubmit(el, 'abc');
+    expect(el.shadowRoot.querySelector('.error').textContent).toContain('מספר');
+  });
+
+  it('number: shows error when value is below min', async () => {
+    const el = await makeEl({ item: { ...item, inputType: 'number', min: 5, required: true } });
+    await typeAndSubmit(el, '2');
+    expect(el.shadowRoot.querySelector('.error').textContent).toContain('5');
+  });
+
+  it('number: shows error when value is above max', async () => {
+    const el = await makeEl({ item: { ...item, inputType: 'number', max: 10, required: true } });
+    await typeAndSubmit(el, '99');
+    expect(el.shadowRoot.querySelector('.error').textContent).toContain('10');
+  });
+
+  it('number: no error when value is within min/max', async () => {
+    const el = await makeEl({ item: { ...item, inputType: 'number', min: 1, max: 10, required: true } });
+    await typeAndSubmit(el, '5');
+    expect(el.shadowRoot.querySelector('.error')).toBeNull();
+  });
+
+  it('email: shows error for input without @', async () => {
+    const el = await makeEl({ item: { ...item, inputType: 'email', required: true } });
+    await typeAndSubmit(el, 'notanemail');
+    expect(el.shadowRoot.querySelector('.error').textContent).toBeTruthy();
+  });
+
+  it('email: no error for valid email address', async () => {
+    const el = await makeEl({ item: { ...item, inputType: 'email', required: true } });
+    await typeAndSubmit(el, 'test@example.com');
+    expect(el.shadowRoot.querySelector('.error')).toBeNull();
+  });
+
+  it('pattern: shows error when value does not match', async () => {
+    const el = await makeEl({ item: { ...item, pattern: '^[0-9]+$', required: true } });
+    await typeAndSubmit(el, 'abc');
+    expect(el.shadowRoot.querySelector('.error').textContent).toBeTruthy();
+  });
+
+  it('pattern: no error when value matches', async () => {
+    const el = await makeEl({ item: { ...item, pattern: '^[0-9]+$', required: true } });
+    await typeAndSubmit(el, '123');
+    expect(el.shadowRoot.querySelector('.error')).toBeNull();
+  });
+
+  it('pattern: silently skips unsafe ReDoS patterns', async () => {
+    const el = await makeEl({ item: { ...item, pattern: '(a+)+', required: true } });
+    await typeAndSubmit(el, 'test');
+    expect(el.shadowRoot.querySelector('.error')).toBeNull();
+  });
+
+  it('no validation on empty input (skippable items)', async () => {
+    const el = await makeEl({ item: { ...item, inputType: 'number', min: 5 } });
+    await typeAndSubmit(el, '');
+    expect(el.shadowRoot.querySelector('.error')).toBeNull();
+  });
+});
+
+// ─── selected sync on update ──────────────────────────────────────────────────
+
+describe('selected sync', () => {
+  it('updates internal value when selected property changes', async () => {
+    const el = await makeEl({ selected: 'original' });
+    el.selected = 'updated';
+    await el.updateComplete;
+    const input = el.shadowRoot.querySelector('input');
+    expect(input.value).toBe('updated');
+  });
+});

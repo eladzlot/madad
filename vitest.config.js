@@ -11,8 +11,8 @@ export default defineConfig({
     },
     coverage: {
       provider: 'v8',
-      include: ['src/**/*.js'],
-      exclude: ['src/app.js', 'src/router.js', 'src/**/*.test.js'],
+      include: ['src/**/*.js', 'composer/src/**/*.js'],
+      exclude: ['src/app.js', 'src/router.js', 'src/**/*.test.js', 'composer/src/**/*.test.js', 'src/config/validate-schema.js', 'composer/src/composer.js', 'composer/src/composer-render.js'],
       thresholds: {
         lines:     80,
         functions: 80,
