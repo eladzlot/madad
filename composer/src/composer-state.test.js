@@ -179,4 +179,16 @@ describe('matchesQuery', () => {
   it('trims whitespace from query', () => {
     expect(matchesQuery(item, '  phq9  ')).toBe(true);
   });
+
+  it('matches on keywords when present', () => {
+    const withKeywords = { id: 'pcl5', title: 'PCL-5', description: '', keywords: ['טראומה', 'ptsd'] };
+    expect(matchesQuery(withKeywords, 'טראומה')).toBe(true);
+    expect(matchesQuery(withKeywords, 'PTSD')).toBe(true);
+    expect(matchesQuery(withKeywords, 'nomatch')).toBe(false);
+  });
+
+  it('does not throw when keywords is absent', () => {
+    const noKeywords = { id: 'x', title: 'X', description: '' };
+    expect(() => matchesQuery(noKeywords, 'x')).not.toThrow();
+  });
 });
