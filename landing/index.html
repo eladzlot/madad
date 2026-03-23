@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>מדד — הערכה קלינית דיגיטלית</title>
+  <title>מדד — מדידה בלי חיכוך</title>
   <style>
     @font-face {
       font-family: 'Noto Sans Hebrew';
@@ -15,29 +15,38 @@
       src: url('../fonts/NotoSansHebrew-Bold.ttf') format('truetype');
       font-weight: 500 700; font-style: normal; font-display: swap;
     }
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     :root {
-      --navy:       #0056A6;
-      --navy-dark:  #003A8F;
-      --navy-deep:  #002060;
-      --teal:       #2BB3C0;
-      --teal-mid:   #1E9BAA;
+      --teal:       #1E9BAA;
       --teal-dark:  #186E78;
-      --teal-light: #EBF8FA;
-      --teal-pale:  #F0FBFC;
+      --navy:       #1A2E35;
+      --navy-deep:  #101C22;
       --text:       #1A2E35;
-      --text-muted: #4A6572;
-      --text-light: #7A9DAA;
-      --border:     #D0E8EC;
-      --surface:    #F0FBFC;
-      --bg:         #ffffff;
-      --max:        1080px;
-      --radius:     12px;
+      --muted:      #5A7078;
+      --faint:      #9BB0B8;
+      --border:     #E8EEF0;
+      --surface:    #F8FAF8;
+      --white:      #ffffff;
+      --max:        860px;
     }
-    html { font-family: 'Noto Sans Hebrew', system-ui, sans-serif; color: var(--text); background: var(--bg); scroll-behavior: smooth; line-height: 1.6; }
+
+    html {
+      font-family: 'Noto Sans Hebrew', system-ui, sans-serif;
+      color: var(--text);
+      background: var(--white);
+      scroll-behavior: smooth;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
     body { min-height: 100vh; }
-    .container { max-width: var(--max); margin: 0 auto; padding-inline: clamp(20px, 5vw, 48px); }
-    section { padding-block: clamp(56px, 8vw, 96px); }
+
+    .wrap {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding-inline: clamp(24px, 5vw, 48px);
+    }
 
     /* ── NAV ── */
     nav {
@@ -46,413 +55,467 @@
       backdrop-filter: blur(8px);
       border-bottom: 1px solid var(--border);
     }
-    .nav-inner { max-width: var(--max); margin: 0 auto; padding-inline: clamp(20px,5vw,48px); height: 60px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
-    .nav-brand { display: flex; align-items: baseline; gap: 10px; text-decoration: none; flex-shrink: 0; }
-    .nav-logo { font-size: 22px; font-weight: 700; color: var(--navy); letter-spacing: -0.03em; }
-    .nav-sub { font-size: 12px; color: var(--text-muted); }
-    .nav-links { display: flex; align-items: center; gap: 4px; }
-    .nav-link { font-size: 14px; color: var(--text-muted); text-decoration: none; padding: 6px 12px; border-radius: 8px; transition: color 120ms, background 120ms; white-space: nowrap; }
-    .nav-link:hover { color: var(--teal-dark); background: var(--teal-light); }
-    .nav-cta { font-size: 14px; font-weight: 600; color: #fff; background: var(--teal-mid); padding: 8px 18px; border-radius: 999px; text-decoration: none; transition: background 120ms; white-space: nowrap; }
-    .nav-cta:hover { background: var(--teal-dark); }
-    @media (max-width: 640px) { .nav-links .nav-link { display: none; } .nav-sub { display: none; } }
-
-    /* ── HERO — teal background ── */
-    .hero {
-      background: var(--teal-mid);
-      padding-block: clamp(72px, 11vw, 128px);
+    .nav-inner {
+      max-width: var(--max); margin: 0 auto;
+      padding-inline: clamp(24px,5vw,48px);
+      height: 54px;
+      display: flex; align-items: center; justify-content: space-between;
     }
-    .hero-inner { max-width: var(--max); margin: 0 auto; padding-inline: clamp(20px,5vw,48px); }
-    .hero-eyebrow {
-      display: inline-flex; align-items: center; gap: 8px;
+    .nav-logo {
+      font-size: 19px; font-weight: 700;
+      color: var(--text); letter-spacing: -0.03em;
+      text-decoration: none;
+    }
+    .nav-links { display: flex; align-items: center; gap: 24px; }
+    .nav-link {
+      font-size: 13px; color: var(--faint);
+      text-decoration: none; white-space: nowrap;
+      transition: color 120ms;
+    }
+    .nav-link:hover { color: var(--text); }
+    .nav-cta {
       font-size: 13px; font-weight: 600;
-      color: rgba(255,255,255,0.75);
-      margin-block-end: 24px;
+      color: var(--teal);
+      border: 1px solid var(--teal);
+      padding: 6px 16px; border-radius: 999px;
+      text-decoration: none; white-space: nowrap;
+      transition: background 120ms, color 120ms;
     }
-    .hero-eyebrow::before { content: ''; width: 24px; height: 2px; background: rgba(255,255,255,0.5); display: block; flex-shrink: 0; }
+    .nav-cta:hover { background: var(--teal); color: var(--white); }
+    @media (max-width: 600px) {
+      .nav-link { display: none; }
+    }
+
+    /* ── HERO ── */
+    .hero {
+      padding-block: clamp(48px, 7vw, 88px);
+      border-bottom: 1px solid var(--border);
+      text-align: center;
+    }
+    .hero-eyebrow {
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--faint);
+      margin-block-end: 20px;
+    }
     .hero-headline {
-      font-size: clamp(38px, 6vw, 68px);
-      font-weight: 700; line-height: 1.08;
-      letter-spacing: -0.03em;
-      color: #ffffff;
-      max-width: 680px;
-      margin-block-end: 24px;
+      font-size: clamp(56px, 10vw, 96px);
+      font-weight: 700;
+      line-height: 1.0;
+      letter-spacing: -0.04em;
+      color: var(--text);
+      margin-block-end: 22px;
     }
-    .hero-headline em { font-style: normal; opacity: 0.85; }
-    .hero-body {
-      font-size: clamp(16px, 2vw, 19px);
-      color: rgba(255,255,255,0.8);
-      line-height: 1.7; max-width: 520px;
-      margin-block-end: 44px;
+    .hero-rule {
+      width: 40px; height: 3px;
+      background: var(--teal);
+      border-radius: 2px;
+      margin: 0 auto 22px;
     }
-    .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+    .hero-sub {
+      font-size: clamp(15px, 2vw, 18px);
+      color: var(--muted);
+      line-height: 1.75;
+      max-width: 480px;
+      margin: 0 auto 22px;
+    }
+    .hero-btns {
+      display: flex; gap: 10px;
+      justify-content: center; flex-wrap: wrap;
+      margin-block-end: 18px;
+    }
     .btn-primary {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 14px 28px; background: #fff; color: var(--teal-dark);
-      border-radius: 999px; font-size: 16px; font-weight: 700;
-      text-decoration: none; transition: background 120ms, transform 120ms;
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--teal); color: var(--white);
+      font-size: 14px; font-weight: 600;
+      padding: 12px 24px; border-radius: 999px;
+      text-decoration: none;
+      transition: background 120ms;
     }
-    .btn-primary:hover { background: var(--teal-light); transform: translateY(-1px); }
-    .btn-ghost-hero {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 14px 24px; color: rgba(255,255,255,0.9);
-      border-radius: 999px; font-size: 15px; font-weight: 600;
-      text-decoration: none; border: 1.5px solid rgba(255,255,255,0.35);
-      transition: background 120ms, border-color 120ms;
+    .btn-primary:hover { background: var(--teal-dark); }
+    .btn-ghost {
+      display: inline-flex; align-items: center; gap: 6px;
+      color: var(--muted);
+      font-size: 14px;
+      padding: 12px 20px; border-radius: 999px;
+      text-decoration: none;
+      border: 1px solid var(--border);
+      transition: border-color 120ms, color 120ms;
     }
-    .btn-ghost-hero:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.6); }
+    .btn-ghost:hover { border-color: #B0C4C8; color: var(--text); }
     .hero-note {
-      margin-block-start: 24px; font-size: 13px;
-      color: rgba(255,255,255,0.6);
-      display: flex; align-items: center; gap: 8px;
+      font-size: 11px; color: var(--faint);
+      display: flex; justify-content: center;
+      gap: 16px; flex-wrap: wrap;
     }
-    .hero-note-dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,0.4); flex-shrink: 0; }
+    .hero-note span::before {
+      content: '·';
+      margin-inline-end: 16px;
+      color: var(--border);
+    }
+    .hero-note span:first-child::before { display: none; }
 
-    /* ── SECTION HEADERS ── */
-    .section-label { font-size: 12px; font-weight: 700; color: var(--teal-mid); margin-block-end: 12px; }
-    .section-title { font-size: clamp(24px, 3.5vw, 36px); font-weight: 700; letter-spacing: -0.02em; color: var(--text); line-height: 1.2; margin-block-end: 16px; }
-    .section-body { font-size: 17px; color: var(--text-muted); line-height: 1.7; max-width: 580px; }
+    /* ── SECTION BASE ── */
+    .sec {
+      padding-block: clamp(40px, 6vw, 64px);
+      border-bottom: 1px solid var(--border);
+    }
+    .sec-label {
+      font-size: 10px; font-weight: 700;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--teal);
+      margin-block-end: 14px;
+    }
+    .sec-title {
+      font-size: clamp(28px, 4vw, 38px);
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      line-height: 1.15;
+      color: var(--text);
+      margin-block-end: 14px;
+    }
+    .sec-body {
+      font-size: 16px; color: var(--muted);
+      line-height: 1.75; max-width: 520px;
+    }
 
-    /* ── HOW IT WORKS — pale teal bg ── */
-    .how-section { background: var(--teal-pale); }
-    .how-section .section-label { color: var(--teal-dark); }
+    /* ── HOW IT WORKS ── */
     .steps {
-      display: grid; grid-template-columns: repeat(3,1fr);
-      gap: 16px; margin-block-start: 48px;
+      margin-block-start: 32px;
     }
     .step {
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 32px 28px;
+      display: grid;
+      grid-template-columns: 52px 1fr;
+      gap: 20px;
+      align-items: start;
+      padding-block: 20px;
+      border-top: 1px solid var(--border);
     }
+    .step:last-child { border-bottom: 1px solid var(--border); }
     .step-num {
-      font-size: 12px; font-weight: 700;
-      color: var(--teal-mid);
-      margin-block-end: 20px;
-      display: flex; align-items: center; gap: 8px;
+      font-size: 13px; font-weight: 700;
+      color: var(--teal);
+      padding-block-start: 2px;
+      letter-spacing: 0.02em;
     }
-    .step-num::before {
-      content: ''; display: block;
-      width: 28px; height: 2px; background: var(--teal);
+    .step-eyebrow {
+      font-size: 10px; font-weight: 700;
+      letter-spacing: 0.09em; text-transform: uppercase;
+      color: var(--faint);
+      margin-block-end: 5px;
     }
-    .step-title { font-size: 18px; font-weight: 700; color: var(--text); margin-block-end: 10px; line-height: 1.3; }
-    .step-body { font-size: 14px; color: var(--text-muted); line-height: 1.65; }
-    @media (max-width: 700px) { .steps { grid-template-columns: 1fr; } }
+    .step-title {
+      font-size: 19px; font-weight: 700;
+      color: var(--text);
+      margin-block-end: 8px;
+      line-height: 1.25;
+    }
+    .step-body {
+      font-size: 15px; color: var(--muted);
+      line-height: 1.7;
+    }
 
-    /* ── WHY MEASURE — white ── */
-    .why-section { background: #fff; }
-    .why-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
-    .why-quote {
-      font-size: clamp(21px, 2.5vw, 27px);
-      font-weight: 600; color: var(--text);
-      line-height: 1.45; letter-spacing: -0.01em;
-      border-inline-start: 3px solid var(--teal);
-      padding-inline-start: 28px;
+    /* ── WORKFLOWS — dark ── */
+    .sec-dark {
+      background: var(--navy);
+      border-bottom: none;
     }
-    .why-content p { font-size: 16px; color: var(--text-muted); line-height: 1.75; margin-block-end: 16px; }
-    .why-content p:last-child { margin-block-end: 0; }
-    @media (max-width: 780px) { .why-inner { grid-template-columns: 1fr; gap: 40px; } }
+    .sec-dark .sec-label { color: rgba(255,255,255,0.3); }
+    .sec-dark .sec-title { color: var(--white); }
+    .sec-dark .sec-body { color: rgba(255,255,255,0.45); }
 
-    .instruments-section { background: var(--teal-mid); }
-    .instruments-section .section-label { color: rgba(255,255,255,0.65); }
-    .instruments-section .section-title { color: #fff; }
-    .instruments-section .section-body { color: rgba(255,255,255,0.75); }
-    .instruments-grid {
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(300px,1fr));
-      gap: 12px; margin-block-start: 40px;
+    .wlist { margin-block-start: 28px; }
+    .witem {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      padding-block: 18px;
+      border-top: 1px solid rgba(255,255,255,0.07);
     }
-    .instrument {
-      background: rgba(255,255,255,0.12);
-      border: 1px solid rgba(255,255,255,0.2);
-      border-radius: var(--radius);
-      padding: 18px 20px;
-      display: flex; align-items: flex-start; gap: 14px;
-      text-decoration: none; color: inherit;
+    .witem:last-child { border-bottom: 1px solid rgba(255,255,255,0.07); }
+    .witem-body { flex: 1; min-width: 0; }
+    .witem-title {
+      font-size: 19px; font-weight: 700;
+      color: var(--white);
+      margin-block-end: 5px;
+    }
+    .witem-desc {
+      font-size: 14px; color: rgba(255,255,255,0.4);
+      line-height: 1.6;
+      margin-block-end: 10px;
+    }
+    .witem-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+    .wtag {
+      font-size: 10px; font-weight: 600;
+      padding: 2px 8px; border-radius: 3px;
+      background: rgba(255,255,255,0.06);
+      color: rgba(255,255,255,0.35);
+    }
+    .wtag-hi {
+      background: rgba(30,155,170,0.18);
+      color: #5BC0BE;
+    }
+    .witem-btn {
+      font-size: 13px; font-weight: 600;
+      color: var(--teal);
+      border: 1px solid rgba(30,155,170,0.35);
+      padding: 8px 18px; border-radius: 999px;
+      text-decoration: none; white-space: nowrap;
+      flex-shrink: 0;
       transition: background 150ms, border-color 150ms;
     }
-    .instrument:hover { background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.35); }
-    .instrument-abbr {
-      font-size: 11px; font-weight: 700;
+    .witem-btn:hover {
+      background: rgba(30,155,170,0.12);
+      border-color: rgba(30,155,170,0.6);
+    }
+    @media (max-width: 560px) {
+      .witem { flex-direction: column; align-items: flex-start; }
+    }
+
+    /* ── TRUST ── */
+    .sec-surface { background: var(--surface); }
+    .trust-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: clamp(32px, 6vw, 72px);
+      margin-block-start: 28px;
+    }
+    .trust-title {
+      font-size: 18px; font-weight: 700;
+      color: var(--text);
+      line-height: 1.3;
+      margin-block-end: 14px;
+    }
+    .trust-body {
+      font-size: 15px; color: var(--muted);
+      line-height: 1.8;
+    }
+    .trust-body + .trust-body { margin-block-start: 12px; }
+    .trust-body strong { color: var(--text); font-weight: 600; }
+    .trust-hl {
+      margin-block-start: 18px;
+      font-size: 12px; font-weight: 700;
       color: var(--teal-dark);
-      background: #fff;
-      padding: 3px 8px; border-radius: 6px;
-      white-space: nowrap; flex-shrink: 0; margin-block-start: 2px;
+      display: flex; align-items: center; gap: 10px;
     }
-    .instrument-name { font-size: 15px; font-weight: 600; color: #fff; margin-block-end: 3px; }
-    .instrument-desc { font-size: 13px; color: rgba(255,255,255,0.7); line-height: 1.5; }
+    .trust-hl::before {
+      content: '';
+      width: 22px; height: 2px;
+      background: var(--teal);
+      flex-shrink: 0;
+    }
+    @media (max-width: 600px) {
+      .trust-grid { grid-template-columns: 1fr; }
+    }
 
-    /* Privacy badges */
-    .privacy-row { display: flex; gap: 10px; flex-wrap: wrap; margin-block-start: 32px; }
-    .privacy-badge {
+    /* ── CTA ── */
+    .cta-sec {
+      padding-block: clamp(48px, 7vw, 80px);
+      text-align: center;
+      border-bottom: none;
+    }
+    .cta-sec .sec-title { margin-inline: auto; }
+    .cta-sec .sec-body { margin-inline: auto; margin-block: 14px 36px; }
+    .btn-cta {
       display: inline-flex; align-items: center; gap: 8px;
-      padding: 9px 14px;
-      background: rgba(255,255,255,0.12);
-      border: 1px solid rgba(255,255,255,0.2);
-      border-radius: 999px;
-      font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.8);
+      background: var(--teal); color: var(--white);
+      font-size: 15px; font-weight: 700;
+      padding: 14px 32px; border-radius: 999px;
+      text-decoration: none;
+      transition: background 120ms, transform 120ms;
     }
-    .privacy-badge svg { width: 13px; height: 13px; stroke: rgba(255,255,255,0.7); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+    .btn-cta:hover { background: var(--teal-dark); transform: translateY(-1px); }
 
-    /* ── ABOUT — pale teal ── */
-    .about-section { background: var(--teal-pale); }
-    .about-section .section-label { color: var(--teal-dark); }
-    .about-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start; }
-    .about-content .section-body { margin-block-end: 16px; }
-    .about-meta { font-size: 14px; color: var(--text-muted); line-height: 1.7; }
-    .about-meta a { color: var(--navy); text-decoration: none; }
-    .about-meta a:hover { text-decoration: underline; }
-    .about-card {
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 28px;
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding-block: clamp(20px, 3vw, 32px);
     }
-    .about-card-label { font-size: 11px; font-weight: 700; color: var(--teal-mid); margin-block-end: 12px; }
-    .about-card-name { font-size: 17px; font-weight: 700; color: var(--text); margin-block-end: 8px; line-height: 1.3; }
-    .about-card-body { font-size: 14px; color: var(--text-muted); line-height: 1.65; margin-block-end: 16px; }
-    .about-card-link { font-size: 13px; font-weight: 600; color: var(--navy); text-decoration: none; }
-    .about-card-link:hover { text-decoration: underline; }
-    @media (max-width: 780px) { .about-inner { grid-template-columns: 1fr; gap: 40px; } }
-
-    /* ── CTA BAND — deep navy ── */
-    .cta-band { background: var(--navy-deep); padding-block: clamp(56px, 8vw, 96px); }
-    .cta-band .container { display: flex; flex-direction: column; align-items: center; text-align: center; }
-    .cta-band .section-label { color: rgba(255,255,255,0.45); }
-    .cta-band .section-title { color: #fff; }
-    .cta-band .section-body { color: rgba(255,255,255,0.65); margin-block-end: 36px; }
-    .btn-teal {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 15px 36px; background: var(--teal); color: #fff;
-      border-radius: 999px; font-size: 16px; font-weight: 700;
-      text-decoration: none; transition: background 120ms, transform 120ms;
+    .footer-inner {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap; gap: 12px;
     }
-    .btn-teal:hover { background: var(--teal-mid); transform: translateY(-1px); }
-
-    /* ── FOOTER — dark teal ── */
-    footer { background: var(--teal-dark); color: rgba(255,255,255,0.5); padding-block: clamp(32px,5vw,56px); }
-    .footer-inner { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 48px; margin-block-end: 40px; }
-    .footer-brand-name { font-size: 20px; font-weight: 700; color: #fff; margin-block-end: 8px; letter-spacing: -0.02em; }
-    .footer-brand-desc { font-size: 13px; line-height: 1.65; max-width: 300px; }
-    .footer-col h4 { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.8); margin-block-end: 14px; }
-    .footer-col ul { list-style: none; }
-    .footer-col li { margin-block-end: 8px; }
-    .footer-col a { font-size: 13px; color: rgba(255,255,255,0.45); text-decoration: none; transition: color 120ms; }
-    .footer-col a:hover { color: rgba(255,255,255,0.9); }
-    .footer-bottom { padding-block-start: 24px; border-block-start: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; font-size: 12px; flex-wrap: wrap; gap: 8px; }
-    @media (max-width: 640px) { .footer-inner { grid-template-columns: 1fr; gap: 32px; } }
+    .footer-brand {
+      font-size: 16px; font-weight: 700;
+      color: var(--text); letter-spacing: -0.02em;
+    }
+    .footer-copy {
+      font-size: 12px; color: var(--faint);
+    }
+    .footer-links { display: flex; gap: 20px; }
+    .footer-links a {
+      font-size: 12px; color: var(--faint);
+      text-decoration: none;
+      transition: color 120ms;
+    }
+    .footer-links a:hover { color: var(--text); }
 
     /* ── ANIMATIONS ── */
-    @keyframes fadeUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
-    .hero-eyebrow { animation: fadeUp 500ms ease both; }
-    .hero-headline { animation: fadeUp 500ms 80ms ease both; }
-    .hero-body     { animation: fadeUp 500ms 160ms ease both; }
-    .hero-actions  { animation: fadeUp 500ms 240ms ease both; }
-    .hero-note     { animation: fadeUp 500ms 320ms ease both; }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .hero-eyebrow  { animation: fadeUp 500ms ease both; }
+    .hero-headline { animation: fadeUp 500ms 60ms ease both; }
+    .hero-rule     { animation: fadeUp 500ms 120ms ease both; }
+    .hero-sub      { animation: fadeUp 500ms 180ms ease both; }
+    .hero-btns     { animation: fadeUp 500ms 240ms ease both; }
+    .hero-note     { animation: fadeUp 500ms 300ms ease both; }
   </style>
 </head>
 <body>
 
-<!-- NAV -->
 <nav>
   <div class="nav-inner">
-    <a href="./" class="nav-brand">
-      <span class="nav-logo">מדד</span>
-      <span class="nav-sub">הערכה קלינית דיגיטלית</span>
-    </a>
+    <a href="./" class="nav-logo">מדד</a>
     <div class="nav-links">
       <a href="#how" class="nav-link">איך זה עובד</a>
-      <a href="#why" class="nav-link">למה למדוד</a>
-      <a href="#instruments" class="nav-link">שאלונים</a>
-      <a href="#about" class="nav-link">אודות</a>
-      <a href="../composer/" class="nav-cta">מחולל קישורים</a>
+      <a href="#workflows" class="nav-link">חבילות</a>
+      <a href="#trust" class="nav-link">פרטיות</a>
+      <a href="../composer/" class="nav-cta">מחולל קישורים ←</a>
     </div>
   </div>
 </nav>
 
-<!-- HERO -->
 <section class="hero">
-  <div class="hero-inner">
-    <div class="hero-eyebrow">כלי הערכה קלינית</div>
-    <h1 class="hero-headline">
-      מדידה היא חלק מהטיפול.<br>
-      <em>עכשיו זה גם קל.</em>
-    </h1>
-    <p class="hero-body">
-      שלחו שאלונים מבוססי ראיות למטופלים לפני הפגישה. התוצאות מסוכמות בדוח PDF — ללא הרשמה, ללא שמירת נתונים.
-    </p>
-    <div class="hero-actions">
-      <a href="../composer/" class="btn-primary">צרו קישור לשאלון</a>
-      <a href="../?configs=configs/prod/standard.json&items=phq9" class="btn-ghost-hero">נסו דוגמה</a>
+  <div class="wrap">
+    <div class="hero-eyebrow">כלי הערכה קלינית · חינמי לצמיתות</div>
+    <h1 class="hero-headline">מדידה<br>בלי חיכוך</h1>
+    <div class="hero-rule"></div>
+    <p class="hero-sub">בלי טפסי נייר, בלי הרשמת מטופלים, בלי ציון ידני — שלחו קישור בוואטסאפ, קבלו דוח לפגישה.</p>
+    <div class="hero-btns">
+      <a href="../composer/" class="btn-primary">פתחו מחולל קישורים</a>
+      <a href="../?configs=configs/prod/standard.json&items=phq9" class="btn-ghost">ראו מה המטופל רואה ↗</a>
     </div>
-    <p class="hero-note">
-      <span class="hero-note-dot"></span>
-      חינמי לחלוטין · ללא הרשמה · הנתונים נשארים אצל המטופל
-    </p>
+    <div class="hero-note">
+      <span>ללא הרשמה</span>
+      <span>הנתונים לא מגיעים לשרת זר</span>
+      <span>קוד פתוח</span>
+    </div>
   </div>
 </section>
 
-<!-- HOW IT WORKS -->
-<section id="how" class="how-section">
-  <div class="container">
-    <div class="section-label">תהליך פשוט</div>
-    <h2 class="section-title">שלושה צעדים בלבד</h2>
-    <p class="section-body">ממחולל הקישורים ועד דוח מוכן — הכל קורה בדפדפן, ללא צורך בחשבון.</p>
+<section id="how" class="sec">
+  <div class="wrap">
+    <div class="sec-label">תהליך</div>
+    <h2 class="sec-title">שלושה צעדים</h2>
+    <p class="sec-body">ממחולל הקישורים ועד דוח מוכן — הכל קורה בדפדפן, ללא צורך בחשבון.</p>
     <div class="steps">
       <div class="step">
-        <div class="step-num">01 בחירה</div>
-        <div class="step-title">בחרו שאלונים</div>
-        <p class="step-body">פתחו את מחולל הקישורים, בחרו את השאלונים הרלוונטיים והוסיפו שם מטופל. המערכת מייצרת קישור ייחודי.</p>
+        <div class="step-num">01</div>
+        <div>
+          <div class="step-eyebrow">שניות, לא דקות</div>
+          <div class="step-title">בחרו שאלונים</div>
+          <p class="step-body">פתחו את המחולל, בחרו שאלון בודד או חבילה מוכנה, הוסיפו מזהה מטופל. הקישור מוכן תוך שניות.</p>
+        </div>
       </div>
       <div class="step">
-        <div class="step-num">02 שליחה</div>
-        <div class="step-title">שלחו למטופל</div>
-        <p class="step-body">העתיקו את הקישור ושלחו אותו למטופל לפני הפגישה — בוואטסאפ, מייל, או כל ערוץ אחר. אין הרשמה, אין אפליקציה.</p>
+        <div class="step-num">02</div>
+        <div>
+          <div class="step-eyebrow">המטופל לא נרשם לשום דבר</div>
+          <div class="step-title">שלחו בוואטסאפ</div>
+          <p class="step-body">העתיקו קישור ושלחו לפני הפגישה. אין אפליקציה להוריד, אין חשבון לפתוח — המטופל פשוט פותח ועונה.</p>
+        </div>
       </div>
       <div class="step">
-        <div class="step-num">03 קבלה</div>
-        <div class="step-title">קבלו דוח PDF</div>
-        <p class="step-body">המטופל ממלא את השאלונים ומוריד דוח PDF מסוכם. הדוח מגיע לפגישה — בידי המטופל. אף נתון לא נשמר בשרת.</p>
+        <div class="step-num">03</div>
+        <div>
+          <div class="step-eyebrow">דוח PDF מוכן לפגישה</div>
+          <div class="step-title">קבלו נתונים</div>
+          <p class="step-body">המטופל מוריד דוח עם ציונים, תת-סקלות והתראות קליניות ומביא אותו לפגישה — בידיו, לא בשרת שלנו.</p>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- WHY MEASURE -->
-<section id="why" class="why-section">
-  <div class="container">
-    <div class="why-inner">
-      <div class="why-quote">
-        מדידה שיטתית של תסמינים אינה רק יתרון — היא חלק בלתי נפרד מטיפול מבוסס ראיות.
+<section id="workflows" class="sec sec-dark">
+  <div class="wrap">
+    <div class="sec-label">חבילות מוכנות</div>
+    <h2 class="sec-title">עבדו חכם, לא קשה</h2>
+    <p class="sec-body">חבילות מוגדרות מראש לסיטואציות הנפוצות — פתחו, שלחו, קבלו.</p>
+    <div class="wlist">
+      <div class="witem">
+        <div class="witem-body">
+          <div class="witem-title">הערכה ראשונית</div>
+          <p class="witem-desc">סקר DIAMOND שמזהה תחומים רלוונטיים ומוסיף שאלונים אוטומטית — דיכאון, חרדה, טראומה, פאניקה ועוד.</p>
+          <div class="witem-tags">
+            <span class="wtag">DIAMOND</span>
+            <span class="wtag wtag-hi">+ שאלונים לפי תסמינים</span>
+          </div>
+        </div>
+        <a href="../?configs=configs/prod/intake.json&items=clinical_intake" class="witem-btn">שלחו עכשיו ←</a>
       </div>
-      <div class="why-content">
-        <div class="section-label">למה למדוד</div>
-        <h2 class="section-title">הנתונים משפרים את הטיפול</h2>
-        <p>מחקרים מראים כי מטפלים המשתמשים בשאלונים שיטתיים מזהים מוקדם יותר מטופלים שאינם מתקדמים, ומשיגים תוצאות טיפוליות טובות יותר.</p>
-        <p>מדד מאפשר לכם לקבל נתונים כמותיים לפני כל פגישה — בלי להכביד על המטופל ובלי תהליכי הרשמה מסורבלים.</p>
+      <div class="witem">
+        <div class="witem-body">
+          <div class="witem-title">הערכת טראומה ראשונית</div>
+          <p class="witem-desc">סקר קצר PC-PTSD-5. אם הציון חיובי — PCL-5 ושאלון קוגניציות פוסט-טראומטיות נוספים אוטומטית.</p>
+          <div class="witem-tags">
+            <span class="wtag">PC-PTSD-5</span>
+            <span class="wtag wtag-hi">+ PCL-5 + PTCI</span>
+          </div>
+        </div>
+        <a href="../?configs=configs/prod/trauma.json&items=trauma_eval" class="witem-btn">שלחו עכשיו ←</a>
       </div>
-    </div>
-  </div>
-</section>
-
-<!-- INSTRUMENTS -->
-<section id="instruments" class="instruments-section">
-  <div class="container">
-    <div class="section-label">שאלונים זמינים</div>
-    <h2 class="section-title">מכשירי הערכה מבוססי ראיות</h2>
-    <p class="section-body">כל השאלונים תורגמו לעברית. לחצו על שאלון לניסיון עצמאי.</p>
-    <div class="instruments-grid">
-      <a href="../?configs=configs/prod/standard.json&items=phq9" class="instrument">
-        <span class="instrument-abbr">PHQ-9</span>
-        <div><div class="instrument-name">שאלון דיכאון</div><div class="instrument-desc">9 שאלות למדידת חומרת דיכאון. כולל התראה על מחשבות אובדניות.</div></div>
-      </a>
-      <a href="../?configs=configs/prod/standard.json&items=gad7" class="instrument">
-        <span class="instrument-abbr">GAD-7</span>
-        <div><div class="instrument-name">שאלון חרדה</div><div class="instrument-desc">7 שאלות למדידת הפרעת חרדה כללית.</div></div>
-      </a>
-      <a href="../?configs=configs/prod/standard.json&items=pcl5" class="instrument">
-        <span class="instrument-abbr">PCL-5</span>
-        <div><div class="instrument-name">שאלון פוסט-טראומה</div><div class="instrument-desc">20 שאלות לפי DSM-5, כולל ציוני תת-סקלות.</div></div>
-      </a>
-      <a href="../?configs=configs/prod/standard.json&items=oci_r" class="instrument">
-        <span class="instrument-abbr">OCI-R</span>
-        <div><div class="instrument-name">שאלון טורדנות כפייתית</div><div class="instrument-desc">18 שאלות עם 6 תת-סקלות: שטיפה, אובססיות, אגירה, סדר, בדיקה ונטרול.</div></div>
-      </a>
-      <a href="../?configs=configs/prod/standard.json&items=pdss_sr" class="instrument">
-        <span class="instrument-abbr">PDSS-SR</span>
-        <div><div class="instrument-name">שאלון פאניקה</div><div class="instrument-desc">גרסת דיווח עצמי למדידת חומרת הפרעת פאניקה.</div></div>
-      </a>
-      <a href="../?configs=configs/prod/standard.json&items=asi_3" class="instrument">
-        <span class="instrument-abbr">ASI-3</span>
-        <div><div class="instrument-name">שאלון רגישות לחרדה</div><div class="instrument-desc">18 שאלות למדידת רגישות לחרדה — גורם סיכון לפיתוח הפרעות חרדה.</div></div>
-      </a>
-      <a href="../?configs=configs/prod/standard.json&items=hai" class="instrument">
-        <span class="instrument-abbr">HAI</span>
-        <div><div class="instrument-name">שאלון חרדת בריאות</div><div class="instrument-desc">מדידת רמת דאגה לגבי מחלות ובריאות.</div></div>
-      </a>
-      <a href="../?configs=configs/prod/standard.json&items=mgh_hps" class="instrument">
-        <span class="instrument-abbr">MGH-HPS</span>
-        <div><div class="instrument-name">סולם תלישת שיער</div><div class="instrument-desc">הערכת חומרת התנהגות תלישת שיער (טריכוטילומניה).</div></div>
-      </a>
-    </div>
-    <div class="privacy-row">
-      <span class="privacy-badge">
-        <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-        כל הנתונים נשארים במכשיר המטופל
-      </span>
-      <span class="privacy-badge">
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        ללא הרשמה לשני הצדדים
-      </span>
-      <span class="privacy-badge">
-        <svg viewBox="0 0 24 24"><polyline points="4 12 9 17 20 7"/></svg>
-        שאלונים מאומתים ומתורגמים
-      </span>
-    </div>
-  </div>
-</section>
-
-<!-- ABOUT -->
-<section id="about" class="about-section">
-  <div class="container">
-    <div class="about-inner">
-      <div class="about-content">
-        <div class="section-label">אודות</div>
-        <h2 class="section-title">פותח במרכז להחלמה מטראומה</h2>
-        <p class="section-body">מדד פותח על ידי ד"ר אלעד זלוטניק מהמרכז להחלמה מטראומה באוניברסיטה העברית בירושלים, כחלק ממחויבותנו לקידום טיפול מבוסס ראיות ומדידת תוצאות בשגרת הטיפול.</p>
-        <p class="about-meta">לפניות מקצועיות ושיתופי פעולה: <a href="mailto:elad.zlotnick@mail.huji.ac.il">elad.zlotnick@mail.huji.ac.il</a></p>
-      </div>
-      <div class="about-card">
-        <div class="about-card-label">המרכז להחלמה מטראומה</div>
-        <div class="about-card-name">האוניברסיטה העברית בירושלים</div>
-        <p class="about-card-body">המרכז מתמחה בהתערבויות מבוססות ראיות לטיפול בטראומה, ופועל לקידום הידע בתחום ולהנגשת שיטות טיפול יעילות לאנשי מקצוע.</p>
-        <a href="https://ctr.huji.ac.il" target="_blank" rel="noopener" class="about-card-link">לאתר המרכז</a>
+      <div class="witem">
+        <div class="witem-body">
+          <div class="witem-title">שאלון חופשי</div>
+          <p class="witem-desc">בחרו כל שילוב מ-18 שאלונים מבוססי ראיות. PHQ-9 לחוד, GAD-7 + PHQ-9 ביחד, או כל שילוב אחר.</p>
+          <div class="witem-tags">
+            <span class="wtag">18+ שאלונים</span>
+            <span class="wtag">כל שילוב</span>
+          </div>
+        </div>
+        <a href="../composer/" class="witem-btn">פתחו מחולל ←</a>
       </div>
     </div>
   </div>
 </section>
 
-<!-- CTA BAND -->
-<section class="cta-band">
-  <div class="container">
-    <div class="section-label">מוכנים להתחיל?</div>
-    <h2 class="section-title">שלחו את השאלון הראשון עוד היום</h2>
-    <p class="section-body">פתחו את מחולל הקישורים, בחרו שאלונים, והקישור מוכן בשניות.</p>
-    <a href="../composer/" class="btn-teal">פתחו את המחולל</a>
+<section id="trust" class="sec sec-surface">
+  <div class="wrap">
+    <div class="sec-label">פרטיות ומחיר</div>
+    <h2 class="sec-title">שקיפות מלאה</h2>
+    <div class="trust-grid">
+      <div>
+        <div class="trust-title">הנתונים לא עוברים לשרת זר</div>
+        <p class="trust-body">הכל קורה בדפדפן של המטופל — <strong>אין שרת, אין חברה שמאחסנת מידע קליני.</strong> הדוח נוצר במכשיר ונשאר שם.</p>
+        <p class="trust-body">המגבלה: המטופל מביא את הדוח לפגישה בעצמו — בדיוק כמו שהיה עושה עם טופס נייר. רק שהפעם מילא מהספה.</p>
+        <div class="trust-hl">ללא GDPR, ללא DPA, ללא חרדה</div>
+      </div>
+      <div>
+        <div class="trust-title">חינמי לצמיתות — ויש סיבה</div>
+        <p class="trust-body">פרויקט אקדמי של <strong>המרכז להחלמה מטראומה, האוניברסיטה העברית.</strong> אין מודל עסקי, אין משקיעים, אין תוכנית פרימיום.</p>
+        <p class="trust-body">חינמי כי יכול להיות חינמי — אין עלויות שרת, כי אין שרת.</p>
+        <div class="trust-hl">קוד פתוח · ללא פרסומות · ללא מעקב</div>
+      </div>
+    </div>
   </div>
 </section>
 
-<!-- FOOTER -->
+<section class="sec cta-sec">
+  <div class="wrap">
+    <div class="sec-label">מוכנים?</div>
+    <h2 class="sec-title">שלחו את השאלון הראשון עוד היום</h2>
+    <p class="sec-body">פתחו את המחולל, בחרו שאלונים, והקישור מוכן בשניות.</p>
+    <a href="../composer/" class="btn-cta">פתחו את המחולל ←</a>
+  </div>
+</section>
+
 <footer>
-  <div class="container">
+  <div class="wrap">
     <div class="footer-inner">
       <div>
-        <div class="footer-brand-name">מדד</div>
-        <p class="footer-brand-desc">כלי הערכה קלינית דיגיטלי, פותח על ידי המרכז להחלמה מטראומה באוניברסיטה העברית. חינמי, פרטי, ללא שמירת נתונים.</p>
+        <span class="footer-brand">מדד</span>
+        <span class="footer-copy" style="margin-inline-start: 14px;">פותח ע"י ד"ר אלעד זלוטניק · המרכז להחלמה מטראומה · האוניברסיטה העברית בירושלים</span>
       </div>
-      <div class="footer-col">
-        <h4>שאלונים</h4>
-        <ul>
-          <li><a href="../?configs=configs/prod/standard.json&items=phq9">PHQ-9 — דיכאון</a></li>
-          <li><a href="../?configs=configs/prod/standard.json&items=gad7">GAD-7 — חרדה</a></li>
-          <li><a href="../?configs=configs/prod/standard.json&items=pcl5">PCL-5 — פוסט-טראומה</a></li>
-          <li><a href="../?configs=configs/prod/standard.json&items=oci_r">OCI-R — OCD</a></li>
-          <li><a href="../?configs=configs/prod/standard.json&items=pdss_sr">PDSS-SR — פאניקה</a></li>
-          <li><a href="../?configs=configs/prod/standard.json&items=asi_3">ASI-3 — רגישות לחרדה</a></li>
-        </ul>
+      <div class="footer-links">
+        <a href="../composer/">מחולל קישורים</a>
+        <a href="https://ctr.huji.ac.il" target="_blank" rel="noopener">המרכז</a>
+        <a href="https://github.com/eladzlot/madad" target="_blank" rel="noopener">GitHub</a>
       </div>
-      <div class="footer-col">
-        <h4>קישורים</h4>
-        <ul>
-          <li><a href="../composer/">מחולל קישורים</a></li>
-          <li><a href="https://ctr.huji.ac.il" target="_blank" rel="noopener">המרכז להחלמה מטראומה</a></li>
-          <li><a href="https://github.com/eladzlot/madad" target="_blank" rel="noopener">קוד פתוח ב-GitHub</a></li>
-        </ul>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <span>© 2026 ד"ר אלעד זלוטניק, האוניברסיטה העברית בירושלים</span>
-      <span>כל הנתונים נשארים במכשיר המטופל</span>
     </div>
   </div>
 </footer>
