@@ -22,6 +22,7 @@ echo "Installing into: $PROJECT"
 echo ""
 
 # ── Docs ───────────────────────────────────────────────────────────────────────
+copy "readme.md"                       "docs/readme.md"
 copy "IMPLEMENTATION_SPEC.md"          "docs/IMPLEMENTATION_SPEC.md"
 copy "BEHAVIORAL_SPEC.md"              "docs/BEHAVIORAL_SPEC.md"
 copy "CONFIG_SCHEMA_SPEC.md"           "docs/CONFIG_SCHEMA_SPEC.md"

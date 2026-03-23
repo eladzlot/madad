@@ -1,6 +1,6 @@
 # Handover Document
 **Project:** Madad — Clinical Assessment App
-**Document version:** 1.2
+**Document version:** 2.0
 **Status:** Living document — update whenever the system state changes
 **Purpose:** Everything a developer (human or AI) needs to understand the project, work safely within it, and expand it without breaking things.
 
@@ -10,7 +10,7 @@
 
 A static web application for clinical psychological assessment. No backend, no database, no user accounts. All processing runs in the patient's browser. The only output is a PDF.
 
-**Clinician workflow:** Opens `/composer/`, selects questionnaires, enters a patient ID, copies the generated URL, sends it to the patient.
+**Clinician workflow:** Opens `/composer/`, selects questionnaires or a pre-built battery, enters a patient ID, copies the generated URL, sends it to the patient.
 
 **Patient workflow:** Opens the URL, completes questionnaires one item at a time, downloads a PDF, shares it with the clinician.
 
@@ -59,62 +59,96 @@ src/pdf/report.js              ← PDF generation (pdfmake, lazy-loaded)
 ## 3. Current state
 
 ### What is complete and tested
+
 - Full patient flow: welcome → items → completion → results → PDF
-- All item types: Likert, binary, instructions
-- Scoring: sum, average, subscales, custom DSL formula
+- All item types: select (Likert), binary (yes/no with default כן/לא labels), instructions, text, slider, multiselect
+- Binary items render with default כן/לא labels when no options are provided (options are optional)
+- Scoring: sum, average, subscales (sum or mean), custom DSL formula
+- Scoring `exclude` field: item IDs listed in `scoring.exclude` are answered and shown in PDF but do not contribute to the total or any subscale. Used by PC-PTSD-5 for the gating exposure question.
 - Alert evaluation (item-level and score-level conditions)
 - Back navigation including keyboard and swipe
 - PDF: patient info, alerts, scores, response table with risk highlighting
 - PDF: bold total score on its own line; subscale scores on a second line with Hebrew labels
-- PDF: numbers isolated in `direction:ltr` nodes — bypasses pdfmake RTL shaping
+- PDF: numbers isolated in `direction:'ltr'` nodes — bypasses pdfmake RTL shaping
 - PDF: mixed Hebrew/Latin strings via `bidiNodes()` with cross-script hyphen splitting
 - PDF: `APP_URL` resolved dynamically via `window.location.origin`
-- Composer at `/composer/` with real-time search by title, description, and keywords
-- Landing page at `/landing/` for therapist-facing marketing
+- Composer at `/composer/` with real-time search, drag-to-reorder, keyboard navigation
+- Composer mobile bar: share button (HTTPS only) with copy-link fallback on HTTP
+- Composer dark mode: full dark theme via `@media (prefers-color-scheme: dark)`
+- Landing page at `/landing/` — redesigned, direction 5 (radical simplicity), RTL, Hebrew
+- Favicon: SVG `מ` on teal background at `public/favicon.svg`, linked in all index.html files
+- Hebrew `<title>` on all pages
+- Config manifest `dev: true` flag: configs marked `dev:true` are skipped in production builds, loaded in dev and test
 - CI workflow: `.github/workflows/ci.yml` — lint → unit tests → validate configs → build → size → E2E
 - Deploy workflow: `.github/workflows/deploy.yml` — same + GitHub Pages deployment
-- 636 unit tests passing across 24 test files
-- E2E tests passing (Chromium; WebKit excluded from CI)
+- **870 unit tests passing across 30 test files**
+- E2E tests passing (Chromium; mobile-safari locally only)
+- MIT license (`LICENSE`) + instrument notice (`CONTENT_LICENSE.md`)
 
 ### Instrument library
 
-**`standard.json` v1.2.0** — standard clinical scales:
+**`standard.json` v1.6.1** — 14 standard clinical scales:
 
-| ID | Name | Subscales | Alerts |
-|---|---|---|---|
-| `phq9` | שאלון דיכאון (PHQ-9) | — | Suicidality (item 9 ≥ 1) |
-| `gad7` | שאלון חרדה (GAD-7) | — | — |
-| `pcl5` | שאלון פוסט טראומה (PCL-5) | Intrusion, Avoidance, Dysphoria, Hyperarousal | — |
-| `oci_r` | שאלון טורדנות כפייתית (OCI-R) | Washing, Obsessing, Hoarding, Ordering, Checking, Neutralising | — |
-| `pdss_sr` | שאלון פאניקה (PDSS-SR) | — | — |
-| `asi_3` | שאלון רגישות לחרדה (ASI-3) | — | — |
-
-**`intake.json` v1.0.0** — initial assessment screeners:
-
-| ID | Name | Alerts |
+| ID | Name | Notes |
 |---|---|---|
-| `diamond_sr` | DIAMOND Self Report Screener | Psychotic ideation (q29/q30), mania (q7), trauma (q19), substance use (q24/q25) |
+| `phq9` | שאלון דיכאון (PHQ-9) | Alert: suicidality (item 9 ≥ 1) |
+| `gad7` | שאלון חרדה (GAD-7) | — |
+| `oci_r` | שאלון טורדנות כפייתית (OCI-R) | 6 subscales |
+| `pdss_sr` | שאלון פאניקה (PDSS-SR) | — |
+| `asi_3` | שאלון רגישות לחרדה (ASI-3) | — |
+| `hai` | שאלון חרדת בריאות (HAI) | — |
+| `mgh_hps` | סולם תלישת שיער MGH (MGH-HPS) | — |
+| `spin` | שאלון פוביה חברתית (SPIN) | — |
+| `isi` | מדד חומרת נדודי שינה (ISI) | — |
+| `dar5` | שאלון תגובות כעס (DAR-5) | — |
+| `oasis` | שאלון חומרת חרדה ופגיעה תפקודית (OASIS) | — |
+| `wsas` | סולם עבודה והתאמה חברתית (WSAS) | — |
+| `wai6` | שאלון ברית טיפולית (WAI-6) | — |
+| `top3` | שלושת הבעיות המרכזיות | if-node branching; custom DSL formula |
 
-**Policy:** Only open-source instruments. Do not add proprietary instruments (e.g. BDI-II) without a license.
+Note: `pcl5` and `ptci` were moved from `standard.json` to `trauma.json` at v1.6.1.
 
-No batteries defined yet.
+**`trauma.json` v1.0.0** — trauma assessment:
+
+| ID | Type | Name | Notes |
+|---|---|---|---|
+| `pc_ptsd5` | questionnaire | סקר טראומה קצר (PC-PTSD-5) | Binary screener; `exposure` item excluded from scoring via `scoring.exclude` |
+| `pcl5` | questionnaire | שאלון פוסט טראומה (PCL-5) | 4 subscales (mean); alert at score ≥ 33 |
+| `ptci` | questionnaire | שאלון קוגניציות פוסט-טראומטיות (PTCI) | 3 subscales (mean) |
+| `trauma_eval` | battery | הערכת טראומה ראשונית | PC-PTSD-5 → if score ≥ 4: PCL-5 + PTCI |
+
+**`intake.json` v1.2.1** — initial assessment:
+
+| ID | Type | Name | Notes |
+|---|---|---|---|
+| `demographics` | questionnaire | פרטים אישיים | — |
+| `diamond_sr` | questionnaire | DIAMOND Self Report Screener | Alerts: psychotic ideation, mania, trauma, substance use |
+| `clinical_intake` | battery | הערכה ראשונית | DIAMOND → conditional questionnaires per domain |
+
+`intake.json` declares `"dependencies": ["configs/prod/trauma.json"]` so the composer includes trauma.json automatically when clinical_intake is selected (needed because the DIAMOND trauma item conditionally adds pcl5 which now lives in trauma.json).
+
+**Policy:** Only open-source or public-domain instruments. Do not add proprietary instruments (e.g. BDI-II) without a verified license.
 
 ### Config files and manifest
 
 ```
 public/configs/
-  prod/standard.json       ← Standard clinical scales (6 instruments)
-  prod/intake.json         ← Initial assessment screeners (DIAMOND)
-  test/e2e.json            ← E2E test fixtures only — not for clinical use
+  prod/standard.json       ← 14 standard clinical scales
+  prod/trauma.json         ← PC-PTSD-5, PCL-5, PTCI, trauma_eval battery
+  prod/intake.json         ← DIAMOND, demographics, clinical_intake battery
+  test/e2e.json            ← E2E test fixtures only (dev:true in manifest)
   CONTRIBUTING.md          ← How to add an instrument (human-readable)
   LLM_GUIDE.md             ← Comprehensive spec for LLM-assisted authoring
 public/composer/
-  configs.json             ← Composer manifest (lists all prod configs)
+  configs.json             ← Composer manifest (lists all configs)
 ```
 
+The e2e config has `"dev": true` in the manifest — it is skipped entirely in production builds (`import.meta.env.DEV === false`) but loads normally in dev and Playwright tests.
+
 ### What is stubbed / not implemented
+
 - **`randomize` node:** Recognised by schema and runner; execution throws `NotImplementedError`. Do not remove the schema definition.
-- **Severity tiers in alerts:** `severity` field exists in data model; not rendered differently in PDF. Planned next.
+- **Alert severity rendering in PDF:** `severity` field exists and is validated; all alerts currently render identically regardless of severity. Planned next.
 - **Embedded JSON attachment in PDF:** Planned. Not started.
 
 ---
@@ -128,45 +162,66 @@ public/composer/
 │   ├── router.js                 # History API router
 │   ├── controller.js             # Wiring layer
 │   ├── resolve-items.js          # URL token → orchestrator sequence
+│   ├── item-types.js             # Item type registry (isScored etc.)
 │   ├── config/
-│   │   ├── loader.js
-│   │   ├── config-validation.js
+│   │   ├── loader.js             # Fetch + validate + merge
+│   │   ├── config-validation.js  # Semantic validation (IDs, options, etc.)
 │   │   └── QuestionnaireSet.schema.json
 │   ├── engine/
-│   │   ├── sequence-runner.js
-│   │   ├── orchestrator.js
-│   │   ├── engine.js
-│   │   ├── scoring.js
-│   │   ├── dsl.js
-│   │   └── alerts.js
+│   │   ├── sequence-runner.js    # Shared if/randomize resolver
+│   │   ├── orchestrator.js       # Battery-level sequencing
+│   │   ├── engine.js             # Item-level navigation
+│   │   ├── scoring.js            # Score computation
+│   │   ├── dsl.js                # Expression interpreter
+│   │   └── alerts.js             # Alert evaluation
 │   ├── components/               # Lit web components
-│   ├── helpers/gestures.js
-│   ├── pdf/report.js             # PDF generation
+│   │   ├── app-shell.js
+│   │   ├── welcome-screen.js
+│   │   ├── item-select.js
+│   │   ├── item-binary.js        # Default כן/לא when no options provided
+│   │   ├── item-instructions.js
+│   │   ├── item-text.js
+│   │   ├── item-slider.js
+│   │   ├── item-multiselect.js
+│   │   ├── progress-bar.js
+│   │   ├── completion-screen.js
+│   │   └── results-screen.js
+│   ├── helpers/gestures.js       # Swipe gesture handler
+│   ├── pdf/report.js             # PDF generation (pdfmake, lazy-loaded)
 │   └── styles/
-├── composer/                     # Composer tool (separate entry point)
+│       ├── main.css
+│       └── tokens.css            # Design tokens incl. dark mode
+├── composer/                     # Composer tool (separate Vite entry point)
+│   ├── index.html
+│   └── src/
+│       ├── composer.js
+│       ├── composer-state.js
+│       ├── composer-handlers.js
+│       ├── composer-loader.js    # Manifest fetch, dev:true filtering
+│       └── composer-render.js   # Full UI + dark mode overrides
 ├── landing/                      # Landing page for therapists
+│   └── index.html
 ├── public/
 │   ├── configs/                  # Clinical content (see above)
 │   ├── fonts/                    # Noto Sans Hebrew TTF
+│   ├── favicon.svg               # מ on teal — favicon for all pages
 │   └── composer/configs.json     # Composer manifest
 ├── tests/
-│   ├── fixtures/                 # phq9.json, pcl5.json, ocir.json
-│   ├── e2e/                      # patient-flow.e2e.test.js, composer.e2e.test.js
+│   ├── fixtures/                 # phq9.json, pcl5.json, ocir.json, top3.json
+│   ├── e2e/
+│   │   ├── patient-flow.e2e.test.js
+│   │   └── composer.e2e.test.js  # mobile-safari skips for output-panel tests
 │   └── setup.js / setup-dom.js
 ├── scripts/
-│   ├── validate-configs.mjs      # Cross-file ID collision detection included
+│   ├── validate-configs.mjs      # Schema + cross-file ID collision check
+│   ├── build-validator.mjs       # Regenerates validate-schema.js from AJV
 │   └── check-size.mjs
 ├── .github/workflows/
-│   ├── ci.yml                    # Runs on push + PRs
-│   └── deploy.yml                # Runs on push to main, deploys to Pages
-└── docs/
-    ├── HANDOVER.md               ← this file
-    ├── BEHAVIORAL_SPEC.md
-    ├── IMPLEMENTATION_SPEC.md
-    ├── CONFIG_SCHEMA_SPEC.md
-    ├── COMPOSER_SPEC.md
-    ├── INSTRUMENTS.md
-    └── (RENDER_SPEC.md, SEQUENCE_SPEC.md, DSL_SPEC.md — implementation detail)
+│   ├── ci.yml                    # push + PRs
+│   └── deploy.yml                # push to main → GitHub Pages
+├── docs/                         # Developer specs (see README §Documentation)
+├── LICENSE                       # MIT
+└── CONTENT_LICENSE.md            # Instrument notice (no ownership claimed)
 ```
 
 ---
@@ -174,17 +229,19 @@ public/composer/
 ## 5. Config and URL strategy
 
 ### Config files
-All standard instruments live in `public/configs/prod/`. Each file is a self-contained `QuestionnaireSet`. The Composer manifest (`public/composer/configs.json`) lists all prod configs — add a new file here to make it visible in the Composer.
+All standard instruments live in `public/configs/prod/`. Each file is a self-contained `QuestionnaireSet`. The Composer manifest (`public/composer/configs.json`) lists all prod configs — add a new file there to make it visible in the Composer.
 
-The `test/e2e.json` file contains test-only instruments (`phq9_test`, `test_q`) and batteries used exclusively by E2E tests. It is listed in the manifest but clearly labelled.
+Multi-config dependencies: if a config references instruments from another config (e.g. `intake.json` references `pcl5` from `trauma.json`), declare the dependency in the config's `"dependencies"` array. The loader records this and the composer includes the dependency automatically in generated URLs.
+
+The `test/e2e.json` file is marked `"dev": true` in the manifest — never loads in production.
 
 ### URL design
 Config paths in `configs=` URL parameters are **relative** (no leading slash): `configs/prod/standard.json`. This resolves correctly from any base path (`/`, `/madad/`, etc.) without runtime detection. The Composer's `getAppRoot()` in `composer-state.js` derives the app root from `window.location.href` and prepends it to manifest paths for fetching, then stores the path without a leading slash as `sourceUrl` for use in generated URLs.
 
-Do not use absolute paths (`/configs/...`) in generated patient URLs — they break at non-root deployments.
+**Do not use absolute paths (`/configs/...`) in generated patient URLs** — they break at non-root deployments.
 
 ### Adding an instrument
-See `public/configs/INSTRUMENTS.md` (human guide) or `public/configs/LLM_GUIDE.md` (LLM guide). The process is config-only — no application code changes required for standard Likert/binary instruments.
+See `public/configs/CONTRIBUTING.md` (human guide) or `public/configs/LLM_GUIDE.md` (LLM guide). The process is config-only — no application code changes required for standard Likert/binary instruments.
 
 ---
 
@@ -193,7 +250,7 @@ See `public/configs/INSTRUMENTS.md` (human guide) or `public/configs/LLM_GUIDE.m
 | Gap | Risk | Resolution |
 |---|---|---|
 | `randomize` throws `NotImplementedError` | Safe now; breaks if config author uses it | Documented in schema spec; validate:configs could warn |
-| Alert severity not rendered in PDF | `critical` and `warning` look identical | Next planned feature |
+| Alert severity not rendered distinctly in PDF | `critical` and `warning` look identical | Next planned feature |
 | Embedded JSON in PDF | Machine-readable output for clinic systems | Planned, not started |
 | Component branch coverage ~60% | UI regressions may go undetected | E2E tests compensate |
 
@@ -215,35 +272,42 @@ The following security controls are in place. Do not remove them without underst
 
 ---
 
-## 7. Next steps
+## 7. Completed work (session history)
 
-### ~~Steps 1–4~~ ✓ Complete
-Config cleanup, APP_URL fix, Composer search, GitHub Pages deployment — all done.
+- Full patient flow, all item types, scoring, alerts, back navigation
+- PDF: RTL rendering, subscale labels, alert sorting, risk highlighting
+- Composer: search, drag-to-reorder, keyboard navigation, mobile bar, dark mode
+- Config system: AJV validation, semantic validation, cross-file merging, `dependencies` field
+- `scoring.exclude` field — items answered and shown in PDF but excluded from total/subscales
+- Trauma config: `pc_ptsd5` (binary screener with `exclude`), `pcl5`, `ptci`, `trauma_eval` battery
+- Binary item default labels: `כן`/`לא` when no options provided
+- Composer manifest `dev: true` flag — e2e config invisible in production
+- Landing page: direction 5 redesign (typographic, minimal, RTL Hebrew)
+- Favicon: SVG `מ` on teal, all index.html files updated
+- Hebrew page titles on all pages
+- MIT license + CONTENT_LICENSE.md instrument notice
+- 870 unit tests across 30 files; E2E passing on Chromium
 
-### ~~Step 5 — Landing page~~ ✓ Complete
-`/landing/` live with Hebrew therapist-facing content, instrument cards, CTR attribution.
+## 8. Next steps
 
-### ~~Step 6 — CI/CD~~ ✓ Complete
-Both `ci.yml` and `deploy.yml` working. E2E passing on Chromium.
+### Step A — PDF: alert severity rendering
+Render `critical` alerts with red background/border, `warning` with amber, `info` with blue in the PDF. `severity` field already exists and is validated.
 
-### ~~Step 7 — PDF: alert severity rendering~~ ✓ Complete
-Critical/warning/info alerts now render with distinct colours. Alerts are sorted critical-first.
+### Step B — PDF: embedded JSON attachment
+Embed a machine-readable `data.json` attachment in the PDF. Allows clinic systems to parse scores without reading the visual PDF.
 
-### Step 8 — PDF: embedded JSON attachment
-Embed a machine-readable `data.json` attachment in the PDF using pdfmake's EmbeddedFiles. Allows clinic systems to parse scores without reading the visual PDF.
+### Step C — PDF: replace bidiNodes() with bidi-js
+The current `bidiNodes()` is a fragile hand-rolled approximation of the Unicode BiDi Algorithm. Replace with `bidi-js` (15KB, no deps, fully conformant). See `IMPLEMENTATION_SPEC.md §19.6`.
 
-### Step 9 — PDF: replace bidiNodes() with bidi-js
-The current `bidiNodes()` is a fragile hand-rolled approximation of the Unicode BiDi Algorithm. Replace it with `bidi-js` (15KB, no deps, fully conformant) to handle all mixed-script content correctly without special cases. See `IMPLEMENTATION_SPEC.md §19.6` for the full design.
+### Step D — Documentation: update remaining specs
+HANDOVER updated (this document). Still to update: COMPOSER_SPEC.md, INSTRUMENTS.md, CONTRIBUTING.md cross-reference, ITEM_TYPES_SPEC.md composite section cleanup.
 
-### Step 10 — Batteries
-Define the first clinical battery in `standard.json`. A `standard_intake` battery sequencing PHQ-9 → GAD-7 → conditionally PCL-5 is the obvious first candidate.
-
-### Step 11 — Expand instrument library
-Open-source instruments only. Use `public/configs/LLM_GUIDE.md` + an LLM to author efficiently. Candidates: SPIN, STAI, Y-BOCS self-report.
+### Step E — CHANGELOG.md
+Create with project history and current state as baseline.
 
 ---
 
-## 8. How to orient in a new session
+## 9. How to orient in a new session
 
 Read in this order:
 1. This document
@@ -254,7 +318,7 @@ Read in this order:
 ```bash
 npm ci
 npm run dev              # localhost:5173 (base /)
-npm test                 # 636 unit tests
+npm test                 # 870 unit tests
 npm run validate:configs
 npm run build && npm run preview  # localhost:4173/madad/ (base /madad/)
 ```
@@ -263,16 +327,17 @@ To add a new instrument: `public/configs/CONTRIBUTING.md`.
 
 ---
 
-## 9. What not to change without a plan
+## 10. What not to change without a plan
 
 - **`src/engine/dsl.js`** — used by scoring, alerts, and sequence branching. Full `dsl.test.js` coverage required for any change.
 - **`src/engine/sequence-runner.js`** — shared by orchestrator and engine. Back-navigation logic is subtle; tests are the specification.
 - **Session state shape** — `answers`, `scores`, `alerts` keyed by `sessionKey`. PDF generator, orchestrator, engine, and results screen all read from this shape.
-- **`QuestionnaireSet.schema.json`** — changing without updating `config-validation.js` and existing configs will break validation.
+- **`QuestionnaireSet.schema.json`** — changing without running `npm run build:validator` and updating `config-validation.js` and existing configs will break validation. Always run `build:validator` after schema changes.
 - **`src/pdf/report.js` — RTL rendering** — pdfmake has incomplete bidi support. Six rules documented in `IMPLEMENTATION_SPEC.md §19.3`. Short version: numbers in `direction:'ltr'` nodes, mixed Hebrew/Latin through `bidiNodes()`, category on its own line, never `rtl:true`, never concatenate numbers into Hebrew strings.
 - **`src/pdf/report.js` — pdfmake API** — use `getBuffer()` (Promise-based). `getBlob(callback)` silently hangs in pdfmake 0.3.x.
 - **`vite.config.js`** — `base` is `'/'` in development mode and `'/madad/'` in all other modes. `pdfmake` is pinned to a named chunk via `manualChunks` to keep it lazy-loaded and out of the entry bundle.
 - **Config URL format** — `configs=` params must use relative paths (no leading slash). See §5 above.
 - **`composer-state.js` `getAppRoot()`** — derives app root by stripping `/composer/...` from `window.location.href`. Any change to Composer URL structure requires updating this.
 - **Security controls in §6a** — specifically: do not revert error rendering to `innerHTML`, do not remove PID/name validation, do not remove the `allowedOrigins` check from `loadConfig`. Each of these was introduced to fix a concrete vulnerability.
-- **`allowedOrigins` default in `loadConfig`** — defaults to `location.origin` (same-origin only). If you change this default to be permissive, you re-open F-02. The correct pattern for future external-config support is to pass an explicit `allowedOrigins` set at the call site in `src/app.js`, not to change the default.
+- **`allowedOrigins` default in `loadConfig`** — defaults to `location.origin` (same-origin only). If you change this default to be permissive, you re-open the external config injection vulnerability. The correct pattern for future external-config support is to pass an explicit `allowedOrigins` set at the call site in `src/app.js`.
+- **`scoring.exclude` and `config-validation.js`** — binary items are allowed to have no options (they default to כן/לא). The validator explicitly skips the options check for binary items without `optionSetId`. Do not revert this.

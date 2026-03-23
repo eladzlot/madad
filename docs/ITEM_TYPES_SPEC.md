@@ -1,11 +1,11 @@
-# Item Types Expansion Spec
-**Version:** 1.1
-**Status:** Implemented — `text`, `slider`, `multiselect` are live. `composite` is defined here as a future type and is not yet implemented.
+# Item Types Spec
+**Version:** 1.2
+**Status:** Current — all documented item types are implemented. The `composite` type is archived at the bottom of this document as a future design sketch — it is not implemented and should not be referenced in configs.
 **Scope:** Item types beyond `select`, `binary`, and `instructions`
 
 ---
 
-> **Implementation note for fresh readers:** Steps 1–6 of the implementation plan below are complete. The type registry (`src/item-types.js`), `required` field, `text`, `slider`, and `multiselect` item types are all live in the codebase. `composite` (Step 7) is not implemented — treat that section as a design spec for a future phase.
+> **Reading guide:** The main spec below covers all live item types. The archived `composite` design (end of document) is not implemented — skip it unless planning future work on that type.
 
 ---
 
@@ -307,7 +307,13 @@ Config JSON
 
 ---
 
-## Part II — Lead Developer
+---
+
+## Archived — composite type (not implemented)
+
+> The following section is a design sketch for a `composite` item type that was planned but never implemented. It is preserved here for future reference. Do not use `composite` in configs — the schema does not support it and the engine will throw.
+
+## Part II — Lead Developer (archived)
 
 ### 5. Exact Changes Required, By File
 
