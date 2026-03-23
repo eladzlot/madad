@@ -22,8 +22,13 @@ export async function loadAllConfigs(manifest) {
   // of base path.
   const appRoot = (typeof window !== 'undefined') ? getAppRoot() : '/';
 
+  // Configs marked dev:true are only loaded in development (import.meta.env.DEV).
+  // In production builds they are skipped entirely — not loaded, not shown.
+  const IS_DEV = typeof import.meta !== 'undefined' && import.meta.env?.DEV === true;
+  const activeConfigs = manifest.configs.filter(entry => !entry.dev || IS_DEV);
+
   const results = await Promise.allSettled(
-    manifest.configs.map(entry => {
+    activeConfigs.map(entry => {
       // Build absolute fetch URL: appRoot (e.g. http://localhost:4173/madad/)
       // + path without leading slash (e.g. configs/prod/standard.json)
       const pathNoSlash = entry.url.startsWith('/') ? entry.url.slice(1) : entry.url;

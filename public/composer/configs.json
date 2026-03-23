@@ -14,7 +14,9 @@
     },
     {
       "name": "שאלונים לבדיקה",
-      "url": "/configs/test/e2e.json"
+      "url": "/configs/test/e2e.json",
+      "dev": true,
+      "hidden": true
     }
   ]
 }
