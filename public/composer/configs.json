@@ -5,6 +5,10 @@
       "url": "/configs/prod/standard.json"
     },
     {
+      "name": "שאלוני טראומה",
+      "url": "/configs/prod/trauma.json"
+    },
+    {
       "name": "שאלוני הערכה ראשונית",
       "url": "/configs/prod/intake.json"
     },

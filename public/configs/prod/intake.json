@@ -1,6 +1,6 @@
 {
   "id": "intake",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "questionnaires": [
     {
       "id": "demographics",
@@ -459,6 +459,6 @@
     }
   ],
   "dependencies": [
-    "configs/prod/standard.json"
+    "configs/prod/trauma.json"
   ]
 }

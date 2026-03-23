@@ -85,7 +85,11 @@ export function score(questionnaire, answers) {
   // All branches are included — the answer map determines which have values.
   const items = flattenItems(rawItems ?? []);
   const answerableItems = items.filter(isAnswerable);
-  const { method, maxPerItem, subscaleMethod = 'sum', subscales: subscaleDefs, customFormula } = scoring;
+  const { method, maxPerItem, subscaleMethod = 'sum', subscales: subscaleDefs, customFormula, exclude = [] } = scoring;
+
+  // excluded is a Set of item IDs that should not contribute to sum/average totals.
+  // Excluded items still appear in the PDF response table; they are simply not scored.
+  const excludedIds = new Set(exclude);
 
   // ── Subscales ────────────────────────────────────────────────────────────────
 
@@ -93,6 +97,7 @@ export function score(questionnaire, answers) {
   if (subscaleDefs) {
     for (const [subscaleId, itemIds] of Object.entries(subscaleDefs)) {
       const values = itemIds.reduce((acc, id) => {
+        if (excludedIds.has(id)) return acc;
         const raw = answers[id];
         if (typeof raw !== 'number') return acc;
         const item = items.find(i => i.id === id);
@@ -122,9 +127,9 @@ export function score(questionnaire, answers) {
     total = Object.values(subscales).reduce((a, b) => a + b, 0);
 
   } else {
-    // sum or average — only include items with a numeric response
+    // sum or average — only include items with a numeric response that are not excluded
     const values = answerableItems
-      .filter(item => typeof answers[item.id] === 'number')
+      .filter(item => !excludedIds.has(item.id) && typeof answers[item.id] === 'number')
       .map(item => adjustValue(answers[item.id], item, maxPerItem));
 
     total = values.reduce((a, b) => a + b, 0);

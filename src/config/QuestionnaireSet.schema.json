@@ -1,379 +1,737 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "QuestionnaireSet",
-
   "type": "object",
-  "required": ["id", "version", "questionnaires"],
+  "required": [
+    "id",
+    "version",
+    "questionnaires"
+  ],
   "additionalProperties": false,
   "properties": {
-
-    "id":      { "$ref": "#/$defs/id" },
-    "version": { "type": "string", "minLength": 1 },
-
+    "id": {
+      "$ref": "#/$defs/id"
+    },
+    "version": {
+      "type": "string",
+      "minLength": 1
+    },
     "questionnaires": {
       "type": "array",
-      "items": { "$ref": "#/$defs/questionnaire" }
+      "items": {
+        "$ref": "#/$defs/questionnaire"
+      }
     },
-
     "batteries": {
       "type": "array",
-      "items": { "$ref": "#/$defs/battery" }
+      "items": {
+        "$ref": "#/$defs/battery"
+      }
     },
-
     "dependencies": {
       "type": "array",
       "description": "Config files that must be loaded alongside this one. Paths relative to the app root, without leading slash. The composer will automatically include these when generating patient URLs.",
-      "items": { "type": "string", "minLength": 1 }
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
     }
   },
-
   "$defs": {
-
     "id": {
       "type": "string",
       "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_]*$"
     },
-
     "optionList": {
       "type": "array",
       "minItems": 2,
       "items": {
         "type": "object",
-        "required": ["label", "value"],
+        "required": [
+          "label",
+          "value"
+        ],
         "additionalProperties": false,
         "properties": {
-          "label": { "type": "string", "minLength": 1 },
-          "value": { "type": "number" }
+          "label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "value": {
+            "type": "number"
+          }
         }
       }
     },
-
     "questionnaire": {
       "type": "object",
-      "required": ["id", "title", "items"],
+      "required": [
+        "id",
+        "title",
+        "items"
+      ],
       "additionalProperties": false,
       "properties": {
-        "id":                 { "$ref": "#/$defs/id" },
-        "title":              { "type": "string", "minLength": 1 },
-        "description":        { "type": "string" },
-        "keywords":           { "type": "array", "items": { "type": "string", "minLength": 1 } },
-        "optionSets":         {
-          "type": "object",
-          "propertyNames": { "type": "string", "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_]*$" },
-          "additionalProperties": { "$ref": "#/$defs/optionList" }
+        "id": {
+          "$ref": "#/$defs/id"
         },
-        "defaultOptionSetId": { "$ref": "#/$defs/id" },
-        "items":              {
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string"
+        },
+        "keywords": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "optionSets": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_]*$"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/optionList"
+          }
+        },
+        "defaultOptionSetId": {
+          "$ref": "#/$defs/id"
+        },
+        "items": {
           "type": "array",
           "minItems": 1,
-          "items": { "$ref": "#/$defs/item" }
+          "items": {
+            "$ref": "#/$defs/item"
+          }
         },
-        "scoring":         { "$ref": "#/$defs/scoring" },
-        "subscaleLabels":  {
+        "scoring": {
+          "$ref": "#/$defs/scoring"
+        },
+        "subscaleLabels": {
           "type": "object",
           "description": "Optional display labels for subscale IDs. Keys must match subscale IDs in scoring.subscales. Values are free-form strings shown in the PDF.",
-          "additionalProperties": { "type": "string", "minLength": 1 }
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1
+          }
         },
-        "interpretations": { "$ref": "#/$defs/interpretations" },
-        "alerts":          {
+        "interpretations": {
+          "$ref": "#/$defs/interpretations"
+        },
+        "alerts": {
           "type": "array",
-          "items": { "$ref": "#/$defs/alert" }
+          "items": {
+            "$ref": "#/$defs/alert"
+          }
         }
       }
     },
-
     "item": {
       "oneOf": [
-        { "$ref": "#/$defs/selectItem" },
-        { "$ref": "#/$defs/binaryItem" },
-        { "$ref": "#/$defs/instructionsItem" },
-        { "$ref": "#/$defs/textItem" },
-        { "$ref": "#/$defs/sliderItem" },
-        { "$ref": "#/$defs/multiselectItem" },
-        { "$ref": "#/$defs/ifNode" },
-        { "$ref": "#/$defs/randomizeNode" }
+        {
+          "$ref": "#/$defs/selectItem"
+        },
+        {
+          "$ref": "#/$defs/binaryItem"
+        },
+        {
+          "$ref": "#/$defs/instructionsItem"
+        },
+        {
+          "$ref": "#/$defs/textItem"
+        },
+        {
+          "$ref": "#/$defs/sliderItem"
+        },
+        {
+          "$ref": "#/$defs/multiselectItem"
+        },
+        {
+          "$ref": "#/$defs/ifNode"
+        },
+        {
+          "$ref": "#/$defs/randomizeNode"
+        }
       ]
     },
-
     "selectItem": {
       "type": "object",
-      "required": ["id", "type", "text"],
+      "required": [
+        "id",
+        "type",
+        "text"
+      ],
       "additionalProperties": false,
       "properties": {
-        "id":          { "$ref": "#/$defs/id" },
-        "type":        { "const": "select" },
-        "text":        { "type": "string", "minLength": 1 },
-        "options":     { "$ref": "#/$defs/optionList" },
-        "optionSetId": { "$ref": "#/$defs/id" },
-        "reverse":     { "type": "boolean" },
-        "weight":      { "type": "number" },
-        "required":    { "type": "boolean" }
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "type": {
+          "const": "select"
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "options": {
+          "$ref": "#/$defs/optionList"
+        },
+        "optionSetId": {
+          "$ref": "#/$defs/id"
+        },
+        "reverse": {
+          "type": "boolean"
+        },
+        "weight": {
+          "type": "number"
+        },
+        "required": {
+          "type": "boolean"
+        }
       },
-      "not": { "required": ["options", "optionSetId"] }
+      "not": {
+        "required": [
+          "options",
+          "optionSetId"
+        ]
+      }
     },
-
     "binaryItem": {
       "type": "object",
-      "required": ["id", "type", "text"],
+      "required": [
+        "id",
+        "type",
+        "text"
+      ],
       "additionalProperties": false,
       "properties": {
-        "id":          { "$ref": "#/$defs/id" },
-        "type":        { "const": "binary" },
-        "text":        { "type": "string", "minLength": 1 },
-        "options":     { "$ref": "#/$defs/optionList" },
-        "optionSetId": { "type": "string" },
-        "reverse":     { "type": "boolean" },
-        "weight":      { "type": "number" },
-        "required":    { "type": "boolean" }
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "type": {
+          "const": "binary"
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "options": {
+          "$ref": "#/$defs/optionList"
+        },
+        "optionSetId": {
+          "type": "string"
+        },
+        "reverse": {
+          "type": "boolean"
+        },
+        "weight": {
+          "type": "number"
+        },
+        "required": {
+          "type": "boolean"
+        }
       }
     },
-
     "instructionsItem": {
       "type": "object",
-      "required": ["id", "type", "text"],
+      "required": [
+        "id",
+        "type",
+        "text"
+      ],
       "additionalProperties": false,
       "properties": {
-        "id":       { "$ref": "#/$defs/id" },
-        "type":     { "const": "instructions" },
-        "text":     { "type": "string", "minLength": 1 },
-        "required": { "type": "boolean" }
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "type": {
+          "const": "instructions"
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "required": {
+          "type": "boolean"
+        }
       }
     },
-
     "textItem": {
       "type": "object",
-      "required": ["id", "type", "text"],
+      "required": [
+        "id",
+        "type",
+        "text"
+      ],
       "additionalProperties": false,
       "properties": {
-        "id":        { "$ref": "#/$defs/id" },
-        "type":      { "const": "text" },
-        "text":      { "type": "string", "minLength": 1 },
-        "inputType": { "enum": ["line", "multiline", "number", "email"], "default": "line" },
-        "min":       { "type": "number" },
-        "max":       { "type": "number" },
-        "pattern":   { "type": "string", "minLength": 1 },
-        "required":  { "type": "boolean" }
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "type": {
+          "const": "text"
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "inputType": {
+          "enum": [
+            "line",
+            "multiline",
+            "number",
+            "email"
+          ],
+          "default": "line"
+        },
+        "min": {
+          "type": "number"
+        },
+        "max": {
+          "type": "number"
+        },
+        "pattern": {
+          "type": "string",
+          "minLength": 1
+        },
+        "required": {
+          "type": "boolean"
+        }
       }
     },
-
     "sliderItem": {
       "type": "object",
-      "required": ["id", "type", "text", "min", "max"],
+      "required": [
+        "id",
+        "type",
+        "text",
+        "min",
+        "max"
+      ],
       "additionalProperties": false,
       "properties": {
-        "id":       { "$ref": "#/$defs/id" },
-        "type":     { "const": "slider" },
-        "text":     { "type": "string", "minLength": 1 },
-        "min":      { "type": "number" },
-        "max":      { "type": "number" },
-        "step":     { "type": "number", "exclusiveMinimum": 0 },
-        "labels":   {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "type": {
+          "const": "slider"
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "min": {
+          "type": "number"
+        },
+        "max": {
+          "type": "number"
+        },
+        "step": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "labels": {
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "min": { "type": "string", "minLength": 1 },
-            "max": { "type": "string", "minLength": 1 }
+            "min": {
+              "type": "string",
+              "minLength": 1
+            },
+            "max": {
+              "type": "string",
+              "minLength": 1
+            }
           }
         },
-        "reverse":  { "type": "boolean" },
-        "weight":   { "type": "number" },
-        "required": { "type": "boolean" }
+        "reverse": {
+          "type": "boolean"
+        },
+        "weight": {
+          "type": "number"
+        },
+        "required": {
+          "type": "boolean"
+        }
       }
     },
-
     "multiselectItem": {
       "type": "object",
-      "required": ["id", "type", "text", "options"],
+      "required": [
+        "id",
+        "type",
+        "text",
+        "options"
+      ],
       "additionalProperties": false,
       "properties": {
-        "id":       { "$ref": "#/$defs/id" },
-        "type":     { "const": "multiselect" },
-        "text":     { "type": "string", "minLength": 1 },
-        "options":  {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "type": {
+          "const": "multiselect"
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "options": {
           "type": "array",
           "minItems": 2,
           "items": {
             "type": "object",
-            "required": ["label"],
+            "required": [
+              "label"
+            ],
             "additionalProperties": false,
             "properties": {
-              "label": { "type": "string", "minLength": 1 }
+              "label": {
+                "type": "string",
+                "minLength": 1
+              }
             }
           }
         },
-        "required": { "type": "boolean" }
-      }
-    },
-
-    "selectItem": {
-      "type": "object",
-      "required": ["id", "type", "text"],
-      "additionalProperties": false,
-      "properties": {
-        "id":          { "$ref": "#/$defs/id" },
-        "type":        { "const": "select" },
-        "text":        { "type": "string", "minLength": 1 },
-        "options":     { "$ref": "#/$defs/optionList" },
-        "optionSetId": { "$ref": "#/$defs/id" },
-        "reverse":     { "type": "boolean" },
-        "weight":      { "type": "number" },
-        "required":    { "type": "boolean" }
-      },
-      "not": { "required": ["options", "optionSetId"] }
-    },
-
-    "ifNode": {
-      "type": "object",
-      "required": ["id", "type", "condition", "then", "else"],
-      "additionalProperties": false,
-      "properties": {
-        "id":        { "$ref": "#/$defs/id" },
-        "type":      { "const": "if" },
-        "condition": { "type": "string", "minLength": 1 },
-        "then":      { "type": "array", "items": { "$ref": "#/$defs/item" } },
-        "else":      { "type": "array", "items": { "$ref": "#/$defs/item" } }
-      }
-    },
-
-    "randomizeNode": {
-      "type": "object",
-      "required": ["id", "type", "ids"],
-      "additionalProperties": false,
-      "properties": {
-        "id":   { "$ref": "#/$defs/id" },
-        "type": { "const": "randomize" },
-        "ids":  {
-          "type": "array",
-          "minItems": 2,
-          "items": { "$ref": "#/$defs/item" }
+        "required": {
+          "type": "boolean"
         }
       }
     },
-
-    "scoring": {
+    "ifNode": {
       "type": "object",
-      "required": ["method"],
+      "required": [
+        "id",
+        "type",
+        "condition",
+        "then",
+        "else"
+      ],
       "additionalProperties": false,
       "properties": {
-        "method":        { "enum": ["none", "sum", "average", "subscales", "custom"] },
-        "maxPerItem":    { "type": "number" },
-        "subscaleMethod": { "enum": ["sum", "mean"] },
-        "subscales":     {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "type": {
+          "const": "if"
+        },
+        "condition": {
+          "type": "string",
+          "minLength": 1
+        },
+        "then": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/item"
+          }
+        },
+        "else": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/item"
+          }
+        }
+      }
+    },
+    "randomizeNode": {
+      "type": "object",
+      "required": [
+        "id",
+        "type",
+        "ids"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "type": {
+          "const": "randomize"
+        },
+        "ids": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "$ref": "#/$defs/item"
+          }
+        }
+      }
+    },
+    "scoring": {
+      "type": "object",
+      "required": [
+        "method"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "method": {
+          "enum": [
+            "none",
+            "sum",
+            "average",
+            "subscales",
+            "custom"
+          ]
+        },
+        "maxPerItem": {
+          "type": "number"
+        },
+        "subscaleMethod": {
+          "enum": [
+            "sum",
+            "mean"
+          ]
+        },
+        "subscales": {
           "type": "object",
-          "propertyNames": { "type": "string", "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_]*$" },
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_]*$"
+          },
           "additionalProperties": {
             "type": "array",
             "minItems": 1,
-            "items": { "type": "string" }
+            "items": {
+              "type": "string"
+            }
           }
         },
-        "customFormula": { "type": "string", "minLength": 1 }
+        "customFormula": {
+          "type": "string",
+          "minLength": 1
+        },
+        "exclude": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Item IDs to exclude from sum/average total. Excluded items still appear in the PDF but do not contribute to the score."
+        }
       },
       "allOf": [
         {
-          "if":   { "properties": { "method": { "const": "subscales" } }, "required": ["method"] },
-          "then": { "required": ["subscales"] }
+          "if": {
+            "properties": {
+              "method": {
+                "const": "subscales"
+              }
+            },
+            "required": [
+              "method"
+            ]
+          },
+          "then": {
+            "required": [
+              "subscales"
+            ]
+          }
         },
         {
-          "if":   { "properties": { "method": { "const": "custom" } }, "required": ["method"] },
-          "then": { "required": ["customFormula"] }
+          "if": {
+            "properties": {
+              "method": {
+                "const": "custom"
+              }
+            },
+            "required": [
+              "method"
+            ]
+          },
+          "then": {
+            "required": [
+              "customFormula"
+            ]
+          }
         }
       ]
     },
-
     "interpretations": {
       "type": "object",
-      "required": ["ranges"],
+      "required": [
+        "ranges"
+      ],
       "additionalProperties": false,
       "properties": {
-        "target": { "type": "string", "minLength": 1 },
+        "target": {
+          "type": "string",
+          "minLength": 1
+        },
         "ranges": {
           "type": "array",
           "minItems": 1,
           "items": {
             "type": "object",
-            "required": ["min", "max", "label"],
+            "required": [
+              "min",
+              "max",
+              "label"
+            ],
             "additionalProperties": false,
             "properties": {
-              "min":   { "type": "number" },
-              "max":   { "type": "number" },
-              "label": { "type": "string", "minLength": 1 }
+              "min": {
+                "type": "number"
+              },
+              "max": {
+                "type": "number"
+              },
+              "label": {
+                "type": "string",
+                "minLength": 1
+              }
             }
           }
         }
       }
     },
-
     "alert": {
       "type": "object",
-      "required": ["id", "condition", "message"],
+      "required": [
+        "id",
+        "condition",
+        "message"
+      ],
       "additionalProperties": false,
       "properties": {
-        "id":        { "$ref": "#/$defs/id" },
-        "condition": { "type": "string", "minLength": 1 },
-        "message":   { "type": "string", "minLength": 1 },
-        "severity":  { "enum": ["info", "warning", "critical"] }
-      }
-    },
-
-    "battery": {
-      "type": "object",
-      "required": ["id", "title", "sequence"],
-      "additionalProperties": false,
-      "properties": {
-        "id":          { "$ref": "#/$defs/id" },
-        "title":       { "type": "string", "minLength": 1 },
-        "description": { "type": "string" },
-        "keywords":    { "type": "array", "items": { "type": "string", "minLength": 1 } },
-        "sequence": {
-          "type": "array",
-          "minItems": 1,
-          "items": { "$ref": "#/$defs/batteryNode" }
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "condition": {
+          "type": "string",
+          "minLength": 1
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        },
+        "severity": {
+          "enum": [
+            "info",
+            "warning",
+            "critical"
+          ]
         }
       }
     },
-
+    "battery": {
+      "type": "object",
+      "required": [
+        "id",
+        "title",
+        "sequence"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string"
+        },
+        "keywords": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "sequence": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/batteryNode"
+          }
+        }
+      }
+    },
     "batteryNode": {
       "oneOf": [
-        { "$ref": "#/$defs/questionnaireRef" },
-        { "$ref": "#/$defs/batteryIfNode" },
-        { "$ref": "#/$defs/batteryRandomizeNode" }
+        {
+          "$ref": "#/$defs/questionnaireRef"
+        },
+        {
+          "$ref": "#/$defs/batteryIfNode"
+        },
+        {
+          "$ref": "#/$defs/batteryRandomizeNode"
+        }
       ]
     },
-
     "questionnaireRef": {
       "type": "object",
-      "required": ["questionnaireId"],
+      "required": [
+        "questionnaireId"
+      ],
       "additionalProperties": false,
-      "not": { "required": ["type"] },
+      "not": {
+        "required": [
+          "type"
+        ]
+      },
       "properties": {
-        "questionnaireId": { "$ref": "#/$defs/id" },
-        "instanceId":      { "$ref": "#/$defs/id" }
+        "questionnaireId": {
+          "$ref": "#/$defs/id"
+        },
+        "instanceId": {
+          "$ref": "#/$defs/id"
+        }
       }
     },
-
     "batteryIfNode": {
       "type": "object",
-      "required": ["type", "condition", "then", "else"],
+      "required": [
+        "type",
+        "condition",
+        "then",
+        "else"
+      ],
       "additionalProperties": false,
       "properties": {
-        "type":      { "const": "if" },
-        "condition": { "type": "string", "minLength": 1 },
-        "then":      { "type": "array", "items": { "$ref": "#/$defs/batteryNode" } },
-        "else":      { "type": "array", "items": { "$ref": "#/$defs/batteryNode" } }
+        "type": {
+          "const": "if"
+        },
+        "condition": {
+          "type": "string",
+          "minLength": 1
+        },
+        "then": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/batteryNode"
+          }
+        },
+        "else": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/batteryNode"
+          }
+        }
       }
     },
-
     "batteryRandomizeNode": {
       "type": "object",
-      "required": ["type", "ids"],
+      "required": [
+        "type",
+        "ids"
+      ],
       "additionalProperties": false,
       "properties": {
-        "type": { "const": "randomize" },
-        "ids":  {
+        "type": {
+          "const": "randomize"
+        },
+        "ids": {
           "type": "array",
           "minItems": 2,
-          "items": { "$ref": "#/$defs/batteryNode" }
+          "items": {
+            "$ref": "#/$defs/batteryNode"
+          }
         }
       }
     }

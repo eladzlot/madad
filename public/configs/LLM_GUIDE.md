@@ -218,6 +218,24 @@ Each item ID in the subscale arrays must match an item defined in the `items` ar
 
 The total score is always the sum of the subscale scores (whether those are sums or means). Unanswered items are excluded from both the numerator and denominator when computing means.
 
+### Excluding items from scoring
+
+Some instruments have a gating item that should appear in the PDF and be available in DSL conditions but must **not** contribute to the total score. Use `exclude` with `method: "sum"` or `method: "average"`:
+
+```json
+"scoring": {
+  "method": "sum",
+  "exclude": ["exposure"]
+}
+```
+
+- `exclude` is an array of item IDs.
+- Excluded items are still answered by the patient and shown in the PDF response table.
+- Excluded items are **available in DSL expressions** (`item.exposure`) and can be used in battery conditions.
+- Applies to both sum/average totals and subscale scoring. If an item appears in a subscale array AND in `exclude`, it is excluded from that subscale too.
+
+**Typical use case:** The PC-PTSD-5 has a trauma exposure question (`exposure`) that gates the 5 scored symptom items. The exposure question is answered but should not add to the 0–5 symptom score.
+
 ### Custom scoring (advanced)
 ```json
 "scoring": {

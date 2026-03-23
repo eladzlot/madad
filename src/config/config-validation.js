@@ -123,6 +123,10 @@ function checkItemOptions(items, q, optionSetIds, errors) {
       continue;
     }
 
+    // Binary items have built-in כן/לא labels — options are optional.
+    // Only validate option references when explicitly provided via optionSetId.
+    if (item.type === 'binary' && !item.optionSetId && !q.defaultOptionSetId) continue;
+
     const ref = item.optionSetId ?? q.defaultOptionSetId;
     if (!ref) {
       errors.push(

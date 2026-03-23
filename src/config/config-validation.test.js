@@ -44,6 +44,62 @@ describe('cross-entity ID collision', () => {
   });
 });
 
+
+// ─── Binary item options ──────────────────────────────────────────────────────
+
+describe('binary item options', () => {
+  const binaryQ = (itemOverrides = {}) => ({
+    id: 'screen', title: 'Screener',
+    items: [{ id: 'q1', type: 'binary', text: 'Did this happen?', ...itemOverrides }],
+    scoring: { method: 'none' }, alerts: [],
+  });
+
+  it('binary item without options is valid — uses built-in כן/לא labels', () => {
+    const errors = collectConfigErrors(minimalConfig([binaryQ()]));
+    expect(errors).toEqual([]);
+  });
+
+  it('binary item with inline options is valid', () => {
+    const errors = collectConfigErrors(minimalConfig([binaryQ({
+      options: [{ label: 'Yes', value: 1 }, { label: 'No', value: 0 }],
+    })]));
+    expect(errors).toEqual([]);
+  });
+
+  it('binary item referencing a valid optionSetId is valid', () => {
+    const q = {
+      id: 'screen', title: 'Screener',
+      optionSets: { yesno: [{ label: 'Yes', value: 1 }, { label: 'No', value: 0 }] },
+      items: [{ id: 'q1', type: 'binary', text: 'Did this happen?', optionSetId: 'yesno' }],
+      scoring: { method: 'none' }, alerts: [],
+    };
+    expect(collectConfigErrors(minimalConfig([q]))).toEqual([]);
+  });
+
+  it('binary item referencing a missing optionSetId is an error', () => {
+    const errors = collectConfigErrors(minimalConfig([binaryQ({ optionSetId: 'nonexistent' })]));
+    expect(errors.some(e => e.includes('nonexistent'))).toBe(true);
+  });
+
+  it('pc-ptsd5 pattern: multiple binary items without options are all valid', () => {
+    const q = {
+      id: 'pc_ptsd5', title: 'PC-PTSD-5',
+      items: [
+        { id: 'intro', type: 'instructions', text: 'Intro text' },
+        { id: 'exposure', type: 'binary', text: 'Trauma exposure?' },
+        { id: '1', type: 'binary', text: 'Symptom 1' },
+        { id: '2', type: 'binary', text: 'Symptom 2' },
+        { id: '3', type: 'binary', text: 'Symptom 3' },
+        { id: '4', type: 'binary', text: 'Symptom 4' },
+        { id: '5', type: 'binary', text: 'Symptom 5' },
+      ],
+      scoring: { method: 'sum', exclude: ['exposure'] },
+      alerts: [],
+    };
+    expect(collectConfigErrors(minimalConfig([q]))).toEqual([]);
+  });
+});
+
 // ─── validateConfigData ───────────────────────────────────────────────────────
 
 describe('validateConfigData', () => {

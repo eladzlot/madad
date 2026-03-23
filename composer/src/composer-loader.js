@@ -31,17 +31,22 @@ export async function loadAllConfigs(manifest) {
       // sourceUrl stored without leading slash — resolves correctly from any page
       const sourceUrl = pathNoSlash;
 
-      return loadConfig([fetchUrl]).then(config => ({
-        entry: { ...entry, url: sourceUrl },
-        config,
-      }));
+      return loadConfig([fetchUrl])
+        .then(config => ({ entry: { ...entry, url: sourceUrl }, config }))
+        .catch(err => { err.url = fetchUrl; return Promise.reject(err); });
     })
   );
 
   for (const result of results) {
     if (result.status === 'rejected') {
-      const url = result.reason?.url ?? '(לא ידוע)';
-      state.warnings.push(`לא ניתן לטעון: ${url}`);
+      const err = result.reason;
+      const url = err?.url ?? '(לא ידוע)';
+      console.error('[composer-loader] failed to load config:', url, err);
+      // Surface validation details so the author can act on them
+      const detail = err?.validationErrors
+        ? err.validationErrors.slice(0, 2).map(e => `${e.instancePath || '/'}: ${e.message}`).join('; ')
+        : err?.message ?? '';
+      state.warnings.push(`לא ניתן לטעון: ${url}${detail ? ` — ${detail}` : ''}`);
       continue;
     }
 

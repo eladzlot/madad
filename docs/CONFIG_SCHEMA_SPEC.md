@@ -205,6 +205,7 @@ Not scored. Answer stored as `number[]` of 1-based indices. Available in DSL via
 | `subscaleMethod` | string | no | How each subscale score is computed. One of: `sum` (default), `mean`. Applies only when `subscales` is defined. Use `mean` for instruments like PCL-5 and PTCI whose published norms report subscale means. The total score is always the sum of the subscale scores (whether those are sums or means). |
 | `subscales` | object | no | Map of subscale ID → array of item IDs. Required when method is `subscales`. |
 | `customFormula` | string | no | DSL expression returning a number. Required when method is `custom`. |
+| `exclude` | array of strings | no | Item IDs to exclude from scoring entirely. Excluded items still appear in the PDF response table but do not contribute to the total or any subscale. Useful for gating items (e.g. a trauma exposure question that gates scored symptoms). |
 
 ---
 

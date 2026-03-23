@@ -185,6 +185,27 @@ describe('loadAllConfigs', () => {
     expect(state.warnings).toHaveLength(2);
   });
 
+
+  it('warning includes the fetch URL when config fails', async () => {
+    mockFetch.mockRejectedValueOnce(new TypeError('Failed to fetch'));
+    await loadAllConfigs({ configs: [{ name: 'Bad', url: '/configs/bad.json' }] });
+    expect(state.warnings[0]).toContain('/configs/bad.json');
+  });
+
+  it('warning includes validation error detail when config fails schema validation', async () => {
+    // Serve a config that fails AJV schema validation (missing required 'id' field)
+    mockFetch.mockResolvedValueOnce({
+      ok: true, status: 200,
+      json: async () => ({ version: '1.0', questionnaires: [] }), // missing top-level 'id'
+    });
+    await loadAllConfigs({ configs: [{ name: 'Invalid', url: '/configs/invalid.json' }] });
+    expect(state.warnings).toHaveLength(1);
+    // Warning should contain the URL
+    expect(state.warnings[0]).toContain('/configs/invalid.json');
+    // Warning should contain some validation detail, not just the URL
+    expect(state.warnings[0].length).toBeGreaterThan('/configs/invalid.json'.length + 5);
+  });
+
   // ── dependency declaration ────────────────────────────────────────────────────
 
   it('populates dependenciesBySource when config declares dependencies', async () => {

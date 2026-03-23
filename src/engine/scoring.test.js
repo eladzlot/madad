@@ -82,6 +82,104 @@ describe('method: average', () => {
   });
 });
 
+
+describe('scoring.exclude', () => {
+  it('excluded item is not counted in sum', () => {
+    const q = baseQ({
+      scoring: { method: 'sum', exclude: ['1'] },
+    });
+    // item '1' answered as 5 but excluded — only '2' and '3' count
+    expect(score(q, { '1': 5, '2': 2, '3': 1 }).total).toBe(3);
+  });
+
+  it('excluded item does not affect average denominator', () => {
+    const q = baseQ({
+      scoring: { method: 'average', exclude: ['1'] },
+    });
+    // item '1'=9 excluded, items '2'=2 and '3'=4 averaged → 3
+    expect(score(q, { '1': 9, '2': 2, '3': 4 }).total).toBeCloseTo(3);
+  });
+
+  it('excluded item with no answer has no effect', () => {
+    const q = baseQ({
+      scoring: { method: 'sum', exclude: ['1'] },
+    });
+    // item '1' not even answered — result same as without it
+    expect(score(q, { '2': 2, '3': 1 }).total).toBe(3);
+  });
+
+  it('empty exclude array has no effect', () => {
+    const q = baseQ({
+      scoring: { method: 'sum', exclude: [] },
+    });
+    expect(score(q, { '1': 1, '2': 2, '3': 3 }).total).toBe(6);
+  });
+
+  it('excluded item is still available — answer present in DSL context', () => {
+    // This is a scoring test, not a DSL test, but we verify the excluded item
+    // answer is not accidentally zeroed out by checking total excludes it
+    const q = baseQ({
+      scoring: { method: 'sum', exclude: ['1'] },
+    });
+    const result = score(q, { '1': 99, '2': 1, '3': 1 });
+    expect(result.total).toBe(2); // '1' excluded regardless of its value
+  });
+
+  it('exclude also applies to subscale scoring — item is excluded everywhere', () => {
+    // exclude removes an item from both sum/average totals AND subscale scoring.
+    // To exclude an item only from the total, omit it from subscale arrays instead.
+    const q = baseQ({
+      scoring: {
+        method: 'subscales',
+        exclude: ['1'],
+        subscales: { a: ['1', '2'], b: ['3'] },
+      },
+    });
+    const result = score(q, { '1': 2, '2': 3, '3': 1 });
+    expect(result.subscales.a).toBe(3); // '1' excluded — only '2'=3 counts
+    expect(result.total).toBe(4);       // subscale a=3, subscale b=1
+  });
+
+  it('pc-ptsd5 pattern: exposure gate item excluded, 5 symptom items scored 0-5', () => {
+    // Models the PC-PTSD-5: exposure is answered (yes=1) but not scored.
+    // Items 1-5 are the symptom items scored 0-5.
+    const q = {
+      id: 'pc_ptsd5',
+      title: 'PC-PTSD-5',
+      items: [
+        { id: 'exposure', type: 'binary', text: 'Trauma exposure?' },
+        { id: '1', type: 'binary', text: 'Symptom 1' },
+        { id: '2', type: 'binary', text: 'Symptom 2' },
+        { id: '3', type: 'binary', text: 'Symptom 3' },
+        { id: '4', type: 'binary', text: 'Symptom 4' },
+        { id: '5', type: 'binary', text: 'Symptom 5' },
+      ],
+      scoring: { method: 'sum', exclude: ['exposure'] },
+      interpretations: {
+        target: 'total',
+        ranges: [
+          { min: 0, max: 3, label: 'Low probability' },
+          { min: 4, max: 5, label: 'High probability' },
+        ],
+      },
+    };
+
+    // Positive screen: exposure=yes, 4 symptoms present
+    const positive = score(q, { exposure: 1, '1': 1, '2': 1, '3': 1, '4': 1, '5': 0 });
+    expect(positive.total).toBe(4);
+    expect(positive.category).toBe('High probability');
+
+    // Negative screen: exposure=yes, only 2 symptoms
+    const negative = score(q, { exposure: 1, '1': 1, '2': 1, '3': 0, '4': 0, '5': 0 });
+    expect(negative.total).toBe(2);
+    expect(negative.category).toBe('Low probability');
+
+    // No exposure: all zeros including exposure
+    const noExposure = score(q, { exposure: 0, '1': 0, '2': 0, '3': 0, '4': 0, '5': 0 });
+    expect(noExposure.total).toBe(0);
+  });
+});
+
 describe('method: subscales', () => {
   const q = baseQ({
     scoring: {

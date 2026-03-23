@@ -137,7 +137,9 @@ export class ItemBinary extends LitElement {
   }
 
   _selectByIndex(index) {
-    const opt = this.item?.options?.[index];
+    const DEFAULT_OPTIONS = [{ label: 'כן', value: 1 }, { label: 'לא', value: 0 }];
+    const options = this.item?.options ?? DEFAULT_OPTIONS;
+    const opt = options[index];
     if (opt == null) return;
     this._select(opt.value);
   }
@@ -157,7 +159,8 @@ export class ItemBinary extends LitElement {
   render() {
     if (!this.item) return html``;
 
-    const [opt0, opt1] = this.item.options ?? [];
+    const DEFAULT_OPTIONS = [{ label: 'כן', value: 1 }, { label: 'לא', value: 0 }];
+    const [opt0, opt1] = this.item.options ?? DEFAULT_OPTIONS;
     const hasSelection  = this.selected !== null && this.selected !== undefined;
     const dragging      = this._dragPhase === 'move';
     const width         = this.offsetWidth || 300;
