@@ -217,27 +217,12 @@ export function createController(container, router) {
       };
     });
 
-    const resultsEl = document.createElement('results-screen');
-    resultsEl.results    = results;
-    resultsEl.canShare   = !!(navigator.canShare);
-    resultsEl.onDownload = async () => {
+    // Show share button if the browser has Web Share API.
+    // Note: navigator.share is only available over HTTPS — on HTTP it is undefined.
+    const canShareFiles = !!(navigator.share);
+
+    const doDownload = async () => {
       const { blob, filename } = await generateReport(sessionState, _config, _session);
-
-      // Use Web Share API on devices that support sharing files (mobile)
-      if (navigator.canShare?.({ files: [new File([blob], filename, { type: 'application/pdf' })] })) {
-        try {
-          await navigator.share({
-            files: [new File([blob], filename, { type: 'application/pdf' })],
-            title: filename,
-          });
-          return;
-        } catch (err) {
-          if (err.name === 'AbortError') return;   // user cancelled — don't fall through to download
-          // share failed for another reason — fall through to download
-        }
-      }
-
-      // Desktop fallback: anchor download
       const url = URL.createObjectURL(blob);
       const a   = Object.assign(document.createElement('a'), { href: url, download: filename });
       document.body.appendChild(a);
@@ -245,6 +230,26 @@ export function createController(container, router) {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     };
+
+    const doShare = async () => {
+      const { blob, filename } = await generateReport(sessionState, _config, _session);
+      try {
+        await navigator.share({
+          files: [new File([blob], filename, { type: 'application/pdf' })],
+          title: filename,
+        });
+      } catch (err) {
+        if (err.name === 'AbortError') return; // user cancelled
+        // Share failed — fall through to download
+        await doDownload();
+      }
+    };
+
+    const resultsEl = document.createElement('results-screen');
+    resultsEl.results    = results;
+    resultsEl.canShare   = canShareFiles;
+    resultsEl.onDownload = doDownload;
+    resultsEl.onShare    = canShareFiles ? doShare : null;
     _shellEl.appendChild(resultsEl);
   }
 

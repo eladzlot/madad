@@ -61,45 +61,101 @@ describe('rendering', () => {
   });
 });
 
-describe('pdf button', () => {
-  it('renders a pdf button', async () => {
-    const el = await makeEl({ results: sampleResults });
-    expect(el.shadowRoot.querySelector('.pdf-btn')).toBeTruthy();
+describe('action buttons — no share (desktop)', () => {
+  it('renders exactly one button when canShare is false', async () => {
+    const el = await makeEl({ results: sampleResults, canShare: false });
+    expect(el.shadowRoot.querySelectorAll('.pdf-btn')).toHaveLength(1);
   });
 
-  it('pdf button is enabled by default', async () => {
-    const el = await makeEl({ results: sampleResults });
+  it('single button is primary', async () => {
+    const el = await makeEl({ results: sampleResults, canShare: false });
+    expect(el.shadowRoot.querySelector('.pdf-btn').classList.contains('pdf-btn--primary')).toBe(true);
+  });
+
+  it('single button shows download label', async () => {
+    const el = await makeEl({ results: sampleResults, canShare: false });
+    expect(el.shadowRoot.querySelector('.pdf-btn').textContent.trim()).toContain('הורד');
+  });
+
+  it('single button is enabled by default', async () => {
+    const el = await makeEl({ results: sampleResults, canShare: false });
     expect(el.shadowRoot.querySelector('.pdf-btn').disabled).toBe(false);
   });
 
-  it('pdf button is disabled while loading', async () => {
-    const el = await makeEl({ results: sampleResults, loading: true });
+  it('single button is disabled while loading', async () => {
+    const el = await makeEl({ results: sampleResults, canShare: false, loading: true });
     expect(el.shadowRoot.querySelector('.pdf-btn').disabled).toBe(true);
   });
 
   it('shows loading label while loading', async () => {
-    const el = await makeEl({ results: sampleResults, loading: true });
+    const el = await makeEl({ results: sampleResults, canShare: false, loading: true });
     expect(el.shadowRoot.querySelector('.pdf-btn').textContent.trim()).toContain('מכין');
-  });
-
-  it('shows download label when not loading', async () => {
-    const el = await makeEl({ results: sampleResults });
-    expect(el.shadowRoot.querySelector('.pdf-btn').textContent.trim()).toContain('PDF');
   });
 
   it('calls onDownload when clicked', async () => {
     const onDownload = vi.fn().mockResolvedValue(undefined);
-    const el = await makeEl({ results: sampleResults });
-    el.onDownload = onDownload;
-    await el.updateComplete;
+    const el = await makeEl({ results: sampleResults, canShare: false, onDownload });
     el.shadowRoot.querySelector('.pdf-btn').click();
     await el.updateComplete;
     expect(onDownload).toHaveBeenCalledOnce();
   });
 
   it('does not throw when clicked with no onDownload set', async () => {
-    const el = await makeEl({ results: sampleResults });
+    const el = await makeEl({ results: sampleResults, canShare: false });
     expect(() => el.shadowRoot.querySelector('.pdf-btn').click()).not.toThrow();
+  });
+});
+
+describe('action buttons — with share (mobile)', () => {
+  it('renders two buttons when canShare is true', async () => {
+    const el = await makeEl({ results: sampleResults, canShare: true });
+    expect(el.shadowRoot.querySelectorAll('.pdf-btn')).toHaveLength(2);
+  });
+
+  it('primary button shows share label', async () => {
+    const el = await makeEl({ results: sampleResults, canShare: true });
+    expect(el.shadowRoot.querySelector('.pdf-btn--primary').textContent.trim()).toContain('שתף');
+  });
+
+  it('secondary button shows download label', async () => {
+    const el = await makeEl({ results: sampleResults, canShare: true });
+    expect(el.shadowRoot.querySelector('.pdf-btn--secondary').textContent.trim()).toContain('הורד');
+  });
+
+  it('both buttons disabled while loading', async () => {
+    const el = await makeEl({ results: sampleResults, canShare: true, loading: true });
+    const btns = el.shadowRoot.querySelectorAll('.pdf-btn');
+    expect([...btns].every(b => b.disabled)).toBe(true);
+  });
+
+  it('primary button calls onShare', async () => {
+    const onShare = vi.fn().mockResolvedValue(undefined);
+    const onDownload = vi.fn().mockResolvedValue(undefined);
+    const el = await makeEl({ results: sampleResults, canShare: true, onShare, onDownload });
+    el.shadowRoot.querySelector('.pdf-btn--primary').click();
+    await el.updateComplete;
+    expect(onShare).toHaveBeenCalledOnce();
+    expect(onDownload).not.toHaveBeenCalled();
+  });
+
+  it('secondary button calls onDownload', async () => {
+    const onShare = vi.fn().mockResolvedValue(undefined);
+    const onDownload = vi.fn().mockResolvedValue(undefined);
+    const el = await makeEl({ results: sampleResults, canShare: true, onShare, onDownload });
+    el.shadowRoot.querySelector('.pdf-btn--secondary').click();
+    await el.updateComplete;
+    expect(onDownload).toHaveBeenCalledOnce();
+    expect(onShare).not.toHaveBeenCalled();
+  });
+
+  it('primary shows loading label while loading', async () => {
+    const el = await makeEl({ results: sampleResults, canShare: true, loading: true });
+    expect(el.shadowRoot.querySelector('.pdf-btn--primary').textContent.trim()).toContain('מכין');
+  });
+
+  it('secondary always shows download label regardless of loading', async () => {
+    const el = await makeEl({ results: sampleResults, canShare: true, loading: true });
+    expect(el.shadowRoot.querySelector('.pdf-btn--secondary').textContent.trim()).toContain('הורד');
   });
 });
 

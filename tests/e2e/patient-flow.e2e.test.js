@@ -225,7 +225,9 @@ test.describe('results screen', () => {
   });
 
   test('download button is present', async ({ page }) => {
-    await expect(page.locator('results-screen >> button.pdf-btn')).toBeVisible();
+    // On desktop canShare is false — one primary download button
+    await expect(page.locator('results-screen >> button.pdf-btn--primary')).toBeVisible();
+    await expect(page.locator('results-screen >> button.pdf-btn--primary')).toContainText('הורד');
   });
 
   test('back button is hidden on results screen (session locked)', async ({ page }) => {
@@ -299,7 +301,7 @@ test.describe('alert — PHQ-9 item 9 (suicidality)', () => {
   test('item 9 ≥ 1 → session still completes and shows results', async ({ page }) => {
     await answerWithItem9(page, 1);
     await expect(page.locator('results-screen')).toBeVisible();
-    await expect(page.locator('results-screen >> button.pdf-btn')).toBeVisible();
+    await expect(page.locator('results-screen >> button.pdf-btn--primary')).toBeVisible();
   });
 });
 
@@ -412,7 +414,8 @@ test.describe('PDF download', () => {
     await clickViewResults(page);
     await expect(page.locator('results-screen')).toBeVisible();
 
-    const pdfBtn = page.locator('results-screen >> button.pdf-btn');
+    // On desktop canShare is false — primary button is the download button
+    const pdfBtn = page.locator('results-screen >> button.pdf-btn--primary');
     await expect(pdfBtn).not.toHaveAttribute('disabled', { timeout: 5000 });
 
     const [download] = await Promise.all([
@@ -533,6 +536,6 @@ test.describe('all item types battery (instructions + select + binary + select +
     await expect(page.locator('completion-screen')).toBeVisible({ timeout: 2000 });
     await clickViewResults(page);
     await expect(page.locator('results-screen')).toBeVisible();
-    await expect(page.locator('results-screen >> button.pdf-btn')).toBeVisible();
+    await expect(page.locator('results-screen >> button.pdf-btn--primary')).toBeVisible();
   });
 });

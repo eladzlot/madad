@@ -16,7 +16,7 @@ export class ResultsScreen extends LitElement {
   static properties = {
     results:  { type: Array },
     canShare: { type: Boolean },
-    loading:  { type: Boolean },
+    loading:  { type: Boolean, state: true },
   };
 
   static styles = [resetCSS, css`
@@ -106,28 +106,47 @@ export class ResultsScreen extends LitElement {
       font-weight: var(--font-weight-normal);
     }
 
-    /* ── Sticky PDF button ───────────────────────────────────────────── */
+    /* ── Action buttons ──────────────────────────────────────────────── */
+
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+      position: sticky;
+      bottom: var(--space-lg);
+    }
 
     .pdf-btn {
       display: block;
       width: 100%;
       min-block-size: var(--item-min-touch);
       padding-block: var(--space-sm);
-      background: var(--color-primary);
-      color: var(--color-primary-text);
-      border: none;
       border-radius: var(--radius-pill);
       font-size: var(--font-size-md);
       font-weight: var(--font-weight-bold);
       font-family: inherit;
       cursor: pointer;
-      transition: background var(--transition-fast);
-      position: sticky;
-      bottom: var(--space-lg);
+      border: none;
+      transition: background var(--transition-fast), color var(--transition-fast);
     }
 
-    .pdf-btn:not(:disabled):hover {
+    .pdf-btn--primary {
+      background: var(--color-primary);
+      color: var(--color-primary-text);
+    }
+
+    .pdf-btn--primary:not(:disabled):hover {
       background: var(--color-primary-hover);
+    }
+
+    .pdf-btn--secondary {
+      background: transparent;
+      color: var(--color-primary);
+      border: var(--border-width) solid var(--color-primary);
+    }
+
+    .pdf-btn--secondary:not(:disabled):hover {
+      background: var(--color-selected-bg);
     }
 
     .pdf-btn:focus-visible {
@@ -143,10 +162,11 @@ export class ResultsScreen extends LitElement {
 
   constructor() {
     super();
-    this.results  = [];
-    this.canShare = false;
-    this.loading  = false;
+    this.results    = [];
+    this.canShare   = false;
+    this.loading    = false;
     this.onDownload = null;
+    this.onShare    = null;
   }
 
   render() {
@@ -172,16 +192,45 @@ export class ResultsScreen extends LitElement {
         `)}
       </div>
 
-      <button
-        class="pdf-btn"
-        ?disabled=${this.loading}
-        @click=${this._handleDownload}
-      >
-        ${this.loading
-          ? 'מכין דוח...'
-          : this.canShare ? 'שתף דוח PDF' : 'הורד דוח PDF'}
-      </button>
+      <div class="actions">
+        ${this.canShare ? html`
+          <button
+            class="pdf-btn pdf-btn--primary"
+            ?disabled=${this.loading}
+            @click=${this._handleShare}
+          >
+            ${this.loading ? 'מכין דוח...' : 'שתף דוח PDF'}
+          </button>
+          <button
+            class="pdf-btn pdf-btn--secondary"
+            ?disabled=${this.loading}
+            @click=${this._handleDownload}
+          >
+            הורד דוח PDF
+          </button>
+        ` : html`
+          <button
+            class="pdf-btn pdf-btn--primary"
+            ?disabled=${this.loading}
+            @click=${this._handleDownload}
+          >
+            ${this.loading ? 'מכין דוח...' : 'הורד דוח PDF'}
+          </button>
+        `}
+      </div>
     `;
+  }
+
+  async _handleShare() {
+    if (!this.onShare || this.loading) return;
+    this.loading = true;
+    try {
+      await this.onShare();
+    } catch (err) {
+      console.error('Share failed:', err);
+    } finally {
+      this.loading = false;
+    }
   }
 
   async _handleDownload() {
