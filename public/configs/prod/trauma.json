@@ -79,7 +79,8 @@
         {
           "condition": "score.pc_ptsd5 >= 4",
           "message": "ציון הסקר מצביע על סבירות גבוהה ל-PTSD (רגישות 78%, סגוליות 91%). מומלץ להשלים הערכה מעמיקה עם PCL-5.",
-          "id": "alert_1"
+          "id": "alert_1",
+          "severity": "warning"
         }
       ]
     },
@@ -270,7 +271,8 @@
         {
           "condition": "score.pcl5 >= 33",
           "message": "ציון PCL-5 עומד בסף הקליני ל-PTSD (≥33). מומלץ להמשיך להערכה קלינית מעמיקה.",
-          "id": "alert_1"
+          "id": "alert_1",
+          "severity": "warning"
         }
       ]
     },

@@ -148,7 +148,7 @@ The e2e config has `"dev": true` in the manifest — it is skipped entirely in p
 ### What is stubbed / not implemented
 
 - **`randomize` node:** Recognised by schema and runner; execution throws `NotImplementedError`. Do not remove the schema definition.
-- **Alert severity rendering in PDF:** `severity` field exists and is validated; all alerts currently render identically regardless of severity. Planned next.
+- **Alert severity rendering in PDF:** fully implemented — `critical` (red), `warning` (amber), `info` (blue), `default` (grey). Alerts sorted critical-first. PHQ-9 suicidality is `critical`; PC-PTSD-5 and PCL-5 threshold alerts are `warning`.
 - **Embedded JSON attachment in PDF:** Planned. Not started.
 
 ---
@@ -250,7 +250,7 @@ See `public/configs/CONTRIBUTING.md` (human guide) or `public/configs/LLM_GUIDE.
 | Gap | Risk | Resolution |
 |---|---|---|
 | `randomize` throws `NotImplementedError` | Safe now; breaks if config author uses it | Documented in schema spec; validate:configs could warn |
-| Alert severity not rendered distinctly in PDF | `critical` and `warning` look identical | Next planned feature |
+| Alert severity rendering | ✓ Complete | — |
 | Embedded JSON in PDF | Machine-readable output for clinic systems | Planned, not started |
 | Component branch coverage ~60% | UI regressions may go undetected | E2E tests compensate |
 
@@ -286,24 +286,31 @@ The following security controls are in place. Do not remove them without underst
 - Favicon: SVG `מ` on teal, all index.html files updated
 - Hebrew page titles on all pages
 - MIT license + CONTENT_LICENSE.md instrument notice
-- 870 unit tests across 30 files; E2E passing on Chromium
+- 916 unit tests across 30 files; E2E passing on Chromium
+- Alert severity rendering: `critical` (red), `warning` (amber), `info` (blue); all alerts tagged
+- Interpretation labels audited and standardised — severity vs screening threshold language
+- WSAS top band label fixed ("פסיכופתולוגיה" → "פגיעה תפקודית חמורה")
+- bidi-js integrated (replaced hand-rolled bidiNodes approximation)
+- Documentation: README rewritten, HANDOVER updated, INSTRUMENTS/CONTRIBUTING consolidated, CHANGELOG created
+- Test coverage: 90%+ statements/lines, 84%+ branches — all thresholds passing
+- Coverage config: validate-schema.js, composer.js, composer-render.js excluded (generated/DOM entry files)
 
 ## 8. Next steps
 
-### Step A — PDF: alert severity rendering
-Render `critical` alerts with red background/border, `warning` with amber, `info` with blue in the PDF. `severity` field already exists and is validated.
-
-### Step B — PDF: embedded JSON attachment
+### Step A — PDF: embedded JSON attachment
 Embed a machine-readable `data.json` attachment in the PDF. Allows clinic systems to parse scores without reading the visual PDF.
 
-### Step C — PDF: replace bidiNodes() with bidi-js
-The current `bidiNodes()` is a fragile hand-rolled approximation of the Unicode BiDi Algorithm. Replace with `bidi-js` (15KB, no deps, fully conformant). See `IMPLEMENTATION_SPEC.md §19.6`.
+### Step B — Interpretation type field (optional)
+Add `"type": "severity" | "screening"` to interpretation blocks so the PDF and future tooling can distinguish validated severity bands from screening cutoffs. Current approach: encode the distinction in the label text (e.g. "סף סינון"). Revisit if UI needs change.
+
+### Step C — Dissemination
+Tool is ready to ship. Priority actions:
+- Send to 3–5 known therapists for feedback
+- Post in Israeli therapist Facebook groups (genuine MBC content, not ads)
+- Short screen-recording walkthrough (60-90 sec): composer → patient fills → PDF
 
 ### Step D — Documentation: update remaining specs
-HANDOVER updated (this document). Still to update: COMPOSER_SPEC.md, INSTRUMENTS.md, CONTRIBUTING.md cross-reference, ITEM_TYPES_SPEC.md composite section cleanup.
-
-### Step E — CHANGELOG.md
-Create with project history and current state as baseline.
+Still to update: COMPOSER_SPEC.md (drag-reorder, keyboard nav, mobile bar, dev:true).
 
 ---
 
@@ -318,7 +325,7 @@ Read in this order:
 ```bash
 npm ci
 npm run dev              # localhost:5173 (base /)
-npm test                 # 870 unit tests
+npm test                 # 916 unit tests
 npm run validate:configs
 npm run build && npm run preview  # localhost:4173/madad/ (base /madad/)
 ```
@@ -333,7 +340,7 @@ To add a new instrument: `public/configs/CONTRIBUTING.md`.
 - **`src/engine/sequence-runner.js`** — shared by orchestrator and engine. Back-navigation logic is subtle; tests are the specification.
 - **Session state shape** — `answers`, `scores`, `alerts` keyed by `sessionKey`. PDF generator, orchestrator, engine, and results screen all read from this shape.
 - **`QuestionnaireSet.schema.json`** — changing without running `npm run build:validator` and updating `config-validation.js` and existing configs will break validation. Always run `build:validator` after schema changes.
-- **`src/pdf/report.js` — RTL rendering** — pdfmake has incomplete bidi support. Six rules documented in `IMPLEMENTATION_SPEC.md §19.3`. Short version: numbers in `direction:'ltr'` nodes, mixed Hebrew/Latin through `bidiNodes()`, category on its own line, never `rtl:true`, never concatenate numbers into Hebrew strings.
+- **`src/pdf/report.js` — RTL rendering** — pdfmake has incomplete bidi support. bidi-js (UAX-9 conformant) is used for mixed Hebrew/Latin text via `bidiNodes()`. Numbers go in `direction:'ltr'` nodes, category on its own line, never `rtl:true`. See `IMPLEMENTATION_SPEC.md §19.3`.
 - **`src/pdf/report.js` — pdfmake API** — use `getBuffer()` (Promise-based). `getBlob(callback)` silently hangs in pdfmake 0.3.x.
 - **`vite.config.js`** — `base` is `'/'` in development mode and `'/madad/'` in all other modes. `pdfmake` is pinned to a named chunk via `manualChunks` to keep it lazy-loaded and out of the entry bundle.
 - **Config URL format** — `configs=` params must use relative paths (no leading slash). See §5 above.
