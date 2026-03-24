@@ -19,7 +19,7 @@ import { readFileSync, readdirSync, statSync } from 'fs';
 import { resolve, relative, join } from 'path';
 import { fileURLToPath } from 'url';
 import Ajv from 'ajv/dist/2020.js';
-import { collectConfigErrors } from '../src/config/config-validation.js';
+import { collectConfigErrors, checkCrossFileBatteryRefs } from '../src/config/config-validation.js';
 
 // ── Paths ─────────────────────────────────────────────────────────────────────
 
@@ -142,6 +142,14 @@ if (validFiles.length > 1) {
   if (crossErrors.length > 0) {
     console.error('\n  ✗  Cross-file ID conflicts:');
     for (const err of crossErrors) console.error(`       ${err}`);
+    failed++;
+  }
+
+  // ── Cross-file battery reference check ──────────────────────────────────────
+  const refErrors = checkCrossFileBatteryRefs(validFiles);
+  if (refErrors.length > 0) {
+    console.error('\n  ✗  Cross-file battery reference errors:');
+    for (const err of refErrors) console.error(`       ${err}`);
     failed++;
   }
 }

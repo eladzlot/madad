@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { collectConfigErrors, ConfigError, validateConfigData } from './config-validation.js';
+import { collectConfigErrors, ConfigError, validateConfigData, checkCrossFileBatteryRefs } from './config-validation.js';
 
 const minimalQ = (id = 'phq9') => ({
   id, title: 'Test',
@@ -319,5 +319,106 @@ describe('binary item via optionSetId', () => {
       scoring: { method: 'none' }, alerts: [],
     };
     expect(collectConfigErrors(minimalConfig([q]))).toEqual([]);
+  });
+});
+
+// ─── checkCrossFileBatteryRefs ────────────────────────────────────────────────
+
+describe('checkCrossFileBatteryRefs', () => {
+  const makeFile = (rel, questionnaires, batteries = [], dependencies = []) => ({
+    rel,
+    data: { questionnaires, batteries, dependencies },
+  });
+
+  const q = (id) => ({ id, title: id, items: [], scoring: { method: 'none' }, alerts: [] });
+
+  const battery = (id, refs) => ({
+    id,
+    title: id,
+    sequence: refs.map(r => ({ questionnaireId: r })),
+  });
+
+  it('no error when battery refs all exist in the same file', () => {
+    const files = [makeFile('a.json', [q('phq9')], [battery('b1', ['phq9'])])];
+    expect(checkCrossFileBatteryRefs(files)).toEqual([]);
+  });
+
+  it('no error when battery refs exist in a declared dependency', () => {
+    const files = [
+      makeFile('intake.json', [q('diamond')], [battery('intake_bat', ['diamond', 'phq9'])], ['configs/prod/standard.json']),
+      makeFile('public/configs/prod/standard.json', [q('phq9')]),
+    ];
+    expect(checkCrossFileBatteryRefs(files)).toEqual([]);
+  });
+
+  it('error when battery refs a questionnaire not in file or dependencies', () => {
+    const files = [
+      makeFile('intake.json', [q('diamond')], [battery('intake_bat', ['spin'])]),
+      makeFile('public/configs/prod/standard.json', [q('spin')]),
+    ];
+    const errors = checkCrossFileBatteryRefs(files);
+    expect(errors).toHaveLength(1);
+    expect(errors[0]).toContain('"spin"');
+    expect(errors[0]).toContain('"intake_bat"');
+    expect(errors[0]).toContain('dependencies');
+  });
+
+  it('error message names the battery and the missing questionnaire', () => {
+    const files = [makeFile('a.json', [], [battery('my_battery', ['missing_q'])])];
+    const errors = checkCrossFileBatteryRefs(files);
+    expect(errors[0]).toContain('"my_battery"');
+    expect(errors[0]).toContain('"missing_q"');
+  });
+
+  it('reports all missing refs, not just the first', () => {
+    const files = [makeFile('a.json', [], [battery('bat', ['q1', 'q2', 'q3'])])];
+    expect(checkCrossFileBatteryRefs(files)).toHaveLength(3);
+  });
+
+  it('no error for files with no batteries', () => {
+    const files = [makeFile('a.json', [q('phq9')]), makeFile('b.json', [q('gad7')])];
+    expect(checkCrossFileBatteryRefs(files)).toEqual([]);
+  });
+
+  it('resolves refs inside if-node then branch as missing when dep undeclared', () => {
+    const files = [
+      makeFile('a.json', [], [{
+        id: 'bat', title: 'bat',
+        sequence: [{ type: 'if', condition: 'true', then: [{ questionnaireId: 'phq9' }], else: [] }],
+      }]),
+      makeFile('public/configs/prod/standard.json', [q('phq9')]),
+    ];
+    const errors = checkCrossFileBatteryRefs(files);
+    expect(errors.some(e => e.includes('"phq9"'))).toBe(true);
+  });
+
+  it('no error for if-node ref when dependency is declared', () => {
+    const files = [
+      makeFile('a.json', [], [{
+        id: 'bat', title: 'bat',
+        sequence: [{ type: 'if', condition: 'true', then: [{ questionnaireId: 'phq9' }], else: [] }],
+      }], ['configs/prod/standard.json']),
+      makeFile('public/configs/prod/standard.json', [q('phq9')]),
+    ];
+    expect(checkCrossFileBatteryRefs(files)).toEqual([]);
+  });
+
+  it('regression: clinical_intake without standard.json catches spin and phq9', () => {
+    const files = [
+      makeFile('public/configs/prod/intake.json',
+        [q('diamond')],
+        [battery('clinical_intake', ['diamond', 'spin', 'phq9', 'pcl5'])],
+        ['configs/prod/trauma.json']   // missing standard.json
+      ),
+      makeFile('public/configs/prod/standard.json', [q('spin'), q('phq9')]),
+      makeFile('public/configs/prod/trauma.json',   [q('pcl5')]),
+    ];
+    const errors = checkCrossFileBatteryRefs(files);
+    expect(errors.some(e => e.includes('"spin"'))).toBe(true);
+    expect(errors.some(e => e.includes('"phq9"'))).toBe(true);
+    // pcl5 is in declared trauma.json — must not appear
+    expect(errors.some(e => e.includes('"pcl5"'))).toBe(false);
+    // diamond is own — must not appear
+    expect(errors.some(e => e.includes('"diamond"'))).toBe(false);
   });
 });

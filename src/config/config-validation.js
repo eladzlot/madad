@@ -259,3 +259,66 @@ export function validateConfigData(data, url) {
     throw new ConfigError(`${errors[0]}${url ? ` (${url})` : ''}`);
   }
 }
+
+/**
+ * Check that every questionnaireId referenced inside batteries resolves to a
+ * questionnaire available at runtime — either in the same config or in a
+ * declared dependency.
+ *
+ * @param {Array<{rel: string, data: object}>} configFiles
+ *   — All loaded config files, each with a relative path and parsed data.
+ * @returns {string[]} — Error messages, empty if all references resolve.
+ */
+export function checkCrossFileBatteryRefs(configFiles) {
+  // Map each file's rel path → Set of questionnaire IDs it provides
+  const idsByFile = new Map();
+  for (const { rel, data } of configFiles) {
+    idsByFile.set(rel, new Set((data.questionnaires ?? []).map(q => q.id)));
+  }
+
+  // Resolve a dependency path string to the matching rel key
+  function depToRel(dep) {
+    const normalised = dep.startsWith('public/') ? dep : `public/${dep}`;
+    for (const rel of idsByFile.keys()) {
+      if (rel === normalised || rel.endsWith('/' + normalised) || rel.endsWith(normalised)) {
+        return rel;
+      }
+    }
+    return null;
+  }
+
+  function collectRefs(sequence) {
+    const refs = [];
+    for (const node of sequence ?? []) {
+      if (node.questionnaireId) refs.push(node.questionnaireId);
+      if (node.then) refs.push(...collectRefs(node.then));
+      if (node.else) refs.push(...collectRefs(node.else));
+    }
+    return refs;
+  }
+
+  const errors = [];
+  for (const { rel, data } of configFiles) {
+    if (!data.batteries?.length) continue;
+
+    // IDs available at runtime: own + declared dependencies
+    const available = new Set(idsByFile.get(rel));
+    for (const dep of data.dependencies ?? []) {
+      const depRel = depToRel(dep);
+      if (depRel) for (const id of idsByFile.get(depRel) ?? []) available.add(id);
+    }
+
+    for (const battery of data.batteries) {
+      for (const ref of collectRefs(battery.sequence)) {
+        if (!available.has(ref)) {
+          errors.push(
+            `Battery "${battery.id}" in ${rel} references questionnaire "${ref}" ` +
+            `which is not in this file or its declared dependencies. ` +
+            `Add the config that defines "${ref}" to this file's "dependencies" array.`
+          );
+        }
+      }
+    }
+  }
+  return errors;
+}
