@@ -78,7 +78,9 @@ export function createController(container, router) {
   // ── DOM helpers ──────────────────────────────────────────────────────────
 
   function getOrCreateItemEl(tag) {
-    if (_itemEl && _itemEl.tagName.toLowerCase() === tag) return _itemEl;
+    // Always create a fresh element. Reusing the same DOM node carries over
+    // the browser's touch/hover tracking state, causing ghost highlights on
+    // the incoming question when the previous tap's synthetic events fire.
     if (_itemEl) _itemEl.remove();
     _itemEl = document.createElement(tag);
     _itemEl.addEventListener('answer', onAnswer);
@@ -105,6 +107,7 @@ export function createController(container, router) {
     const tag = tagForType(item.type);
     const resolved = resolveItem(item, { questionnaire: _questionnaire });
     const el = getOrCreateItemEl(tag);
+    el.selected = null;
     el.item = resolved;
     el.selected = _engine.answers()[item.id] ?? null;
     updateNav();
