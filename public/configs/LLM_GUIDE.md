@@ -41,6 +41,24 @@ Only `id`, `title`, `items` are strictly required. All other fields are optional
 
 ---
 
+## Title naming convention
+
+Use the Hebrew name followed by the instrument's common initials in parentheses:
+
+```
+"title": "שאלון דיכאון (PHQ-9)"
+"title": "שאלון חרדה מוכללת (GAD-7)"
+"title": "שאלון פוסט-טראומה (PCL-5)"
+```
+
+Skip the initials if the instrument is not commonly known by them:
+
+```
+"title": "שלושת הבעיות המרכזיות"
+```
+
+This is a convention, not a schema requirement.
+
 ## IDs — the most common source of errors
 
 **Pattern:** `^[a-zA-Z0-9][a-zA-Z0-9_]*$`

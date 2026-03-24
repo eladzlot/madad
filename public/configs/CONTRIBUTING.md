@@ -70,6 +70,7 @@ If no existing file fits your instrument:
 ## Rules
 
 - **Unique ID** — lowercase letters, digits, underscores only. `phq9` not `phq-9`. Must be unique across all loaded configs.
+- **Title naming convention** — Hebrew name followed by the instrument's initials in parentheses, e.g. `שאלון דיכאון (PHQ-9)`. Use this when the instrument is commonly known by its initials. Skip the initials if the instrument isn't known by them (e.g. `שלושת הבעיות המרכזיות`).
 - **Hebrew item text** — the platform language is Hebrew.
 - **Validated scoring** — ranges and alert thresholds must match the published, validated version. Do not adjust them.
 - **Open-source instruments only** — do not add proprietary instruments (e.g. BDI-II) without verifying the license.

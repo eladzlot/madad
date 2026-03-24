@@ -4,7 +4,7 @@
   "questionnaires": [
     {
       "id": "asi_3",
-      "title": "שאלון רגישות לחרדה",
+      "title": "שאלון רגישות לחרדה (ASI-3)",
       "description": "הערכת רגישות לתחושות חרדה במהלך השבוע האחרון (Anxiety Sensitivity, ASI-3)",
       "keywords": [
         "anxiety",
@@ -145,7 +145,7 @@
     },
     {
       "id": "oci_r",
-      "title": "שאלון טורדנות כפייתית",
+      "title": "שאלון טורדנות כפייתית (OCI-R)",
       "description": "הערכת תסמיני OCD במהלך השבוע האחרון (OCD, Obsessive-Compulsive, OCI-R)",
       "keywords": [
         "OCD",
@@ -342,7 +342,7 @@
     },
     {
       "id": "gad7",
-      "title": "שאלון חרדה",
+      "title": "שאלון חרדה מוכללת (GAD-7)",
       "description": "הערכת תסמיני חרדה כללית במהלך השבועיים האחרונים (Generalized Anxiety Disorder, GAD-7)",
       "keywords": [
         "anxiety",
@@ -710,7 +710,7 @@
     },
     {
       "id": "phq9",
-      "title": "שאלון דיכאון",
+      "title": "שאלון דיכאון (PHQ-9)",
       "description": "הערכת תסמיני דיכאון במהלך השבוע האחרון (Depression, MDD, PHQ-9)",
       "keywords": [
         "depression",
@@ -1303,7 +1303,7 @@
     },
     {
       "id": "mgh_hps",
-      "title": "סולם תלישת שיער MGH (MGH-HPS)",
+      "title": "סולם תלישת שיער (MGH-HPS)",
       "description": "הערכת חומרת תלישת שיער במהלך השבוע האחרון — 7 פריטים (Massachusetts General Hospital Hairpulling Scale).",
       "keywords": [
         "trichotillomania",
