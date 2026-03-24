@@ -259,7 +259,8 @@
             "19",
             "20"
           ]
-        }
+        },
+        "totalMethod": "sum_of_items"
       },
       "subscaleLabels": {
         "intrusion": "חדירה",

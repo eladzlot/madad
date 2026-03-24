@@ -1035,3 +1035,31 @@ describe('buildResponseTable — text and multiselect at start', () => {
     expect(result.stack.find(b => b.table)).toBeUndefined();
   });
 });
+
+// ── mean subscale rounding ────────────────────────────────────────────────────
+
+describe('buildScoresLine — mean subscale rounding', () => {
+  it('renders integer subscale as plain integer', () => {
+    const line = buildScoresLine({ total: 10, subscales: { a: 2 } }, Q);
+    const subLine = line.stack[1];
+    expect(subLine.text[0].text).toBe('2');
+  });
+
+  it('rounds non-integer subscale to 1 decimal', () => {
+    const line = buildScoresLine({ total: 10, subscales: { a: 1.5 } }, Q);
+    const subLine = line.stack[1];
+    expect(subLine.text[0].text).toBe('1.5');
+  });
+
+  it('rounds to 1 decimal, not more', () => {
+    const line = buildScoresLine({ total: 10, subscales: { a: 1.6666 } }, Q);
+    const subLine = line.stack[1];
+    expect(subLine.text[0].text).toBe('1.7');
+  });
+
+  it('renders null subscale as em-dash', () => {
+    const line = buildScoresLine({ total: 10, subscales: { a: null } }, Q);
+    const subLine = line.stack[1];
+    expect(subLine.text[0].text).toBe('—');
+  });
+});

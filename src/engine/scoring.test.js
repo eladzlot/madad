@@ -454,3 +454,46 @@ describe('slider items contribute to scoring like select', () => {
     expect(score(q, { s1: 5, notes: 'some text' }).total).toBe(5);
   });
 });
+
+// ── totalMethod: sum_of_items ─────────────────────────────────────────────────
+
+describe('scoring.totalMethod = sum_of_items', () => {
+  const q = {
+    items: [
+      { id: 'i1', type: 'select', options: [{ value: 0 }, { value: 1 }, { value: 2 }] },
+      { id: 'i2', type: 'select', options: [{ value: 0 }, { value: 1 }, { value: 2 }] },
+      { id: 'i3', type: 'select', options: [{ value: 0 }, { value: 1 }, { value: 2 }] },
+      { id: 'i4', type: 'select', options: [{ value: 0 }, { value: 1 }, { value: 2 }] },
+    ],
+    scoring: {
+      method: 'subscales',
+      subscaleMethod: 'mean',
+      totalMethod: 'sum_of_items',
+      subscales: { a: ['i1', 'i2'], b: ['i3', 'i4'] },
+    },
+    alerts: [],
+  };
+  const answers = { i1: 2, i2: 0, i3: 1, i4: 2 };
+
+  it('total is raw item sum, not sum of means', () => {
+    const result = score(q, answers);
+    // raw sum: 2+0+1+2 = 5
+    // sum of means would be: mean(2,0) + mean(1,2) = 1 + 1.5 = 2.5
+    expect(result.total).toBe(5);
+  });
+
+  it('subscales are still means', () => {
+    const result = score(q, answers);
+    expect(result.subscales.a).toBe(1);    // mean(2,0)
+    expect(result.subscales.b).toBe(1.5);  // mean(1,2)
+  });
+
+  it('without totalMethod defaults to sum of subscale means', () => {
+    const qNoTotal = { ...q, scoring: { ...q.scoring, totalMethod: undefined } };
+    const result = score(qNoTotal, answers);
+    expect(result.total).toBe(2.5); // 1 + 1.5
+  });
+});
+
+// ── subscale mean rounding in buildScoresLine ─────────────────────────────────
+// (tested via report.test.js — coverage here is via scoring.js)

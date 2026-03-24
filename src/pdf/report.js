@@ -477,7 +477,10 @@ export function buildScoresLine(scoreResult, q) {
     const subParts = [];
     for (const [subId, subVal] of subscaleEntries) {
       if (subParts.length > 0) subParts.push(SEP);
-      subParts.push({ text: String(subVal ?? '—'), direction: 'ltr' });
+      const subDisplay = subVal == null ? '—'
+        : Number.isInteger(subVal) ? String(subVal)
+        : subVal.toFixed(1);
+      subParts.push({ text: subDisplay, direction: 'ltr' });
       subParts.push({ text: ' : ' });
       const label = q.subscaleLabels?.[subId] ?? subId;
       subParts.push(...bidiNodes(label));

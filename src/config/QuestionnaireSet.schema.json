@@ -486,6 +486,12 @@
             "mean"
           ]
         },
+        "totalMethod": {
+          "enum": [
+            "sum_of_subscales",
+            "sum_of_items"
+          ]
+        },
         "subscales": {
           "type": "object",
           "propertyNames": {

@@ -85,7 +85,7 @@ export function score(questionnaire, answers) {
   // All branches are included — the answer map determines which have values.
   const items = flattenItems(rawItems ?? []);
   const answerableItems = items.filter(isAnswerable);
-  const { method, maxPerItem, subscaleMethod = 'sum', subscales: subscaleDefs, customFormula, exclude = [] } = scoring;
+  const { method, maxPerItem, subscaleMethod = 'sum', totalMethod, subscales: subscaleDefs, customFormula, exclude = [] } = scoring;
 
   // excluded is a Set of item IDs that should not contribute to sum/average totals.
   // Excluded items still appear in the PDF response table; they are simply not scored.
@@ -123,8 +123,16 @@ export function score(questionnaire, answers) {
     total = evaluate(customFormula, context, 'number');
 
   } else if (method === 'subscales') {
-    // Total is sum of all subscale scores
-    total = Object.values(subscales).reduce((a, b) => a + b, 0);
+    if (totalMethod === 'sum_of_items') {
+      // Compute total from raw item values, independent of subscale aggregation method
+      const values = answerableItems
+        .filter(item => !excludedIds.has(item.id) && typeof answers[item.id] === 'number')
+        .map(item => adjustValue(answers[item.id], item, maxPerItem));
+      total = values.reduce((a, b) => a + b, 0);
+    } else {
+      // Default: sum of subscale scores
+      total = Object.values(subscales).reduce((a, b) => a + b, 0);
+    }
 
   } else {
     // sum or average — only include items with a numeric response that are not excluded
