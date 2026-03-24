@@ -38,10 +38,10 @@ html {
 }
 
 body {
-  min-block-size: 100dvh;
+  block-size: 100dvh;
   display: flex;
   flex-direction: column;
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
 /* Full-bleed scroll container — the single scrollable region on item screens */
@@ -49,8 +49,7 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
-  overscroll-behavior-y: contain;
+  overflow: hidden;
 }
 
 /* Centre content within the max-width column */

@@ -28,7 +28,7 @@ export class AppShell extends LitElement {
     :host {
       display: flex;
       flex-direction: column;
-      min-block-size: 100dvh;
+      block-size: 100%;
       background: var(--color-bg);
     }
 
@@ -108,7 +108,6 @@ export class AppShell extends LitElement {
       margin-inline: auto;
       padding-inline: var(--space-md);
       padding-block: var(--space-lg);
-      overflow: hidden;
     }
   `];
 

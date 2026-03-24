@@ -119,7 +119,6 @@ export class ItemBinary extends LitElement {
   }
 
   firstUpdated() {
-    // Attach to host so entire component area is swipeable
     this._detachSwipe = attachSwipe(this, {
       onSwipeRight: () => this._selectByIndex(0),
       onSwipeLeft:  () => this._selectByIndex(1),
