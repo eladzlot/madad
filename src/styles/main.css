@@ -116,6 +116,23 @@ body {
   outline-offset: 2px;
 }
 
+/* ── Item enter animation ───────────────────────────────────────────────── */
+
+@keyframes item-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.item-entering {
+  animation: item-enter 220ms ease-out both;
+}
+
 /* Utility: visually hidden but accessible */
 .sr-only {
   position: absolute;

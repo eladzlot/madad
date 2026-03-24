@@ -85,6 +85,7 @@ export function createController(container, router) {
     _itemEl = document.createElement(tag);
     _itemEl.addEventListener('answer', onAnswer);
     _itemEl.addEventListener('advance', onAdvance);
+    _itemEl.classList.add('item-entering');
     _shellEl.appendChild(_itemEl);
     return _itemEl;
   }
