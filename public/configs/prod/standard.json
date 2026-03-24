@@ -141,26 +141,6 @@
         "method": "sum",
         "maxPerItem": 4
       },
-      "interpretations": {
-        "target": "total",
-        "ranges": [
-          {
-            "min": 0,
-            "max": 16,
-            "label": "נמוך"
-          },
-          {
-            "min": 17,
-            "max": 22,
-            "label": "מוגבר"
-          },
-          {
-            "min": 23,
-            "max": 72,
-            "label": "גבוה"
-          }
-        ]
-      },
       "alerts": []
     },
     {
@@ -346,7 +326,7 @@
           {
             "min": 21,
             "max": 72,
-            "label": "חשד ל-OCD"
+            "label": "חשד ל-OCD (סף סינון)"
           }
         ]
       },
@@ -716,23 +696,13 @@
         "ranges": [
           {
             "min": 0,
-            "max": 2,
-            "label": "ללא פאניקה משמעותית"
+            "max": 8,
+            "label": "מתחת לסף קליני"
           },
           {
-            "min": 3,
-            "max": 7,
-            "label": "קל"
-          },
-          {
-            "min": 8,
-            "max": 15,
-            "label": "בינוני"
-          },
-          {
-            "min": 16,
+            "min": 9,
             "max": 28,
-            "label": "חמור"
+            "label": "מעל סף סינון לפאניקה"
           }
         ]
       },
@@ -1329,39 +1299,7 @@
         "method": "sum",
         "maxPerItem": 3
       },
-      "interpretations": {
-        "target": "total",
-        "ranges": [
-          {
-            "min": 0,
-            "max": 17,
-            "label": "ללא חרדת בריאות משמעותית"
-          },
-          {
-            "min": 18,
-            "max": 27,
-            "label": "חרדת בריאות קלה"
-          },
-          {
-            "min": 28,
-            "max": 39,
-            "label": "חרדת בריאות בינונית"
-          },
-          {
-            "min": 40,
-            "max": 54,
-            "label": "חרדת בריאות קשה"
-          }
-        ]
-      },
-      "alerts": [
-        {
-          "id": "severe_health_anxiety",
-          "condition": "score.hai >= 40",
-          "message": "ציון HAI גבוה (≥40) — חרדת בריאות קשה. מומלץ הערכה קלינית.",
-          "severity": "warning"
-        }
-      ]
+      "alerts": []
     },
     {
       "id": "mgh_hps",
@@ -1599,39 +1537,7 @@
         "method": "sum",
         "maxPerItem": 4
       },
-      "interpretations": {
-        "target": "total",
-        "ranges": [
-          {
-            "min": 0,
-            "max": 5,
-            "label": "ללא תלישה משמעותית"
-          },
-          {
-            "min": 6,
-            "max": 12,
-            "label": "קל"
-          },
-          {
-            "min": 13,
-            "max": 19,
-            "label": "בינוני"
-          },
-          {
-            "min": 20,
-            "max": 28,
-            "label": "חמור"
-          }
-        ]
-      },
-      "alerts": [
-        {
-          "id": "significant_pulling",
-          "condition": "score.mgh_hps >= 13",
-          "message": "ציון MGH-HPS ≥13 — תלישת שיער בינונית עד חמורה. מומלץ הערכה קלינית.",
-          "severity": "warning"
-        }
-      ]
+      "alerts": []
     },
     {
       "id": "spin",
@@ -1802,38 +1708,16 @@
           {
             "min": 0,
             "max": 20,
-            "label": "ללא פוביה חברתית"
+            "label": "מתחת לסף קליני"
           },
           {
             "min": 21,
-            "max": 30,
-            "label": "קל"
-          },
-          {
-            "min": 31,
-            "max": 40,
-            "label": "בינוני"
-          },
-          {
-            "min": 41,
-            "max": 52,
-            "label": "חמור"
-          },
-          {
-            "min": 53,
             "max": 68,
-            "label": "חמור מאד"
+            "label": "חשד לפוביה חברתית (סף סינון)"
           }
         ]
       },
-      "alerts": [
-        {
-          "id": "high_social_anxiety",
-          "condition": "score.spin >= 21",
-          "message": "ציון SPIN ≥ 21 — ייתכן שהמטופל סובל מפוביה חברתית קלינית",
-          "severity": "warning"
-        }
-      ]
+      "alerts": []
     },
     {
       "id": "isi",
@@ -2152,12 +2036,12 @@
           {
             "min": 5,
             "max": 11,
-            "label": "כעס בטווח התקין"
+            "label": "מתחת לסף קליני"
           },
           {
             "min": 12,
             "max": 25,
-            "label": "כעס בעייתי — מומלץ הערכה נוספת"
+            "label": "מעל סף סינון לכעס בעייתי"
           }
         ]
       }
@@ -2326,33 +2210,16 @@
           {
             "min": 0,
             "max": 7,
-            "label": "תת-סף קליני"
+            "label": "מתחת לסף קליני"
           },
           {
             "min": 8,
-            "max": 12,
-            "label": "חרדה קלה"
-          },
-          {
-            "min": 13,
-            "max": 17,
-            "label": "חרדה בינונית"
-          },
-          {
-            "min": 18,
             "max": 20,
-            "label": "חרדה חמורה"
+            "label": "מעל סף סינון לחרדה"
           }
         ]
       },
-      "alerts": [
-        {
-          "id": "significant_anxiety",
-          "condition": "item.1 >= 2 || item.2 >= 2",
-          "message": "ניכרת חרדה בעצימות בינונית או יותר — מומלץ להעריך ולתכנן התערבות",
-          "severity": "warning"
-        }
-      ]
+      "alerts": []
     },
     {
       "id": "wsas",
@@ -2546,26 +2413,6 @@
       "scoring": {
         "method": "sum",
         "maxPerItem": 5
-      },
-      "interpretations": {
-        "target": "total",
-        "ranges": [
-          {
-            "min": 0,
-            "max": 12,
-            "label": "ברית טיפולית חלשה"
-          },
-          {
-            "min": 13,
-            "max": 22,
-            "label": "ברית טיפולית בינונית"
-          },
-          {
-            "min": 23,
-            "max": 30,
-            "label": "ברית טיפולית חזקה"
-          }
-        ]
       }
     },
     {

@@ -875,10 +875,10 @@ export function injectStyles() {
     .c-output .c-url-box {
       background: #2A3D52;
       border-color: #2A3D52;
-      color: #90BCD4;
+      color: #A8CFDF;
     }
     .c-output .c-url-box--empty {
-      color: rgba(144, 188, 212, 0.5);
+      color: rgba(168, 207, 223, 0.6);
     }
     .c-output .c-pid-input {
       background: #2A3D52;
@@ -886,7 +886,7 @@ export function injectStyles() {
       color: #C0D4E4;
     }
     .c-output .c-pid-input::placeholder {
-      color: rgba(144, 188, 212, 0.4);
+      color: rgba(168, 207, 223, 0.5);
     }
     .c-output .c-order-item {
       background: #2A3D52;
@@ -894,15 +894,15 @@ export function injectStyles() {
       color: #C0D4E4;
     }
     .c-output .c-section-label {
-      color: #6898B0;
+      color: #7AABBD;
     }
     .c-output .c-section-hint {
-      color: #5A8098;
+      color: #6898B0;
     }
     .c-output .c-btn--secondary {
       background: #2A3D52;
       border-color: #304860;
-      color: #90BCD4;
+      color: #A8CFDF;
     }
     .c-output .c-btn--secondary:not(:disabled):hover {
       border-color: #2BB3C0;
