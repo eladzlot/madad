@@ -155,6 +155,7 @@ copy "build-validator.mjs"             "scripts/build-validator.mjs"
 copy "standard.json"                   "public/configs/prod/standard.json"
 copy "intake.json"                     "public/configs/prod/intake.json"
 copy "trauma.json"                     "public/configs/prod/trauma.json"
+copy "child.json"                      "public/configs/prod/child.json"
 copy "e2e.json"                        "public/configs/test/e2e.json"
 copy "QuestionnaireSet.schema.test.js" "src/config/QuestionnaireSet.schema.test.js"
 

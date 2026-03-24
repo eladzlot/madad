@@ -16,6 +16,10 @@
       "name": "שאלונים לבדיקה",
       "url": "/configs/test/e2e.json",
       "dev": true
+    },
+    {
+      "name": "שאלוני ילדים",
+      "url": "/configs/prod/child.json"
     }
   ]
 }
