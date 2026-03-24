@@ -5,299 +5,177 @@
 The Composer is a clinician-facing tool that generates a **patient session URL** for the questionnaire app.
 
 It allows a clinician to:
+- Select questionnaires or pre-built batteries for a patient
+- Optionally add a patient identifier
+- Reorder selected items by drag-and-drop
+- Generate, copy, or share the patient-ready URL
 
-* select questionnaires for a patient
-* optionally add a patient identifier
-* generate a patient-ready URL
-* copy or share the URL
-
-The Composer **does not create or edit configuration files**.
-
-It only constructs a valid launch URL for the existing questionnaire runtime.
+The Composer **does not create or edit configuration files**. It only constructs a valid launch URL for the existing questionnaire runtime.
 
 ---
 
-# URL Model
+## URL Model
 
-The Composer generates URLs using the following parameters:
+The Composer generates URLs with the following parameters:
 
 `configs`
-: comma-separated list of config sources (slugs or absolute URLs). Only configs required to resolve the selected items are included.
+: Comma-separated list of relative config paths. Only configs required to resolve the selected items are included (own file + declared dependencies).
 
 `items`
-: comma-separated ordered list of questionnaire IDs and/or battery IDs. Order defines session order. Batteries are expanded by the runtime into their full sequences, including control-flow nodes.
+: Comma-separated ordered list of questionnaire or battery IDs. Order defines session order. Batteries are expanded by the runtime into their full sequences.
 
 `pid`
-: optional patient identifier
+: Optional patient identifier.
 
 Example:
-
-`https://app.example.com/?configs=configs/core.json,configs/trauma.json&items=intake_battery,phq9,pcl5&pid=ABC123`
+```
+https://app.example.com/?configs=configs/prod/standard.json,configs/prod/intake.json&items=phq9,gad7&pid=ABC123
+```
 
 Rules:
-
-* `items` order defines session order
-* each token in `items` resolves to either a battery (expanded) or a questionnaire
-* mixing batteries and questionnaires in `items` is supported
-* only configs required to resolve the selected `items` should be included
-* `pid` is optional
-* legacy parameters (`config`, `battery`, `qids`) are **not supported**
-
----
-
-# ID Namespace
-
-Questionnaire IDs and battery IDs share a single namespace. Within any single config file, a battery ID must not match any questionnaire ID. Across multiple config files, duplicate IDs are a hard error — the app will not load if two loaded configs define the same questionnaire or battery ID.
-
-The Composer is configured to load a fixed set of in-repository configs that are maintained to have unique IDs. Adding configs with conflicting IDs is a configuration error that must be resolved in the files themselves, not in the UI.
+- `items` order defines session order
+- Each token resolves to a battery (expanded) or questionnaire
+- Mixing batteries and questionnaires is supported
+- Only required configs are included (dependency auto-include, see below)
+- `pid` is optional
+- Config paths use **relative paths, no leading slash** so the patient app resolves them correctly at any base path
 
 ---
 
----
+## Config Discovery
 
-# Composer Behavior
+Configs are defined by a manifest at `public/composer/configs.json`.
 
-## Startup
-
-On load the Composer:
-
-1. loads a **config manifest** from `configs.json` (relative to the Composer page — resolves correctly at any base path)
-2. loads all configs listed in the manifest in parallel, resolving their URLs against the app root
-3. builds a flat list of all questionnaires and batteries from those configs
-
-If one config fails to load:
-
-* the Composer continues with the remaining configs
-* a warning banner is shown naming the failed source
-
----
-
-# Config Discovery
-
-Configs are defined by a manifest at `public/configs.json` (relative to the app root).
-
-Config URLs in the manifest use **root-relative paths** (`/configs/...`). The Composer resolves these against the app root URL at runtime, so they work at any base path deployment.
-
-Each manifest entry may include:
+Each manifest entry:
 
 | Field | Type | Description |
 |---|---|---|
-| `name` | string | Display name (internal, not shown in UI) |
-| `url` | string | Root-relative path to the config JSON |
-| `hidden` | boolean | If `true`, config is loaded (IDs registered, dependencies resolved) but its questionnaires and batteries are **not shown** in the Composer UI. Default: `false`. |
+| `name` | string | Display name (internal) |
+| `url` | string | Root-relative path to config JSON |
+| `hidden` | boolean | Loaded but not shown in UI. Default: `false` |
+| `dev` | boolean | Only loaded when `import.meta.env.DEV === true`. Skipped in production builds. Default: `false` |
 
-Example manifest:
-
+Example:
 ```json
 {
   "configs": [
-    {
-      "name": "ספריית שאלונים סטנדרטית",
-      "url": "/configs/prod/standard.json"
-    },
-    {
-      "name": "שאלוני הערכה ראשונית",
-      "url": "/configs/prod/intake.json"
-    },
-    {
-      "name": "שאלונים לבדיקה",
-      "url": "/configs/test/e2e.json",
-      "hidden": true
-    }
+    { "name": "ספריית שאלונים סטנדרטית", "url": "/configs/prod/standard.json" },
+    { "name": "שאלוני טראומה",             "url": "/configs/prod/trauma.json" },
+    { "name": "שאלוני הערכה ראשונית",       "url": "/configs/prod/intake.json" },
+    { "name": "שאלונים לבדיקה",            "url": "/configs/test/e2e.json", "dev": true }
   ]
 }
 ```
 
-`hidden: true` is used for test fixtures and any config not intended for clinical selection. The config is still fully loaded so that batteries in visible configs can reference questionnaires from hidden configs, and dependency resolution works correctly.
+`dev: true` is used for E2E test fixtures. These configs are **completely absent** from production builds. In dev and Playwright they load normally, allowing E2E tests to select items by ID.
 
-The Composer loads **all configs listed in the manifest**, regardless of `hidden`.
-
-Generated patient URLs use **relative paths** (no leading slash) in the `configs=` parameter — e.g. `configs=configs/prod/standard.json` — so the patient app can fetch them relative to its own page URL at any base path.
+`hidden: true` loads the config (registering IDs, enabling dependency resolution) but hides its items from the picker UI.
 
 ---
 
-# UI Structure (MVP)
+## UI Structure
 
-The Composer page contains three sections.
+### Layout
 
-## 1. URL Preview
+Two-panel layout:
+- **Left/main panel** — search input + scrollable questionnaire/battery picker
+- **Right/sidebar** — output panel (URL, order list, patient ID, action buttons)
 
-A read-only field showing the generated URL.
+The sidebar has a dark background (`#3A5068`).
 
-Buttons:
+### Search
 
-* **העתק קישור** — copies the URL to clipboard
-* **פתח לבדיקה ↗** — opens the URL in a new browser tab for immediate testing
-* **שתף** — Web Share API (shown only if available)
-
-Behavior:
-
-* URL is visible immediately
-* All action buttons are disabled when no questionnaires are selected
-
----
-
-## 2. Patient Identifier
-
-Optional text field.
-
-Rules:
-
-* identifier is optional
-* spaces or invalid characters produce a warning
-* invalid identifier does **not block URL generation**
-
-Recommended characters:
-
-* letters
-* numbers
-* hyphen
-* underscore
-
----
-
-## 3. Questionnaire / Battery Selection
-
-Questionnaires and batteries appear in a **flat checkbox list**, grouped by type.
-
-Each questionnaire entry shows:
-- The questionnaire name (title)
-- The description, if defined in the config
-- Keyword tags, if defined in the config
-
-Each battery entry shows the battery name, description (if any), and a note that it is a preset.
-
-### Search and filtering
-
-A search input filters the visible list in real time. The search matches against:
-- Questionnaire or battery title
+Real-time filtering as the user types. Matches against:
+- Title
 - Description
 - Keywords
 
-Matching is case-insensitive. The full list is shown when the search input is empty. Items with no description or keywords are still shown — they just have fewer match surfaces.
+Case-insensitive. Items with no match surface (no description or keywords) are still shown when the query is empty.
 
-### Order
+### Picker
 
-Session order follows **selection order**, not list order. A small read-only list shows the current launch order.
+Flat checkbox list, grouped into two sections: **סוללות** (batteries) and **שאלונים** (questionnaires). Hidden items (`hidden: true`) are excluded.
+
+Each entry shows: title, description (if any), keyword tags (if any).
+
+### Order list
+
+A drag-reorderable list of currently selected items, shown in the sidebar. The list reflects **selection order** — the order items will run in the patient session.
+
+**Drag-to-reorder**: each item has a drag handle. Users can drag items to reorder them. The URL updates live as order changes.
+
+**Keyboard navigation**: `ArrowUp` / `ArrowDown` move the focused item; `Enter` or `Space` to pick up/drop.
+
+### Patient identifier field
+
+Optional text input in the sidebar. The identifier appears in the PDF report and as `pid=` in the URL. No validation blocks URL generation.
+
+### URL box
+
+Read-only display of the generated URL. Shows placeholder text when nothing is selected.
+
+### Action buttons
+
+| Button | Condition | Behaviour |
+|---|---|---|
+| **העתק קישור** | Always visible | Copies URL to clipboard; falls back to manual selection if clipboard API unavailable |
+| **שתף** | HTTPS only | Opens native Web Share sheet |
+| **פתח לבדיקה** | Always visible | Opens URL in a new tab |
+| **איפוס** | Always visible | Clears selection, PID, and query |
+
+**Mobile bar**: on small screens, a sticky bottom bar shows copy + share buttons for one-handed access.
+
+### Dark mode
+
+The full Composer UI responds to `@media (prefers-color-scheme: dark)` with an adjusted palette.
 
 ---
 
-# URL Generation
+## URL Generation
 
-The URL updates automatically whenever:
+The URL rebuilds automatically on every:
+- Checkbox toggle
+- Order change (drag or keyboard)
+- PID input change
 
-* questionnaires are selected
-* the patient identifier changes
+### Dependency auto-include
 
-URL generation is disabled if **no questionnaires are selected**.
+When a config declares `"dependencies": [...]`, the Composer automatically adds those paths to `configs=` whenever any item from that config is selected.
 
-## Dependency auto-include
-
-When a config file declares `"dependencies": [...]`, the Composer automatically adds those dependency sources to the `configs=` parameter whenever any battery or questionnaire from that config is selected. This ensures the patient URL is always self-contained and loadable without manual intervention.
-
-Example: selecting `clinical_intake` (from `intake.json`) automatically includes `configs/prod/standard.json` in the URL, because `intake.json` declares `"dependencies": ["configs/prod/standard.json"]`.
+Example: selecting `clinical_intake` (from `intake.json`) adds `configs/prod/standard.json` and `configs/prod/trauma.json` to the URL automatically, because `intake.json` declares them as dependencies.
 
 ---
 
-# Reset Behavior
+## Startup Behaviour
 
-A **Reset** button clears:
-
-* patient identifier
-* questionnaire selections
-
-Reset happens immediately with no confirmation.
+1. Fetch `configs.json` manifest
+2. Filter out `dev: true` entries when not in dev mode
+3. Load all remaining configs in parallel, resolving URLs against app root
+4. On partial failure: continue with successful configs, show a warning naming the failed URL
+5. Render picker with all loaded items
 
 ---
 
-# Warning Banner
+## Warning Banner
 
-Warnings appear in a banner at the top of the Composer.
-
-Examples:
-
-* config failed to load (names the failed URL)
-* invalid patient identifier characters
+Shown at the top of the Composer. Examples:
+- Config failed to load (names the URL and surfaces validation detail if available)
+- Invalid patient identifier characters
 
 Warnings do **not block link generation**.
 
 ---
 
-# Runtime Requirements
+## Reset
 
-The questionnaire runtime supports the Composer URL model.
-
-The runtime:
-
-* parses `configs`, `items`, and `pid` from the URL
-* loads all listed config sources in parallel via `loadConfig()`
-* resolves each `items` token as a battery (expanding its full sequence) or questionnaire via `resolveItems()`
-* launches questionnaires in the order defined by the resolved sequence
-* shows a pre-welcome error screen if `items` is absent, empty, or contains an unresolvable token
+Clears selection, PID, and search query immediately. No confirmation.
 
 ---
 
-# MVP Scope
+## Runtime Requirements
 
-The MVP includes:
-
-* manifest-driven config discovery
-* questionnaire and battery selection (flat list with descriptions and keyword tags)
-* real-time search/filter by title, description, and keywords
-* selection-order session construction
-* conflict detection and warning banner
-* patient identifier field
-* live URL preview using the `items` parameter
-* copy/share link
-* reset button
-
-The MVP **does not include**:
-
-* config selection UI (adding/removing config sources from the active set)
-* manual config URL entry
-* editing session order after selection
-* removing items from the selected list
-
----
-
-# Post-MVP Improvements
-
-Planned improvements include:
-
-## Config Management
-
-* enable/disable configs
-* add external config URLs
-
-## Questionnaire Discovery
-
-* grouped questionnaire lists (by clinical domain)
-* fuzzy search
-
-## Session Editing
-
-* reorder questionnaires
-* remove items from the selected list
-* predefined batteries (shortcuts for common sets)
-
-## Session Metadata
-
-* optional session title shown to the patient
-
-## Advanced Composer Features
-
-* config conflict resolution tools
-* improved validation diagnostics
-
----
-
-# Acceptance Criteria
-
-The Composer MVP is complete when a clinician can:
-
-1. open the Composer
-2. select questionnaires
-3. optionally add a patient identifier
-4. obtain a valid session URL
-5. copy or share the link
-6. successfully launch the patient session in the main app
+The patient app:
+- Parses `configs`, `items`, `pid` from the URL
+- Loads all configs in parallel via `loadConfig()`
+- Resolves each `items` token as battery or questionnaire via `resolveItems()`
+- Shows a pre-welcome error screen if `items` is absent, empty, or unresolvable

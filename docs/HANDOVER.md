@@ -286,7 +286,7 @@ The following security controls are in place. Do not remove them without underst
 - Favicon: SVG `מ` on teal, all index.html files updated
 - Hebrew page titles on all pages
 - MIT license + CONTENT_LICENSE.md instrument notice
-- 916 unit tests across 30 files; E2E passing on Chromium
+- 932 unit tests across 30 files; E2E passing on Chromium
 - Alert severity rendering: `critical` (red), `warning` (amber), `info` (blue); all alerts tagged
 - Interpretation labels audited and standardised — severity vs screening threshold language
 - WSAS top band label fixed ("פסיכופתולוגיה" → "פגיעה תפקודית חמורה")
@@ -294,6 +294,13 @@ The following security controls are in place. Do not remove them without underst
 - Documentation: README rewritten, HANDOVER updated, INSTRUMENTS/CONTRIBUTING consolidated, CHANGELOG created
 - Test coverage: 90%+ statements/lines, 84%+ branches — all thresholds passing
 - Coverage config: validate-schema.js, composer.js, composer-render.js excluded (generated/DOM entry files)
+- Scroll fix: `overflow: hidden` removed from `.content-inner`; `body` and `app-shell` host use fixed height (`block-size: 100dvh` / `block-size: 100%`) so `.content` scroll container is properly constrained
+- `totalMethod: sum_of_items` added to scoring engine and schema — allows subscale mean + raw item sum total (used by PCL-5)
+- Mean subscale values rounded to 1 decimal in PDF (integers remain whole)
+- Questionnaire title naming convention: Hebrew name + initials in parentheses e.g. `שאלון דיכאון (PHQ-9)`. Convention only, not enforced by schema.
+- Validator cross-file battery reference check: `checkCrossFileBatteryRefs()` in `config-validation.js` — catches undeclared dependencies at `npm run validate:configs` time
+- `intake.json` dependency fix: added `standard.json` to dependencies (v1.2.2)
+- Composer sidebar contrast improved: section labels, hints, URL box, placeholder nudged lighter
 
 ## 8. Next steps
 
@@ -309,8 +316,8 @@ Tool is ready to ship. Priority actions:
 - Post in Israeli therapist Facebook groups (genuine MBC content, not ads)
 - Short screen-recording walkthrough (60-90 sec): composer → patient fills → PDF
 
-### Step D — Documentation: update remaining specs
-Still to update: COMPOSER_SPEC.md (drag-reorder, keyboard nav, mobile bar, dev:true).
+### ~~Step D — Documentation: update remaining specs~~ ✓ Complete
+COMPOSER_SPEC.md rewritten. All specs current.
 
 ---
 
@@ -325,7 +332,7 @@ Read in this order:
 ```bash
 npm ci
 npm run dev              # localhost:5173 (base /)
-npm test                 # 916 unit tests
+npm test                 # 932 unit tests
 npm run validate:configs
 npm run build && npm run preview  # localhost:4173/madad/ (base /madad/)
 ```
