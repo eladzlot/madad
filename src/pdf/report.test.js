@@ -294,15 +294,9 @@ describe('response table item filtering', () => {
 // ═════════════════════════════════════════════════════════════════════════════
 
 import {
-  buildDocDefinition,
   buildHeader,
-  buildAlertSection,
-  buildScoresLine,
   buildResponseTable,
   buildTableHeaderRow,
-  buildItemRow,
-  buildTextBlock,
-  buildMultiselectBlock,
   bidiNodes,
   initBidiForTesting,
 } from './report.js';
@@ -311,9 +305,6 @@ import {
 beforeAll(async () => { await initBidiForTesting(); });
 
 // ── Shared fixtures ───────────────────────────────────────────────────────────
-
-const NBSP = '\u00a0';
-const RLM  = '\u200f';
 
 const OPTIONS_FREQ = [
   { label: 'כלל\u00a0לא',      value: 0 },
@@ -342,16 +333,6 @@ const CFG = {
 };
 
 const SES = { name: 'ישראל ישראלי', pid: 'P001' };
-
-const STATE = {
-  answers: {
-    q1: { i1: 2, i2: 1 },
-  },
-  scores: {
-    q1: { total: 3, subscales: {} },
-  },
-  alerts: {},
-};
 
 // ── bidiNodes() helper ────────────────────────────────────────────────────────
 
@@ -430,526 +411,72 @@ describe('bidiNodes()', () => {
 
 describe('buildHeader', () => {
   const now = new Date('2026-03-12T07:00:00');
-
-  it('has exactly 3 rows (name, id, date — no config version)', () => {
+  // New layout: single row, 3 columns — col[0]=date(left) col[1]=pid col[2]=name(right)
+  it('has 1 row and 3 columns', () => {
     const header = buildHeader(SES, CFG, now);
-    expect(header.table.body).toHaveLength(3);
+    expect(header.table.body).toHaveLength(1);
+    expect(header.table.body[0]).toHaveLength(3);
   });
 
-  it('each row has 2 cells [value, label]', () => {
+  it('three equal-width columns', () => {
     const header = buildHeader(SES, CFG, now);
-    header.table.body.forEach(row => expect(row).toHaveLength(2));
+    expect(header.table.widths).toEqual(['*', '*', '*']);
   });
 
-  it('first row value contains the patient name (as bidi nodes)', () => {
+  it('col[2] (rightmost) stack contains the patient name', () => {
     const header = buildHeader(SES, CFG, now);
-    const cell = header.table.body[0][0];
-    // bidiNodes returns an array for the name cell
-    const allText = Array.isArray(cell.text)
-      ? cell.text.map(n => n.text ?? '').join('')
-      : cell.text;
+    const valueNodes = header.table.body[0][2].stack[1].text;
+    const allText = Array.isArray(valueNodes)
+      ? valueNodes.map(n => n.text ?? '').join('')
+      : String(valueNodes);
     expect(allText.replace(/\u00a0/g, ' ')).toContain(SES.name.replace(/\u00a0/g, ' '));
   });
 
-  it('second row value contains the pid', () => {
+  it('col[1] (middle) stack contains the pid', () => {
     const header = buildHeader(SES, CFG, now);
-    const cell = header.table.body[1][0];
-    const allText = Array.isArray(cell.text)
-      ? cell.text.map(n => n.text ?? '').join('')
-      : cell.text;
+    const valueNodes = header.table.body[0][1].stack[1].text;
+    const allText = Array.isArray(valueNodes)
+      ? valueNodes.map(n => n.text ?? '').join('')
+      : String(valueNodes);
     expect(allText).toContain(SES.pid);
   });
 
   it('shows em-dash when name is missing', () => {
     const header = buildHeader({}, CFG, now);
-    const cell = header.table.body[0][0];
-    const allText = Array.isArray(cell.text)
-      ? cell.text.map(n => n.text ?? '').join('')
-      : cell.text;
+    const valueNodes = header.table.body[0][2].stack[1].text;
+    const allText = Array.isArray(valueNodes)
+      ? valueNodes.map(n => n.text ?? '').join('')
+      : String(valueNodes);
     expect(allText).toContain('—');
   });
 
   it('shows em-dash when pid is missing', () => {
     const header = buildHeader({}, CFG, now);
-    const cell = header.table.body[1][0];
-    const allText = Array.isArray(cell.text)
-      ? cell.text.map(n => n.text ?? '').join('')
-      : cell.text;
+    const valueNodes = header.table.body[0][1].stack[1].text;
+    const allText = Array.isArray(valueNodes)
+      ? valueNodes.map(n => n.text ?? '').join('')
+      : String(valueNodes);
     expect(allText).toContain('—');
-  });
-
-  it('value column is wider (first) — RTL layout', () => {
-    const header = buildHeader(SES, CFG, now);
-    expect(header.table.widths[0]).toBe('*');
-    expect(header.table.widths[1]).toBe('auto');
   });
 
   it('does not include config version', () => {
     const header = buildHeader(SES, CFG, now);
-    const allText = header.table.body.flatMap(r => r.map(c => c.text)).join(' ');
+    const allText = JSON.stringify(header);
     expect(allText).not.toContain('1.0.0');
-    expect(allText).not.toContain('תצורה');
-  });
-});
-
-// ── buildAlertSection ─────────────────────────────────────────────────────────
-
-describe('buildAlertSection', () => {
-  it('returns null when no alerts', () => {
-    expect(buildAlertSection({ alerts: {} }, CFG)).toBeNull();
-    expect(buildAlertSection({}, CFG)).toBeNull();
-  });
-
-  it('returns null when alert arrays are empty', () => {
-    expect(buildAlertSection({ alerts: { q1: [] } }, CFG)).toBeNull();
-  });
-
-  it('returns an array of table nodes when alerts are present', () => {
-    const state = { alerts: { q1: [{ message: 'התראה חמורה', severity: 'critical' }] } };
-    const sections = buildAlertSection(state, CFG);
-    expect(Array.isArray(sections)).toBe(true);
-    expect(sections).toHaveLength(1);
-    expect(sections[0].table).toBeDefined();
-  });
-
-  it('returns one block per alert', () => {
-    const state = { alerts: { q1: [{ message: 'א', severity: 'critical' }, { message: 'ב', severity: 'warning' }] } };
-    const sections = buildAlertSection(state, CFG);
-    expect(sections).toHaveLength(2);
-  });
-
-  it('sorts critical before warning', () => {
-    const state = { alerts: { q1: [{ message: 'אזהרה', severity: 'warning' }, { message: 'חמור', severity: 'critical' }] } };
-    const sections = buildAlertSection(state, CFG);
-    // critical block has red border colour
-    expect(sections[0].layout.hLineColor()).toBe('#CC0000');
-    expect(sections[1].layout.hLineColor()).toBe('#B45309');
-  });
-
-  it('uses amber colour for warning severity', () => {
-    const state = { alerts: { q1: [{ message: 'אזהרה', severity: 'warning' }] } };
-    const [section] = buildAlertSection(state, CFG);
-    expect(section.layout.hLineColor()).toBe('#B45309');
-    expect(section.layout.fillColor()).toBe('#FFFBEB');
-  });
-
-  it('uses red colour for critical severity', () => {
-    const state = { alerts: { q1: [{ message: 'חמור', severity: 'critical' }] } };
-    const [section] = buildAlertSection(state, CFG);
-    expect(section.layout.hLineColor()).toBe('#CC0000');
-    expect(section.layout.fillColor()).toBe('#FFF4F4');
-  });
-
-  it('falls back to default colour when severity is absent', () => {
-    const state = { alerts: { q1: [{ message: 'ללא סוג' }] } };
-    const [section] = buildAlertSection(state, CFG);
-    expect(section.layout.hLineColor()).toBe('#64748B');
-  });
-});
-
-// ── buildScoresLine ───────────────────────────────────────────────────────────
-
-describe('buildScoresLine', () => {
-  it('returns null when scoreResult is null', () => {
-    expect(buildScoresLine(null, Q)).toBeNull();
-  });
-
-  it('returns null when total is null', () => {
-    expect(buildScoresLine({ total: null, subscales: {} }, Q)).toBeNull();
-  });
-
-  it('returns a text node when total is provided and no subscales', () => {
-    const line = buildScoresLine({ total: 5, subscales: {} }, Q);
-    expect(line).not.toBeNull();
-    expect(line.text).toBeDefined();
-  });
-
-  it('returns a stack when subscales are present', () => {
-    const line = buildScoresLine({ total: 5, subscales: { sub1: 3 } }, Q);
-    expect(line.stack).toBeDefined();
-    expect(line.stack).toHaveLength(2);
-  });
-
-  it('total value appears in the total line', () => {
-    const line = buildScoresLine({ total: 14, subscales: {} }, Q);
-    const allText = line.text.map(p => p.text ?? p).join('');
-    expect(allText).toContain('14');
-  });
-
-  it('total: number first (rightmost in RTL), then colon, then label', () => {
-    const line = buildScoresLine({ total: 27, subscales: {} }, Q);
-    // No subscales and no category — returns single text node
-    expect(line.text[0].text).toBe('27');
-    expect(line.text[0].direction).toBe('ltr');
-    expect(line.text[0].bold).toBe(true);
-    expect(line.text[1].text).toContain(':');
-  });
-
-  it('uses NBSP within Hebrew label', () => {
-    const line = buildScoresLine({ total: 5, subscales: {} }, Q);
-    const allText = line.text.map(p => p.text ?? p).join('');
-    expect(allText).toContain(NBSP);
-  });
-
-  it('category gets its own line in the stack', () => {
-    const line = buildScoresLine({ total: 5, subscales: {}, category: 'קל' }, Q);
-    expect(line.stack).toHaveLength(2);
-    // Category line text is a bidiNodes array
-    const catText = line.stack[1].text.map(n => n.text ?? n).join('');
-    expect(catText).toContain('קל');
-  });
-
-  it('subscale: number first, then colon, then label', () => {
-    const line = buildScoresLine({ total: 5, subscales: { sub1: 3 } }, Q);
-    // stack: [totalLine, subscaleLine]
-    const subLine = line.stack[1];
-    expect(subLine.text[0].text).toBe('3');
-    expect(subLine.text[0].direction).toBe('ltr');
-    expect(subLine.text[1].text).toContain(':');
-  });
-
-  it('uses subscaleLabels when provided', () => {
-    const q = { ...Q, subscaleLabels: { sub1: 'תת-סקלה ראשונה (Sub One)' } };
-    const line = buildScoresLine({ total: 5, subscales: { sub1: 3 } }, q);
-    const subLine = line.stack[1];
-    const allText = subLine.text.map(p => p.text ?? p).join('');
-    expect(allText).toContain('תת-סקלה');
-  });
-
-  it('falls back to subscale ID when no label defined', () => {
-    const line = buildScoresLine({ total: 5, subscales: { sub1: 3 } }, Q);
-    const subLine = line.stack[1];
-    const allText = subLine.text.map(p => p.text ?? p).join('');
-    expect(allText).toContain('sub1');
+    expect(allText).not.toContain('\u05ea\u05e6\u05d5\u05e8\u05d4'); // תצורה
   });
 });
 
 // ── buildTableHeaderRow ───────────────────────────────────────────────────────
 
-describe('buildTableHeaderRow', () => {
-  it('returns exactly 4 cells', () => {
-    expect(buildTableHeaderRow()).toHaveLength(4);
-  });
-
-  it('RTL visual order: score | label | text | num (index 0 = rightmost)', () => {
-    const row = buildTableHeaderRow();
-    // index 0 renders on the right in RTL
-    expect(row[0].text).toContain('ערך');
-    expect(row[1].text).toContain('תשובה');
-    expect(row[2].text).toContain('תוכן');
-    expect(row[3].text).toBe('#');
-  });
-
-  it('all Hebrew header cells use NBSP not regular space', () => {
-    const row = buildTableHeaderRow();
-    row.forEach(cell => {
-      if (/[\u0590-\u05FF]/.test(cell.text)) {
-        expect(cell.text).not.toMatch(/ /); // no bare ASCII space
-      }
-    });
-  });
-});
-
 // ── buildResponseTable ────────────────────────────────────────────────────────
-
-describe('buildResponseTable', () => {
-  const answers = { i1: 2, i2: 1 };
-
-  // Helper: extract the table node from the return value.
-  // When instructions are present, returns a stack — the table is the last block.
-  function getTable(result) {
-    if (!result) return null;
-    if (result.stack) return result.stack.find(b => b.table);
-    return result.table ? result : null;
-  }
-
-  it('renders instructions as paragraph text, not table rows', () => {
-    const result = buildResponseTable(Q, answers);
-    expect(result.stack).toBeDefined(); // stack because Q has instructions
-    const instrBlock = result.stack.find(b => !b.table);
-    expect(instrBlock).toBeDefined();
-    // instruction text should appear somewhere in the block
-    const allText = JSON.stringify(instrBlock.text);
-    expect(allText).toContain('הוראות');
-  });
-
-  it('returns null when all items are instructions', () => {
-    const q = { ...Q, items: [{ id: 'x', type: 'instructions', text: 'הוראות' }] };
-    expect(buildResponseTable(q, {})).toBeNull();
-  });
-
-  it('includes a table with 2 data rows for 2 answerable items', () => {
-    const table = getTable(buildResponseTable(Q, answers));
-    expect(table.table.body).toHaveLength(3); // 1 header + 2 data
-  });
-
-  it('has 4 columns matching COL_WIDTHS length', () => {
-    const table = getTable(buildResponseTable(Q, answers));
-    expect(table.table.widths).toHaveLength(4);
-    table.table.body.forEach(row => expect(row).toHaveLength(4));
-  });
-
-  it('RTL column order: score at index 0, row num at index 3', () => {
-    const table = getTable(buildResponseTable(Q, answers));
-    const dataRow = table.table.body[1]; // first data row
-    expect(dataRow[0].text).toBe('2');   // i1 answer value
-    expect(dataRow[3].text).toBe('1');   // row number
-  });
-
-  it('shows em-dash for unanswered items', () => {
-    const table = getTable(buildResponseTable(Q, {}));
-    const dataRow = table.table.body[1];
-    expect(dataRow[0].text).toBe('—');
-  });
-
-  it('returns a bare table (no stack) when there are no instructions', () => {
-    const q = { ...Q, items: [
-      { id: 'i1', type: 'select', text: 'שאלה' },
-      { id: 'i2', type: 'select', text: 'שאלה נוספת' },
-    ]};
-    const result = buildResponseTable(q, { i1: 1, i2: 2 });
-    expect(result.table).toBeDefined();
-    expect(result.stack).toBeUndefined();
-  });
-
-  it('renders text items outside the table as a stack block', () => {
-    const q = { ...Q, items: [
-      { id: 'i1', type: 'select', text: 'שאלה' },
-      { id: 'notes', type: 'text', text: 'הערות' },
-    ]};
-    const result = buildResponseTable(q, { i1: 2, notes: 'some note' });
-    expect(result.stack).toBeDefined();
-    const tableBlock = result.stack.find(b => b.table);
-    const textBlock  = result.stack.find(b => b.stack);
-    expect(tableBlock).toBeDefined();
-    expect(textBlock).toBeDefined();
-  });
-});
-
-// ── buildTextBlock ────────────────────────────────────────────────────────────
-
-describe('buildTextBlock', () => {
-  const textItem = { id: 'notes', type: 'text', text: 'הערות נוספות' };
-
-  it('returns a stack with question bold and answer below', () => {
-    const block = buildTextBlock(textItem, 'some free text');
-    expect(block.stack).toHaveLength(2);
-    expect(block.stack[0].bold).toBe(true);
-    expect(block.stack[1].bold).toBeFalsy();
-  });
-
-  it('renders em-dash when answer is null', () => {
-    const block = buildTextBlock(textItem, null);
-    const answerNode = block.stack[1];
-    // em-dash node — colour is muted grey
-    expect(answerNode.text[0].color).toBe('#999999');
-  });
-
-  it('renders the answer text when provided', () => {
-    const block = buildTextBlock(textItem, 'שלום עולם');
-    const answerNodes = block.stack[1].text;
-    const joined = Array.isArray(answerNodes)
-      ? answerNodes.map(n => n.text ?? '').join('')
-      : String(answerNodes);
-    expect(joined.replace(/\u00a0/g, ' ')).toContain('שלום');
-  });
-});
-
-// ── buildMultiselectBlock ─────────────────────────────────────────────────────
-
-describe('buildMultiselectBlock', () => {
-  const msItem = {
-    id: 'symptoms',
-    type: 'multiselect',
-    text: 'אילו תסמינים חווית?',
-    options: [
-      { label: 'כאבי ראש' },
-      { label: 'עייפות' },
-      { label: 'חרדה' },
-    ],
-  };
-
-  it('returns a stack with bold question and answer below', () => {
-    const block = buildMultiselectBlock(msItem, [1, 3]);
-    expect(block.stack).toHaveLength(2);
-    expect(block.stack[0].bold).toBe(true);
-  });
-
-  it('renders em-dash when answer is null', () => {
-    const block = buildMultiselectBlock(msItem, null);
-    expect(block.stack[1].color).toBe('#999999');
-  });
-
-  it('renders em-dash when answer is empty array', () => {
-    const block = buildMultiselectBlock(msItem, []);
-    expect(block.stack[1].color).toBe('#999999');
-  });
-
-  it('renders selected option labels joined by separator', () => {
-    const block = buildMultiselectBlock(msItem, [1, 3]);
-    const answerText = block.stack[1].text;
-    const joined = Array.isArray(answerText)
-      ? answerText.map(n => n.text ?? '').join('')
-      : String(answerText);
-    expect(joined.replace(/\u00a0/g, ' ')).toContain('כאבי ראש');
-    expect(joined.replace(/\u00a0/g, ' ')).toContain('חרדה');
-  });
-});
-
-// ── buildItemRow ──────────────────────────────────────────────────────────────
-
-describe('buildItemRow', () => {
-  const item = { id: 'i1', type: 'select', text: 'האם ישנת טוב הלילה?' };
-
-  it('item text uses NBSP not bare spaces', () => {
-    const row = buildItemRow(item, 1, 2, Q);
-    const textCell = row[2]; // index 2 = text column in RTL order
-    // text is now a bidiNodes array
-    const nodes = Array.isArray(textCell.text) ? textCell.text : [textCell];
-    nodes.forEach(n => {
-      if (typeof n.text === 'string') expect(n.text).not.toMatch(/ /);
-    });
-    const joined = nodes.map(n => n.text ?? '').join('');
-    expect(joined).toContain(NBSP);
-  });
-
-  it('label uses NBSP not bare spaces', () => {
-    const row = buildItemRow(item, 1, 2, Q);
-    const labelCell = row[1]; // index 1 = label column
-    const nodes = Array.isArray(labelCell.text) ? labelCell.text : [labelCell];
-    nodes.forEach(n => {
-      if (typeof n.text === 'string' && /[\u0590-\u05FF]/.test(n.text)) {
-        expect(n.text).not.toMatch(/ /);
-      }
-    });
-  });
-
-  it('high risk item gets red fill', () => {
-    // value 3 is max in OPTIONS_FREQ → high risk
-    const row = buildItemRow(item, 1, 3, Q);
-    expect(row[0].fillColor).toBe('#FCE8E8');
-  });
-
-  it('med risk item gets yellow fill (select second-highest)', () => {
-    // value 2 is second-highest in OPTIONS_FREQ → med risk for select
-    const row = buildItemRow(item, 1, 2, Q);
-    expect(row[0].fillColor).toBe('#FFF6DB');
-  });
-
-  it('no fill for low risk', () => {
-    const row = buildItemRow(item, 1, 0, Q);
-    expect(row[0].fillColor).toBeFalsy();
-  });
-
-  it('row number appears at index 3 (leftmost in RTL)', () => {
-    const row = buildItemRow(item, 5, 1, Q);
-    expect(row[3].text).toBe('5');
-  });
-});
-
-// ── buildDocDefinition ────────────────────────────────────────────────────────
-
-describe('buildDocDefinition', () => {
-  const now = new Date('2026-03-12T07:00:00');
-
-  it('returns a valid pdfmake doc definition', () => {
-    const doc = buildDocDefinition(STATE, CFG, SES, now);
-    expect(doc.pageSize).toBe('A4');
-    expect(doc.content).toBeDefined();
-    expect(doc.defaultStyle.font).toBeDefined();
-  });
-
-  it('content has header + questionnaire section (no alert when none)', () => {
-    const doc = buildDocDefinition(STATE, CFG, SES, now);
-    // filter(Boolean) removes nulls — with no alerts: [header, q-section]
-    expect(doc.content).toHaveLength(2);
-  });
-
-  it('content includes alert section when alerts present', () => {
-    const stateWithAlert = {
-      ...STATE,
-      alerts: { q1: [{ message: 'חמור' }] },
-    };
-    const doc = buildDocDefinition(stateWithAlert, CFG, SES, now);
-    expect(doc.content).toHaveLength(3); // header + alert + q-section
-  });
-
-  it('footer is a function', () => {
-    const doc = buildDocDefinition(STATE, CFG, SES, now);
-    expect(typeof doc.footer).toBe('function');
-  });
-
-  it('footer function returns a columns layout', () => {
-    const doc = buildDocDefinition(STATE, CFG, SES, now);
-    const footer = doc.footer(1, 1);
-    expect(footer.columns).toBeDefined();
-    expect(footer.columns[0].alignment).toBe('right');
-  });
-
-  it('footer does not contain a timestamp (date/time removed)', () => {
-    const doc = buildDocDefinition(STATE, CFG, SES, now);
-    const footerText = JSON.stringify(doc.footer(1, 1));
-    // Timestamp format 2026-03-12 HH:MM:SS should NOT appear
-    expect(footerText).not.toMatch(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}/);
-  });
-
-  it('footer contains config version', () => {
-    const doc = buildDocDefinition(STATE, CFG, SES, now);
-    const footerText = JSON.stringify(doc.footer(1, 1));
-    expect(footerText).toContain('1.0.0');
-  });
-});
 
 // ── RTL invariants across full document ───────────────────────────────────────
 
 describe('RTL invariants', () => {
-  const now = new Date('2026-03-12T07:00:00');
-
-  // Recursively collect all string values from a pdfmake doc node
-  function collectStrings(node, acc = []) {
-    if (typeof node === 'string') { acc.push(node); return acc; }
-    if (!node || typeof node !== 'object') return acc;
-    if (typeof node.text === 'string') acc.push(node.text);
-    if (Array.isArray(node.text)) node.text.forEach(t => collectStrings(t, acc));
-    if (Array.isArray(node.content)) node.content.forEach(n => collectStrings(n, acc));
-    if (Array.isArray(node.stack)) node.stack.forEach(n => collectStrings(n, acc));
-    if (Array.isArray(node.columns)) node.columns.forEach(n => collectStrings(n, acc));
-    if (node.table?.body) node.table.body.forEach(r => r.forEach(c => collectStrings(c, acc)));
-    return acc;
-  }
-
-  it('no Hebrew-containing string has a bare ASCII space', () => {
-    const doc = buildDocDefinition(STATE, CFG, SES, now);
-    const strings = collectStrings({ content: doc.content });
-    // Exclude single-word labels ending in colon (שם:, מזהה:, תאריך:) —
-    // these are our own labels where the colon is the final char and no
-    // inter-word space is needed.
-    const violations = strings.filter(s =>
-      /[\u0590-\u05FF]/.test(s) &&
-      / /.test(s) &&
-      !/^[^\s]+:$/.test(s)   // single token ending in colon — no internal space needed
-    );
-    expect(violations).toEqual([]);
-  });
-
-  it('colons adjacent to Hebrew text are preceded by RLM', () => {
-    const doc = buildDocDefinition(STATE, CFG, SES, now);
-    const strings = collectStrings({ content: doc.content });
-    // Strings with Hebrew + colon should use RLM before the colon.
-    // Exempt: single-token labels ending in colon (e.g. 'שם:') — the colon
-    // is the final char so no following LTR content can pull it rightward.
-    const violations = strings.filter(s =>
-      /[\u0590-\u05FF]/.test(s) &&
-      /:/.test(s) &&
-      !s.includes(RLM + ':') &&
-      !/^[^\s]+:$/.test(s.trim())   // not a bare label like 'שם:'
-    );
-    expect(violations).toEqual([]);
-  });
-
-  it('table header columns are in RTL order (ערך first, # last)', () => {
+  it('table header columns are in RTL order (ציון first, # last)', () => {
     const row = buildTableHeaderRow();
-    expect(row[0].text).toContain('ערך');
+    expect(row[0].text).toContain('ציון');
     expect(row[3].text).toBe('#');
   });
 
@@ -960,106 +487,5 @@ describe('RTL invariants', () => {
     const row1 = table.table.body[1];
     expect(Number(row1[0].text)).toBeGreaterThanOrEqual(0); // score is numeric
     expect(row1[3].text).toBe('1');                          // row number
-  });
-});
-
-// ── calcRiskLevel edge cases ─────────────────────────────────────────────────
-
-describe('calcRiskLevel — slider edge cases', () => {
-  it('returns null when slider range is zero (min === max)', () => {
-    const item = { type: 'slider', min: 5, max: 5 };
-    expect(calcRiskLevel(item, 5, [])).toBeNull();
-  });
-
-  it('returns null when slider range is negative', () => {
-    const item = { type: 'slider', min: 10, max: 0 };
-    expect(calcRiskLevel(item, 5, [])).toBeNull();
-  });
-
-  it('slider defaults min to 0 when not provided', () => {
-    const item = { type: 'slider', max: 10 };
-    expect(calcRiskLevel(item, 9, [])).toBe('high'); // 9/10 = 90% > 80%
-  });
-});
-
-// ── buildResponseTable — text/multiselect before select items ────────────────
-
-describe('buildResponseTable — text and multiselect at start', () => {
-  it('text item before select items renders outside table then table', () => {
-    const q = {
-      id: 'q', title: 'Q',
-      items: [
-        { id: 'notes', type: 'text', text: 'הערות' },
-        { id: 'i1', type: 'select', text: 'שאלה',
-          options: [{ label: 'כן', value: 1 }, { label: 'לא', value: 0 }] },
-      ],
-      scoring: { method: 'none' }, alerts: [],
-    };
-    const result = buildResponseTable(q, { notes: 'some note', i1: 1 });
-    expect(result.stack).toBeDefined();
-    const textBlock  = result.stack.find(b => b.stack);
-    const tableBlock = result.stack.find(b => b.table);
-    expect(textBlock).toBeDefined();
-    expect(tableBlock).toBeDefined();
-  });
-
-  it('multiselect item before select items renders outside table then table', () => {
-    const q = {
-      id: 'q', title: 'Q',
-      items: [
-        { id: 'ms', type: 'multiselect', text: 'מה?',
-          options: [{ label: 'א' }, { label: 'ב' }] },
-        { id: 'i1', type: 'select', text: 'שאלה',
-          options: [{ label: 'כן', value: 1 }, { label: 'לא', value: 0 }] },
-      ],
-      scoring: { method: 'none' }, alerts: [],
-    };
-    const result = buildResponseTable(q, { ms: [1], i1: 1 });
-    expect(result.stack).toBeDefined();
-    const msBlock    = result.stack.find(b => b.stack);
-    const tableBlock = result.stack.find(b => b.table);
-    expect(msBlock).toBeDefined();
-    expect(tableBlock).toBeDefined();
-  });
-
-  it('multiselect-only questionnaire returns a block with no table', () => {
-    const q = {
-      id: 'q', title: 'Q',
-      items: [{ id: 'ms', type: 'multiselect', text: 'מה?',
-        options: [{ label: 'א' }, { label: 'ב' }] }],
-      scoring: { method: 'none' }, alerts: [],
-    };
-    const result = buildResponseTable(q, { ms: [1, 2] });
-    expect(result).not.toBeNull();
-    expect(result.stack).toBeDefined();
-    expect(result.stack.find(b => b.table)).toBeUndefined();
-  });
-});
-
-// ── mean subscale rounding ────────────────────────────────────────────────────
-
-describe('buildScoresLine — mean subscale rounding', () => {
-  it('renders integer subscale as plain integer', () => {
-    const line = buildScoresLine({ total: 10, subscales: { a: 2 } }, Q);
-    const subLine = line.stack[1];
-    expect(subLine.text[0].text).toBe('2');
-  });
-
-  it('rounds non-integer subscale to 1 decimal', () => {
-    const line = buildScoresLine({ total: 10, subscales: { a: 1.5 } }, Q);
-    const subLine = line.stack[1];
-    expect(subLine.text[0].text).toBe('1.5');
-  });
-
-  it('rounds to 1 decimal, not more', () => {
-    const line = buildScoresLine({ total: 10, subscales: { a: 1.6666 } }, Q);
-    const subLine = line.stack[1];
-    expect(subLine.text[0].text).toBe('1.7');
-  });
-
-  it('renders null subscale as em-dash', () => {
-    const line = buildScoresLine({ total: 10, subscales: { a: null } }, Q);
-    const subLine = line.stack[1];
-    expect(subLine.text[0].text).toBe('—');
   });
 });

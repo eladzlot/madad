@@ -569,10 +569,24 @@ describe('interpretations', () => {
 // ─── Alerts ───────────────────────────────────────────────────────────────────
 
 describe('alerts', () => {
-  it('accepts valid alert', () => expect(valid({
+  it('accepts valid alert with severity warning', () => expect(valid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire({
+      alerts: [{ id: 'suid', condition: 'item.9 >= 1', message: 'אזהרה', severity: 'warning' }],
+    })],
+  })).toBe(true));
+
+  it('rejects alert missing severity (now required)', () => expect(invalid({
     ...minimalConfig,
     questionnaires: [makeQuestionnaire({
       alerts: [{ id: 'suid', condition: 'item.9 >= 1', message: 'אזהרה' }],
+    })],
+  })).toBe(true));
+
+  it('rejects alert with info severity (removed)', () => expect(invalid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire({
+      alerts: [{ id: 'suid', condition: 'item.9 >= 1', message: 'אזהרה', severity: 'info' }],
     })],
   })).toBe(true));
 
@@ -696,7 +710,8 @@ describe('full example', () => {
         alerts: [{
           id: 'suicidality',
           condition: 'item.9 >= 1',
-          message: 'פריט 9 — דיווח על מחשבות אובדניות',
+          message: 'אובדנות',
+          severity: 'critical',
         }],
       },
     ],

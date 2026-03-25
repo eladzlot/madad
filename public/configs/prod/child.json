@@ -317,7 +317,7 @@
       "alerts": [
         {
           "condition": "score.scared_child >= 25",
-          "message": "ציון SCARED ≥ 25 — מצביע על אפשרות להפרעת חרדה. מומלצת הערכה מעמיקה.",
+          "message": "חרדה — סבירות גבוהה",
           "severity": "warning",
           "id": "scared_child_alert_1"
         }
@@ -645,7 +645,7 @@
       "alerts": [
         {
           "condition": "score.scared_parent >= 25",
-          "message": "ציון SCARED ≥ 25 — מצביע על אפשרות להפרעת חרדה. מומלצת הערכה מעמיקה.",
+          "message": "חרדה — סבירות גבוהה",
           "severity": "warning",
           "id": "scared_parent_alert_1"
         }

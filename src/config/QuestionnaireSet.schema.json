@@ -598,7 +598,8 @@
       "required": [
         "id",
         "condition",
-        "message"
+        "message",
+        "severity"
       ],
       "additionalProperties": false,
       "properties": {
@@ -611,14 +612,17 @@
         },
         "message": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "maxLength": 30,
+          "description": "Short badge label shown in the PDF report. Keep under 30 characters."
         },
         "severity": {
+          "type": "string",
           "enum": [
-            "info",
             "warning",
             "critical"
-          ]
+          ],
+          "description": "Badge type. critical = red pill (safety risk). warning = amber pill (clinical attention)."
         }
       }
     },

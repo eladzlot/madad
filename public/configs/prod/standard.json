@@ -832,7 +832,7 @@
         {
           "id": "suicidality",
           "condition": "item.9 >= 1",
-          "message": "פריט 9 — דיווח על מחשבות אובדניות או על פגיעה עצמית",
+          "message": "אובדנות",
           "severity": "critical"
         }
       ]

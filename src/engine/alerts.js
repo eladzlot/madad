@@ -22,6 +22,9 @@ export function evaluateAlerts(questionnaire, answers, scoreResult) {
   const context = {
     item:     answers,
     subscale: scoreResult.subscales ?? {},
+    // Populate score so conditions like 'score.pcl5 >= 33' resolve correctly.
+    // Keyed by questionnaire id so the DSL reference score.<id> matches.
+    score:    { [questionnaire.id]: scoreResult.total ?? null },
   };
 
   const fired = [];

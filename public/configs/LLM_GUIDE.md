@@ -306,7 +306,16 @@ Alerts appear as highlighted warnings at the top of the PDF when their condition
 ]
 ```
 
-Alert `id` must be unique within the questionnaire. `severity` is informational only; it does not change rendering. Suggested values: `"info"`, `"warning"`, `"critical"`.
+Alert `id` must be unique within the questionnaire. `severity` is **required** and controls the badge rendered in the PDF report:
+
+| Value | Badge | When to use |
+|---|---|---|
+| `"critical"` | Red pill | Direct safety risk — suicidality, psychosis, self-harm |
+| `"warning"` | Amber pill | Clinical attention needed — elevated score, significant symptom |
+
+No other values are accepted.
+
+`message` is the label shown inside the badge pill. **Keep it short — 30 characters maximum.** It is not a description; it is a flag. Examples: `"אובדנות"`, `"מעל סף קליני PTSD"`, `"חשיפה לטראומה"`.
 
 ### DSL expressions for conditions
 

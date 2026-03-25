@@ -54,9 +54,10 @@ describe('binary item options', () => {
     scoring: { method: 'none' }, alerts: [],
   });
 
-  it('binary item without options is valid — uses built-in כן/לא labels', () => {
+  it('binary item without options is an error — explicit labels required', () => {
     const errors = collectConfigErrors(minimalConfig([binaryQ()]));
-    expect(errors).toEqual([]);
+    expect(errors.length).toBeGreaterThan(0);
+    expect(errors.some(e => e.includes('no options') || e.includes('optionSetId') || e.includes('defaultOptionSetId'))).toBe(true);
   });
 
   it('binary item with inline options is valid', () => {
@@ -81,9 +82,11 @@ describe('binary item options', () => {
     expect(errors.some(e => e.includes('nonexistent'))).toBe(true);
   });
 
-  it('pc-ptsd5 pattern: multiple binary items without options are all valid', () => {
+  it('pc-ptsd5 pattern: binary items with defaultOptionSetId+yesno are valid', () => {
     const q = {
       id: 'pc_ptsd5', title: 'PC-PTSD-5',
+      defaultOptionSetId: 'yesno',
+      optionSets: { yesno: [{ label: 'כן', value: 1 }, { label: 'לא', value: 0 }] },
       items: [
         { id: 'intro', type: 'instructions', text: 'Intro text' },
         { id: 'exposure', type: 'binary', text: 'Trauma exposure?' },
@@ -97,6 +100,18 @@ describe('binary item options', () => {
       alerts: [],
     };
     expect(collectConfigErrors(minimalConfig([q]))).toEqual([]);
+  });
+
+  it('pc-ptsd5 pattern: binary items without any options are now an error', () => {
+    const q = {
+      id: 'pc_ptsd5', title: 'PC-PTSD-5',
+      items: [
+        { id: '1', type: 'binary', text: 'Symptom 1' },
+      ],
+      scoring: { method: 'none' }, alerts: [],
+    };
+    const errors = collectConfigErrors(minimalConfig([q]));
+    expect(errors.length).toBeGreaterThan(0);
   });
 });
 
@@ -190,7 +205,7 @@ describe('scoring subscale item references', () => {
     const q = {
       id: 'q', title: 'Q',
       items: [
-        { id: 'gate', type: 'binary', text: 'Gate?' },
+        { id: 'gate', type: 'binary', text: 'Gate?', options: [{ label: 'כן', value: 1 }, { label: 'לא', value: 0 }] },
         { id: 'cond', type: 'if', condition: 'item.gate == 1',
           then: [{ id: 'nested', type: 'select', text: 'N', options: [{ label: 'A', value: 0 }] }],
           else: [] }

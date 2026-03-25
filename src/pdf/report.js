@@ -14,9 +14,17 @@
 //   At runtime we fetch() those URLs to get ArrayBuffers, which are passed
 //   directly into pdfmake's vfs argument — no global vfs mutation, no
 //   vfs_fonts.js build step required.
+//
+// RTL RENDERING NOTE:
+//   In pdfmake + Hebrew font, within a right-aligned paragraph text array[0]
+//   is the LEFTMOST node on screen. Higher indices move right. The PDF viewer
+//   then applies its own BiDi on top, which is why bidiNodes() pre-reverses
+//   mixed runs — the two transformations cancel out correctly.
+//   For table columns: col[0] is always leftmost regardless of text direction.
+//   For subscores we use columns:{} layout to isolate each entry from
+//   cross-entry BiDi interference.
 
 
-// FONT_PLACEHOLDER — replace these two lines once font files are in public/fonts/
 import regularFontUrl from '../../public/fonts/NotoSansHebrew-Regular.ttf?url';
 import boldFontUrl    from '../../public/fonts/NotoSansHebrew-Bold.ttf?url';
 
@@ -24,34 +32,44 @@ import boldFontUrl    from '../../public/fonts/NotoSansHebrew-Bold.ttf?url';
 const getAppUrl = () => (typeof window !== 'undefined' ? window.location.origin : '');
 
 // ── Layout constants ──────────────────────────────────────────────────────────
-const PAGE_MARGIN   = 40;   // pt, all sides
-// A4 width 595pt − 2×40pt margins = 515pt usable
-const USABLE_WIDTH  = 515;
-const COL_NUM       = 25;   // item number
-const COL_TEXT      = 265;  // item text (Hebrew)
-const COL_LABEL     = 175;  // response label
-const COL_SCORE     = 50;   // numeric score
-const COL_WIDTHS    = [COL_SCORE, COL_LABEL, COL_TEXT, COL_NUM];  // RTL visual order: ערך | תשובה | תוכן | #
+const PAGE_MARGIN  = 40;
+const USABLE_WIDTH = 515;   // A4 595pt − 2×40pt margins
+const FONT_NAME    = 'NotoSansHebrew';
 
-const FONT_NAME     = 'NotoSansHebrew';
+// Item table column widths — RTL visual: score | label | text | #
+const COL_WIDTHS = [26, 168, 275, 20];
 
-// Risk highlight colours (match IMPLEMENTATION_SPEC §18)
-const RISK_HIGH_BG  = '#FCE8E8';
-const RISK_HIGH_FG  = '#8A1C1C';
-const RISK_MED_BG   = '#FFF6DB';
-const RISK_MED_FG   = '#8A6A00';
-
-// Alert section colours — keyed by severity
-const ALERT_COLOURS = {
-  critical: { bg: '#FFF4F4', border: '#CC0000' },
-  warning:  { bg: '#FFFBEB', border: '#B45309' },
-  info:     { bg: '#F0F9FF', border: '#0369A1' },
-  default:  { bg: '#F8FAFC', border: '#64748B' },
+// Typography scale
+const SZ = {
+  header_label:  8,
+  header_value: 10,
+  measure:      12,   // summary measure name — bold anchor
+  score:        14,   // summary score — primary anchor
+  severity:      9,   // lighter, subordinate
+  // Section header (de-emphasized vs summary)
+  section_measure:  11,
+  section_score:    12,
+  section_severity:  9,
+  badge:         8,
+  subscores:     9,
+  th:            8,
+  td:            9,
+  footer:        8,
 };
+
+// Row highlight colours — muted, same perceptual intensity
+const HIGHLIGHT_CRITICAL    = '#FEF8F8';
+const HIGHLIGHT_ELEVATED    = '#FEFBF0';
+const HIGHLIGHT_CRITICAL_FG = '#991B1B';
+const HIGHLIGHT_ELEVATED_FG = '#78350F';
+
+// Pill badge colours
+const PILL_CRITICAL_BG = '#FEE2E2';  const PILL_CRITICAL_FG = '#B91C1C';
+const PILL_WARNING_BG  = '#FEF3C7';  const PILL_WARNING_FG  = '#92400E';
 
 // ── Preload state ─────────────────────────────────────────────────────────────
 
-let _ready = null;   // Promise<[pdfmakeModule, regularAB, boldAB]>
+let _ready = null;
 
 export function preloadPdf() {
   if (_ready) return;
@@ -67,7 +85,6 @@ export function preloadPdf() {
       return r.arrayBuffer();
     }),
   ]);
-  // Surface load failures immediately rather than hanging silently
   _ready.catch(err => console.error('[report] preload failed:', err));
 }
 
@@ -75,7 +92,6 @@ export function preloadPdf() {
 
 /**
  * Builds the PDF and returns { blob, filename }.
- * Caller is responsible for download or share.
  *
  * @param {object} sessionState  — { answers, scores, alerts } from orchestrator
  * @param {object} config        — full QuestionnaireSet config
@@ -83,11 +99,10 @@ export function preloadPdf() {
  * @returns {Promise<{ blob: Blob, filename: string }>}
  */
 export async function generateReport(sessionState, config, session) {
-  if (!_ready) preloadPdf();   // defensive: start if caller forgot
+  if (!_ready) preloadPdf();
   const [pdfmakeModule, , regularAB, boldAB] = await _ready;
   const pdfmake = pdfmakeModule.default ?? pdfmakeModule;
 
-  // pdfmake 0.3.x API: addVirtualFileSystem expects base64 strings.
   const toBase64 = (ab) => {
     const bytes = new Uint8Array(ab);
     let binary = '';
@@ -112,9 +127,9 @@ export async function generateReport(sessionState, config, session) {
   const docDefinition = buildDocDefinition(sessionState, config, session);
   const filename = buildFilename(session);
 
-  const pdfDoc  = pdfmake.createPdf(docDefinition);
-  const buffer  = await pdfDoc.getBuffer();
-  const blob    = new Blob([buffer], { type: 'application/pdf' });
+  const pdfDoc = pdfmake.createPdf(docDefinition);
+  const buffer = await pdfDoc.getBuffer();
+  const blob   = new Blob([buffer], { type: 'application/pdf' });
 
   return { blob, filename };
 }
@@ -122,7 +137,7 @@ export async function generateReport(sessionState, config, session) {
 // ── Filename ──────────────────────────────────────────────────────────────────
 
 export function buildFilename(session, now = new Date()) {
-  const date = now.toISOString().slice(0, 10);   // YYYY-MM-DD
+  const date = now.toISOString().slice(0, 10);
   const pid  = session?.pid ? `-${session.pid}` : '';
   return `report${pid}-${date}.pdf`;
 }
@@ -132,36 +147,18 @@ export function buildFilename(session, now = new Date()) {
 // We pre-process strings using bidi-js (UAX-9 conformant) to produce
 // correctly ordered pdfmake text nodes.
 //
-// Strategy — word-level runs, not character-level:
-//   1. Classify each space-separated token as RTL or LTR using bidi-js
-//      character types (R/AL = RTL, L/EN = LTR). Punctuation doesn't vote.
-//   2. Group consecutive same-direction tokens into runs.
-//   3. Reverse run order — pdfmake renders node[0] at the left; we want
-//      LTR runs (left) before RTL runs (right).
-//   4. Mirror bracket characters inside RTL runs using getMirroredCharacter
-//      (handles (, ), [, ], «, », angle brackets, etc.).
-//   5. Return an array of pdfmake text nodes, one per run.
-//
-// Word-level (not char-level) granularity is deliberate: it keeps bracket
-// characters attached to their adjacent word token, so '(Intrusion)' is
-// classified as LTR as a unit and its brackets are not mirrored.
+// Use regular spaces in mixed Hebrew/Latin strings (e.g. "דיכאון (PHQ-9)") —
+// NBSP fuses tokens into one, breaking script classification.
 
-// _bidi is initialised lazily via preloadPdf() — see below.
 let _bidi = null;
-
 const NBSP = '\u00a0';
 
-// Classify a word token using bidi-js character types.
-// Strong RTL types (R, AL) → level 1; Strong LTR types (L, EN) → level 2.
-// Neutral/punctuation characters don't vote. Default: RTL (level 1).
 function _getBidi() {
-  // _bidi is set by preloadPdf() in the browser.
-  // In test environments, call initBidiForTesting() before using bidiNodes.
   if (!_bidi) throw new Error('[report] bidi-js not initialised — call preloadPdf() or initBidiForTesting()');
   return _bidi;
 }
 
-/** For use in tests only — synchronously initialise bidi-js without preloadPdf(). */
+/** For use in tests only. */
 export async function initBidiForTesting() {
   if (_bidi) return;
   const m = await import('bidi-js');
@@ -179,21 +176,17 @@ function _tokenLevel(tok) {
   return (ltr > 0 && rtl === 0) ? 2 : 1;
 }
 
-// Mirror all bracket/quote characters in a string using Unicode standard.
-// Only applied to RTL runs so LTR brackets (e.g. around English words) stay unchanged.
 function _mirror(str) {
   const bidi = _getBidi();
   return [...str].map(c => bidi.getMirroredCharacter(c) ?? c).join('');
 }
 
 /**
- * Convert a user-facing string to pdfmake text nodes with correct BiDi order.
- * For pure-script strings returns a single-element array.
- * Pass opts to inherit style properties onto each node (e.g. bold, fontSize).
+ * Convert a string to pdfmake text nodes with correct BiDi visual order.
  *
  * @param   {string} str
  * @param   {object} [opts]  — pdfmake text node properties to merge in
- * @returns {Array}          — array of pdfmake text node objects
+ * @returns {Array}
  */
 export function bidiNodes(str, opts = {}) {
   if (!str) return [{ text: '', ...opts }];
@@ -202,18 +195,11 @@ export function bidiNodes(str, opts = {}) {
   const hasHebrew = [...str].some(c => { const t = _getBidi().getBidiCharTypeName(c); return t === 'R' || t === 'AL'; });
   const hasLtr    = [...str].some(c => { const t = _getBidi().getBidiCharTypeName(c); return t === 'L' || t === 'EN'; });
 
-  // Pure script — single node, normalise spaces and mirror brackets for RTL
   if (!hasHebrew || !hasLtr) {
-    const text = hasHebrew
-      ? _mirror(str).replace(/ /g, NBSP)
-      : str.replace(/ /g, NBSP);
+    const text = hasHebrew ? _mirror(str).replace(/ /g, NBSP) : str.replace(/ /g, NBSP);
     return [{ text, ...opts }];
   }
 
-  // Mixed — tokenise by spaces, classify each token, group into runs.
-  // Sub-split tokens on cross-script hyphens so "ל-OCD" → ["ל-", "OCD"]
-  // and each part is classified correctly by _tokenLevel.
-  // Same-script hyphens like "תת-סקלה" or "PHQ-9" are left intact.
   const tokens = [];
   let i = 0;
   while (i < str.length) {
@@ -228,7 +214,6 @@ export function bidiNodes(str, opts = {}) {
     i = j;
   }
 
-  // Group consecutive same-level tokens into runs
   const runs = [];
   for (const t of tokens) {
     const prev = runs[runs.length - 1];
@@ -236,104 +221,64 @@ export function bidiNodes(str, opts = {}) {
     else runs.push({ level: t.level, words: [t.tok] });
   }
 
-  // RTL paragraph: reverse run order for visual display
   const visual = [...runs].reverse();
-
-  // One text node per run; NBSP separator nodes between runs.
-  // RTL runs get all bracket/quote characters mirrored via Unicode standard —
-  // pdfmake reverses them again visually, so pre-mirroring gives the correct glyph.
-  const nodes = [];
+  const nodes  = [];
   visual.forEach((run, idx) => {
-    const text = run.level === 1
-      ? _mirror(run.words.join(NBSP))
-      : run.words.join(NBSP);
+    const text = run.level === 1 ? _mirror(run.words.join(NBSP)) : run.words.join(NBSP);
     nodes.push({ text, ...opts });
     if (idx < visual.length - 1) nodes.push({ text: NBSP });
   });
   return nodes;
 }
 
+// ── Measure name ──────────────────────────────────────────────────────────────
+
+function measureName(q) {
+  // Regular space so bidiNodes() tokenises Hebrew title and Latin abbr separately
+  return q.abbr ? `${q.title} (${q.abbr})` : q.title;
+}
+
 // ── Document definition ───────────────────────────────────────────────────────
 
 export function buildDocDefinition(sessionState, config, session, now = new Date()) {
+  const isMulti = Object.keys(sessionState.answers ?? {}).length > 1;
 
   const content = [
-    buildHeader(session, config, now),
-    ...(buildAlertSection(sessionState, config) ?? []),
-    ...buildQuestionnaireSections(sessionState, config),
+    buildHeader(session, now),
+    isMulti ? buildSummaryBlock(sessionState, config) : null,
+    isMulti ? buildHr() : null,
+    ...buildDetailSections(sessionState, config),
   ].filter(Boolean);
 
   return {
     pageSize:    'A4',
-    pageMargins: [PAGE_MARGIN, PAGE_MARGIN, PAGE_MARGIN, PAGE_MARGIN],
+    pageMargins: [PAGE_MARGIN, PAGE_MARGIN, PAGE_MARGIN, PAGE_MARGIN + 10],
     defaultStyle: {
       font:      FONT_NAME,
       fontSize:  10,
       alignment: 'right',
     },
-    styles:  buildStyles(),
+    styles: {
+      th: { fontSize: SZ.th, bold: true, color: '#AAAAAA', fillColor: '#F7F7F7' },
+      instructionText: {
+        fontSize:  9,
+        alignment: 'right',
+        color:     '#888888',
+        italics:   true,
+        margin:    [0, 0, 0, 6],
+      },
+    },
     content,
-    footer:  buildFooter(config),
-  };
-}
-
-// ── Styles ────────────────────────────────────────────────────────────────────
-
-function buildStyles() {
-  return {
-    sectionTitle: {
-      fontSize:    13,
-      bold:        true,
-      alignment:   'right',
-      margin:      [0, 0, 0, 8],
-    },
-    tableHeader: {
-      fontSize:  9,
-      bold:      true,
-      alignment: 'right',
-      color:     '#555555',
-    },
-    headerLabel: {
-      fontSize:  9,
-      color:     '#888888',
-      alignment: 'right',
-    },
-    headerValue: {
-      fontSize:  10,
-      bold:      false,
-      alignment: 'right',
-    },
-    alertTitle: {
-      fontSize:  11,
-      bold:      true,
-      color:     ALERT_COLOURS.critical.border,
-      alignment: 'right',
-      marginBottom: 4,
-    },
-    alertItem: {
-      fontSize:  10,
-      alignment: 'right',
-      marginBottom: 2,
-    },
-    scoresLine: {
-      fontSize:  10,
-      alignment: 'right',
-      marginBottom: 8,
-      color:     '#444444',
-    },
-    instructionText: {
-      fontSize:  9,
-      alignment: 'right',
-      color:     '#888888',
-      italics:   true,
-      margin:    [0, 0, 0, 6],
-    },
+    footer: buildFooter(config),
   };
 }
 
 // ── Header ────────────────────────────────────────────────────────────────────
+// 3-column RTL: col[0]=left=date | col[1]=mid=pid | col[2]=right=name
 
-export function buildHeader(session, config, now) {
+export function buildHeader(session, nowOrConfig, maybeNow) {
+  // Accept both buildHeader(session, now) and legacy buildHeader(session, config, now)
+  const now = maybeNow ?? nowOrConfig;
   const dateStr = now.toLocaleDateString('he-IL', {
     year: 'numeric', month: '2-digit', day: '2-digit',
   });
@@ -341,158 +286,302 @@ export function buildHeader(session, config, now) {
     hour: '2-digit', minute: '2-digit',
   });
 
-  // Each value cell uses bidiNodes() so mixed Hebrew/Latin names render correctly.
-  // Date/time is always Hebrew locale digits — pure RTL, no mixing needed.
-  const rows = [
-    { label: 'שם:',    value: bidiNodes(session?.name  || '—') },
-    { label: 'מזהה:',  value: bidiNodes(session?.pid   || '—') },
-    { label: 'תאריך:', value: [{ text: `${dateStr}${NBSP}${timeStr}` }] },
-  ];
+  function col(label, valueNodes) {
+    return {
+      stack: [
+        { text: label,      fontSize: SZ.header_label, color: '#BBBBBB', alignment: 'right' },
+        { text: valueNodes, fontSize: SZ.header_value, color: '#1A1A1A', alignment: 'right' },
+      ],
+      border: [false, false, false, false],
+    };
+  }
 
   return {
     table: {
-      // RTL: index 0 renders on the RIGHT.
-      // value ('*') first → right side, label ('auto') second → left side.
-      widths: ['*', 'auto'],
-      body: rows.map(({ label, value }) => [
-        { text: value, style: 'headerValue', border: [false, false, false, false], alignment: 'right' },
-        { text: label, style: 'headerLabel', border: [false, false, false, false], alignment: 'right' },
-      ]),
+      widths: ['*', '*', '*'],
+      body: [[
+        col('תאריך',     [{ text: `${dateStr}${NBSP}${timeStr}` }]),
+        col('מזהה אישי', [{ text: session?.pid || '—' }]),
+        col('שם',        bidiNodes(session?.name || '—')),
+      ]],
     },
-    layout:      'noBorders',
-    marginBottom: 16,
+    layout: {
+      paddingLeft: () => 0,  paddingRight: () => 0,
+      paddingTop:  () => 0,  paddingBottom: () => 0,
+      hLineWidth: () => 0,   vLineWidth:   () => 0,
+    },
+    marginBottom: 20,
   };
 }
 
-// ── Alerts ────────────────────────────────────────────────────────────────────
+// ── Pill badge ────────────────────────────────────────────────────────────────
+// Single-cell mini-table — closest pdfmake approximation of a pill shape.
+// ⚠ (U+26A0) not in NotoSansHebrew — ASCII "!!" / "!" used instead.
+// margin:[0,3,0,0] centres the pill vertically in the row — nested tables
+// ignore verticalAlignment, margin is the only reliable lever.
 
-export function buildAlertSection(sessionState, config) {
-  const triggered = [];
-  for (const [key, alertList] of Object.entries(sessionState.alerts ?? {})) {
-    if (!Array.isArray(alertList) || alertList.length === 0) continue;
-    const q = config.questionnaires.find(q => q.id === key);
-    for (const alert of alertList) {
-      triggered.push({ qTitle: q?.title ?? key, message: alert.message, severity: alert.severity });
-    }
-  }
+function pillBadge(label, severity) {
+  const isCrit = severity === 'critical';
+  const bg = isCrit ? PILL_CRITICAL_BG : PILL_WARNING_BG;
+  const fg = isCrit ? PILL_CRITICAL_FG : PILL_WARNING_FG;
+  const icon = isCrit ? '!!' : '!';
 
-  if (triggered.length === 0) return null;
-
-  // Sort: critical first, then warning, then info, then unspecified
-  const SEVERITY_ORDER = { critical: 0, warning: 1, info: 2 };
-  triggered.sort((a, b) =>
-    (SEVERITY_ORDER[a.severity] ?? 3) - (SEVERITY_ORDER[b.severity] ?? 3)
-  );
-
-  return triggered.map(a => {
-    const colours = ALERT_COLOURS[a.severity] ?? ALERT_COLOURS.default;
-    return {
-      table: {
-        widths: [USABLE_WIDTH - 6],  // subtract vLine width (3pt each side)
-        body: [
-          [{ text: '!\u00a0התראה\u00a0קלינית', style: 'alertTitle', border: [true, true, true, false], color: colours.border }],
-          [{
-            stack: [
-              { text: bidiNodes(a.qTitle), style: 'alertItem', bold: true, marginBottom: 2 },
-              { text: bidiNodes(a.message), style: 'alertItem' },
-            ],
-            border: [true, false, true, false],
-          }],
-          [{ text: '', border: [true, false, true, true] }],
+  return {
+    table: {
+      widths: ['auto'],
+      body: [[{
+        // In pdfmake RTL paragraphs, array[0] = leftmost visually.
+        // We want icon on the RIGHT of the pill (RTL reading: icon first).
+        // So: label nodes first (left), icon last (right).
+        // alignment:'right' → array[0]=rightmost. Icon rightmost = RTL reader sees it first.
+        text: [
+          { text: icon + NBSP, fontSize: SZ.badge, color: fg, bold: true },
+          ...bidiNodes(label, { fontSize: SZ.badge, color: fg }),
         ],
-      },
-      layout: {
-        hLineColor: () => colours.border,
-        vLineColor: () => colours.border,
-        hLineWidth: (i, node) => (i === 0 || i === node.table.body.length) ? 1.5 : 0,
-        vLineWidth: () => 3,
-        fillColor:  () => colours.bg,
-        paddingLeft:   () => 10,
-        paddingRight:  () => 10,
-        paddingTop:    () => 8,
-        paddingBottom: () => 8,
-      },
-      marginBottom: 8,
-    };
-  });
+        fillColor: bg,
+        border: [false, false, false, false],
+      }]],
+    },
+    layout: {
+      paddingLeft:   () => 6,  paddingRight:  () => 6,
+      paddingTop:    () => 2,  paddingBottom: () => 2,
+      hLineWidth: () => 0,     vLineWidth:    () => 0,
+    },
+    alignment: 'right',
+    margin: [0, 3, 0, 0],
+  };
 }
 
-// ── Questionnaire sections ────────────────────────────────────────────────────
+// ── HR separator ──────────────────────────────────────────────────────────────
 
-export function buildQuestionnaireSections(sessionState, config) {
-  return Object.entries(sessionState.answers ?? {}).map(([key, answers]) => {
-    const q = config.questionnaires.find(q => q.id === key);
+function buildHr() {
+  return {
+    canvas: [{
+      type: 'line',
+      x1: 0, y1: 0, x2: USABLE_WIDTH, y2: 0,
+      lineWidth: 0.5,
+      lineColor: '#E8E8E8',
+    }],
+    margin: [0, 16, 0, 22],
+  };
+}
+
+// ── Summary block (multi-mode only) ──────────────────────────────────────────
+//
+// 4-column table — strict column alignment across all rows:
+//   col[3] measure  (auto) — rightmost, bold anchor
+//   col[2] score    (auto) — immediately left of measure
+//   col[1] severity (auto) — light, subordinate
+//   col[0] badge    (*)    — leftmost, pills pushed right via inner spacer
+
+export function buildSummaryBlock(sessionState, config) {
+  // Build rows in config order, but keyed by sessionKey (not q.id).
+  // sessionKey = node.instanceId ?? node.questionnaireId from orchestrator.
+  // We match by looking up each answered sessionKey against config questionnaires.
+  const sessionEntries = Object.keys(sessionState.answers ?? {})
+    .map(sessionKey => ({ sessionKey, q: config.questionnaires?.find(q => q.id === sessionKey) }))
+    .filter(({ q }) => q != null)
+    // preserve config questionnaire order
+    .sort((a, b) => {
+      const ai = config.questionnaires.indexOf(a.q);
+      const bi = config.questionnaires.indexOf(b.q);
+      return ai - bi;
+    });
+
+  const rows = sessionEntries.map(({ sessionKey, q }) => {
+    const score        = sessionState.scores?.[sessionKey];
+    const alerts       = sessionState.alerts?.[sessionKey] ?? [];
+    const scoreDisplay = score?.total != null ? String(score.total) : 'הושלם';
+    const severity     = score?.category ?? '';
+
+    const measureCell = {
+      text: bidiNodes(measureName(q), { fontSize: SZ.measure, bold: true, color: '#111111' }),
+      alignment: 'right',
+      verticalAlignment: 'middle',
+      border: [false, false, false, false],
+    };
+
+    const scoreCell = {
+      text: [{ text: scoreDisplay, fontSize: SZ.score, bold: true, color: '#111111' }],
+      alignment: 'right',
+      verticalAlignment: 'middle',
+      border: [false, false, false, false],
+    };
+
+    const severityCell = {
+      text: severity ? bidiNodes(severity, { fontSize: SZ.severity, color: '#555555' }) : [{ text: '' }],
+      alignment: 'right',
+      verticalAlignment: 'middle',
+      border: [false, false, false, false],
+    };
+
+    // Spacer column pushes pills to the right edge of the * column.
+    // verticalAlignment is ignored on nested table cells — margin handles it.
+    const badgeCell = {
+      stack: alerts.length > 0
+        ? alerts.map((a, i) => ({
+            columns: [
+              { width: '*', text: '' },
+              { width: 'auto', stack: [pillBadge(a.message, a.severity)], alignment: 'right' },
+            ],
+            marginBottom: i < alerts.length - 1 ? 2 : 0,
+          }))
+        : [{ text: '', fontSize: SZ.badge }],
+      border: [false, false, false, false],
+    };
+
+    // col[0]=left=badge(*), col[1]=severity, col[2]=score, col[3]=right=measure
+    return [badgeCell, severityCell, scoreCell, measureCell];
+  });
+
+  return {
+    table: {
+      widths: ['*', 'auto', 'auto', 'auto'],
+      body: rows,
+    },
+    layout: {
+      paddingLeft:   (i, node, col) => col === 0 ? 0 : col === 1 ? 12 : 4,
+      paddingRight:  (i, node, col) => col === 3 ? 0 : 4,
+      paddingTop:    () => 1,
+      paddingBottom: () => 1,
+      hLineWidth: () => 0,
+      vLineWidth: () => 0,
+    },
+    marginBottom: 0,
+  };
+}
+
+// ── Detail sections ───────────────────────────────────────────────────────────
+
+export function buildDetailSections(sessionState, config) {
+  // Iterate completed sessions in answer order; look up the questionnaire definition.
+  // This correctly handles instanceId-based sessionKeys and missing questionnaires.
+  return Object.entries(sessionState.answers ?? {}).map(([sessionKey, answers]) => {
+    const q = config.questionnaires?.find(q => q.id === sessionKey);
     if (!q) return null;
-
-    const scoreResult = sessionState.scores?.[key] ?? null;
 
     return {
       stack: [
-        { text: bidiNodes(q.title), style: 'sectionTitle' },
-        buildScoresLine(scoreResult, q),
+        buildSectionHeader(q, sessionState, sessionKey),
+        buildSubscoresLine(q, sessionState, sessionKey),
         buildResponseTable(q, answers),
       ].filter(Boolean),
-      marginBottom: 20,
+      marginBottom: 32,
     };
   }).filter(Boolean);
 }
 
-// ── Scores line ───────────────────────────────────────────────────────────────
+// ── Section header ────────────────────────────────────────────────────────────
+// Same 4-column structure as summary, de-emphasized:
+// smaller sizes, lighter colors, regular weight on measure name.
 
-export function buildScoresLine(scoreResult, q) {
-  if (!scoreResult || scoreResult.total == null) return null;
+export function buildSectionHeader(q, sessionState, sessionKey) {
+  sessionKey = sessionKey ?? q.id;
+  const score        = sessionState.scores?.[sessionKey];
+  const alerts       = sessionState.alerts?.[sessionKey] ?? [];
+  const scoreDisplay = score?.total != null ? String(score.total) : 'הושלם';
+  const severity     = score?.category ?? '';
 
-  // Mixed Hebrew/Latin strings use bidiNodes() — which pre-reverses runs
-  // for pdfmake's RTL paragraph rendering (pdfmake reverses them back).
-  // Numbers are isolated in direction:'ltr' nodes.
-  // Category is on its own line to prevent bidi interference with the score.
-
-  // ── Total line (bold) ──────────────────────────────────────────────────
-  const totalLine = {
-    text: [
-      { text: String(scoreResult.total), bold: true, direction: 'ltr' },
-      { text: ' : ', bold: true },
-      { text: 'ציון כולל', bold: true },
-    ],
-    style: 'scoresLine',
-    margin: [0, 0, 0, 1],
+  const measureCell = {
+    text: bidiNodes(measureName(q), { fontSize: SZ.section_measure, bold: false, color: '#444444' }),
+    alignment: 'right',
+    verticalAlignment: 'middle',
+    border: [false, false, false, false],
   };
 
-  const lines = [totalLine];
+  const scoreCell = {
+    text: [{ text: scoreDisplay, fontSize: SZ.section_score, bold: true, color: '#333333' }],
+    alignment: 'right',
+    verticalAlignment: 'middle',
+    border: [false, false, false, false],
+  };
 
-  // ── Category: own line, bidiNodes for mixed Hebrew/Latin ───────────────
-  if (scoreResult.category) {
-    lines.push({
-      text: bidiNodes(scoreResult.category),
-      style: 'scoresLine',
-      color: '#666666',
-      margin: [0, 0, 0, 2],
-    });
-  }
+  const severityCell = {
+    text: severity ? bidiNodes(severity, { fontSize: SZ.section_severity, color: '#888888' }) : [{ text: '' }],
+    alignment: 'right',
+    verticalAlignment: 'middle',
+    border: [false, false, false, false],
+  };
 
-  // ── Subscale line ──────────────────────────────────────────────────────
-  const subscaleEntries = Object.entries(scoreResult.subscales ?? {});
-  if (subscaleEntries.length > 0) {
-    const SEP = { text: '  |  ' };
-    const subParts = [];
-    for (const [subId, subVal] of subscaleEntries) {
-      if (subParts.length > 0) subParts.push(SEP);
-      const subDisplay = subVal == null ? '—'
-        : Number.isInteger(subVal) ? String(subVal)
-        : subVal.toFixed(1);
-      subParts.push({ text: subDisplay, direction: 'ltr' });
-      subParts.push({ text: ' : ' });
-      const label = q.subscaleLabels?.[subId] ?? subId;
-      subParts.push(...bidiNodes(label));
+  const badgeCell = {
+    stack: alerts.length > 0
+      ? alerts.map((a, i) => ({
+          columns: [
+            { width: '*', text: '' },
+            { width: 'auto', stack: [pillBadge(a.message, a.severity)], alignment: 'right' },
+          ],
+          marginBottom: i < alerts.length - 1 ? 2 : 0,
+        }))
+      : [{ text: '', fontSize: SZ.badge }],
+    border: [false, false, false, false],
+  };
+
+  return {
+    table: {
+      widths: ['*', 'auto', 'auto', 'auto'],
+      body: [[badgeCell, severityCell, scoreCell, measureCell]],
+    },
+    layout: {
+      paddingLeft:   (i, node, col) => col === 0 ? 0 : col === 1 ? 12 : 4,
+      paddingRight:  (i, node, col) => col === 3 ? 0 : 4,
+      paddingTop:    () => 1,
+      paddingBottom: () => 1,
+      hLineWidth: () => 0,
+      vLineWidth: () => 0,
+    },
+    marginBottom: 8,
+  };
+}
+
+// ── Subscores line ────────────────────────────────────────────────────────────
+// Uses columns:{} so each entry is isolated — BiDi never crosses boundaries.
+// col[0]=leftmost, last col=rightmost (prefix). Entries reversed so entry[0]
+// lands rightmost (immediately left of prefix).
+
+export function buildSubscoresLine(q, sessionState, sessionKey) {
+  sessionKey = sessionKey ?? q.id;
+  const score   = sessionState.scores?.[sessionKey];
+  const entries = Object.entries(score?.subscales ?? {});
+  if (!entries.length) return null;
+
+  const entryColumns = [];
+  entries.forEach(([subId, val], i) => {
+    if (i > 0) {
+      entryColumns.push({
+        width: 'auto',
+        text: [{ text: '·', color: '#CCCCCC', fontSize: SZ.subscores }],
+        alignment: 'right',
+      });
     }
-    lines.push({
-      text: subParts,
-      style: 'scoresLine',
-      margin: [0, 0, 0, 8],
+    const label = q.subscaleLabels?.[subId] ?? subId;
+    const display = val == null ? '—'
+      : Number.isInteger(val) ? String(val)
+      : val.toFixed(1);
+    entryColumns.push({
+      width: 'auto',
+      text: [
+        { text: display + NBSP, fontSize: SZ.subscores, bold: true, color: '#555555' },
+        ...bidiNodes(label, { fontSize: SZ.subscores, color: '#999999' }),
+      ],
+      alignment: 'right',
     });
-  }
+  });
 
-  return lines.length === 1 ? lines[0] : { stack: lines };
+  entryColumns.reverse();
+
+  return {
+    columns: [
+      { width: '*', text: '' },
+      ...entryColumns,
+      {
+        width: 'auto',
+        text: bidiNodes('תתי-מדדים:', { fontSize: SZ.subscores, color: '#BBBBBB' }),
+        alignment: 'right',
+      },
+    ],
+    columnGap: 5,
+    marginBottom: 8,
+  };
 }
 
 // ── Response table ────────────────────────────────────────────────────────────
@@ -501,39 +590,43 @@ export function buildResponseTable(questionnaire, answers) {
   const items = questionnaire.items;
   if (!items || items.length === 0) return null;
 
-  // Separate instructions from answerable items — instructions are rendered
-  // as paragraph text above/between the table rows, not as table rows.
-  const blocks = [];
+  const blocks    = [];
   const tableRows = [];
   let rowNum = 0;
 
+  const flushTable = () => {
+    if (!tableRows.length) return;
+    blocks.push({
+      table: {
+        headerRows: 1,
+        widths: COL_WIDTHS,
+        body: [buildTableHeaderRow(), ...tableRows],
+        dontBreakRows: true,
+        keepWithHeaderRows: 1,
+      },
+      layout: {
+        hLineColor: () => '#EBEBEB',
+        vLineColor: () => '#EBEBEB',
+        hLineWidth: (i) => (i === 0 || i === 1) ? 0.75 : 0.5,
+        vLineWidth: () => 0.5,
+        paddingLeft:   () => 5,  paddingRight:  () => 5,
+        paddingTop:    () => 3,  paddingBottom: () => 3,
+      },
+      marginBottom: 4,
+    });
+    tableRows.length = 0;
+    rowNum = 0;
+  };
+
   for (const item of items) {
     if (item.type === 'instructions') {
-      // Flush any accumulated table rows first
-      if (tableRows.length > 0) {
-        blocks.push(buildTable([buildTableHeaderRow(), ...tableRows]));
-        tableRows.length = 0;
-        rowNum = 0;
-      }
-      blocks.push({
-        text: bidiNodes(item.text),
-        style: 'instructionText',
-      });
+      flushTable();
+      blocks.push({ text: bidiNodes(item.text), style: 'instructionText' });
     } else if (item.type === 'text') {
-      // Text items render outside the table — bold question then wrapped answer
-      if (tableRows.length > 0) {
-        blocks.push(buildTable([buildTableHeaderRow(), ...tableRows]));
-        tableRows.length = 0;
-        rowNum = 0;
-      }
+      flushTable();
       blocks.push(buildTextBlock(item, answers[item.id]));
     } else if (item.type === 'multiselect') {
-      // Multiselect renders outside the table — bold question then checked labels
-      if (tableRows.length > 0) {
-        blocks.push(buildTable([buildTableHeaderRow(), ...tableRows]));
-        tableRows.length = 0;
-        rowNum = 0;
-      }
+      flushTable();
       blocks.push(buildMultiselectBlock(item, answers[item.id]));
     } else {
       rowNum++;
@@ -541,149 +634,100 @@ export function buildResponseTable(questionnaire, answers) {
     }
   }
 
-  // Flush remaining table rows
-  if (tableRows.length > 0) {
-    blocks.push(buildTable([buildTableHeaderRow(), ...tableRows]));
-  }
+  flushTable();
 
-  // If no answerable items at all (only instructions), nothing to show
   const hasAnyAnswerable = items.some(i => i.type !== 'instructions');
   if (!hasAnyAnswerable) return null;
 
   return blocks.length === 1 ? blocks[0] : { stack: blocks };
 }
 
-function buildTable(rows) {
-  return {
-    table: {
-      headerRows: 1,
-      widths:     COL_WIDTHS,
-      body:       rows,
-    },
-    layout: {
-      hLineColor: () => '#DDDDDD',
-      vLineColor: () => '#DDDDDD',
-      hLineWidth: (i) => (i === 0 || i === 1) ? 1 : 0.5,
-      vLineWidth: () => 0.5,
-      paddingLeft:   () => 4,
-      paddingRight:  () => 4,
-      paddingTop:    () => 4,
-      paddingBottom: () => 4,
-    },
-    marginBottom: 8,
-  };
-}
-
-// ── Text item block (outside table) ──────────────────────────────────────────
-
-export function buildTextBlock(item, answer) {
-  return {
-    stack: [
-      {
-        text: bidiNodes(item.text),
-        bold: true,
-        fontSize: 10,
-        alignment: 'right',
-        margin: [0, 0, 0, 4],
-      },
-      {
-        text: answer ? bidiNodes(String(answer)) : [{ text: '—', color: '#999999' }],
-        fontSize: 10,
-        alignment: 'right',
-        margin: [0, 0, 0, 0],
-      },
-    ],
-    margin: [0, 6, 0, 10],
-  };
-}
-
-// ── Multiselect item block (outside table) ────────────────────────────────────
-
-export function buildMultiselectBlock(item, answer) {
-  const options = item.options ?? [];
-  const selected = Array.isArray(answer) ? answer : [];
-
-  // Build answer text: checked labels joined by comma, or em-dash if none
-  let answerNode;
-  if (selected.length === 0) {
-    answerNode = { text: '—', color: '#999999', fontSize: 10, alignment: 'right' };
-  } else {
-    const labels = selected
-      .filter(i => i >= 1 && i <= options.length)
-      .map(i => options[i - 1].label);
-    answerNode = {
-      text: bidiNodes(labels.join(', ')),
-      fontSize: 10,
-      alignment: 'right',
-    };
-  }
-
-  return {
-    stack: [
-      {
-        text: bidiNodes(item.text),
-        bold: true,
-        fontSize: 10,
-        alignment: 'right',
-        margin: [0, 0, 0, 4],
-      },
-      answerNode,
-    ],
-    margin: [0, 6, 0, 10],
-  };
-}
+// ── Table header row ──────────────────────────────────────────────────────────
 
 export function buildTableHeaderRow() {
-  const cell = (text) => ({ text, style: 'tableHeader', fillColor: '#F5F5F5' });
-  return [cell('ערך'), cell('תשובה'), cell('תוכן\u00a0הפריט'), cell('#')];
+  const cell = (text, align = 'right') => ({ text, style: 'th', alignment: align });
+  return [
+    cell('ציון', 'center'),
+    cell('תשובה'),
+    cell('תוכן\u00a0הפריט'),
+    cell('#', 'center'),
+  ];
 }
+
+// ── Item row ──────────────────────────────────────────────────────────────────
 
 export function buildItemRow(item, rowNum, rawAnswer, questionnaire) {
   const options  = resolveOptions(item, questionnaire);
   const answered = rawAnswer != null;
 
-  const option       = options.find(o => o.value === rawAnswer) ?? null;
-  const label        = option?.label ?? (answered ? String(rawAnswer) : '—');
-  const numericValue = answered ? rawAnswer : null;
+  const option  = options.find(o => o.value === rawAnswer) ?? null;
+  const label   = option?.label ?? (answered ? String(rawAnswer) : '—');
+  const risk    = answered ? calcRiskLevel(item, rawAnswer, options) : null;
 
-  const riskLevel = answered ? calcRiskLevel(item, rawAnswer, options) : null;
+  const fill  = risk === 'high' ? HIGHLIGHT_CRITICAL : risk === 'med' ? HIGHLIGHT_ELEVATED : null;
+  const color = risk === 'high' ? HIGHLIGHT_CRITICAL_FG : risk === 'med' ? HIGHLIGHT_ELEVATED_FG : '#333333';
 
-  const rowFill = riskLevel === 'high' ? RISK_HIGH_BG
-                : riskLevel === 'med'  ? RISK_MED_BG
-                : null;
+  const cell = (content, align = 'right') => ({
+    text: content, alignment: align, color, fillColor: fill ?? undefined, fontSize: SZ.td,
+  });
 
-  const textColor = riskLevel === 'high' ? RISK_HIGH_FG
-                  : riskLevel === 'med'  ? RISK_MED_FG
-                  : '#222222';
-
-  function cell(textOrNodes, align = 'right', bold = false) {
-    return {
-      text:      textOrNodes,
-      alignment: align,
-      color:     textColor,
-      bold,
-      fillColor: rowFill ?? undefined,
-    };
-  }
-
-  // RTL visual order: ערך (score) | תשובה (label) | תוכן (text) | # (num)
   return [
-    cell(numericValue != null ? String(numericValue) : '—', 'center'),
+    cell(answered ? String(rawAnswer) : '—', 'center'),
     cell(bidiNodes(label)),
     cell(bidiNodes(item.text)),
     cell(String(rowNum), 'center'),
   ];
 }
 
+// ── Text item block ───────────────────────────────────────────────────────────
+
+export function buildTextBlock(item, answer) {
+  return {
+    stack: [
+      { text: bidiNodes(item.text), bold: true, fontSize: SZ.td, alignment: 'right', margin: [0, 0, 0, 3] },
+      {
+        text: answer ? bidiNodes(String(answer)) : [{ text: '—', color: '#AAAAAA' }],
+        fontSize: SZ.td,
+        alignment: 'right',
+      },
+    ],
+    margin: [0, 6, 0, 10],
+  };
+}
+
+// ── Multiselect item block ────────────────────────────────────────────────────
+
+export function buildMultiselectBlock(item, answer) {
+  const options  = item.options ?? [];
+  const selected = Array.isArray(answer) ? answer : [];
+  const labels   = selected
+    .filter(i => i >= 1 && i <= options.length)
+    .map(i => options[i - 1].label);
+
+  // Each label through bidiNodes separately; ' | ' as neutral separator between
+  const answerContent = labels.length > 0
+    ? labels
+        .flatMap((l, i) => i === 0 ? bidiNodes(l) : [{ text: ' | ' }, ...bidiNodes(l)])
+        .map(n => ({ ...n, fontSize: SZ.td }))
+    : [{ text: '—', color: '#AAAAAA', fontSize: SZ.td }];
+
+  return {
+    stack: [
+      { text: bidiNodes(item.text), bold: true, fontSize: SZ.td, alignment: 'right', margin: [0, 0, 0, 3] },
+      { text: answerContent, fontSize: SZ.td, alignment: 'right' },
+    ],
+    margin: [0, 6, 0, 10],
+  };
+}
+
 // ── Risk calculation ──────────────────────────────────────────────────────────
 
 export function calcRiskLevel(item, value, options) {
-  // Slider: risk based on position in range (top 20% = high, top 40% = med)
   if (item.type === 'slider') {
     const { min = 0, max = 10 } = item;
     const range = max - min;
     if (range <= 0) return null;
-    const pos = (value - min) / range;  // 0..1
+    const pos = (value - min) / range;
     if (pos >= 0.8) return 'high';
     if (pos >= 0.6) return 'med';
     return null;
@@ -711,27 +755,53 @@ export function resolveOptions(item, questionnaire) {
 // ── Footer ────────────────────────────────────────────────────────────────────
 
 export function buildFooter(config) {
-  const appVer  = config.appVersion  ?? '—';
-  const cfgVer  = config.version     ?? '—';
+  const appVer = config.appVersion ?? '—';
+  const cfgVer = config.version    ?? '—';
 
   return (currentPage, pageCount) => ({
-    columns: [
-      {
-        text: [
-          { text: 'עמוד\u00a0' + currentPage + '\u200f\u00a0מתוך\u00a0' + pageCount },
-          { text: '\u00a0\u00a0|\u00a0\u00a0' },
-          { text: 'גרסת\u00a0אפליקציה\u200f:\u00a0' + appVer },
-          { text: '\u00a0\u00a0' },
-          { text: 'גרסת\u00a0תצורה\u200f:\u00a0' + cfgVer },
-          { text: '\u00a0\u00a0|\u00a0\u00a0' },
-          { text: 'מדד\u00a0|\u00a0Madad' },
-          { text: '\u00a0\u00a0' + getAppUrl(), link: getAppUrl() },
-        ],
-        alignment: 'right',
-        fontSize:  8,
-        color:     '#888888',
-        margin:    [PAGE_MARGIN, 8, PAGE_MARGIN, 0],
-      },
-    ],
+    columns: [{
+      text: [
+        { text: `עמוד${NBSP}${currentPage}${NBSP}מתוך${NBSP}${pageCount}` },
+        { text: `${NBSP}${NBSP}|${NBSP}${NBSP}` },
+        { text: `גרסת${NBSP}אפליקציה${NBSP}${appVer}` },
+        { text: `${NBSP}${NBSP}|${NBSP}${NBSP}` },
+        { text: `גרסת${NBSP}תצורה${NBSP}${cfgVer}` },
+        { text: `${NBSP}${NBSP}|${NBSP}${NBSP}` },
+        { text: `מדד${NBSP}|${NBSP}Madad` },
+        { text: `${NBSP}${NBSP}` + getAppUrl(), link: getAppUrl() },
+      ],
+      alignment: 'right',
+      fontSize:  SZ.footer,
+      color:     '#BBBBBB',
+      margin:    [PAGE_MARGIN, 8, PAGE_MARGIN, 0],
+    }],
   });
+}
+
+// ── Backward-compat exports ───────────────────────────────────────────────────
+// These functions are tested directly and/or called from external code.
+// buildHeader previously took (session, config, now) — config was used only for
+// the version footer (now in buildFooter). We accept and ignore config here.
+
+export { buildHeader as _buildHeaderNew };
+
+/**
+ * @param {object} session
+ * @param {object} _config  — accepted for backward compat, ignored
+ * @param {Date}   now
+ */
+export function buildHeaderCompat(session, _config, now) {
+  return buildHeader(session, now);
+}
+
+// buildAlertSection — replaced by inline pills in summary/section headers.
+// Kept as a no-op export so existing tests and imports don't break at runtime.
+export function buildAlertSection() {
+  return null;
+}
+
+// buildScoresLine — replaced by buildSubscoresLine (columns-based).
+// Kept for test compatibility; returns null so callers degrade gracefully.
+export function buildScoresLine() {
+  return null;
 }

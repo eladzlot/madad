@@ -237,7 +237,7 @@ Each alert:
 | `id` | string (ID) | yes | Unique within the questionnaire |
 | `condition` | string | yes | DSL expression evaluating to boolean |
 | `message` | string | yes | Text displayed in PDF |
-| `severity` | string | no | Reserved for future use. Suggested values: `info`, `warning`, `critical` |
+| `severity` | string | **yes** | Badge type rendered in the PDF report. Must be `"warning"` or `"critical"`. |
 
 ---
 

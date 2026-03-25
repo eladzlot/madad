@@ -336,25 +336,25 @@
         {
           "id": "psychotic_ideation",
           "condition": "item.q29 == 1 || item.q30 == 1",
-          "message": "פריטים 29–30 — דיווח על חוויות פסיכוטיות אפשריות (אמונות חריגות או חוויות חושיות). מומלץ הערכה קלינית מפורטת.",
+          "message": "חוויות פסיכוטיות אפשריות",
           "severity": "critical"
         },
         {
           "id": "mania_screen",
           "condition": "item.q7 == 1",
-          "message": "פריט 7 — דיווח על תקופה של מצב רוח מרומם חריג. שקול הערכה לביפולריות.",
+          "message": "אפשרות לביפולריות",
           "severity": "warning"
         },
         {
           "id": "trauma_screen",
           "condition": "item.q19 == 1",
-          "message": "פריט 19 — דיווח על חשיפה לאירוע טראומטי.",
+          "message": "חשיפה לטראומה",
           "severity": "warning"
         },
         {
           "id": "substance_use",
           "condition": "item.q24 == 1 || item.q25 == 1",
-          "message": "פריטים 24–25 — דיווח על שימוש באלכוהול או סמים. מומלץ הערכת שימוש בחומרים.",
+          "message": "שימוש בחומרים",
           "severity": "warning"
         }
       ]

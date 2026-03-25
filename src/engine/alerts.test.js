@@ -165,3 +165,27 @@ describe('error handling', () => {
     expect(() => evaluateAlerts(q, {}, noSubscales)).toThrow();
   });
 });
+
+describe('score.x references in alert conditions', () => {
+  it('fires when score.<questionnaireId> meets threshold', () => {
+    const q = makeQ([{ id: 'high', condition: 'score.pcl5 >= 33', message: 'מעל סף', severity: 'warning' }]);
+    q.id = 'pcl5';
+    const result = evaluateAlerts(q, {}, { total: 51, subscales: {} });
+    expect(result).toHaveLength(1);
+    expect(result[0].id).toBe('high');
+  });
+
+  it('does not fire when score is below threshold', () => {
+    const q = makeQ([{ id: 'high', condition: 'score.pcl5 >= 33', message: 'מעל סף', severity: 'warning' }]);
+    q.id = 'pcl5';
+    const result = evaluateAlerts(q, {}, { total: 20, subscales: {} });
+    expect(result).toHaveLength(0);
+  });
+
+  it('does not fire when total is null', () => {
+    const q = makeQ([{ id: 'high', condition: 'score.pcl5 >= 33', message: 'מעל סף', severity: 'warning' }]);
+    q.id = 'pcl5';
+    const result = evaluateAlerts(q, {}, { total: null, subscales: {} });
+    expect(result).toHaveLength(0);
+  });
+});
