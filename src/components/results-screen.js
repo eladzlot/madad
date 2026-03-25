@@ -186,7 +186,7 @@ export class ResultsScreen extends LitElement {
               ` : ''}
             </div>
             <span class="${r.total != null ? 'score-value' : 'score-value no-score'}">
-              ${r.total != null ? r.total : '—'}
+              ${r.total != null ? (Number.isInteger(r.total) ? r.total : r.total.toFixed(1)) : '—'}
             </span>
           </div>
         `)}

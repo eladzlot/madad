@@ -570,7 +570,8 @@
             "22",
             "31"
           ]
-        }
+        },
+        "totalMethod": "sum_of_items"
       },
       "subscaleLabels": {
         "self": "קוגניציות שליליות על העצמי",

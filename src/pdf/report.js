@@ -238,6 +238,19 @@ function measureName(q) {
   return q.abbr ? `${q.title} (${q.abbr})` : q.title;
 }
 
+// ── Score formatting ─────────────────────────────────────────────────────────
+// Integers display as-is. Floats (mean-based) display to 1 decimal.
+function formatScore(val) {
+  if (val == null) return null;
+  return Number.isInteger(val) ? String(val) : val.toFixed(1);
+}
+// Mean subscales always show 1 decimal so 2.0 renders "2.0" not "2".
+function formatSubscale(val, subscaleMethod) {
+  if (val == null) return '—';
+  if (subscaleMethod === 'mean') return Number(val).toFixed(1);
+  return Number.isInteger(val) ? String(val) : val.toFixed(1);
+}
+
 // ── Document definition ───────────────────────────────────────────────────────
 
 export function buildDocDefinition(sessionState, config, session, now = new Date()) {
@@ -391,7 +404,7 @@ export function buildSummaryBlock(sessionState, config) {
   const rows = sessionEntries.map(({ sessionKey, q }) => {
     const score        = sessionState.scores?.[sessionKey];
     const alerts       = sessionState.alerts?.[sessionKey] ?? [];
-    const scoreDisplay = score?.total != null ? String(score.total) : 'הושלם';
+    const scoreDisplay = score?.total != null ? (formatScore(score.total) ?? 'הושלם') : 'הושלם';
     const severity     = score?.category ?? '';
 
     const measureCell = {
@@ -479,7 +492,7 @@ export function buildSectionHeader(q, sessionState, sessionKey) {
   sessionKey = sessionKey ?? q.id;
   const score        = sessionState.scores?.[sessionKey];
   const alerts       = sessionState.alerts?.[sessionKey] ?? [];
-  const scoreDisplay = score?.total != null ? String(score.total) : 'הושלם';
+  const scoreDisplay = score?.total != null ? (formatScore(score.total) ?? 'הושלם') : 'הושלם';
   const severity     = score?.category ?? '';
 
   const measureCell = {
@@ -544,6 +557,7 @@ export function buildSubscoresLine(q, sessionState, sessionKey) {
   const entries = Object.entries(score?.subscales ?? {});
   if (!entries.length) return null;
 
+  const subscaleMethod = q.scoring?.subscaleMethod ?? 'sum';
   const entryColumns = [];
   entries.forEach(([subId, val], i) => {
     if (i > 0) {
@@ -554,9 +568,7 @@ export function buildSubscoresLine(q, sessionState, sessionKey) {
       });
     }
     const label = q.subscaleLabels?.[subId] ?? subId;
-    const display = val == null ? '—'
-      : Number.isInteger(val) ? String(val)
-      : val.toFixed(1);
+    const display = formatSubscale(val, subscaleMethod);
     entryColumns.push({
       width: 'auto',
       text: [
