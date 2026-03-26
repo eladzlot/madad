@@ -29,6 +29,7 @@ function cspPlugin() {
 export default defineConfig(({ mode }) => ({
   base: mode === 'development' ? '/' : '/madad/',
   build: {
+    chunkSizeWarningLimit: 1100, // pdf-vendor (pdfmake) is lazy-loaded; real budget enforced by scripts/check-size.mjs
     rollupOptions: {
       input: {
         main:     'index.html',
