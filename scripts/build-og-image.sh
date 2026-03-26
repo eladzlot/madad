@@ -1,16 +1,13 @@
 #!/usr/bin/env bash
 # build-og-image.sh
-# Converts landing/og-image.svg → public/assets/og-image.png
+# Converts OG image SVGs → PNGs in public/
 # Run from the repo root: bash scripts/build-og-image.sh
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-
-SRC="$REPO_ROOT/landing/og-image.svg"
-OUT_DIR="$REPO_ROOT/public/assets"
-OUT="$OUT_DIR/og-image.png"
+OUT_DIR="$REPO_ROOT/public"
 
 # ── Check Inkscape ──────────────────────────────────────────────────────────
 if ! command -v inkscape &> /dev/null; then
@@ -29,32 +26,39 @@ fi
 
 INKSCAPE_VERSION=$(inkscape --version 2>&1 | head -1)
 echo "  ✓ Found: $INKSCAPE_VERSION"
-
-# ── Check source file ───────────────────────────────────────────────────────
-if [ ! -f "$SRC" ]; then
-  echo ""
-  echo "  ✗ Source file not found: $SRC"
-  echo "  Make sure og-image.svg is in the landing/ directory."
-  echo ""
-  exit 1
-fi
-
-# ── Ensure output directory exists ─────────────────────────────────────────
-mkdir -p "$OUT_DIR"
-
-# ── Convert ─────────────────────────────────────────────────────────────────
-echo "  Converting $SRC"
-echo "  → $OUT"
 echo ""
 
-INKSCAPE_LOG=$(mktemp)
-inkscape "$SRC" \
-  --export-type=png \
-  --export-filename="$OUT" \
-  --export-width=1200 \
-  --export-height=630 >"$INKSCAPE_LOG" 2>&1 || { echo ""; echo "  ✗ Inkscape failed:"; cat "$INKSCAPE_LOG"; rm -f "$INKSCAPE_LOG"; exit 1; }
-rm -f "$INKSCAPE_LOG"
+# ── Convert function ─────────────────────────────────────────────────────────
+convert() {
+  local SRC="$1"
+  local OUT="$2"
+
+  if [ ! -f "$SRC" ]; then
+    echo "  ✗ Source not found: $SRC"
+    exit 1
+  fi
+
+  echo "  Converting $(basename "$SRC") → $(basename "$OUT")"
+
+  INKSCAPE_LOG=$(mktemp)
+  inkscape "$SRC" \
+    --export-type=png \
+    --export-filename="$OUT" \
+    --export-width=1200 \
+    --export-height=630 >"$INKSCAPE_LOG" 2>&1 || {
+      echo ""
+      echo "  ✗ Inkscape failed:"
+      cat "$INKSCAPE_LOG"
+      rm -f "$INKSCAPE_LOG"
+      exit 1
+    }
+  rm -f "$INKSCAPE_LOG"
+  echo "  ✓ $(du -h "$OUT" | cut -f1)  $OUT"
+}
+
+# ── Run both conversions ─────────────────────────────────────────────────────
+convert "$REPO_ROOT/public/og-image.svg"     "$OUT_DIR/og-image.png"
+convert "$REPO_ROOT/public/og-image-app.svg" "$OUT_DIR/og-image-app.png"
 
 echo ""
-echo "  ✓ Done: $OUT"
-echo "  Size: $(du -h "$OUT" | cut -f1)"
+echo "  Done."
