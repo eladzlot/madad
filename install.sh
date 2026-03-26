@@ -103,7 +103,7 @@ copy "report.test.js"                  "src/pdf/report.test.js"
 
 # ── App shell ──────────────────────────────────────────────────────────────────
 copy "index.html"                      "index.html"
-copy "landing_index.html"              "landing/index.html"
+copy "landing-index.html"              "landing/index.html"
 copy "composer-index.html"             "composer/index.html"
 copy "app.js"                          "src/app.js"
 copy "app.test.js"                     "src/app.test.js"
@@ -150,6 +150,7 @@ copy "composer.e2e.test.js"            "tests/e2e/composer.e2e.test.js"
 copy "validate-configs.mjs"            "scripts/validate-configs.mjs"
 copy "check-size.mjs"                  "scripts/check-size.mjs"
 copy "build-validator.mjs"             "scripts/build-validator.mjs"
+copy "build-og-image.sh"               "scripts/build-og-image.sh"
 
 # ── Config data ────────────────────────────────────────────────────────────────
 copy "standard.json"                   "public/configs/prod/standard.json"

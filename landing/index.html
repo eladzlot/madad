@@ -5,7 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon" type="image/svg+xml" href="../public/favicon.svg" />
   <link rel="shortcut icon" href="../public/favicon.svg" />
-  <title>מדד — מדידה בלי חיכוך</title>
+  <title>מדד — מדידה קלינית בלי חיכוך</title>
+
+  <!-- SEO -->
+  <meta name="description" content="מדד — כלי חינמי לאבחון פסיכולוגי קליני בעברית. שולחים קישור למטופל, מקבלים PDF עם סיכום ציונים ואזהרות קליניות. PHQ-9, GAD-7, PCL-5, OCI-R ועוד. ללא הרשמה." />
+
+  <!-- Open Graph / WhatsApp -->
+  <meta property="og:title" content="מדד — מדידה קלינית בלי חיכוך" />
+  <meta property="og:description" content="שולחים קישור למטופל, הם ממלאים שאלון בטלפון, מורידים PDF קליני מפורט. ללא הרשמה, ללא עלות, המידע לא עוזב את המכשיר." />
+  <meta property="og:image" content="https://eladzlot.github.io/madad/assets/og-image.png" />
+  <meta property="og:url" content="https://eladzlot.github.io/madad/landing/" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+
   <style>
     @font-face {
       font-family: 'Noto Sans Hebrew';
@@ -99,7 +111,6 @@
       align-items: flex-start;
       gap: clamp(32px, 5vw, 56px);
     }
-    /* Text block — flex end (left in RTL) */
     .hero-text {
       flex: 1 1 0;
       min-width: 0;
@@ -116,10 +127,18 @@
       width: 32px; height: 3px;
       background: var(--teal);
       border-radius: 2px;
-      margin-block-end: 16px;
+      margin-block-end: 18px;
+    }
+    .hero-hook {
+      font-size: clamp(14px, 1.8vw, 16px);
+      color: var(--text);
+      line-height: 1.7;
+      max-width: 380px;
+      margin-block-end: 6px;
+      font-style: italic;
     }
     .hero-sub {
-      font-size: clamp(14px, 1.8vw, 17px);
+      font-size: clamp(13px, 1.6vw, 15px);
       color: var(--muted);
       line-height: 1.75;
       max-width: 360px;
@@ -128,7 +147,7 @@
     .hero-btns {
       display: flex; gap: 10px;
       flex-wrap: wrap;
-      margin-block-end: 14px;
+      margin-block-end: 8px;
     }
     .btn-primary {
       display: inline-flex; align-items: center; gap: 6px;
@@ -140,10 +159,17 @@
       white-space: nowrap;
     }
     .btn-primary:hover { background: var(--teal-dark); }
+    .hero-cta-label {
+      font-size: 11px; color: var(--faint);
+      max-width: 340px;
+      line-height: 1.5;
+      margin-block-end: 16px;
+    }
     .hero-note {
       font-size: 11px; color: var(--faint);
       display: flex;
       gap: 12px; flex-wrap: wrap;
+      margin-block-end: 14px;
     }
     .hero-note span { display: flex; align-items: center; gap: 5px; }
     .hero-note span::before {
@@ -151,22 +177,25 @@
       color: var(--border);
     }
     .hero-note span:first-child::before { display: none; }
+    .hero-credit {
+      font-size: 11px;
+      color: var(--faint);
+      line-height: 1.5;
+    }
 
-    /* PDF Mock — flex start (right in RTL = dominant) */
+    /* PDF Mock */
     .hero-pdf-wrap {
       flex: 0 0 auto;
-      /* Natural width of mock / scale factor — keeps layout space correct */
       width: 370px;
       height: 500px;
       position: relative;
-      /* Clip overflow from scaled mock */
       overflow: hidden;
       border-radius: 6px;
     }
     .hero-pdf-mock {
       position: absolute;
       top: 0; right: 0;
-      width: 480px; /* natural width */
+      width: 480px;
       background: #fff;
       border: 1px solid #E0E8EA;
       border-radius: 8px;
@@ -181,7 +210,6 @@
       font-size: 13px;
       line-height: 1.5;
       color: #1A2E35;
-      /* Subtle top fade to suggest crop */
     }
     .hero-pdf-mock::after {
       content: '';
@@ -192,8 +220,6 @@
       border-radius: 0 0 8px 8px;
       pointer-events: none;
     }
-
-    /* PDF mock internals */
     .pm-header {
       display: flex;
       justify-content: space-between;
@@ -204,235 +230,52 @@
     .pm-header-col { display: flex; flex-direction: column; gap: 1px; }
     .pm-header-label { font-size: 9px; color: #AAAAAA; }
     .pm-header-val { font-size: 11px; color: #1A1A1A; }
-
-    /* Summary table */
     .pm-summary { width: 100%; border-collapse: collapse; margin-block-end: 10px; }
     .pm-summary td { padding: 4px 6px; vertical-align: middle; }
     .pm-sum-measure { font-size: 16px; font-weight: 600; color: #111; text-align: right; white-space: nowrap; }
     .pm-sum-score { font-size: 20px; font-weight: 700; color: #111; text-align: right; padding-inline-end: 6px; padding-inline-start: 6px; white-space: nowrap; }
     .pm-sum-sev { font-size: 11px; color: #555; text-align: right; white-space: nowrap; }
     .pm-sum-badge { text-align: right; padding-inline-start: 8px; width: 100%; }
-
     .pm-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 3px;
-      font-size: 10px;
-      font-weight: 600;
-      padding: 3px 8px;
-      border-radius: 4px;
-      white-space: nowrap;
+      display: inline-flex; align-items: center; gap: 3px;
+      font-size: 10px; font-weight: 600;
+      padding: 3px 8px; border-radius: 4px; white-space: nowrap;
     }
     .pm-pill-warn { background: #FEF3C7; color: #92400E; }
     .pm-pill-crit { background: #FEE2E2; color: #B91C1C; }
-
     .pm-subscores {
-      font-size: 9.5px;
-      color: #AAAAAA;
-      margin-block-end: 8px;
-      direction: rtl;
-      text-align: right;
+      font-size: 9.5px; color: #AAAAAA;
+      margin-block-end: 8px; direction: rtl; text-align: right;
     }
     .pm-subscores strong { color: #555; font-weight: 700; }
-
-    .pm-hr {
-      border: none;
-      border-top: 1px solid #E8E8E8;
-      margin: 12px 0 14px;
-    }
-
-    /* Section header */
+    .pm-hr { border: none; border-top: 1px solid #E8E8E8; margin: 12px 0 14px; }
     .pm-sec-header { margin-block-end: 6px; }
     .pm-sec-title { font-size: 12px; font-weight: 600; color: #444; margin: 0; }
     .pm-sec-score { font-size: 15px; font-weight: 700; color: #333; }
-    .pm-sec-sev { font-size: 8.5px; color: #888; }
-
-    /* Item table */
     .pm-table { width: 100%; border-collapse: collapse; font-size: 11px; }
     .pm-table th {
-      background: #F7F7F7;
-      color: #AAAAAA;
-      font-weight: 700;
-      font-size: 9px;
-      padding: 5px 6px;
-      text-align: right;
-      border: 0.5px solid #EBEBEB;
+      background: #F7F7F7; color: #AAAAAA; font-weight: 700; font-size: 9px;
+      padding: 5px 6px; text-align: right; border: 0.5px solid #EBEBEB;
     }
     .pm-table td {
-      padding: 4.5px 6px;
-      text-align: right;
-      border: 0.5px solid #EBEBEB;
-      color: #333;
+      padding: 4.5px 6px; text-align: right; border: 0.5px solid #EBEBEB; color: #333;
     }
-    .pm-table td:first-child { text-align: center; }
     .pm-table td:last-child { text-align: center; }
     .pm-row-yellow td { background: #FFFBEB; color: #78350F; }
     .pm-row-red td { background: #FEF8F8; color: #991B1B; }
 
-    /* Mobile: stack vertically, image first */
     @media (max-width: 700px) {
       .hero-inner { flex-direction: column; align-items: stretch; }
-      .hero-pdf-wrap {
-        width: 100%;
-        height: 400px;
-      }
-      .hero-pdf-mock {
-        width: 440px;
-        transform: scale(0.70);
-        transform-origin: top right;
-      }
-      /* No order override needed — text first in DOM = right in RTL */
+      .hero-pdf-wrap { width: 100%; height: 400px; }
+      .hero-pdf-mock { width: 440px; transform: scale(0.70); transform-origin: top right; }
       .hero-sub { max-width: 100%; }
+      .hero-hook { max-width: 100%; }
     }
 
     /* ── SECTION BASE ── */
     .sec {
       padding-block: clamp(40px, 6vw, 64px);
       border-bottom: 1px solid var(--border);
-    }
-    .sec:first-of-type {
-      padding-block-start: clamp(28px, 4vw, 44px);
-    }
-
-    /* ── HOW IT WORKS ── */
-    .steps-h {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 0;
-      margin-block-start: 36px;
-    }
-    .step-h {
-      padding-inline-end: clamp(20px, 4vw, 40px);
-      border-inline-end: 1px solid var(--border);
-      padding-inline-start: 0;
-    }
-    .step-h:first-child { padding-inline-start: 0; }
-    .step-h:last-child { border-inline-end: none; padding-inline-end: 0; padding-inline-start: clamp(20px, 4vw, 40px); }
-    .step-h:not(:first-child):not(:last-child) { padding-inline: clamp(20px, 4vw, 40px); }
-    .step-num-h {
-      font-size: 11px; font-weight: 700;
-      color: var(--teal);
-      letter-spacing: 0.08em;
-      margin-block-end: 10px;
-      display: block;
-    }
-    .step-label {
-      font-size: clamp(15px, 2vw, 18px);
-      font-weight: 600;
-      color: var(--text);
-      line-height: 1.35;
-    }
-    .steps-note {
-      margin-block-start: 24px;
-      font-size: 12px;
-      color: var(--faint);
-      display: flex;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
-    .steps-note span + span::before {
-      content: '·';
-      margin-inline-end: 16px;
-      color: var(--border);
-    }
-    @media (max-width: 600px) {
-      .steps-h {
-        grid-template-columns: 1fr;
-        gap: 24px;
-      }
-      .step-h {
-        border-inline-end: none;
-        border-bottom: 1px solid var(--border);
-        padding-inline: 0 !important;
-        padding-block-end: 24px;
-      }
-      .step-h:last-child { border-bottom: none; padding-block-end: 0; }
-    }
-
-
-    /* ── QUESTIONNAIRE LIBRARY ── */
-    .lib-intro {
-      font-size: 15px; color: var(--muted);
-      margin-block-end: 28px;
-      max-width: 520px;
-    }
-    .domain-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: 1px;
-      background: var(--border);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      overflow: hidden;
-      margin-block-end: 20px;
-    }
-    .domain-cell {
-      background: var(--white);
-      padding: 14px 16px;
-    }
-    .domain-name {
-      font-size: 13px; font-weight: 700;
-      color: var(--text);
-      margin-block-end: 3px;
-    }
-    .domain-instruments {
-      font-size: 11px; color: var(--faint);
-      line-height: 1.5;
-    }
-    .lib-workflows {
-      font-size: 13px; color: var(--muted);
-      line-height: 1.7;
-      padding: 14px 16px;
-      background: var(--surface);
-      border-radius: 6px;
-      border-inline-start: 2px solid var(--teal);
-    }
-    .lib-workflows strong { color: var(--text); font-weight: 600; }
-
-    /* ── SECURITY ── */
-    .sec-title {
-      font-size: clamp(24px, 3.5vw, 34px);
-      font-weight: 700;
-      letter-spacing: -0.025em;
-      line-height: 1.2;
-      color: var(--text);
-      margin-block-end: 12px;
-    }
-    .security-body {
-      font-size: 15px; color: var(--muted);
-      line-height: 1.8;
-      max-width: 560px;
-      margin-block-end: 16px;
-    }
-    .security-body strong { color: var(--text); font-weight: 600; }
-    .security-tradeoff {
-      font-size: 13px; color: var(--muted);
-      line-height: 1.7;
-      padding: 14px 16px;
-      background: var(--surface);
-      border-radius: 6px;
-      border-inline-start: 2px solid var(--border);
-      max-width: 560px;
-    }
-    .security-tradeoff strong { color: var(--text); font-weight: 600; }
-
-    /* ── ABOUT ── */
-    .about-body {
-      font-size: 17px;
-      line-height: 1.85;
-      color: var(--text);
-      max-width: 560px;
-      margin-block-end: 20px;
-    }
-    .about-sig {
-      font-size: 13px; color: var(--faint);
-      line-height: 1.6;
-    }
-    .about-sig strong { color: var(--muted); font-weight: 600; }
-
-    /* ── COMPOSER TEASER ── */
-    .composer-sec {
-      text-align: center;
     }
     .sec-title {
       font-size: clamp(24px, 3.5vw, 34px);
@@ -447,16 +290,252 @@
       line-height: 1.75;
       margin-block-end: 28px;
     }
-    .btn-secondary {
-      display: inline-flex; align-items: center; gap: 6px;
+
+    /* ── HOW IT WORKS ── */
+    .steps-h {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      margin-block-start: 36px;
+    }
+    .step-h {
+      padding-inline-end: clamp(16px, 3vw, 32px);
+      border-inline-end: 1px solid var(--border);
+    }
+    .step-h:last-child { border-inline-end: none; padding-inline-end: 0; padding-inline-start: clamp(16px, 3vw, 32px); }
+    .step-h:not(:first-child):not(:last-child) { padding-inline: clamp(16px, 3vw, 32px); }
+    .step-h:first-child { padding-inline-start: 0; }
+    .step-num-h {
+      font-size: 11px; font-weight: 700;
+      color: var(--teal); letter-spacing: 0.08em;
+      margin-block-end: 10px; display: block;
+    }
+    .step-label {
+      font-size: clamp(13px, 1.8vw, 16px);
+      font-weight: 600; color: var(--text); line-height: 1.35;
+    }
+    .steps-note {
+      margin-block-start: 28px;
+      font-size: 12px; color: var(--faint);
+      display: flex; gap: 16px; flex-wrap: wrap;
+    }
+    .steps-note span + span::before {
+      content: '·'; margin-inline-end: 16px; color: var(--border);
+    }
+    @media (max-width: 700px) {
+      .steps-h { grid-template-columns: repeat(2, 1fr); gap: 24px; }
+      .step-h {
+        border-inline-end: none;
+        padding-inline: 0 !important;
+      }
+      .step-h:nth-child(odd) { border-inline-end: 1px solid var(--border); padding-inline-end: 20px !important; }
+    }
+    @media (max-width: 400px) {
+      .steps-h { grid-template-columns: 1fr; }
+      .step-h:nth-child(odd) { border-inline-end: none !important; padding-inline-end: 0 !important; border-bottom: 1px solid var(--border); padding-block-end: 20px; }
+      .step-h:last-child { border-bottom: none; padding-block-end: 0; }
+    }
+
+    /* ── QUESTIONNAIRE LIBRARY ── */
+    .lib-intro {
+      font-size: 15px; color: var(--muted);
+      line-height: 1.75;
+      max-width: 540px;
+      margin-block-end: 24px;
+    }
+    .lib-examples {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-block-end: 20px;
+    }
+    .lib-tag {
+      font-size: 12px; font-weight: 600;
+      color: var(--muted);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 5px 12px;
+      white-space: nowrap;
+    }
+    .lib-tag-more {
+      font-size: 12px; font-weight: 600;
       color: var(--teal);
-      font-size: 14px; font-weight: 600;
-      padding: 11px 24px; border-radius: 999px;
-      text-decoration: none;
+      background: transparent;
       border: 1px solid var(--teal);
+      border-radius: 4px;
+      padding: 5px 12px;
+      white-space: nowrap;
+      text-decoration: none;
       transition: background 120ms, color 120ms;
     }
-    .btn-secondary:hover { background: var(--teal); color: var(--white); }
+    .lib-tag-more:hover { background: var(--teal); color: var(--white); }
+
+    /* ── COMPOSER SECTION ── */
+    .composer-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: clamp(32px, 5vw, 64px);
+      align-items: start;
+    }
+    .composer-mock {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      font-size: 12px;
+      box-shadow: 0 2px 12px rgba(26,46,53,0.07);
+    }
+    .composer-mock-header {
+      background: var(--navy);
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 8px;
+      direction: rtl;
+    }
+    .composer-mock-brand {
+      font-size: 15px; font-weight: 700; color: white;
+      letter-spacing: -0.03em;
+    }
+    .composer-mock-sep {
+      color: #4A6670; font-size: 13px;
+    }
+    .composer-mock-subtitle {
+      font-size: 12px; color: #9BB0B8;
+    }
+    .composer-mock-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+      background: var(--white);
+      direction: rtl;
+    }
+    .composer-mock-search {
+      flex: 1;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 5px 10px;
+      font-size: 11px;
+      color: var(--text);
+      text-align: right;
+      direction: rtl;
+    }
+    .composer-mock-tab {
+      font-size: 10px; font-weight: 600;
+      color: var(--white);
+      background: var(--teal);
+      border-radius: 4px;
+      padding: 4px 8px;
+      white-space: nowrap;
+    }
+    .composer-mock-reset {
+      font-size: 10px; color: var(--faint);
+      white-space: nowrap;
+    }
+    .composer-mock-list-label {
+      font-size: 10px; font-weight: 700;
+      color: var(--faint); letter-spacing: 0.06em;
+      text-align: right;
+      padding: 8px 12px 4px;
+      background: var(--white);
+    }
+    .composer-mock-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 12px;
+      border-top: 1px solid var(--border);
+      background: var(--white);
+    }
+    .composer-mock-item--checked {
+      background: #EEF8FA;
+    }
+    .composer-mock-item-name {
+      flex: 1;
+      font-size: 11px; font-weight: 600;
+      color: var(--text);
+      text-align: right;
+    }
+    .composer-mock-item-id {
+      font-size: 9px; color: var(--faint);
+      font-family: monospace;
+      white-space: nowrap;
+    }
+    .composer-mock-checkbox {
+      width: 16px; height: 16px; flex-shrink: 0;
+      border: 1.5px solid var(--border);
+      border-radius: 4px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .composer-mock-checkbox--on {
+      background: var(--teal);
+      border-color: var(--teal);
+      color: white;
+      font-size: 10px; font-weight: 700;
+    }
+    @media (max-width: 640px) {
+      .composer-inner { grid-template-columns: 1fr; }
+      .composer-mock { display: none; }
+    }
+
+    /* ── SECURITY ── */
+    .security-body {
+      font-size: 15px; color: var(--muted);
+      line-height: 1.8; margin-block-end: 16px;
+    }
+    .security-body strong { color: var(--text); font-weight: 600; }
+    .security-tradeoff {
+      font-size: 13px; color: var(--muted);
+      line-height: 1.7; padding: 14px 16px;
+      background: var(--surface); border-radius: 6px;
+      border-inline-start: 2px solid var(--border);
+    }
+    .security-tradeoff strong { color: var(--text); font-weight: 600; }
+
+    /* ── MISSION ── */
+    .mission-body {
+      font-size: 15px; line-height: 1.8;
+      color: var(--text);
+    }
+    .mission-body p { margin-block-end: 20px; }
+    .mission-body p:last-of-type { margin-block-end: 24px; }
+    .mission-body strong { font-weight: 600; }
+    .mission-close {
+      font-size: 15px; line-height: 1.75;
+      color: var(--muted);
+      padding: 16px 18px;
+      background: var(--surface);
+      border-radius: 6px;
+      border-inline-start: 2px solid var(--teal);
+      margin-block-end: 28px;
+    }
+    .about-sig {
+      font-size: 13px; color: var(--faint); line-height: 1.7;
+    }
+    .about-sig strong { color: var(--muted); font-weight: 600; }
+    .mission-invite {
+      margin-block: 24px 20px;
+    }
+    .mission-invite p {
+      font-size: 15px; color: var(--muted);
+      line-height: 1.75; margin-block-end: 10px;
+    }
+    .mission-invite-link {
+      font-size: 14px; font-weight: 600;
+      color: var(--teal-dark);
+      text-decoration: none;
+      border-bottom: 1px solid var(--border);
+      padding-block-end: 1px;
+      transition: border-color 120ms, color 120ms;
+    }
+    .mission-invite-link:hover {
+      color: var(--teal);
+      border-color: var(--teal);
+    }
 
     /* ── FINAL CTA ── */
     .cta-sec {
@@ -465,15 +544,11 @@
     }
     .cta-headline {
       font-size: clamp(32px, 5vw, 52px);
-      font-weight: 700;
-      letter-spacing: -0.03em;
-      color: var(--text);
-      margin-block-end: 10px;
+      font-weight: 700; letter-spacing: -0.03em;
+      color: var(--text); margin-block-end: 10px;
     }
     .cta-sub {
-      font-size: 16px;
-      color: var(--muted);
-      margin-block-end: 32px;
+      font-size: 16px; color: var(--muted); margin-block-end: 32px;
     }
     .btn-cta {
       display: inline-flex; align-items: center; gap: 8px;
@@ -484,6 +559,15 @@
       transition: background 120ms, transform 120ms;
     }
     .btn-cta:hover { background: var(--teal-dark); transform: translateY(-1px); }
+    .btn-secondary {
+      display: inline-flex; align-items: center; gap: 6px;
+      color: var(--teal); font-size: 14px; font-weight: 600;
+      padding: 11px 24px; border-radius: 999px;
+      text-decoration: none;
+      border: 1px solid var(--teal);
+      transition: background 120ms, color 120ms;
+    }
+    .btn-secondary:hover { background: var(--teal); color: var(--white); }
 
     /* ── FOOTER ── */
     footer {
@@ -495,18 +579,11 @@
       justify-content: space-between;
       flex-wrap: wrap; gap: 12px;
     }
-    .footer-brand {
-      font-size: 16px; font-weight: 700;
-      color: var(--text); letter-spacing: -0.02em;
-    }
-    .footer-copy {
-      font-size: 12px; color: var(--faint);
-    }
+    .footer-brand { font-size: 16px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; }
+    .footer-copy { font-size: 12px; color: var(--faint); }
     .footer-links { display: flex; gap: 20px; }
     .footer-links a {
-      font-size: 12px; color: var(--faint);
-      text-decoration: none;
-      transition: color 120ms;
+      font-size: 12px; color: var(--faint); text-decoration: none; transition: color 120ms;
     }
     .footer-links a:hover { color: var(--text); }
 
@@ -515,12 +592,15 @@
       from { opacity: 0; transform: translateY(14px); }
       to   { opacity: 1; transform: translateY(0); }
     }
-    .hero-pdf-wrap { animation: fadeUp 500ms ease both; }
-    .hero-headline { animation: fadeUp 500ms 60ms ease both; }
-    .hero-rule     { animation: fadeUp 500ms 120ms ease both; }
-    .hero-sub      { animation: fadeUp 500ms 180ms ease both; }
-    .hero-btns     { animation: fadeUp 500ms 240ms ease both; }
-    .hero-note     { animation: fadeUp 500ms 300ms ease both; }
+    .hero-pdf-wrap  { animation: fadeUp 500ms ease both; }
+    .hero-headline  { animation: fadeUp 500ms 60ms ease both; }
+    .hero-rule      { animation: fadeUp 500ms 120ms ease both; }
+    .hero-hook      { animation: fadeUp 500ms 160ms ease both; }
+    .hero-sub       { animation: fadeUp 500ms 200ms ease both; }
+    .hero-btns      { animation: fadeUp 500ms 260ms ease both; }
+    .hero-cta-label { animation: fadeUp 500ms 300ms ease both; }
+    .hero-note      { animation: fadeUp 500ms 340ms ease both; }
+    .hero-credit    { animation: fadeUp 500ms 380ms ease both; }
   </style>
 </head>
 <body>
@@ -529,37 +609,31 @@
   <div class="nav-inner">
     <a href="./" class="nav-logo">מדד</a>
     <div class="nav-links">
-      <a href="../composer/" class="nav-link">מחולל קישורים</a>
-      <a href="../?configs=configs/prod/standard.json&items=phq9" class="nav-cta">נסו שאלון לדוגמה</a>
+      <a href="../?configs=configs/prod/standard.json&items=phq9&ref=demo" class="nav-link">נסו שאלון לדוגמה</a>
+      <a href="../composer/" class="nav-cta">צור קישור למטופל</a>
     </div>
   </div>
 </nav>
 
+<!-- ── HERO ── -->
 <section class="hero">
   <div class="wrap">
     <div class="hero-inner">
 
-      <!-- Text block (left in RTL) -->
       <div class="hero-text">
         <h1 class="hero-headline">מדידה<br>בלי חיכוך</h1>
         <div class="hero-rule"></div>
-        <p class="hero-sub">שולחים קישור, מקבלים PDF עם סיכום קליני ברור ומוכן לשימוש</p>
+        <p class="hero-hook">מצאתי את עצמי מחפף — כי שכחתי להדפיס, כי לא מצאתי את הקובץ, כי זה לקח יותר ממה שהיה לי. בניתי כלי שמסיר את החיכוך הזה לגמרי.</p>
+        <p class="hero-sub">שולחים קישור למטופל, הם ממלאים בטלפון, מורידים PDF קליני מפורט — ללא הרשמה, ללא עלות.</p>
         <div class="hero-btns">
-          <a href="../?configs=configs/prod/standard.json&items=phq9" class="btn-primary">נסו שאלון לדוגמה</a>
+          <a href="../?configs=configs/prod/standard.json&items=phq9&ref=demo" class="btn-primary">נסו עכשיו</a>
         </div>
-        <div class="hero-note">
-          <span>ללא עלות</span>
-          <span>ללא הרשמה</span>
-          <span>ללא התקנה</span>
-        </div>
+        <p class="hero-cta-label">ממלאים שאלון קצר — ומקבלים את הדוח שהמטופל שלכם יוריד</p>
       </div>
 
-
-      <!-- PDF Mock (left in RTL = after/secondary) -->
+      <!-- PDF Mock -->
       <div class="hero-pdf-wrap">
         <div class="hero-pdf-mock">
-
-          <!-- Header row -->
           <div class="pm-header">
             <div class="pm-header-col">
               <span class="pm-header-label">שם</span>
@@ -574,10 +648,6 @@
               <span class="pm-header-val">24.03.2026</span>
             </div>
           </div>
-
-          <!-- Summary: dir=rtl → first td = rightmost.
-               Columns right→left: measure | score | badge
-               Score col is narrow so it sits tight to the measure name. -->
           <table class="pm-summary" dir="rtl" style="table-layout:auto">
             <tbody>
               <tr>
@@ -599,26 +669,16 @@
               </tr>
             </tbody>
           </table>
-
           <hr class="pm-hr">
-
-          <!-- OCI-R section header -->
           <div class="pm-sec-header">
             <span class="pm-sec-title">טורדנות-כפייתיות (OCI-R)</span>
             <span class="pm-sec-score">&nbsp;28</span>
           </div>
-
-          <!-- Subscores -->
           <div class="pm-subscores">
             שטיפה&nbsp;<strong>4</strong>&nbsp;·&nbsp;אובססיות&nbsp;<strong>3</strong>&nbsp;·&nbsp;אגירה&nbsp;<strong>3</strong>&nbsp;·&nbsp;סדר&nbsp;<strong>5</strong>&nbsp;·&nbsp;בדיקה&nbsp;<strong>6</strong>&nbsp;·&nbsp;נטרול&nbsp;<strong>7</strong>
           </div>
-
-          <!-- Table: text(right) | score(left) -->
           <table class="pm-table" dir="rtl" style="table-layout:fixed">
-            <colgroup>
-              <col>
-              <col style="width:40px">
-            </colgroup>
+            <colgroup><col><col style="width:40px"></colgroup>
             <thead>
               <tr>
                 <th>תוכן הפריט</th>
@@ -652,9 +712,10 @@
               </tr>
             </tbody>
           </table>
+        </div>
+      </div>
 
-        </div><!-- /hero-pdf-mock -->
-      </div><!-- /hero-pdf-wrap -->    </div><!-- /hero-inner -->
+    </div>
   </div>
 </section>
 
@@ -664,15 +725,19 @@
     <div class="steps-h">
       <div class="step-h">
         <span class="step-num-h">01</span>
-        <span class="step-label">שולחים קישור למטופל</span>
+        <span class="step-label">פותחים את מחולל הקישורים ובוחרים שאלונים</span>
       </div>
       <div class="step-h">
         <span class="step-num-h">02</span>
-        <span class="step-label">המטופל ממלא את השאלון</span>
+        <span class="step-label">שולחים קישור למטופל דרך וואטסאפ או מייל</span>
       </div>
       <div class="step-h">
         <span class="step-num-h">03</span>
-        <span class="step-label">מקבלים PDF עם סיכום קליני ברור</span>
+        <span class="step-label">המטופל ממלא את השאלון בטלפון, בזמנו החופשי</span>
+      </div>
+      <div class="step-h">
+        <span class="step-num-h">04</span>
+        <span class="step-label">מקבלים PDF עם ציונים, תת-סולמות ואזהרות קליניות</span>
       </div>
     </div>
     <div class="steps-note">
@@ -684,59 +749,81 @@
   </div>
 </section>
 
-<!-- ── QUESTIONNAIRE LIBRARY ── -->
-<section class="sec">
+
+<!-- ── COMPOSER ── -->
+<section class="sec composer-sec">
   <div class="wrap">
-    <h2 class="sec-title">שאלונים לכל הצרכים הנפוצים</h2>
-    <div class="domain-grid">
-      <div class="domain-cell">
-        <div class="domain-name">דיכאון</div>
-        <div class="domain-instruments">PHQ-9</div>
+    <div class="composer-inner">
+      <div class="composer-text">
+        <h2 class="sec-title">צרו קישור למטופל שלכם</h2>
+        <p style="font-size:15px; color:var(--muted); line-height:1.75; margin-block-end: 20px;">
+          מחולל הקישורים מאפשר לבחור שאלונים, להזין מזהה מטופל, ולקבל קישור מוכן לשליחה — תוך פחות מדקה.
+        </p>
+
+        <!-- Questionnaire tags -->
+        <div class="lib-examples" style="margin-block-end: 6px;">
+          <span class="lib-tag">PHQ-9 דיכאון</span>
+          <span class="lib-tag">GAD-7 חרדה</span>
+          <span class="lib-tag">PCL-5 PTSD</span>
+          <span class="lib-tag">OCI-R טורדנות</span>
+          <span class="lib-tag">ISI שינה</span>
+          <span class="lib-tag">WAI-6 ברית טיפולית</span>
+        </div>
+        <p style="font-size:12px; color:var(--faint); margin-block-end: 20px; line-height:1.6;">
+          ועוד — כולם בעברית, עם ניקוד, תת-סולמות ואזהרות קליניות.
+          חלק מגיעים ב<strong style="color:var(--muted)">חבילות חכמות</strong> שמנתבות אוטומטית לפי התוצאה.
+        </p>
+
+        <a href="../composer/" class="btn-secondary">פתחו את מחולל הקישורים ←</a>
       </div>
-      <div class="domain-cell">
-        <div class="domain-name">חרדה</div>
-        <div class="domain-instruments">GAD-7 · ASI-3 · SPIN · OASIS</div>
+
+      <!-- Composer mock — matches actual UI -->
+      <div class="composer-mock" aria-hidden="true">
+        <!-- Header: navy bar, right-aligned -->
+        <div class="composer-mock-header">
+          <span class="composer-mock-brand">מדד</span>
+          <span class="composer-mock-sep">|</span>
+          <span class="composer-mock-subtitle">מחולל קישורים</span>
+        </div>
+        <!-- Toolbar: in RTL, first element = rightmost -->
+        <div class="composer-mock-toolbar">
+          <div class="composer-mock-search">חרדה</div>
+          <span class="composer-mock-tab">פרטים ⓘ</span>
+          <span class="composer-mock-reset">↺ איפוס</span>
+        </div>
+        <!-- List label -->
+        <div class="composer-mock-list-label">שאלונים</div>
+        <!-- 5 rows: 1 and 4 highlighted. In RTL flex, first child = rightmost -->
+        <div class="composer-mock-item composer-mock-item--checked">
+          <div class="composer-mock-checkbox composer-mock-checkbox--on">✓</div>
+          <div class="composer-mock-item-name">שאלון רגישות לחרדה (ASI-3)</div>
+          <div class="composer-mock-item-id">asi_3</div>
+        </div>
+        <div class="composer-mock-item">
+          <div class="composer-mock-checkbox"></div>
+          <div class="composer-mock-item-name">שאלון חרדה מוכללת (GAD-7)</div>
+          <div class="composer-mock-item-id">gad7</div>
+        </div>
+        <div class="composer-mock-item">
+          <div class="composer-mock-checkbox"></div>
+          <div class="composer-mock-item-name">שאלון חומרת חרדה ופגיעה תפקודית (OASIS)</div>
+          <div class="composer-mock-item-id">oasis</div>
+        </div>
+        <div class="composer-mock-item composer-mock-item--checked">
+          <div class="composer-mock-checkbox composer-mock-checkbox--on">✓</div>
+          <div class="composer-mock-item-name">שאלון פוביה חברתית (SPIN)</div>
+          <div class="composer-mock-item-id">spin</div>
+        </div>
+        <div class="composer-mock-item">
+          <div class="composer-mock-checkbox"></div>
+          <div class="composer-mock-item-name">שאלון חרדה לילדים — דיווח עצמי (SCARED)</div>
+          <div class="composer-mock-item-id">scared_child</div>
+        </div>
       </div>
-      <div class="domain-cell">
-        <div class="domain-name">טראומה ו-PTSD</div>
-        <div class="domain-instruments">PCL-5 · PC-PTSD-5 · PTCI</div>
-      </div>
-      <div class="domain-cell">
-        <div class="domain-name">OCD</div>
-        <div class="domain-instruments">OCI-R</div>
-      </div>
-      <div class="domain-cell">
-        <div class="domain-name">פאניקה</div>
-        <div class="domain-instruments">PDSS-SR</div>
-      </div>
-      <div class="domain-cell">
-        <div class="domain-name">שינה</div>
-        <div class="domain-instruments">ISI</div>
-      </div>
-      <div class="domain-cell">
-        <div class="domain-name">כעס</div>
-        <div class="domain-instruments">DAR-5</div>
-      </div>
-      <div class="domain-cell">
-        <div class="domain-name">ברית טיפולית</div>
-        <div class="domain-instruments">WAI-6</div>
-      </div>
-      <div class="domain-cell">
-        <div class="domain-name">תפקוד יומיומי</div>
-        <div class="domain-instruments">WSAS</div>
-      </div>
-      <div class="domain-cell">
-        <div class="domain-name">הערכה ראשונית</div>
-        <div class="domain-instruments">DIAMOND · TOP-3</div>
-      </div>
-    </div>
-    <div class="lib-workflows">
-      חלק מהשאלונים מגיעים בחבילות חכמות — השאלון הבא נשלח אוטומטית לפי התוצאה.
-      <strong>לדוגמה:</strong> סינון טראומה (PC-PTSD-5) שמוסיף PCL-5 ו-PTCI אוטומטית אם הציון חיובי.
-      או הערכה ראשונית (DIAMOND) שמזהה תחומי קושי ומשלים בשאלוני עומק ממוקדים.
     </div>
   </div>
 </section>
+
 
 <!-- ── SECURITY ── -->
 <section class="sec">
@@ -753,18 +840,35 @@
   </div>
 </section>
 
-<!-- ── ABOUT ── -->
+<!-- ── MISSION ── -->
 <section class="sec">
   <div class="wrap">
     <h2 class="sec-title">למה בניתי את זה</h2>
-    <p class="about-body">
-      מדידה חשובה לי. אבל מצאתי את עצמי מחפף — כי שכחתי להדפיס שאלון, כי לא מצאתי את הקובץ, כי זה פשוט לקח יותר ממה שהיה לי.
-      חיפשתי כלי דיגיטלי שיענה על הצרכים שלי ולא מצאתי. אז בניתי לעצמי. עכשיו אני רוצה לשתף אותו.
-    </p>
+    <div class="mission-body">
+      <p>
+        לטיפול צריכות להיות תוצאות. כמטפל, חשוב לי לדעת שאני באמת עוזר למטופלים שלי — לא רק להרגיש שאנחנו מתקדמים, אלא לראות שזה קורה בפועל.
+      </p>
+      <p>
+        הדבר הזה התחדד אצלי כשעבדתי עם מטופל עם פוסט-טראומה. היה קשר טוב, היו תובנות, והתחושה הייתה שאנחנו בכיוון הנכון. אבל כשבדקנו מדדים — <strong>שום דבר לא זז</strong>. רק כשהחלפנו מוקד, השינוי היה מהיר וברור.
+      </p>
+      <p>
+        מאז, מדידה היא עבורי לא תוספת — אלא חלק מהותי מטיפול טוב.
+      </p>
+    </div>
+    <div class="mission-close">
+      המשימה שלנו במרכז להחלמה מטראומה היא לקדם סטנדרט טיפולי ברמה הגבוהה ביותר.
+      מדד נבנה כדי שמדידה תהיה פשוטה מספיק שתהפוך לחלק קבוע מהטיפול — לא לתוספת שצריך להתאמץ בשבילה.
+      חינמי, בעברית, לכל מטפל ומטפלת בישראל.
+    </div>
+    <div class="mission-invite">
+      <p>
+        אתם חלק מהפרויקט הזה. אשמח לשמוע אם הכלי שינה משהו בעבודה שלכם, איזה שאלון חסר, מה אפשר לשפר — או סתם להגיד שלום.
+      </p>
+      <a href="mailto:elad.zlotnick@mail.huji.ac.il" class="mission-invite-link">elad.zlotnick@mail.huji.ac.il</a>
+    </div>
     <div class="about-sig">
       <strong>ד"ר אלעד זלוטניק</strong><br>
-      המרכז להחלמה מטראומה · האוניברסיטה העברית בירושלים<br>
-      <a href="mailto:elad.zlotnick@mail.huji.ac.il" style="color:var(--teal-dark);text-decoration:none;">elad.zlotnick@mail.huji.ac.il</a>
+      המרכז להחלמה מטראומה · האוניברסיטה העברית בירושלים
     </div>
   </div>
 </section>
@@ -773,8 +877,7 @@
 <section class="sec cta-sec">
   <div class="wrap">
     <h2 class="cta-headline">נסו עכשיו</h2>
-    <p class="cta-sub">זה לוקח פחות מדקה</p>
-    <a href="../?configs=configs/prod/standard.json&items=phq9" class="btn-cta">נסו שאלון לדוגמה</a>
+    <a href="../?configs=configs/prod/standard.json&items=phq9&ref=demo" class="btn-cta">נסו שאלון לדוגמה</a>
   </div>
 </section>
 
@@ -788,11 +891,3 @@
       <div class="footer-links">
         <a href="../composer/">מחולל קישורים</a>
         <a href="https://ctr.huji.ac.il" target="_blank" rel="noopener">המרכז</a>
-        <a href="https://github.com/eladzlot/madad" target="_blank" rel="noopener">GitHub</a>
-      </div>
-    </div>
-  </div>
-</footer>
-
-</body>
-</html>

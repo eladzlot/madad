@@ -17,6 +17,7 @@
     "lint:fix": "eslint src tests composer/src --fix",
     "validate:configs": "node scripts/validate-configs.mjs",
     "size": "node scripts/check-size.mjs",
+    "build:og": "bash scripts/build-og-image.sh",
     "ci": "npm run lint && npm test && npm run validate:configs && npm run build && npm run size && npm run e2e"
   },
   "dependencies": {
