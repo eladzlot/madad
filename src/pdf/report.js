@@ -291,7 +291,7 @@ export function buildDocDefinition(sessionState, config, session, now = new Date
       },
     },
     content,
-    footer: buildFooter(config),
+    footer: buildFooter(),
   };
 }
 
@@ -775,7 +775,7 @@ export function resolveOptions(item, questionnaire) {
 
 // ── Footer ────────────────────────────────────────────────────────────────────
 
-export function buildFooter(config) {
+export function buildFooter() {
   const composerUrl = getComposerUrl();
 
   return (currentPage, pageCount) => ({
@@ -798,7 +798,7 @@ export function buildFooter(config) {
 // ── Backward-compat exports ───────────────────────────────────────────────────
 // These functions are tested directly and/or called from external code.
 // buildHeader previously took (session, config, now) — config was used only for
-// the version footer (now in buildFooter). We accept and ignore config here.
+// the version footer (now in buildFooter).
 
 export { buildHeader as _buildHeaderNew };
 
