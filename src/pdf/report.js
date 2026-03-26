@@ -29,7 +29,16 @@ import regularFontUrl from '../../public/fonts/NotoSansHebrew-Regular.ttf?url';
 import boldFontUrl    from '../../public/fonts/NotoSansHebrew-Bold.ttf?url';
 
 // ── Branding ──────────────────────────────────────────────────────────────────
-const getAppUrl = () => (typeof window !== 'undefined' ? window.location.origin : '');
+const getAppUrl = () => {
+  if (typeof window === 'undefined') return 'https://eladzlot.github.io/madad/';
+  const { origin, pathname } = window.location;
+  // Resolve the landing page URL relative to wherever the app is deployed.
+  // pathname is e.g. /madad/ or /madad/index.html — strip to the base path.
+  const base = pathname.replace(/\/(composer|landing)(\/.*)?$/, '/');
+  return `${origin}${base}`;
+};
+
+const getComposerUrl = () => `${getAppUrl()}composer/`;
 
 // ── Layout constants ──────────────────────────────────────────────────────────
 const PAGE_MARGIN  = 40;
@@ -767,20 +776,16 @@ export function resolveOptions(item, questionnaire) {
 // ── Footer ────────────────────────────────────────────────────────────────────
 
 export function buildFooter(config) {
-  const appVer = config.appVersion ?? '—';
-  const cfgVer = config.version    ?? '—';
+  const composerUrl = getComposerUrl();
 
   return (currentPage, pageCount) => ({
     columns: [{
       text: [
         { text: `עמוד${NBSP}${currentPage}${NBSP}מתוך${NBSP}${pageCount}` },
         { text: `${NBSP}${NBSP}|${NBSP}${NBSP}` },
-        { text: `גרסת${NBSP}אפליקציה${NBSP}${appVer}` },
+        { text: composerUrl, link: composerUrl, color: '#1E9BAA' },
         { text: `${NBSP}${NBSP}|${NBSP}${NBSP}` },
-        { text: `גרסת${NBSP}תצורה${NBSP}${cfgVer}` },
-        { text: `${NBSP}${NBSP}|${NBSP}${NBSP}` },
-        { text: `מדד${NBSP}|${NBSP}Madad` },
-        { text: `${NBSP}${NBSP}` + getAppUrl(), link: getAppUrl() },
+        ...bidiNodes(`מדד — מדידה קלינית בלי חיכוך`),
       ],
       alignment: 'right',
       fontSize:  SZ.footer,
