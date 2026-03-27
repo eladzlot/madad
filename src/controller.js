@@ -30,7 +30,7 @@ function resolveOptions(item, { questionnaire }) {
 }
 
 function resolveItem(item, context) {
-  return [resolveOptions].reduce((it, fn) => fn(it, context), item);
+  return resolveOptions(item, context);
 }
 
 // ── Factory ───────────────────────────────────────────────────────────────────
@@ -46,6 +46,7 @@ export function createController(container, router) {
   let _advanceTimer  = null;
   let _session       = null;
   let _locked        = false; // true once patient proceeds to results screen
+  let _sessionState  = null;  // saved when onSessionComplete fires; used by _onPopForward
 
   // ── Shell setup ──────────────────────────────────────────────────────────
 
@@ -143,6 +144,9 @@ export function createController(container, router) {
 
   function _onPopBack(screen) {
     if (_locked) return;
+    // Cancel any pending auto-advance. A rapid tap+swipe could otherwise fire
+    // engine.advance() after the back navigation has already repositioned the engine.
+    clearTimeout(_advanceTimer);
 
     if (screen === 'welcome') {
       location.reload();
@@ -176,7 +180,9 @@ export function createController(container, router) {
         _shellEl.gesturesEnabled = true;
         const completionEl = document.createElement('completion-screen');
         _shellEl.appendChild(completionEl);
-        completionEl.addEventListener('view-results', _onViewResults, { once: true });
+        // Pass _sessionState via closure — do NOT pass _onViewResults directly;
+    // a bare event-handler reference receives the Event object, not the session state.
+    completionEl.addEventListener('view-results', () => _onViewResults(_sessionState), { once: true });
       }
       return;
     }
@@ -271,6 +277,7 @@ export function createController(container, router) {
   }
 
   function onSessionComplete(sessionState) {
+    _sessionState = sessionState;
     if (_itemEl) { _itemEl.remove(); _itemEl = null; }
     if (_progressEl) { _progressEl.remove(); _progressEl = null; }
     if (_shellEl) {

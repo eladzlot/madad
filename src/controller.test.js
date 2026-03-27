@@ -618,3 +618,162 @@ describe('session complete', () => {
     expect(resultsEl.results[0].total).toBe(14);
   });
 });
+
+// ─── Bug C-1: view-results after back-then-forward to completion screen ────────
+
+describe('view-results via forward popstate preserves session scores (Bug C-1)', () => {
+  // Regression: when the patient backs from the completion screen and then navigates
+  // forward to it again via history, the view-results listener was previously attached
+  // as a bare function reference — so it received the DOM Event, not sessionState.
+  // Results screen showed no scores and generateReport received wrong data.
+
+  it('results-screen receives correct scores after back→forward→view-results', () => {
+    const { container, orchestrator, questionnaire, router } = makeSetup();
+    const scores = { [questionnaire.id]: { total: 21, subscales: {}, category: 'severe' } };
+
+    // Complete the session
+    orchestrator._fireSessionComplete({ scores });
+    // Back from completion screen
+    router._fireBack('q');
+    // Forward to completion screen again (re-mounts completion-screen)
+    router._fireForward('complete');
+    // View results
+    container.querySelector('completion-screen')
+      .dispatchEvent(new CustomEvent('view-results', { bubbles: true }));
+
+    const resultsEl = container.querySelector('results-screen');
+    expect(resultsEl).toBeTruthy();
+    expect(resultsEl.results).toHaveLength(1);
+    expect(resultsEl.results[0].total).toBe(21);
+  });
+
+  it('results-screen is not empty after back→forward→view-results', () => {
+    const { container, orchestrator, questionnaire, router } = makeSetup();
+    const scores = { [questionnaire.id]: { total: 7, subscales: {}, category: null } };
+
+    orchestrator._fireSessionComplete({ scores });
+    router._fireBack('q');
+    router._fireForward('complete');
+    container.querySelector('completion-screen')
+      .dispatchEvent(new CustomEvent('view-results', { bubbles: true }));
+
+    const resultsEl = container.querySelector('results-screen');
+    expect(resultsEl.results).not.toHaveLength(0);
+  });
+});
+
+// ─── Bug C-2: _onPopBack cancels pending advance timer ────────────────────────
+
+describe('_onPopBack cancels the pending advance timer (Bug C-2)', () => {
+  // Regression: a rapid tap (starting the 150ms auto-advance) followed immediately
+  // by a swipe-back would fire engine.advance() on the engine after _onPopBack had
+  // already called engine.back(), advancing from the wrong position.
+
+  it('engine.advance() is NOT called after back fires during a pending auto-advance', () => {
+    vi.useFakeTimers();
+    const { container, engine, router } = makeSetup();
+
+    // Record an answer to enable the auto-advance path
+    container.querySelector('item-select')
+      .dispatchEvent(new CustomEvent('answer', { detail: { value: 1 }, bubbles: true }));
+
+    // Tap — starts the 150ms advance timer
+    container.querySelector('item-select')
+      .dispatchEvent(new CustomEvent('advance', { bubbles: true }));
+
+    // Swipe back immediately — fires before the 150ms is up
+    // First advance to second item to make back possible
+    vi.advanceTimersByTime(150);  // let the advance land on q2
+    engine.canGoBack.mockReturnValue(true);
+
+    // Now simulate: tap on q2 (starts a new timer), then immediately swipe back
+    container.querySelector('item-select')
+      .dispatchEvent(new CustomEvent('advance', { bubbles: true })); // starts timer
+    const advancesBefore = engine.advance.mock.calls.length;
+    router._fireBack('q');        // back fires before 150ms
+    vi.advanceTimersByTime(150);  // timer would have fired if not cancelled
+
+    expect(engine.advance.mock.calls.length).toBe(advancesBefore); // no extra advance
+    vi.useRealTimers();
+  });
+});
+
+// ─── onQuestionnaireStart when first advance returns null ─────────────────────
+
+describe('onQuestionnaireStart: first advance returns null (zero-item questionnaire)', () => {
+  it('calls orchestrator.engineComplete immediately if first advance returns null', () => {
+    const questionnaire = makeQuestionnaire();
+    // Make the engine immediately return null on first advance (empty questionnaire)
+    const engine = makeEngine(questionnaire);
+    engine.advance.mockReturnValue(null);
+
+    const { orchestrator } = makeSetup({ questionnaire, engine });
+    // onQuestionnaireStart is called during start() — engineComplete should have fired
+    expect(orchestrator.engineComplete).toHaveBeenCalledOnce();
+  });
+
+  it('does not mount an item element if first advance returns null', () => {
+    const questionnaire = makeQuestionnaire();
+    const engine = makeEngine(questionnaire);
+    engine.advance.mockReturnValue(null);
+
+    const { container } = makeSetup({ questionnaire, engine });
+    expect(container.querySelector('item-select')).toBeNull();
+  });
+});
+
+// ─── onError renders correctly ────────────────────────────────────────────────
+
+describe('onError', () => {
+  it('renders error message as text content in the container', () => {
+    const questionnaire = makeQuestionnaire();
+    let _callbacks = {};
+    const createOrchestrator = vi.fn((_config, _source, callbacks) => {
+      _callbacks = callbacks;
+      return {
+        start: vi.fn(() => {
+          _callbacks.onError(new Error('config not found'));
+        }),
+        engineComplete: vi.fn(),
+        engineCrossBack: vi.fn(),
+        progress: vi.fn(() => ({ current: 0, total: 0 })),
+        currentEngine: vi.fn(() => null),
+      };
+    });
+
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const router = makeRouter();
+    const controller = createController(container, router);
+    const config = { questionnaires: [questionnaire], batteries: [] };
+    controller.start(config, { sequence: [] }, { createOrchestrator });
+
+    expect(container.textContent).toContain('config not found');
+  });
+
+  it('does not use innerHTML for the error message (XSS guard)', () => {
+    const questionnaire = makeQuestionnaire();
+    let _callbacks = {};
+    const createOrchestrator = vi.fn((_config, _source, callbacks) => {
+      _callbacks = callbacks;
+      return {
+        start: vi.fn(() => {
+          _callbacks.onError(new Error('<img src=x onerror=alert(1)>'));
+        }),
+        engineComplete: vi.fn(),
+        engineCrossBack: vi.fn(),
+        progress: vi.fn(() => ({ current: 0, total: 0 })),
+        currentEngine: vi.fn(() => null),
+      };
+    });
+
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const controller = createController(container, makeRouter());
+    controller.start({ questionnaires: [questionnaire], batteries: [] }, { sequence: [] }, { createOrchestrator });
+
+    // The img tag must not have been parsed as DOM — it should appear as text
+    expect(container.querySelector('img')).toBeNull();
+    expect(container.textContent).toContain('<img');
+  });
+});
