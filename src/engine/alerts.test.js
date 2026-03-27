@@ -183,9 +183,12 @@ describe('score.x references in alert conditions', () => {
   });
 
   it('does not fire when total is null', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const q = makeQ([{ id: 'high', condition: 'score.pcl5 >= 33', message: 'מעל סף', severity: 'warning' }]);
     q.id = 'pcl5';
     const result = evaluateAlerts(q, {}, { total: null, subscales: {} });
     expect(result).toHaveLength(0);
+    expect(warn).toHaveBeenCalledOnce();
+    warn.mockRestore();
   });
 });

@@ -3,12 +3,9 @@
 
 import { evaluate } from './dsl.js';
 
-export class NotImplementedError extends Error {
-  constructor(feature) {
-    super(`SequenceRunner: "${feature}" is not implemented in v1`);
-    this.name = 'NotImplementedError';
-  }
-}
+// Cache of randomize node → shuffled ids. Keyed by node identity so the same
+// node object always produces the same order, even if re-encountered after back().
+const _shuffleCache = new WeakMap();
 
 export function createSequenceRunner(sequence) {
   let pending = [...sequence];
@@ -75,7 +72,11 @@ export function createSequenceRunner(sequence) {
       }
 
       if (isRandomizeNode(node)) {
-        throw new NotImplementedError('randomize');
+        if (!_shuffleCache.has(node)) {
+          _shuffleCache.set(node, shuffle([...node.ids]));
+        }
+        pending.unshift(..._shuffleCache.get(node));
+        continue;
       }
 
       return node; // leaf
@@ -120,6 +121,15 @@ export function createSequenceRunner(sequence) {
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
+
+// Fisher-Yates in-place shuffle. Returns the same array.
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
 
 function isIfNode(n)        { return n != null && n.type === 'if'; }
 function isRandomizeNode(n) { return n != null && n.type === 'randomize'; }

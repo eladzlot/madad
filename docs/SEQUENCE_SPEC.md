@@ -54,7 +54,11 @@ Either branch may be empty. If after resolution no leaf remains in the queue, `a
 { "type": "randomize", "ids": [ /* nodes */ ] }
 ```
 
-Encountering a `randomize` node throws `NotImplementedError` in v1. The node shape is recognised (and counted by `remainingCount()`), but execution is not supported.
+When encountered, the runner shuffles `ids` using Fisher-Yates (via `Math.random`) and prepends the shuffled nodes to the front of `pending`, then continues looking for the next leaf. The `randomize` node itself is never returned.
+
+**Order stability:** the shuffled order is fixed for the lifetime of the node object. A module-level `WeakMap` caches each `randomize` node's shuffled `ids` on first encounter. Re-encountering the same node object — whether by going back past it or by any other means — always produces the same order. Going back *within* the shuffled set replays the same order via `pendingBefore` snapshots as usual.
+
+**Progress:** `remainingCount()` recurses into `randomize.ids` and returns the correct count. `isSequenceDeterminate()` returns `true` for a `randomize` node whose `ids` contain no `if` nodes — the count is known even though the order is not.
 
 ---
 
@@ -292,7 +296,7 @@ orchestrator.progress() → { current: number, total: number | null }
 |---|---|
 | `advance()` on exhausted runner | Throws `Error('SequenceRunner: advance() called but no nodes remain')` |
 | `back()` at position 0 or before first advance | Throws `Error('SequenceRunner: back() called but already at first node')` |
-| `randomize` node encountered | Throws `NotImplementedError('randomize')` |
+| `randomize` node encountered | Shuffles `ids` with Fisher-Yates, prepends to `pending`, continues |
 | `engine.advance()` called after completion | Throws `Error('Engine: advance() called but questionnaire is already complete')` |
 | `engine.back()` at first item (not complete) | Throws `Error('Engine: back() called but already at first item')` |
 | Battery not found | Orchestrator throws synchronously at construction |

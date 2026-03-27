@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { createSequenceRunner, NotImplementedError } from './sequence-runner.js';
+import { describe, it, expect, vi, afterEach } from 'vitest';
+import { createSequenceRunner } from './sequence-runner.js';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -148,9 +148,92 @@ describe('if nodes', () => {
 // ─── randomize ────────────────────────────────────────────────────────────────
 
 describe('randomize nodes', () => {
-  it('throws NotImplementedError', () => {
-    const runner = createSequenceRunner([{ type: 'randomize', ids: [q('a'), q('b')] }]);
-    expect(() => runner.advance(ctx)).toThrow(NotImplementedError);
+  afterEach(() => vi.restoreAllMocks());
+
+  const rnd = (ids) => ({ type: 'randomize', ids });
+
+  it('yields all nodes in the randomize set', () => {
+    const runner = createSequenceRunner([rnd([q('a'), q('b'), q('c')])]);
+    const result = drainAll(runner);
+    expect(result).toHaveLength(3);
+    expect(result).toEqual(expect.arrayContaining([q('a'), q('b'), q('c')]));
+  });
+
+  it('shuffles using Math.random', () => {
+    // Force a known shuffle order: Math.random returns 0 → Fisher-Yates always
+    // swaps with index 0, reversing a 2-element array.
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    const runner = createSequenceRunner([rnd([q('a'), q('b')])]);
+    const result = drainAll(runner);
+    expect(result).toEqual([q('b'), q('a')]);
+  });
+
+  it('different runs may produce different orders', () => {
+    // Run 20 times with real Math.random — at least one should differ.
+    const orders = new Set();
+    for (let i = 0; i < 20; i++) {
+      const runner = createSequenceRunner([rnd([q('a'), q('b'), q('c')])]);
+      orders.add(drainAll(runner).map(n => n.questionnaireId).join(','));
+    }
+    expect(orders.size).toBeGreaterThan(1);
+  });
+
+  it('interleaves correctly with surrounding leaf nodes', () => {
+    const runner = createSequenceRunner([q('x'), rnd([q('a'), q('b')]), q('y')]);
+    const result = drainAll(runner);
+    expect(result).toHaveLength(4);
+    expect(result[0]).toEqual(q('x'));
+    expect(result[3]).toEqual(q('y'));
+    expect([result[1], result[2]]).toEqual(expect.arrayContaining([q('a'), q('b')]));
+  });
+
+  it('back() within randomized set preserves the shuffled order', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0); // forces [b, a] order
+    const runner = createSequenceRunner([rnd([q('a'), q('b')])]);
+    runner.advance(ctx);                  // q('b')
+    const second = runner.advance(ctx);   // q('a')
+    runner.back();                        // back to q('b'), pending = [q('a')]
+    expect(runner.advance(ctx)).toEqual(second); // q('a') — same order preserved
+  });
+
+  it('back() past the randomize node preserves the original shuffle order', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0); // forces [b, a] order
+    const runner = createSequenceRunner([q('pre'), rnd([q('a'), q('b')])]);
+    runner.advance(ctx);               // q('pre')
+    const first = runner.advance(ctx); // q('b') — first shuffled node
+    runner.advance(ctx);               // q('a')
+    runner.back();                     // back to q('b'), pending = [q('a')]
+    runner.back();                     // back to q('pre'), pending = [rnd(...)]
+    // advance() replays via WeakMap cache — gives q('b') without re-shuffling
+    expect(runner.advance(ctx)).toEqual(first); // q('b') — same order
+  });
+
+  it('remainingCount counts nodes inside randomize', () => {
+    const runner = createSequenceRunner([q('x'), rnd([q('a'), q('b'), q('c')])]);
+    expect(runner.remainingCount()).toBe(4); // q('x') + 3 randomized nodes
+  });
+
+  it('isSequenceDeterminate is true when randomize has no if nodes inside', () => {
+    const runner = createSequenceRunner([rnd([q('a'), q('b')])]);
+    expect(runner.isSequenceDeterminate()).toBe(true);
+  });
+
+  it('isSequenceDeterminate is false when randomize contains an if node', () => {
+    const runner = createSequenceRunner([
+      rnd([q('a'), { type: 'if', condition: 'true', then: [q('b')], else: [] }]),
+    ]);
+    expect(runner.isSequenceDeterminate()).toBe(false);
+  });
+
+  it('hasNext() is false after all randomized nodes are consumed', () => {
+    const runner = createSequenceRunner([rnd([q('a'), q('b')])]);
+    drainAll(runner);
+    expect(runner.hasNext()).toBe(false);
+  });
+
+  it('empty randomize node yields nothing and runner completes', () => {
+    const runner = createSequenceRunner([rnd([])]);
+    expect(runner.advance(ctx)).toBeNull();
   });
 });
 
