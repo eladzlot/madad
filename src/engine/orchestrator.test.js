@@ -450,3 +450,57 @@ describe('progress()', () => {
     expect(orc.progress().current).toBe(1);
   });
 });
+
+// ─── engineCrossBack progress counter (Bug 1.2) ───────────────────────────────
+
+describe('engineCrossBack() progress counter', () => {
+  // Each back+forward round-trip must not inflate progress().current.
+
+  it('progress().current returns to previous value after engineCrossBack', () => {
+    const config = makeConfig(
+      [makeQ('phq9'), makeQ('gad7')],
+      [linearBattery('b', 'phq9', 'gad7')]
+    );
+    const orc = createOrchestrator(config, { batteryId: 'b' });
+    orc.start();
+    drainEngine(orc.currentEngine());
+    orc.engineComplete(); // current = 2, on gad7
+    orc.engineCrossBack(); // should go back to current = 1, on phq9
+    expect(orc.progress().current).toBe(1);
+  });
+
+  it('progress().current is correct after back then re-completing', () => {
+    const config = makeConfig(
+      [makeQ('phq9'), makeQ('gad7')],
+      [linearBattery('b', 'phq9', 'gad7')]
+    );
+    const orc = createOrchestrator(config, { batteryId: 'b' });
+    orc.start();
+    drainEngine(orc.currentEngine());
+    orc.engineComplete();           // on gad7, current = 2
+    orc.engineCrossBack();          // back to phq9, current = 1
+    drainEngine(orc.currentEngine());
+    orc.engineComplete();           // forward to gad7 again, current = 2
+    expect(orc.progress().current).toBe(2);
+  });
+
+  it('multiple back+forward cycles do not inflate the counter', () => {
+    const config = makeConfig(
+      [makeQ('phq9'), makeQ('gad7')],
+      [linearBattery('b', 'phq9', 'gad7')]
+    );
+    const orc = createOrchestrator(config, { batteryId: 'b' });
+    orc.start();
+    drainEngine(orc.currentEngine());
+    orc.engineComplete(); // gad7, current=2
+
+    // Three back+forward cycles
+    for (let i = 0; i < 3; i++) {
+      orc.engineCrossBack();
+      drainEngine(orc.currentEngine());
+      orc.engineComplete();
+    }
+
+    expect(orc.progress().current).toBe(2);
+  });
+});

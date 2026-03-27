@@ -269,3 +269,47 @@ describe('binary option count validation', () => {
     await expect(loadConfig(['a'], { fetch })).rejects.toBeInstanceOf(ConfigError);
   });
 });
+
+// ─── Multi-source dependency merging (Bug 1.3) ────────────────────────────────
+
+describe('dependency merging across multiple sources', () => {
+  // loadConfig() must collect dependencies from ALL loaded config files,
+  // not just the first one.
+
+  it('returns dependencies from a single config', async () => {
+    const config = { ...minimalConfig([minimalQ()]), dependencies: ['configs/prod/trauma.json'] };
+    const fetch = makeFetch({ 'configs/a.json': { body: config } });
+    const result = await loadConfig(['a'], { fetch });
+    expect(result.dependencies).toEqual(['configs/prod/trauma.json']);
+  });
+
+  it('merges dependencies from both configs when loading two sources', async () => {
+    const configA = { ...minimalConfig([minimalQ('phq9')]), dependencies: ['configs/prod/trauma.json'] };
+    const configB = { ...minimalConfig([minimalQ('gad7')]), dependencies: ['configs/prod/standard.json'] };
+    const fetch = makeFetch({
+      'configs/a.json': { body: configA },
+      'configs/b.json': { body: configB },
+    });
+    const result = await loadConfig(['a', 'b'], { fetch });
+    expect(result.dependencies).toContain('configs/prod/trauma.json');
+    expect(result.dependencies).toContain('configs/prod/standard.json');
+  });
+
+  it('deduplicates dependencies shared across multiple configs', async () => {
+    const shared = 'configs/prod/standard.json';
+    const configA = { ...minimalConfig([minimalQ('phq9')]), dependencies: [shared] };
+    const configB = { ...minimalConfig([minimalQ('gad7')]), dependencies: [shared] };
+    const fetch = makeFetch({
+      'configs/a.json': { body: configA },
+      'configs/b.json': { body: configB },
+    });
+    const result = await loadConfig(['a', 'b'], { fetch });
+    expect(result.dependencies.filter(d => d === shared)).toHaveLength(1);
+  });
+
+  it('returns empty array when no config declares dependencies', async () => {
+    const fetch = makeFetch({ 'configs/a.json': { body: minimalConfig([minimalQ()]) } });
+    const result = await loadConfig(['a'], { fetch });
+    expect(result.dependencies).toEqual([]);
+  });
+});

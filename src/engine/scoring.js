@@ -21,6 +21,9 @@ function flattenItems(nodes) {
       result.push(...flattenItems(node.then));
       result.push(...flattenItems(node.else ?? []));
     } else if (node.type !== 'randomize') {
+      // randomize nodes are intentionally skipped here. When randomize is
+      // implemented, this block must recurse into node.ids so that items
+      // inside randomize blocks participate in scoring.
       result.push(node);
     }
   }

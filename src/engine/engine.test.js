@@ -312,3 +312,74 @@ describe('item-level branching', () => {
     expect(engine.advance()).toEqual(select('alt'));
   });
 });
+
+// ─── trailing empty if-node completion (Bug 1.1) ──────────────────────────────
+
+describe('completion via empty trailing if-node', () => {
+  // When the last node in a sequence is an if-node whose branch resolves to
+  // nothing, runner.advance() returns null. The engine must treat this as
+  // normal completion: isComplete(), scoreResult(), and alertResults() must
+  // all be set correctly.
+
+  it('isComplete() is true when trailing if-node resolves to empty', () => {
+    const q = makeQ(
+      [select('q1'), ifNode('item.q1 >= 10', [select('extra')], [])],
+      { scoring: { method: 'sum' } }
+    );
+    const engine = createEngine(q, SESSION_KEY);
+    engine.advance(); engine.recordAnswer('q1', 0);
+    const result = engine.advance(); // if-node condition false → empty → null
+    expect(result).toBeNull();
+    expect(engine.isComplete()).toBe(true);
+  });
+
+  it('scoreResult() is populated (not null) after empty-branch completion', () => {
+    const q = makeQ(
+      [select('q1'), ifNode('item.q1 >= 10', [select('extra')], [])],
+      { scoring: { method: 'sum' } }
+    );
+    const engine = createEngine(q, SESSION_KEY);
+    engine.advance(); engine.recordAnswer('q1', 2);
+    engine.advance();
+    expect(engine.scoreResult()).not.toBeNull();
+    expect(engine.scoreResult().total).toBe(2);
+  });
+
+  it('alertResults() is populated (not null) after empty-branch completion', () => {
+    const q = makeQ(
+      [select('q1'), ifNode('item.q1 >= 10', [select('extra')], [])],
+      {
+        scoring: { method: 'sum' },
+        alerts: [{ id: 'low', condition: 'item.q1 >= 1', message: 'Answered' }],
+      }
+    );
+    const engine = createEngine(q, SESSION_KEY);
+    engine.advance(); engine.recordAnswer('q1', 3);
+    engine.advance();
+    expect(engine.alertResults()).not.toBeNull();
+    expect(engine.alertResults()).toHaveLength(1);
+    expect(engine.alertResults()[0].id).toBe('low');
+  });
+
+  it('advance() after empty-branch completion throws (already complete)', () => {
+    const q = makeQ(
+      [select('q1'), ifNode('item.q1 >= 10', [select('extra')], [])],
+      { scoring: { method: 'none' } }
+    );
+    const engine = createEngine(q, SESSION_KEY);
+    engine.advance(); engine.recordAnswer('q1', 0);
+    engine.advance(); // completes via empty branch
+    expect(() => engine.advance()).toThrow('already complete');
+  });
+
+  it('canGoBack() is true after empty-branch completion (re-entry allowed)', () => {
+    const q = makeQ(
+      [select('q1'), ifNode('item.q1 >= 10', [select('extra')], [])],
+      { scoring: { method: 'none' } }
+    );
+    const engine = createEngine(q, SESSION_KEY);
+    engine.advance(); engine.recordAnswer('q1', 0);
+    engine.advance();
+    expect(engine.canGoBack()).toBe(true);
+  });
+});

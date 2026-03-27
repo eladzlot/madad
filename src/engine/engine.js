@@ -53,6 +53,16 @@ export function createEngine(questionnaire, sessionKey, existingAnswers = {}) {
       return null;
     }
     _current = runner.advance(buildContext());
+
+    // runner.advance() returns null when all remaining nodes were control-flow
+    // that resolved to empty branches (e.g. a trailing if-node with a false condition
+    // and no else). Treat this as normal completion — same as exhausting the sequence.
+    if (_current === null) {
+      _complete = true;
+      _scoreResult = score(questionnaire, _answers);
+      _alertResults = evaluateAlerts(questionnaire, _answers, _scoreResult);
+    }
+
     return _current;
   }
 

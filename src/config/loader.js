@@ -85,8 +85,10 @@ function resolveSource(source, allowedOrigins) {
     );
   }
   if (source.startsWith('/')) return source;         // root-relative path
-  if (source.includes('/') || source.endsWith('.json')) return source; // relative path
-  return `configs/${source}.json`;                   // slug → relative path
+  // A source with no slashes and no .json extension is a slug — expand to a relative path.
+  // Anything else (already has directory separators or an explicit extension) is used as-is.
+  if (source.includes('/') || source.endsWith('.json')) return source;
+  return `configs/${source}.json`;
 }
 
 // ─── Fetch and validate a single file ────────────────────────────────────────
@@ -168,10 +170,15 @@ export async function loadConfig(sources, options = {}) {
 
   const { questionnaires, batteries } = mergeConfigs(results);
 
+  // Merge dependencies from all source configs, deduplicating.
+  // Each config file may declare its own dependencies array; all are collected here
+  // so the caller gets the full picture regardless of which file declared what.
+  const allDependencies = [...new Set(results.flatMap(r => r.data.dependencies ?? []))];
+
   return {
     questionnaires,
     batteries,
-    dependencies: results[0].data.dependencies ?? [],
+    dependencies: allDependencies,
     version:    results[0].data.version ?? null,
     resolvedAt: new Date().toISOString(),
   };

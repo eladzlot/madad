@@ -464,3 +464,22 @@ describe('remainingCount()', () => {
     expect(runner.remainingCount()).toBe(1);
   });
 });
+
+// ─── hasNext() after empty-branch drain ───────────────────────────────────────
+
+describe('hasNext() after all control-flow resolves to empty', () => {
+  it('is false after advance() returns null from empty if-branch', () => {
+    const runner = createSequenceRunner([ifNode('item.x >= 1', [q('a')], [])]);
+    runner.advance({ item: { x: 0 }, subscale: {} }); // condition false → empty → null
+    expect(runner.hasNext()).toBe(false);
+  });
+
+  it('is false after chained empty if-branches drain the whole sequence', () => {
+    const runner = createSequenceRunner([
+      ifNode('item.x >= 1', [q('a')], []),
+      ifNode('item.x >= 2', [q('b')], []),
+    ]);
+    runner.advance({ item: { x: 0 }, subscale: {} });
+    expect(runner.hasNext()).toBe(false);
+  });
+});

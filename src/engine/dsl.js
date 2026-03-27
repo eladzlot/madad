@@ -339,7 +339,7 @@ function evalNode(node, context, expression) {
       const l = evalNode(node.left, context, expression);
       const r = evalNode(node.right, context, expression);
       if (typeof l !== 'number' || typeof r !== 'number')
-        throw new DSLTypeError(`"${node.op}" requires numeric operands`, expression);
+        throw new DSLTypeError(`"${node.op}" requires numeric operands — string and array comparison is not supported`, expression);
       if (node.op === '<')  return l < r;
       if (node.op === '>')  return l > r;
       if (node.op === '<=') return l <= r;

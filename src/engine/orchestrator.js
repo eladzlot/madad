@@ -155,6 +155,10 @@ export function createOrchestrator(config, source, callbacks = {}) {
   function engineCrossBack() {
     if (!runner.canGoBack()) return;
 
+    // Undo the index increment that startQuestionnaire() will re-apply,
+    // so that back + forward doesn't inflate progress().current.
+    _questionnaireIndex--;
+
     const node = runner.back();
     const sessionKey = node.instanceId ?? node.questionnaireId;
     const questionnaire = lookupQuestionnaire(node.questionnaireId);
@@ -170,6 +174,11 @@ export function createOrchestrator(config, source, callbacks = {}) {
     const existingAnswers = state.answers[sessionKey] ?? {};
     _currentEngine = createEngine(questionnaire, sessionKey, existingAnswers);
 
+    // We need the engine positioned on its last item. There is no saved item-level
+    // cursor to restore, so we replay all previous answers through the fresh engine
+    // to reach completion, then back() one step to land on the final item.
+    // The engine's completion state (scores/alerts) is discarded by back() — we only
+    // need cursor positioning here; scores are already stored in state.scores.
     let item = _currentEngine.advance();
     while (item !== null) { item = _currentEngine.advance(); }
     _currentEngine.back();
