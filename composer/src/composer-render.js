@@ -565,7 +565,8 @@ export function injectStyles() {
   const style = document.createElement('style');
   style.textContent = `
     #composer-app {
-      min-block-size: 100dvh;
+      flex: 1;
+      min-block-size: 0;
       display: flex;
       flex-direction: column;
       background: var(--color-bg);
@@ -646,11 +647,13 @@ export function injectStyles() {
 
     .c-layout {
       flex: 1;
+      min-block-size: 0;
       display: flex;
       align-items: stretch;
       max-width: 1024px;
       margin-inline: auto;
       width: 100%;
+      overflow: hidden;
     }
 
     /* ── Picker panel (visually RIGHT in RTL) ────────────────────────────────── */
@@ -658,12 +661,10 @@ export function injectStyles() {
     .c-panel--picker {
       flex: 1;
       min-width: 0;
+      min-block-size: 0;
       display: flex;
       flex-direction: column;
       overflow-y: auto;
-      max-block-size: 100dvh;
-      position: sticky;
-      top: 0;
       padding-block-end: 72px; /* room for mobile bar */
     }
 
@@ -681,13 +682,11 @@ export function injectStyles() {
       .c-panel--output {
         display: flex;
         flex-direction: column;
+        min-block-size: 0;
         width: 280px;
         flex-shrink: 0;
         border-inline-end: 2px solid var(--color-border);
         background: #3A5068;
-        position: sticky;
-        top: 0;
-        max-block-size: 100dvh;
         overflow-y: auto;
       }
     }
@@ -696,6 +695,7 @@ export function injectStyles() {
 
     .c-picker {
       flex: 1;
+      min-block-size: 0;
       padding: var(--space-md) var(--space-lg) var(--space-lg);
       overflow-y: auto;
       background: var(--color-surface);
