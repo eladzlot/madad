@@ -358,6 +358,859 @@
           "severity": "warning"
         }
       ]
+    },
+    {
+      "id": "ocsrs_m",
+      "title": "שאלון OCD ותסמינים קשורים (OCSRS)",
+      "description": "שאלון סינון למחשבות טורדניות והתנהגויות כפייתיות, מאורגן לפי 22 תחומי סימפטומים עם דירוג חומרה לכל קבוצה (גרסת זכר).",
+      "keywords": [
+        "OCD",
+        "obsessive",
+        "compulsive",
+        "OCSRS",
+        "obsessions",
+        "compulsions",
+        "screening",
+        "טורדני",
+        "כפייתי"
+      ],
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "שאלון זה כולל קבוצות נפרדות של מחשבות, דחפים, או התנהגויות שיתכן שחווית לאחרונה. לגבי כל קבוצה, סמן את כל הפריטים שחווית בשבוע האחרון. לאחר מכן, אם סימנת פריט כלשהו, תתבקש לדרג את חומרת הסימפטום המטריד ביותר בקבוצה זו. חומרה מתייחסת לתכיפות ואי הנוחות שחווית בשבוע האחרון."
+        },
+        {
+          "id": "g_harm",
+          "type": "multiselect",
+          "text": "מחשבות ודחפים לגרימת נזק (סמן את כל שחווית):",
+          "required": false,
+          "options": [
+            {
+              "label": "אני מפחד שאני עלול להזיק לעצמי"
+            },
+            {
+              "label": "אני מפחד שאני עלול להזיק לאחרים"
+            },
+            {
+              "label": "אני מפחד מתמונות אלימות או מחרידות החולפות במוחי"
+            },
+            {
+              "label": "אני מפחד שאפלוט גסויות או עלבונות"
+            },
+            {
+              "label": "אני מפחד שאעשה משהו מביך אחר"
+            },
+            {
+              "label": "אני מפחד שאפעל כתוצאה מדחף בלתי רצוי (כמו לדקור מישהו)"
+            },
+            {
+              "label": "אני מפחד שאגנוב משהו"
+            },
+            {
+              "label": "אני מפחד שאהיה אחראי למשהו נורא שיתרחש (למשל שריפה, פריצה)"
+            },
+            {
+              "label": "אני מפחד שאזיק לאחרים בגלל שאינני זהיר מספיק"
+            }
+          ]
+        },
+        {
+          "id": "if_sev_harm",
+          "type": "if",
+          "condition": "count(item.g_harm) > 0",
+          "then": [
+            {
+              "id": "sev_harm",
+              "type": "slider",
+              "text": "דרג את חומרת הסימפטום המטריד ביותר בשבוע האחרון:",
+              "min": 0,
+              "max": 10,
+              "labels": {
+                "min": "אין בעיה",
+                "max": "חמורה מאד"
+              }
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "g_cont",
+          "type": "multiselect",
+          "text": "מחשבות וחרדות לגבי זיהום (סמן את כל שחווית):",
+          "required": false,
+          "options": [
+            {
+              "label": "אני מוטרד או נגעל מהפרשות גוף (כמו שתן, צואה, רוק)"
+            },
+            {
+              "label": "אני מוטרד מלכלוך או מחיידקים"
+            },
+            {
+              "label": "אני מוטרד באופן מוגזם מזיהומים סביבתיים (אסבסט, קרינה, פסולת רעילה)"
+            },
+            {
+              "label": "אני מוטרד באופן מוגזם מכימיקלים המשמשים כחומרי ניקוי"
+            },
+            {
+              "label": "אני מוטרד באופן מוגזם מחיות וחרקים שעלולים לשאת מחלות"
+            },
+            {
+              "label": "אני מוטרד משאריות או חומרים דביקים"
+            },
+            {
+              "label": "אני מוטרד שאחלה כתוצאה מזיהום או הידבקות"
+            },
+            {
+              "label": "אני מוטרד שאגרום לאחרים לחלות כתוצאה מזיהום או הדבקות"
+            }
+          ]
+        },
+        {
+          "id": "if_sev_cont",
+          "type": "if",
+          "condition": "count(item.g_cont) > 0",
+          "then": [
+            {
+              "id": "sev_cont",
+              "type": "slider",
+              "text": "דרג את חומרת הסימפטום המטריד ביותר בשבוע האחרון:",
+              "min": 0,
+              "max": 10,
+              "labels": {
+                "min": "אין בעיה",
+                "max": "חמורה מאד"
+              }
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "g_sexual",
+          "type": "multiselect",
+          "text": "מחשבות מיניות טורדניות (סמן את כל שחווית):",
+          "required": false,
+          "options": [
+            {
+              "label": "חולפות במוחי מחשבות או תמונות מיניות סוטות או אסורות"
+            },
+            {
+              "label": "יש לי דחפים מיניים סוטים או אסורים לגבי אחרים"
+            },
+            {
+              "label": "יש לי מחשבות טורדניות לגבי הומוסקסואליות"
+            },
+            {
+              "label": "יש לי מחשבות טורדניות מיניות המערבות ילדים או גילוי עריות"
+            },
+            {
+              "label": "יש לי מחשבות טורדניות לגבי התנהגות מינית תוקפנית כלפי אחרים"
+            }
+          ]
+        },
+        {
+          "id": "if_sev_sexual",
+          "type": "if",
+          "condition": "count(item.g_sexual) > 0",
+          "then": [
+            {
+              "id": "sev_sexual",
+              "type": "slider",
+              "text": "דרג את חומרת הסימפטום המטריד ביותר בשבוע האחרון:",
+              "min": 0,
+              "max": 10,
+              "labels": {
+                "min": "אין בעיה",
+                "max": "חמורה מאד"
+              }
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "g_hoard_obs",
+          "type": "multiselect",
+          "text": "מחשבות לגבי שמירה וזריקת חפצים (סמן את כל שחווית):",
+          "required": false,
+          "options": [
+            {
+              "label": "יש לי צורך לשמור ולא לזרוק דברים"
+            },
+            {
+              "label": "יש לי מחשבות טורדניות לפיהן אם אזרוק משהו, אני אעשה שגיאה"
+            }
+          ]
+        },
+        {
+          "id": "if_sev_hoard_obs",
+          "type": "if",
+          "condition": "count(item.g_hoard_obs) > 0",
+          "then": [
+            {
+              "id": "sev_hoard_obs",
+              "type": "slider",
+              "text": "דרג את חומרת הסימפטום המטריד ביותר בשבוע האחרון:",
+              "min": 0,
+              "max": 10,
+              "labels": {
+                "min": "אין בעיה",
+                "max": "חמורה מאד"
+              }
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "g_religi",
+          "type": "multiselect",
+          "text": "מחשבות דתיות ומוסריות (סמן את כל שחווית):",
+          "required": false,
+          "options": [
+            {
+              "label": "אני מוטרד מביזוי או מחילול הקודש"
+            },
+            {
+              "label": "אני מוטרד באופן מיוחד משאלות של מותר/אסור ומוסר"
+            }
+          ]
+        },
+        {
+          "id": "if_sev_religi",
+          "type": "if",
+          "condition": "count(item.g_religi) > 0",
+          "then": [
+            {
+              "id": "sev_religi",
+              "type": "slider",
+              "text": "דרג את חומרת הסימפטום המטריד ביותר בשבוע האחרון:",
+              "min": 0,
+              "max": 10,
+              "labels": {
+                "min": "אין בעיה",
+                "max": "חמורה מאד"
+              }
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "g_sym",
+          "type": "multiselect",
+          "text": "מחשבות לגבי סימטריה ודיוק (סמן אם חווית):",
+          "required": false,
+          "options": [
+            {
+              "label": "אני מוטרד לגבי סימטריה או דיוק"
+            }
+          ]
+        },
+        {
+          "id": "if_sev_sym",
+          "type": "if",
+          "condition": "count(item.g_sym) > 0",
+          "then": [
+            {
+              "id": "sev_sym",
+              "type": "slider",
+              "text": "דרג את חומרת הסימפטום המטריד ביותר בשבוע האחרון:",
+              "min": 0,
+              "max": 10,
+              "labels": {
+                "min": "אין בעיה",
+                "max": "חמורה מאד"
+              }
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "g_misc_obs",
+          "type": "multiselect",
+          "text": "מחשבות שונות אחרות (סמן את כל שחווית):",
+          "required": false,
+          "options": [
+            {
+              "label": "אני מוטרד מהצורך לדעת או לזכור"
+            },
+            {
+              "label": "אני מפחד לאבד דברים"
+            }
+          ]
+        },
+        {
+          "id": "if_sev_misc_obs",
+          "type": "if",
+          "condition": "count(item.g_misc_obs) > 0",
+          "then": [
+            {
+              "id": "sev_misc_obs",
+              "type": "slider",
+              "text": "דרג את חומרת הסימפטום המטריד ביותר בשבוע האחרון:",
+              "min": 0,
+              "max": 10,
+              "labels": {
+                "min": "אין בעיה",
+                "max": "חמורה מאד"
+              }
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "g_verbal",
+          "type": "multiselect",
+          "text": "מחשבות לגבי דיבור (סמן את כל שחווית):",
+          "required": false,
+          "options": [
+            {
+              "label": "אני מפחד לומר דברים מסוימים"
+            },
+            {
+              "label": "אני מפחד לא לומר את הדבר הנכון"
+            }
+          ]
+        },
+        {
+          "id": "if_sev_verbal",
+          "type": "if",
+          "condition": "count(item.g_verbal) > 0",
+          "then": [
+            {
+              "id": "sev_verbal",
+              "type": "slider",
+              "text": "דרג את חומרת הסימפטום המטריד ביותר בשבוע האחרון:",
+              "min": 0,
+              "max": 10,
+              "labels": {
+                "min": "אין בעיה",
+                "max": "חמורה מאד"
+              }
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "g_supersti_obs",
+          "type": "multiselect",
+          "text": "אמונות טפלות (סמן את כל שחווית):",
+          "required": false,
+          "options": [
+            {
+              "label": "יש לי אמונות טפלות לגבי מספרים בעלי מזל/חסרי מזל"
+            },
+            {
+              "label": "יש לי אמונות טפלות לגבי צבעים מסוימים"
+            }
+          ]
+        },
+        {
+          "id": "if_sev_supersti_obs",
+          "type": "if",
+          "condition": "count(item.g_supersti_obs) > 0",
+          "then": [
+            {
+              "id": "sev_supersti_obs",
+              "type": "slider",
+              "text": "דרג את חומרת הסימפטום המטריד ביותר בשבוע האחרון:",
+              "min": 0,
+              "max": 10,
+              "labels": {
+                "min": "אין בעיה",
+                "max": "חמורה מאד"
+              }
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "g_health",
+          "type": "multiselect",
+          "text": "חרדת בריאות (סמן אם חווית):",
+          "required": false,
+          "options": [
+            {
+              "label": "אני מודאג שמא אהיה חולה"
+            }
+          ]
+        },
+        {
+          "id": "if_sev_health",
+          "type": "if",
+          "condition": "count(item.g_health) > 0",
+          "then": [
+            {
+              "id": "sev_health",
+              "type": "slider",
+              "text": "דרג את חומרת הסימפטום המטריד ביותר בשבוע האחרון:",
+              "min": 0,
+              "max": 10,
+              "labels": {
+                "min": "אין בעיה",
+                "max": "חמורה מאד"
+              }
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "g_sensory",
+          "type": "multiselect",
+          "text": "מחשבות חושיות (סמן את כל שחווית):",
+          "required": false,
+          "options": [
+            {
+              "label": "אני מוטרד על-ידי מראות או תמונות (לאו דווקא מפחידים)"
+            },
+            {
+              "label": "אני מוטרד על-ידי מילים או צלילים חסרי הגיון"
+            },
+            {
+              "label": "אני מוטרד על-ידי קולות או רעשים מסוימים"
+            }
+          ]
+        },
+        {
+          "id": "if_sev_sensory",
+          "type": "if",
+          "condition": "count(item.g_sensory) > 0",
+          "then": [
+            {
+              "id": "sev_sensory",
+              "type": "slider",
+              "text": "דרג את חומרת הסימפטום המטריד ביותר בשבוע האחרון:",
+              "min": 0,
+              "max": 10,
+              "labels": {
+                "min": "אין בעיה",
+                "max": "חמורה מאד"
+              }
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "g_wash",
+          "type": "multiselect",
+          "text": "כפייתיות שטיפה וניקיון (סמן את כל שחווית):",
+          "required": false,
+          "options": [
+            {
+              "label": "אני שוטף ידיים באופן מוגזם או בדרך מאוד מסוימת (\"טקסים\")"
+            },
+            {
+              "label": "אני מתרחץ או מצחצח שיניים או מטפח עצמי או הולך לשירותים באופן מוגזם"
+            },
+            {
+              "label": "אני מנקה דברים בבית או חפצים אחרים בצורה מוגזמת"
+            },
+            {
+              "label": "אני עושה דברים אחרים על מנת להימנע מלכלוך או זיהום"
+            }
+          ]
+        },
+        {
+          "id": "if_sev_wash",
+          "type": "if",
+          "condition": "count(item.g_wash) > 0",
+          "then": [
+            {
+              "id": "sev_wash",
+              "type": "slider",
+              "text": "דרג את חומרת הסימפטום המטריד ביותר בשבוע האחרון:",
+              "min": 0,
+              "max": 10,
+              "labels": {
+                "min": "אין בעיה",
+                "max": "חמורה מאד"
+              }
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "g_check",
+          "type": "multiselect",
+          "text": "כפייתיות בדיקה (סמן את כל שחווית):",
+          "required": false,
+          "options": [
+            {
+              "label": "אני בודק שמא גרמתי או אגרום לנזק לאנשים אחרים"
+            },
+            {
+              "label": "אני בודק שמא גרמתי או אגרום לנזק לעצמי"
+            },
+            {
+              "label": "אני מוודא ששום דבר נורא לא קרה"
+            },
+            {
+              "label": "אני מוודא שלא עשיתי שום טעות"
+            },
+            {
+              "label": "אני בודק אספקטים מסוימים של מצבי הגופני ושל גופי"
+            }
+          ]
+        },
+        {
+          "id": "if_sev_check",
+          "type": "if",
+          "condition": "count(item.g_check) > 0",
+          "then": [
+            {
+              "id": "sev_check",
+              "type": "slider",
+              "text": "דרג את חומרת הסימפטום המטריד ביותר בשבוע האחרון:",
+              "min": 0,
+              "max": 10,
+              "labels": {
+                "min": "אין בעיה",
+                "max": "חמורה מאד"
+              }
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "g_repeat",
+          "type": "multiselect",
+          "text": "כפייתיות חזרה (סמן את כל שחווית):",
+          "required": false,
+          "options": [
+            {
+              "label": "אני קורא או כותב דברים שוב ושוב"
+            },
+            {
+              "label": "יש לי צורך לחזור על פעילויות שגרתיות (מלבד שטיפה או בדיקה, כמו למשל כניסה ויציאה מהדלת, ישיבה וקימה מכיסא)"
+            }
+          ]
+        },
+        {
+          "id": "if_sev_repeat",
+          "type": "if",
+          "condition": "count(item.g_repeat) > 0",
+          "then": [
+            {
+              "id": "sev_repeat",
+              "type": "slider",
+              "text": "דרג את חומרת הסימפטום המטריד ביותר בשבוע האחרון:",
+              "min": 0,
+              "max": 10,
+              "labels": {
+                "min": "אין בעיה",
+                "max": "חמורה מאד"
+              }
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "g_count",
+          "type": "multiselect",
+          "text": "ספירה כפייתית (סמן אם חווית):",
+          "required": false,
+          "options": [
+            {
+              "label": "אני סופר באופן כפייתי"
+            }
+          ]
+        },
+        {
+          "id": "if_sev_count",
+          "type": "if",
+          "condition": "count(item.g_count) > 0",
+          "then": [
+            {
+              "id": "sev_count",
+              "type": "slider",
+              "text": "דרג את חומרת הסימפטום המטריד ביותר בשבוע האחרון:",
+              "min": 0,
+              "max": 10,
+              "labels": {
+                "min": "אין בעיה",
+                "max": "חמורה מאד"
+              }
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "g_hoard_comp",
+          "type": "multiselect",
+          "text": "אגירה כפייתית (סמן אם חווית):",
+          "required": false,
+          "options": [
+            {
+              "label": "יש לי צורך כפייתי לצבור או לאסוף דברים"
+            }
+          ]
+        },
+        {
+          "id": "if_sev_hoard_comp",
+          "type": "if",
+          "condition": "count(item.g_hoard_comp) > 0",
+          "then": [
+            {
+              "id": "sev_hoard_comp",
+              "type": "slider",
+              "text": "דרג את חומרת הסימפטום המטריד ביותר בשבוע האחרון:",
+              "min": 0,
+              "max": 10,
+              "labels": {
+                "min": "אין בעיה",
+                "max": "חמורה מאד"
+              }
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "g_order",
+          "type": "multiselect",
+          "text": "סידור וארגון כפייתיים (סמן אם חווית):",
+          "required": false,
+          "options": [
+            {
+              "label": "אני מסדר דברים או מארגן אותם באופן מוגזם"
+            }
+          ]
+        },
+        {
+          "id": "if_sev_order",
+          "type": "if",
+          "condition": "count(item.g_order) > 0",
+          "then": [
+            {
+              "id": "sev_order",
+              "type": "slider",
+              "text": "דרג את חומרת הסימפטום המטריד ביותר בשבוע האחרון:",
+              "min": 0,
+              "max": 10,
+              "labels": {
+                "min": "אין בעיה",
+                "max": "חמורה מאד"
+              }
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "g_touch",
+          "type": "multiselect",
+          "text": "כפייתיות מגע וחושית (סמן את כל שחווית):",
+          "required": false,
+          "options": [
+            {
+              "label": "יש לי צורך לגעת, להקיש או לחכך"
+            },
+            {
+              "label": "יש לי התנהגויות כפייתיות המערבות מצמוץ או בהייה"
+            }
+          ]
+        },
+        {
+          "id": "if_sev_touch",
+          "type": "if",
+          "condition": "count(item.g_touch) > 0",
+          "then": [
+            {
+              "id": "sev_touch",
+              "type": "slider",
+              "text": "דרג את חומרת הסימפטום המטריד ביותר בשבוע האחרון:",
+              "min": 0,
+              "max": 10,
+              "labels": {
+                "min": "אין בעיה",
+                "max": "חמורה מאד"
+              }
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "g_body",
+          "type": "multiselect",
+          "text": "התנהגויות פוגעות בגוף (סמן את כל שחווית):",
+          "required": false,
+          "options": [
+            {
+              "label": "אני תולש את שערותיי"
+            },
+            {
+              "label": "אני \"מתעסק\" בעור שלי"
+            },
+            {
+              "label": "יש לי התנהגויות אחרות הפוגעות או משחיתות את גופי"
+            }
+          ]
+        },
+        {
+          "id": "if_sev_body",
+          "type": "if",
+          "condition": "count(item.g_body) > 0",
+          "then": [
+            {
+              "id": "sev_body",
+              "type": "slider",
+              "text": "דרג את חומרת הסימפטום המטריד ביותר בשבוע האחרון:",
+              "min": 0,
+              "max": 10,
+              "labels": {
+                "min": "אין בעיה",
+                "max": "חמורה מאד"
+              }
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "g_mental",
+          "type": "multiselect",
+          "text": "טקסים מנטאליים (סמן את כל שחווית):",
+          "required": false,
+          "options": [
+            {
+              "label": "אני עושה דברים באופן מנטאלי (\"בראש\" — מלבד בדיקה או ספירה) על מנת למנוע נזק לעצמי"
+            },
+            {
+              "label": "אני עושה דברים באופן מנטאלי (מלבד בדיקה או ספירה) על מנת למנוע נזק לאנשים אחרים"
+            },
+            {
+              "label": "אני עושה דברים באופן מנטאלי (מלבד בדיקה או ספירה) על מנת למנוע תוצאות נוראות"
+            },
+            {
+              "label": "אני מתפלל באופן מוגזם על מנת למנוע נזק לעצמי"
+            },
+            {
+              "label": "אני מתפלל באופן מוגזם על מנת למנוע נזק לאנשים אחרים"
+            },
+            {
+              "label": "אני מתפלל באופן מוגזם על מנת למנוע תוצאות נוראות"
+            },
+            {
+              "label": "אני בוחן אירועים בראשי שוב ושוב על מנת למנוע נזק לעצמי"
+            },
+            {
+              "label": "אני בוחן אירועים בראשי שוב ושוב על מנת למנוע נזק לאנשים אחרים"
+            },
+            {
+              "label": "אני בוחן אירועים בראשי שוב ושוב על מנת למנוע תוצאות נוראות"
+            }
+          ]
+        },
+        {
+          "id": "if_sev_mental",
+          "type": "if",
+          "condition": "count(item.g_mental) > 0",
+          "then": [
+            {
+              "id": "sev_mental",
+              "type": "slider",
+              "text": "דרג את חומרת הסימפטום המטריד ביותר בשבוע האחרון:",
+              "min": 0,
+              "max": 10,
+              "labels": {
+                "min": "אין בעיה",
+                "max": "חמורה מאד"
+              }
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "g_reassur",
+          "type": "multiselect",
+          "text": "בקשת אישור (סמן אם חווית):",
+          "required": false,
+          "options": [
+            {
+              "label": "אני שואל או אומר דברים שוב ושוב על מנת לוודא או לקבל אישור"
+            }
+          ]
+        },
+        {
+          "id": "if_sev_reassur",
+          "type": "if",
+          "condition": "count(item.g_reassur) > 0",
+          "then": [
+            {
+              "id": "sev_reassur",
+              "type": "slider",
+              "text": "דרג את חומרת הסימפטום המטריד ביותר בשבוע האחרון:",
+              "min": 0,
+              "max": 10,
+              "labels": {
+                "min": "אין בעיה",
+                "max": "חמורה מאד"
+              }
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "g_supersti_comp",
+          "type": "multiselect",
+          "text": "התנהגות על-פי אמונות טפלות (סמן אם חווית):",
+          "required": false,
+          "options": [
+            {
+              "label": "ההתנהגות שלי מושפעת מאמונות טפלות"
+            }
+          ]
+        },
+        {
+          "id": "if_sev_supersti_comp",
+          "type": "if",
+          "condition": "count(item.g_supersti_comp) > 0",
+          "then": [
+            {
+              "id": "sev_supersti_comp",
+              "type": "slider",
+              "text": "דרג את חומרת הסימפטום המטריד ביותר בשבוע האחרון:",
+              "min": 0,
+              "max": 10,
+              "labels": {
+                "min": "אין בעיה",
+                "max": "חמורה מאד"
+              }
+            }
+          ],
+          "else": []
+        }
+      ],
+      "scoring": {
+        "method": "subscales",
+        "subscales": {
+          "obsessions": [
+            "sev_harm",
+            "sev_cont",
+            "sev_sexual",
+            "sev_hoard_obs",
+            "sev_religi",
+            "sev_sym",
+            "sev_misc_obs",
+            "sev_verbal",
+            "sev_supersti_obs",
+            "sev_health",
+            "sev_sensory"
+          ],
+          "compulsions": [
+            "sev_wash",
+            "sev_check",
+            "sev_repeat",
+            "sev_count",
+            "sev_hoard_comp",
+            "sev_order",
+            "sev_touch",
+            "sev_body",
+            "sev_mental",
+            "sev_reassur",
+            "sev_supersti_comp"
+          ]
+        }
+      },
+      "subscaleLabels": {
+        "obsessions": "מחשבות ודחפים טורדניים (Obsessions)",
+        "compulsions": "התנהגויות כפייתיות (Compulsions)"
+      }
     }
   ],
   "batteries": [

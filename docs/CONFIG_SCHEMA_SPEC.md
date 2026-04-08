@@ -192,7 +192,7 @@ Not scored. Answer stored as `number[]` of 1-based indices. Available in DSL via
 |---|---|---|---|
 | `id` | string (ID) | yes | |
 | `type` | `"randomize"` | yes | |
-| `ids` | array | yes | Array of item IDs (strings) to shuffle |
+| `ids` | array | yes | Array of item definition objects to shuffle (same types as the `items` array — full item objects, not string IDs). Minimum 2 items. |
 
 ---
 
@@ -321,7 +321,7 @@ The AJV schema enforces:
 - ID pattern (`^[a-zA-Z0-9][a-zA-Z0-9_]*$`) on all ID fields
 - `options` and `optionSetId` are mutually exclusive on select items (not both)
 - `slider` requires `min` and `max`; `step` must be > 0 if present
-- `multiselect` options must have only `label` (no `value`); minimum 2 options
+- `multiselect` options must have only `label` (no `value`); minimum 1 option
 - `subscales` map present when `method` is `subscales`
 - `customFormula` present when `method` is `custom`
 
@@ -330,7 +330,7 @@ The config loader enforces (post-AJV):
 - Item ID uniqueness within each questionnaire
 - All `optionSetId` and `defaultOptionSetId` references resolve to a defined option set on the same questionnaire
 - Every select item has a resolvable option set (inline, explicit reference, or default)
-- All item ID references in `subscales`, `if.then`, `if.else`, `randomize.ids` resolve to defined items
+- All item ID references in `subscales`, `if.then`, `if.else` resolve to defined items; `randomize.ids` contains inline item objects (not references)
 - All questionnaire ID references in battery sequence nodes resolve to defined questionnaires
 - `slider` items: `min` must be less than `max`
 

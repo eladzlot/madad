@@ -607,8 +607,31 @@ export function buildSubscoresLine(q, sessionState, sessionKey) {
 
 // ── Response table ────────────────────────────────────────────────────────────
 
+// Recursively flatten questionnaire items into a list of leaf items for PDF
+// rendering. Items inside `if`/`randomize` control-flow nodes are only
+// included when they were actually answered — i.e. their branch was taken.
+// Top-level items are always included (shown as '—' when unanswered).
+function flattenItems(nodes, answers, insideIf = false) {
+  const result = [];
+  for (const node of nodes ?? []) {
+    if (node.type === 'if') {
+      result.push(...flattenItems(node.then, answers, true));
+      result.push(...flattenItems(node.else, answers, true));
+    } else if (node.type === 'randomize') {
+      result.push(...flattenItems(node.ids, answers, insideIf));
+    } else {
+      // Items inside a conditional branch: only show if the patient answered them.
+      // Items at the top level: always show (even if unanswered, renders as '—').
+      if (!insideIf || Object.prototype.hasOwnProperty.call(answers, node.id)) {
+        result.push(node);
+      }
+    }
+  }
+  return result;
+}
+
 export function buildResponseTable(questionnaire, answers) {
-  const items = questionnaire.items;
+  const items = flattenItems(questionnaire.items, answers);
   if (!items || items.length === 0) return null;
 
   const blocks    = [];

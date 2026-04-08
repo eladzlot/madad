@@ -489,3 +489,68 @@ describe('RTL invariants', () => {
     expect(row1[3].text).toBe('1');                          // row number
   });
 });
+
+// ── if/randomize node flattening ──────────────────────────────────────────────
+
+describe('buildResponseTable — if/randomize node handling', () => {
+  const baseQ = {
+    id: 'tq', title: 'Test',
+    optionSets: { yn: [{ label: 'לא', value: 0 }, { label: 'כן', value: 1 }] },
+    defaultOptionSetId: 'yn',
+    items: [],
+    scoring: { method: 'none' },
+  };
+
+  it('renders leaf items inside an answered if-branch', () => {
+    const q = {
+      ...baseQ,
+      items: [
+        { id: 'ms', type: 'multiselect', text: 'Check:', options: [{ label: 'A' }], required: false },
+        {
+          id: 'if1', type: 'if', condition: 'count(item.ms) > 0',
+          then: [{ id: 'sev', type: 'slider', text: 'Rate:', min: 0, max: 10 }],
+          else: [],
+        },
+      ],
+    };
+    // Simulate: ms answered, sev answered (branch was taken)
+    const result = buildResponseTable(q, { ms: [1], sev: 7 });
+    // Should not be null and must not contain the if-node itself as a row
+    expect(result).not.toBeNull();
+    const str = JSON.stringify(result);
+    expect(str).toContain('Rate:');   // slider rendered
+    expect(str).toContain('Check:');  // multiselect rendered
+    expect(str).not.toContain('if1'); // if-node ID never appears as content
+  });
+
+  it('omits leaf items inside an if-branch that was NOT taken', () => {
+    const q = {
+      ...baseQ,
+      items: [
+        { id: 'ms', type: 'multiselect', text: 'Check:', options: [{ label: 'A' }], required: false },
+        {
+          id: 'if1', type: 'if', condition: 'count(item.ms) > 0',
+          then: [{ id: 'sev', type: 'slider', text: 'Rate:', min: 0, max: 10 }],
+          else: [],
+        },
+      ],
+    };
+    // ms answered (nothing selected), sev NOT in answers (branch not taken)
+    const result = buildResponseTable(q, { ms: [] });
+    const str = JSON.stringify(result);
+    expect(str).toContain('Check:');  // multiselect still shown
+    expect(str).not.toContain('Rate:'); // slider hidden — branch not taken
+  });
+
+  it('always shows top-level items even when unanswered', () => {
+    const q = {
+      ...baseQ,
+      items: [
+        { id: 'q1', type: 'binary', text: 'ישנת?', options: [{ label: 'לא', value: 0 }, { label: 'כן', value: 1 }] },
+      ],
+    };
+    const result = buildResponseTable(q, {}); // no answers
+    expect(result).not.toBeNull();
+    expect(JSON.stringify(result)).toContain('ישנת?');
+  });
+});

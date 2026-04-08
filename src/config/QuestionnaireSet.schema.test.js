@@ -400,7 +400,7 @@ describe('multiselect item', () => {
     })],
   })).toBe(true));
 
-  it('rejects multiselect with only one option', () => expect(invalid({
+  it('accepts multiselect with only one option', () => expect(valid({
     ...minimalConfig,
     questionnaires: [makeQuestionnaire({
       items: [{ ...msItem, options: [{ label: 'only one' }] }],

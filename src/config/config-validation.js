@@ -113,7 +113,7 @@ function checkItemOptions(items, q, optionSetIds, errors) {
       checkItemOptions(item.ids, q, optionSetIds, errors);
       continue;
     }
-    if (item.type !== 'select' && item.type !== 'binary' && item.type !== 'select') continue;
+    if (item.type !== 'select' && item.type !== 'binary') continue;
 
     const label = `Questionnaire "${q.id}" › item "${item.id}"`;
 
@@ -218,18 +218,31 @@ function checkCrossEntityIdCollisions(data, errors) {
  */
 // ── Slider validation ─────────────────────────────────────────────────────────
 
+function checkSliderItemsInList(items, qId, errors) {
+  for (const item of items ?? []) {
+    if (item.type === 'if') {
+      checkSliderItemsInList(item.then, qId, errors);
+      checkSliderItemsInList(item.else, qId, errors);
+      continue;
+    }
+    if (item.type === 'randomize') {
+      checkSliderItemsInList(item.ids, qId, errors);
+      continue;
+    }
+    if (item.type !== 'slider') continue;
+    const label = `Questionnaire "${qId}" › item "${item.id}" (slider)`;
+    if (item.min >= item.max) {
+      errors.push(`${label}: min (${item.min}) must be less than max (${item.max}).`);
+    }
+    if (item.step != null && item.step <= 0) {
+      errors.push(`${label}: step must be greater than 0.`);
+    }
+  }
+}
+
 function checkSliderItems(data, errors) {
   for (const q of data.questionnaires ?? []) {
-    for (const item of q.items ?? []) {
-      if (item.type !== 'slider') continue;
-      const label = `Questionnaire "${q.id}" › item "${item.id}" (slider)`;
-      if (item.min >= item.max) {
-        errors.push(`${label}: min (${item.min}) must be less than max (${item.max}).`);
-      }
-      if (item.step != null && item.step <= 0) {
-        errors.push(`${label}: step must be greater than 0.`);
-      }
-    }
+    checkSliderItemsInList(q.items, q.id, errors);
   }
 }
 

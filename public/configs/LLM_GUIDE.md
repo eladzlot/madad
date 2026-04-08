@@ -120,9 +120,23 @@ Add `"required": false` to make an item skippable. Default is required.
 ```json
 { "id": "b1", "type": "binary", "text": "Did you sleep well?" }
 ```
-Default labels are כן/לא. Override with `"labels": { "yes": "כן", "no": "לא" }`.
+Binary items have **no built-in default labels**. You must supply option labels via one of:
+- Inline `"options": [{"label": "לא", "value": 0}, {"label": "כן", "value": 1}]` on the item
+- `"optionSetId": "my_set"` on the item referencing an entry in `optionSets`
+- `"defaultOptionSetId"` on the questionnaire (applies to all binary and select items without their own override)
 
-Binary items score: כן = 1, לא = 0 by default. With `"reverse": true`: כן = 0, לא = 1.
+The typical pattern is to define a `yesno` option set once and reference it as `defaultOptionSetId`:
+```json
+"defaultOptionSetId": "yesno",
+"optionSets": {
+  "yesno": [
+    { "label": "לא", "value": 0 },
+    { "label": "כן", "value": 1 }
+  ]
+}
+```
+
+Binary items score: כן = 1, לא = 0 by default (based on option values). With `"reverse": true`: values are inverted relative to `maxPerItem`.
 
 Add `"required": false` to make a binary item skippable. Default is required.
 
@@ -175,7 +189,102 @@ Key differences from `select`:
 - Options have only `"label"` — no `"value"` field.
 - The answer is stored as an array of **1-based indices** of selected options.
 - Use `count()` and `checked()` in DSL conditions to work with the answer (see DSL section).
-- At least 2 options required. No `optionSetId` — options must always be inline.
+- Minimum 1 option required. No `optionSetId` — options must always be inline.
+
+### If node (conditional item display)
+
+Items can be shown or hidden based on a patient's previous answers by placing an `if` node in the `items` array.
+
+```json
+{
+  "id": "show_severity",
+  "type": "if",
+  "condition": "count(item.symptoms) > 0",
+  "then": [
+    {
+      "id": "severity",
+      "type": "slider",
+      "text": "Rate the severity of your worst symptom:",
+      "min": 0,
+      "max": 10
+    }
+  ],
+  "else": []
+}
+```
+
+**Key rules for item-level `if` nodes:**
+
+- `id` is **required** (unlike battery-level `if` nodes which have no `id`)
+- `condition` is evaluated using answers to items that appeared **before** this node in the items array. Answers to later items are not yet available.
+- `then` and `else` are arrays of item definitions (same types as the `items` array — can include nested `if` nodes)
+- `else` must always be present, even if empty (`[]`)
+- Items inside `then`/`else` that are never shown are excluded from scoring
+- If the patient goes back and changes an answer that flips the condition, the branch re-evaluates and the sequence tail is discarded
+
+**DSL context at item level:** `{ item: { ...answeredItems } }`. Subscale values are not available (scoring hasn't run yet). Battery-level score references (`score.X`) are also not available.
+
+**Common condition patterns:**
+
+```
+"count(item.symptoms) > 0"          — at least one option selected in a multiselect
+"checked(item.symptoms, 2)"         — option 2 specifically was checked
+"item.q1 == 1"                      — binary item answered "yes"
+"item.q1 == 1 || item.q2 == 1"     — either of two binary items is "yes"
+"item.screen >= 1"                  — select item has any non-zero value
+```
+
+**Typical use case — multiselect checklist followed by conditional severity slider:**
+
+```json
+{
+  "id": "obsessions",
+  "type": "multiselect",
+  "text": "סמן את כל המחשבות שחווית בשבוע האחרון:",
+  "required": false,
+  "options": [
+    { "label": "מחשבה א'" },
+    { "label": "מחשבה ב'" }
+  ]
+},
+{
+  "id": "if_sev_obsessions",
+  "type": "if",
+  "condition": "count(item.obsessions) > 0",
+  "then": [
+    {
+      "id": "sev_obsessions",
+      "type": "slider",
+      "text": "דרג את חומרת הסימפטום המטריד ביותר:",
+      "min": 0,
+      "max": 10,
+      "labels": { "min": "אין בעיה", "max": "חמורה מאד" }
+    }
+  ],
+  "else": []
+}
+```
+
+### Randomize node (item order randomization)
+
+Shuffles a set of items into a random order. The shuffled order is stable for the lifetime of the session — going back and re-advancing produces the same order.
+
+```json
+{
+  "id": "shuffled_items",
+  "type": "randomize",
+  "ids": [
+    { "id": "q1", "type": "select", "text": "Item A" },
+    { "id": "q2", "type": "select", "text": "Item B" },
+    { "id": "q3", "type": "select", "text": "Item C" }
+  ]
+}
+```
+
+- `id` is required
+- `ids` contains full item definition objects (not string IDs)
+- Minimum 2 items required
+- Progress count is accurate even though order is unknown
 
 ---
 
