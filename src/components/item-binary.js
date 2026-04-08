@@ -65,38 +65,21 @@ export class ItemBinary extends LitElement {
         transform var(--transition-fast);
     }
 
-    .opt-btn.positive {
-      background: color-mix(in srgb, var(--color-yes) 12%, transparent);
-      color: var(--color-yes);
-      border-color: color-mix(in srgb, var(--color-yes) 30%, transparent);
+    .opt-btn {
+      background: var(--color-selected-bg);
+      color: var(--color-primary);
+      border-color: var(--color-selected-border);
     }
-    .opt-btn.positive:hover,
-    .opt-btn.positive.drag-target {
-      background: color-mix(in srgb, var(--color-yes) 22%, transparent);
+    .opt-btn:hover,
+    .opt-btn.drag-target {
+      background: color-mix(in srgb, var(--color-primary) 15%, transparent);
       transform: scale(1.03);
     }
-    .opt-btn.positive.selected,
-    .opt-btn.positive.drag-commit {
-      background: var(--color-yes);
-      color: #fff;
-      border-color: var(--color-yes);
-    }
-
-    .opt-btn.negative {
-      background: color-mix(in srgb, var(--color-no) 12%, transparent);
-      color: var(--color-no);
-      border-color: color-mix(in srgb, var(--color-no) 30%, transparent);
-    }
-    .opt-btn.negative:hover,
-    .opt-btn.negative.drag-target {
-      background: color-mix(in srgb, var(--color-no) 22%, transparent);
-      transform: scale(1.03);
-    }
-    .opt-btn.negative.selected,
-    .opt-btn.negative.drag-commit {
-      background: var(--color-no);
-      color: #fff;
-      border-color: var(--color-no);
+    .opt-btn.selected,
+    .opt-btn.drag-commit {
+      background: var(--color-primary);
+      color: var(--color-primary-text);
+      border-color: var(--color-primary);
     }
 
     .opt-btn:focus-visible {
@@ -180,7 +163,7 @@ export class ItemBinary extends LitElement {
           aria-labelledby="binary-question"
         >
           <button
-            class="opt-btn positive
+            class="opt-btn
               ${this.selected === opt0?.value ? 'selected' : ''}
               ${dragRight ? 'drag-commit' : ''}
               ${dragging && !dragRight && this._dragDx > 10 ? 'drag-target' : ''}"
@@ -188,7 +171,7 @@ export class ItemBinary extends LitElement {
             @click=${() => opt0 && this._select(opt0.value)}
           >${opt0?.label}</button>
           <button
-            class="opt-btn negative
+            class="opt-btn
               ${this.selected === opt1?.value ? 'selected' : ''}
               ${dragLeft ? 'drag-commit' : ''}
               ${dragging && !dragLeft && this._dragDx < -10 ? 'drag-target' : ''}"

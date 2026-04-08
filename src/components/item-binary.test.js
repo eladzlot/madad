@@ -34,16 +34,18 @@ describe('rendering', () => {
     expect(el.shadowRoot.querySelectorAll('.opt-btn')).toHaveLength(2);
   });
 
-  it('first button has positive class', async () => {
+  it('first button has opt-btn class (neutral styling)', async () => {
     const el = await makeEl();
     const btns = el.shadowRoot.querySelectorAll('.opt-btn');
-    expect(btns[0].classList.contains('positive')).toBe(true);
+    expect(btns[0].classList.contains('opt-btn')).toBe(true);
+    expect(btns[0].classList.contains('positive')).toBe(false);
   });
 
-  it('second button has negative class', async () => {
+  it('second button has opt-btn class (neutral styling)', async () => {
     const el = await makeEl();
     const btns = el.shadowRoot.querySelectorAll('.opt-btn');
-    expect(btns[1].classList.contains('negative')).toBe(true);
+    expect(btns[1].classList.contains('opt-btn')).toBe(true);
+    expect(btns[1].classList.contains('negative')).toBe(false);
   });
 
   it('renders option labels', async () => {
@@ -285,20 +287,23 @@ describe('swipe gestures', () => {
     expect(el._dragDx).toBe(60);
   });
 
-  it('drag-commit class applied to positive button when dragging right past threshold', async () => {
+  it('drag-commit class applied to first button when dragging right past threshold', async () => {
     const el = await makeEl();
-    // Manually set drag state to simulate committed drag
     el._dragDx    = 200;
     el._dragPhase = 'move';
     await el.updateComplete;
-    expect(el.shadowRoot.querySelector('.opt-btn.positive').classList.contains('drag-commit')).toBe(true);
+    const btns = el.shadowRoot.querySelectorAll('.opt-btn');
+    expect(btns[0].classList.contains('drag-commit')).toBe(true);
+    expect(btns[1].classList.contains('drag-commit')).toBe(false);
   });
 
-  it('drag-commit class applied to negative button when dragging left past threshold', async () => {
+  it('drag-commit class applied to second button when dragging left past threshold', async () => {
     const el = await makeEl();
     el._dragDx    = -200;
     el._dragPhase = 'move';
     await el.updateComplete;
-    expect(el.shadowRoot.querySelector('.opt-btn.negative').classList.contains('drag-commit')).toBe(true);
+    const btns = el.shadowRoot.querySelectorAll('.opt-btn');
+    expect(btns[1].classList.contains('drag-commit')).toBe(true);
+    expect(btns[0].classList.contains('drag-commit')).toBe(false);
   });
 });

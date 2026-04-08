@@ -163,12 +163,12 @@
       "optionSets": {
         "yesno": [
           {
-            "label": "לא",
-            "value": 0
-          },
-          {
             "label": "כן",
             "value": 1
+          },
+          {
+            "label": "לא",
+            "value": 0
           }
         ]
       },
