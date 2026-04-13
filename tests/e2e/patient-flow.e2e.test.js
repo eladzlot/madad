@@ -401,6 +401,45 @@ test.describe('error handling', () => {
     await page.goto('/?configs=/configs/nonexistent_xyz.json&items=phq9');
     await expect(page.locator('#app')).toContainText('לא ניתן לטעון את השאלון');
   });
+
+  test('aborted config fetch shows load-error screen with retry button', async ({ page }) => {
+    // Intercept all config JSON requests and abort them to simulate a network failure.
+    await page.route('**/*.json', route => route.abort('failed'));
+
+    await page.goto(PHQ9_URL, { waitUntil: 'domcontentloaded' });
+
+    // The app should surface the Hebrew load-error message.
+    await expect(page.locator('#app')).toContainText('לא ניתן לטעון את השאלון', { timeout: 8000 });
+
+    // A retry button must be visible — clicking it reloads the page.
+    const retryBtn = page.locator('[data-action="retry"]');
+    await expect(retryBtn).toBeVisible();
+  });
+
+  test('retry button on load error triggers a page reload', async ({ page }) => {
+    // Block config on first load only so the reload can succeed.
+    let requestCount = 0;
+    await page.route('**/*.json', route => {
+      requestCount++;
+      if (requestCount === 1) {
+        route.abort('failed');
+      } else {
+        route.continue();
+      }
+    });
+
+    await page.goto(PHQ9_URL, { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('[data-action="retry"]')).toBeVisible({ timeout: 8000 });
+
+    // After clicking retry the page reloads; config loads successfully this time.
+    await Promise.all([
+      page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
+      page.locator('[data-action="retry"]').click(),
+    ]);
+
+    // Should be back to the welcome screen, not the error screen.
+    await expect(page.locator('welcome-screen')).toBeVisible({ timeout: 10_000 });
+  });
 });
 
 // ── PDF download ──────────────────────────────────────────────────────────────

@@ -15,6 +15,9 @@
 //                            Defaults to same-origin only (location.origin).
 //                            Pass an explicit Set to allow trusted external servers.
 //                            Pass an empty Set (new Set()) to block all external URLs.
+//   fetchTimeoutMs: number — abort fetch after this many ms (default: 10000).
+//                            Pass 0 to disable the timeout (e.g. in unit tests that
+//                            control timing themselves).
 //
 // External-origin support is deliberately opt-in. To allow a trusted external
 // config server in the future, pass its origin at the call site:
@@ -28,7 +31,7 @@
 // }
 //
 // Errors thrown:
-//   ConfigFetchError      — HTTP failure or network error
+//   ConfigFetchError      — HTTP failure, network error, or timeout (timedOut: true)
 //   ConfigValidationError — AJV schema violation
 //   ConfigError           — semantic violation (duplicate ID, missing option set, etc.)
 
@@ -44,6 +47,10 @@ export class ConfigFetchError extends Error {
     super(`Failed to fetch config from "${url}": ${cause?.message ?? cause}`);
     this.name = 'ConfigFetchError';
     this.url = url;
+    // Set to true when the error was caused by the fetch timeout rather than an
+    // HTTP error or network failure. Callers can use this to show a "check your
+    // connection" message rather than a "bad URL" message.
+    this.timedOut = false;
   }
 }
 
@@ -93,17 +100,36 @@ function resolveSource(source, allowedOrigins) {
 
 // ─── Fetch and validate a single file ────────────────────────────────────────
 
-async function fetchAndValidate(source, fetchFn, allowedOrigins) {
+async function fetchAndValidate(source, fetchFn, allowedOrigins, fetchTimeoutMs) {
   const url = resolveSource(source, allowedOrigins);
+
+  // Optional abort-on-timeout. Disabled when fetchTimeoutMs is 0 or negative.
+  let controller, timeoutId;
+  if (fetchTimeoutMs > 0) {
+    controller = new AbortController();
+    timeoutId  = setTimeout(() => controller.abort(), fetchTimeoutMs);
+  }
 
   let data;
   try {
-    const res = await fetchFn(url);
+    const fetchOptions = controller ? { signal: controller.signal } : undefined;
+    const res = await fetchFn(url, fetchOptions);
     if (!res.ok) throw new ConfigFetchError(url, `HTTP ${res.status} ${res.statusText}`);
     data = await res.json();
   } catch (err) {
     if (err instanceof ConfigFetchError) throw err;
+    if (err.name === 'AbortError') {
+      const fetchErr = new ConfigFetchError(
+        url,
+        `Request timed out after ${fetchTimeoutMs}ms`,
+      );
+      fetchErr.timedOut = true;
+      throw fetchErr;
+    }
     throw new ConfigFetchError(url, err);
+  } finally {
+    // Always clear the timeout so it doesn't fire after a successful fetch.
+    if (timeoutId !== undefined) clearTimeout(timeoutId);
   }
 
   if (!validate(data)) throw new ConfigValidationError(url, validate.errors);
@@ -158,6 +184,9 @@ export async function loadConfig(sources, options = {}) {
     allowedOrigins = new Set(
       typeof location !== 'undefined' ? [location.origin] : []
     ),
+    // fetchTimeoutMs: abort the fetch after this many milliseconds.
+    // Default: 10 seconds. Pass 0 to disable (useful in tests that control timing).
+    fetchTimeoutMs = 10_000,
   } = options;
 
   if (!sources || sources.length === 0) {
@@ -165,7 +194,7 @@ export async function loadConfig(sources, options = {}) {
   }
 
   const results = await Promise.all(
-    sources.map(src => fetchAndValidate(src, fetchFn, allowedOrigins))
+    sources.map(src => fetchAndValidate(src, fetchFn, allowedOrigins, fetchTimeoutMs))
   );
 
   const { questionnaires, batteries } = mergeConfigs(results);

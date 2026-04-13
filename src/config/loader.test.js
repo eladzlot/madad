@@ -29,51 +29,44 @@ function makeFetch(responses) {
 describe('URL resolution', () => {
   it('resolves slug to configs/<slug>.json', async () => {
     const fetch = makeFetch({ 'configs/standard.json': { body: minimalConfig() } });
-    await loadConfig(['standard'], { fetch });
-    expect(fetch).toHaveBeenCalledWith('configs/standard.json');
+    await loadConfig(['standard'], { fetch, fetchTimeoutMs: 0 });
+    expect(fetch.mock.calls[0][0]).toBe('configs/standard.json');
   });
 
   it('uses full https URL when origin is explicitly allowed', async () => {
     const url = 'https://example.com/my-config.json';
     const fetch = makeFetch({ [url]: { body: minimalConfig() } });
-    await loadConfig([url], { fetch, allowedOrigins: new Set(['https://example.com']) });
-    expect(fetch).toHaveBeenCalledWith(url);
+    await loadConfig([url], { fetch, fetchTimeoutMs: 0, allowedOrigins: new Set(['https://example.com']) });
+    expect(fetch.mock.calls[0][0]).toBe(url);
   });
 
   it('rejects https URL from origin not in allowedOrigins', async () => {
     const url = 'https://evil.example.com/config.json';
     const fetch = makeFetch({ [url]: { body: minimalConfig() } });
     await expect(
-      loadConfig([url], { fetch })
+      loadConfig([url], { fetch, fetchTimeoutMs: 0 })
     ).rejects.toBeInstanceOf(ConfigError);
   });
 
   it('rejects http (non-TLS) URL for external origins even if listed in allowedOrigins', async () => {
     const url = 'http://example.com/config.json';
     const fetch = makeFetch({ [url]: { body: minimalConfig() } });
-    // External http:// is blocked regardless of allowedOrigins — only same-origin
-    // http:// (e.g. localhost) is permitted. The origin check uses the parsed origin
-    // from allowedOrigins, so listing 'http://example.com' does not bypass the block
-    // because the same-origin check uses location.origin which is not example.com.
-    // We pass an empty allowedOrigins to ensure example.com is not same-origin.
     await expect(
-      loadConfig([url], { fetch, allowedOrigins: new Set() })
+      loadConfig([url], { fetch, fetchTimeoutMs: 0, allowedOrigins: new Set() })
     ).rejects.toBeInstanceOf(ConfigError);
   });
 
   it('allows http (non-TLS) URL for same-origin (e.g. localhost in dev)', async () => {
-    // In test environments location is undefined, so allowedOrigins defaults to an
-    // empty Set. Pass the localhost origin explicitly to simulate a dev environment.
     const url = 'http://localhost:5173/configs/test.json';
     const fetch = makeFetch({ [url]: { body: minimalConfig() } });
-    await loadConfig([url], { fetch, allowedOrigins: new Set(['http://localhost:5173']) });
-    expect(fetch).toHaveBeenCalledWith(url);
+    await loadConfig([url], { fetch, fetchTimeoutMs: 0, allowedOrigins: new Set(['http://localhost:5173']) });
+    expect(fetch.mock.calls[0][0]).toBe(url);
   });
 
   it('uses absolute path as-is', async () => {
     const fetch = makeFetch({ '/custom/path.json': { body: minimalConfig() } });
-    await loadConfig(['/custom/path.json'], { fetch });
-    expect(fetch).toHaveBeenCalledWith('/custom/path.json');
+    await loadConfig(['/custom/path.json'], { fetch, fetchTimeoutMs: 0 });
+    expect(fetch.mock.calls[0][0]).toBe('/custom/path.json');
   });
 });
 
@@ -311,5 +304,122 @@ describe('dependency merging across multiple sources', () => {
     const fetch = makeFetch({ 'configs/a.json': { body: minimalConfig([minimalQ()]) } });
     const result = await loadConfig(['a'], { fetch });
     expect(result.dependencies).toEqual([]);
+  });
+});
+
+// ─── Fetch timeout ────────────────────────────────────────────────────────────
+
+// A fetch mock that never resolves but rejects with AbortError when the
+// provided signal fires. This simulates a hung network request.
+function makeHangingFetch() {
+  return vi.fn((url, { signal } = {}) =>
+    new Promise((_, reject) => {
+      signal?.addEventListener('abort', () => {
+        reject(new DOMException('The user aborted a request.', 'AbortError'));
+      });
+    }),
+  );
+}
+
+describe('fetch timeout', () => {
+  it('throws ConfigFetchError with timedOut:true when fetch hangs past timeout', async () => {
+    vi.useFakeTimers();
+    try {
+      const fetch = makeHangingFetch();
+      const promise = loadConfig(['a'], { fetch, fetchTimeoutMs: 5000 });
+      const errPromise = promise.catch(e => e); // register handler before timers fire
+      await vi.runAllTimersAsync();
+      const err = await errPromise;
+      expect(err).toBeInstanceOf(ConfigFetchError);
+      expect(err.timedOut).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('timedOut flag is false on normal HTTP errors', async () => {
+    const fetch = makeFetch({ 'configs/a.json': { ok: false, status: 503, statusText: 'Service Unavailable' } });
+    const err = await loadConfig(['a'], { fetch, fetchTimeoutMs: 5000 }).catch(e => e);
+    expect(err).toBeInstanceOf(ConfigFetchError);
+    expect(err.timedOut).toBe(false);
+  });
+
+  it('timedOut flag is false on network errors', async () => {
+    const fetch = makeFetch({ 'configs/a.json': new TypeError('Failed to fetch') });
+    const err = await loadConfig(['a'], { fetch, fetchTimeoutMs: 5000 }).catch(e => e);
+    expect(err).toBeInstanceOf(ConfigFetchError);
+    expect(err.timedOut).toBe(false);
+  });
+
+  it('error message names the timed-out URL', async () => {
+    vi.useFakeTimers();
+    try {
+      const fetch = makeHangingFetch();
+      const promise = loadConfig(['a'], { fetch, fetchTimeoutMs: 2000 });
+      const errPromise = promise.catch(e => e);
+      await vi.runAllTimersAsync();
+      const err = await errPromise;
+      expect(err.message).toContain('configs/a.json');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('does not fire timeout when fetch resolves before the deadline', async () => {
+    vi.useFakeTimers();
+    try {
+      const fetch = makeFetch({ 'configs/a.json': { body: minimalConfig([minimalQ()]) } });
+      // Resolves immediately — clearTimeout runs in finally before any timer fires.
+      const resultPromise = loadConfig(['a'], { fetch, fetchTimeoutMs: 5000 });
+      await vi.runAllTimersAsync();
+      const result = await resultPromise;
+      expect(result.questionnaires).toHaveLength(1);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('disabling timeout (fetchTimeoutMs: 0) passes no signal to fetch', async () => {
+    const fetch = vi.fn(async (url, options) => {
+      // When timeout is disabled, fetchAndValidate must not pass an options object.
+      expect(options).toBeUndefined();
+      return { ok: true, status: 200, statusText: 'OK', json: async () => minimalConfig([minimalQ()]) };
+    });
+    await loadConfig(['a'], { fetch, fetchTimeoutMs: 0 });
+    expect(fetch).toHaveBeenCalledOnce();
+  });
+
+  it('timeout applies independently to each source in a multi-source load', async () => {
+    vi.useFakeTimers();
+    try {
+      // Source 'a' resolves immediately so its timer is cleared before advancing time.
+      // Source 'b' hangs and should time out, causing Promise.all to reject.
+      const fetch = vi.fn((url, { signal } = {}) => {
+        if (url === 'configs/a.json') {
+          return Promise.resolve({
+            ok: true, status: 200, statusText: 'OK',
+            json: async () => minimalConfig([minimalQ('phq9')]),
+          });
+        }
+        return new Promise((_, reject) => {
+          signal?.addEventListener('abort', () =>
+            reject(new DOMException('The user aborted a request.', 'AbortError')),
+          );
+        });
+      });
+
+      const promise = loadConfig(['a', 'b'], { fetch, fetchTimeoutMs: 3000 });
+      // Register .catch() before advancing timers so rejection is never unhandled.
+      // runAllTimersAsync: flushes microtasks first (resolves 'a', clears its timer),
+      // then fires the remaining timer for 'b', causing it to abort.
+      const errPromise = promise.catch(e => e);
+      await vi.runAllTimersAsync();
+      const err = await errPromise;
+      expect(err).toBeInstanceOf(ConfigFetchError);
+      expect(err.timedOut).toBe(true);
+      expect(err.url).toBe('configs/b.json');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

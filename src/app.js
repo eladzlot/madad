@@ -125,10 +125,13 @@ async function main() {
   try {
     config = await loadConfig(configSources);
   } catch (err) {
+    const detail = err.timedOut
+      ? 'הבקשה ארכה זמן רב מדי. בדוק את חיבור האינטרנט ונסה שנית.'
+      : 'בדוק את חיבור האינטרנט ונסה שנית, או פנה למטפל לקבלת קישור חדש.';
     showError(
       container,
       'לא ניתן לטעון את השאלון.',
-      'בדוק את חיבור האינטרנט ונסה שנית, או פנה למטפל לקבלת קישור חדש.',
+      detail,
       { retryable: true },
     );
     console.error(err);
