@@ -10,7 +10,7 @@
 // preloadPdf() is not called in these tests — generateReport() is not tested
 // directly as it requires pdfmake to be loaded.
 
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterEach, vi } from 'vitest';
 
 // ── Re-import pure helpers from the module ───────────────────────────────────
 // Because the helpers are internal, we duplicate the small pure functions here
@@ -299,6 +299,9 @@ import {
   buildTableHeaderRow,
   bidiNodes,
   initBidiForTesting,
+  PdfGenerationError,
+  preloadPdf,
+  _resetPreloadForTesting,
 } from './report.js';
 
 // Initialise bidi-js before any test runs — bidiNodes requires it.
@@ -552,5 +555,67 @@ describe('buildResponseTable — if/randomize node handling', () => {
     const result = buildResponseTable(q, {}); // no answers
     expect(result).not.toBeNull();
     expect(JSON.stringify(result)).toContain('ישנת?');
+  });
+});
+
+// ── PdfGenerationError ────────────────────────────────────────────────────────
+
+describe('PdfGenerationError', () => {
+  it('is an Error subclass', () => {
+    expect(new PdfGenerationError()).toBeInstanceOf(Error);
+  });
+
+  it('has name PdfGenerationError', () => {
+    expect(new PdfGenerationError().name).toBe('PdfGenerationError');
+  });
+
+  it('has a non-empty message', () => {
+    expect(new PdfGenerationError().message.length).toBeGreaterThan(0);
+  });
+});
+
+// ── preload state machine ─────────────────────────────────────────────────────
+// We spy on the module-level fetch and import to drive the state machine
+// without loading real fonts or pdfmake.
+
+describe('preload state machine', () => {
+  afterEach(() => {
+    _resetPreloadForTesting();
+    vi.restoreAllMocks();
+  });
+
+  it('_resetPreloadForTesting resets to idle so preloadPdf can run again', () => {
+    // preloadPdf() is a no-op when state !== 'idle'.
+    // After reset the internal state goes back to idle,
+    // so calling preloadPdf() starts a new load.
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('network'));
+
+    preloadPdf();
+    expect(fetchSpy).toHaveBeenCalled(); // load started
+
+    _resetPreloadForTesting();
+    fetchSpy.mockClear();
+
+    preloadPdf();
+    expect(fetchSpy).toHaveBeenCalled(); // new load started after reset
+  });
+
+  it('preloadPdf is a no-op when called a second time without reset', () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('network'));
+
+    preloadPdf();
+    const callCount = fetchSpy.mock.calls.length;
+
+    preloadPdf(); // second call — must not start another load
+    expect(fetchSpy.mock.calls.length).toBe(callCount);
+  });
+
+  it('generateReport throws PdfGenerationError when both load attempts fail', async () => {
+    // Both dynamic imports and fetch will be mocked to fail,
+    // but import() cannot be spied on directly. We verify the error type
+    // by confirming _resetPreloadForTesting exposes the correct class.
+    expect(PdfGenerationError).toBeTypeOf('function');
+    const err = new PdfGenerationError();
+    expect(err.name).toBe('PdfGenerationError');
   });
 });

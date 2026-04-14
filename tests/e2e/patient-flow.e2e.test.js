@@ -466,6 +466,68 @@ test.describe('PDF download', () => {
   });
 });
 
+// ── PDF error recovery ────────────────────────────────────────────────────────
+
+test.describe('PDF error recovery', () => {
+  test('font fetch failure shows Hebrew error message and retry button', async ({ page }) => {
+    // Block all font requests so pdfmake cannot load.
+    await page.route('**/*.ttf', route => route.abort('failed'));
+
+    await page.goto(PHQ9_URL);
+    await clickBegin(page);
+    await answerAllPHQ9Items(page, 1);
+    await expect(page.locator('completion-screen')).toBeVisible({ timeout: 2000 });
+    await clickViewResults(page);
+    await expect(page.locator('results-screen')).toBeVisible();
+
+    const pdfBtn = page.locator('results-screen >> button.pdf-btn--primary');
+    await expect(pdfBtn).not.toHaveAttribute('disabled', { timeout: 5000 });
+    await pdfBtn.click();
+
+    // Error message and retry button must appear.
+    await expect(page.locator('results-screen >> .pdf-error')).toBeVisible({ timeout: 8000 });
+    await expect(page.locator('results-screen >> .pdf-error__msg')).toContainText('לא ניתן');
+
+    const retryBtn = page.locator('results-screen >> .pdf-error button');
+    await expect(retryBtn).toBeVisible();
+    await expect(retryBtn).toContainText('נסה');
+  });
+
+  test('retry button attempts generation again (clears error on success)', async ({ page }) => {
+    // Block ALL font requests. generateReport makes two load attempts before
+    // surfacing PdfGenerationError to the UI (initial preload + one internal
+    // retry), both of which must fail. We unroute after the error is visible
+    // so the user-triggered retry can load the fonts and succeed.
+    await page.route('**/*.ttf', route => route.abort('failed'));
+
+    await page.goto(PHQ9_URL);
+    await clickBegin(page);
+    await answerAllPHQ9Items(page, 1);
+    await expect(page.locator('completion-screen')).toBeVisible({ timeout: 2000 });
+    await clickViewResults(page);
+    await expect(page.locator('results-screen')).toBeVisible();
+
+    // Trigger the failure.
+    const pdfBtn = page.locator('results-screen >> button.pdf-btn--primary');
+    await expect(pdfBtn).not.toHaveAttribute('disabled', { timeout: 5000 });
+    await pdfBtn.click();
+    await expect(page.locator('results-screen >> .pdf-error')).toBeVisible({ timeout: 8000 });
+
+    // Unblock fonts so the user-triggered retry can succeed.
+    await page.unroute('**/*.ttf');
+
+    // Click retry — fonts now load — PDF generation should succeed.
+    const [download] = await Promise.all([
+      page.waitForEvent('download', { timeout: 20_000 }),
+      page.locator('results-screen >> .pdf-error button').click(),
+    ]);
+
+    expect(download.suggestedFilename()).toMatch(/\.pdf$/i);
+    // Error state must be gone.
+    await expect(page.locator('results-screen >> .pdf-error')).not.toBeVisible();
+  });
+});
+
 // ── All item types battery ────────────────────────────────────────────────────
 
 test.describe('all item types battery (instructions + select + binary + select + slider + text + multiselect)', () => {

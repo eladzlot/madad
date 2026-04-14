@@ -14,9 +14,11 @@ import { resetCSS } from '../styles/reset.js';
  */
 export class ResultsScreen extends LitElement {
   static properties = {
-    results:  { type: Array },
-    canShare: { type: Boolean },
-    loading:  { type: Boolean, state: true },
+    results:    { type: Array },
+    canShare:   { type: Boolean },
+    loading:    { type: Boolean, state: true },
+    _pdfError:  { type: Boolean, state: true },
+    _retryFn:   { state: true },
   };
 
   static styles = [resetCSS, css`
@@ -158,6 +160,21 @@ export class ResultsScreen extends LitElement {
       opacity: 0.6;
       cursor: not-allowed;
     }
+
+    /* ── PDF error state ─────────────────────────────────────────────── */
+
+    .pdf-error {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+    }
+
+    .pdf-error__msg {
+      font-size: var(--font-size-sm);
+      color: var(--color-no);
+      text-align: center;
+      padding-block: var(--space-sm);
+    }
   `];
 
   constructor() {
@@ -165,6 +182,8 @@ export class ResultsScreen extends LitElement {
     this.results    = [];
     this.canShare   = false;
     this.loading    = false;
+    this._pdfError  = false;
+    this._retryFn   = null;
     this.onDownload = null;
     this.onShare    = null;
   }
@@ -193,7 +212,18 @@ export class ResultsScreen extends LitElement {
       </div>
 
       <div class="actions">
-        ${this.canShare ? html`
+        ${this._pdfError ? html`
+          <div class="pdf-error" role="alert">
+            <p class="pdf-error__msg">לא ניתן להכין את הדוח. בדוק את חיבור האינטרנט ונסה שנית.</p>
+            <button
+              class="pdf-btn pdf-btn--primary"
+              ?disabled=${this.loading}
+              @click=${this._handleRetry}
+            >
+              ${this.loading ? 'מכין דוח...' : 'נסה שוב'}
+            </button>
+          </div>
+        ` : this.canShare ? html`
           <button
             class="pdf-btn pdf-btn--primary"
             ?disabled=${this.loading}
@@ -223,11 +253,14 @@ export class ResultsScreen extends LitElement {
 
   async _handleShare() {
     if (!this.onShare || this.loading) return;
+    this._pdfError = false;
     this.loading = true;
     try {
       await this.onShare();
     } catch (err) {
       console.error('Share failed:', err);
+      this._pdfError = true;
+      this._retryFn  = () => this._handleShare();
     } finally {
       this.loading = false;
     }
@@ -235,14 +268,22 @@ export class ResultsScreen extends LitElement {
 
   async _handleDownload() {
     if (!this.onDownload || this.loading) return;
+    this._pdfError = false;
     this.loading = true;
     try {
       await this.onDownload();
     } catch (err) {
       console.error('Download failed:', err);
+      this._pdfError = true;
+      this._retryFn  = () => this._handleDownload();
     } finally {
       this.loading = false;
     }
+  }
+
+  async _handleRetry() {
+    if (!this._retryFn || this.loading) return;
+    await this._retryFn();
   }
 }
 

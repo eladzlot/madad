@@ -168,3 +168,108 @@ describe('reactivity', () => {
     expect(el.shadowRoot.querySelector('.score-name').textContent.trim()).toBe('OCI-R');
   });
 });
+
+describe('PDF error state', () => {
+  it('shows error message when download fails', async () => {
+    const onDownload = vi.fn().mockRejectedValue(new Error('network'));
+    const el = await makeEl({ results: sampleResults, canShare: false, onDownload });
+
+    el.shadowRoot.querySelector('.pdf-btn').click();
+    await el.updateComplete;
+    // Wait for the async handler to complete
+    await new Promise(r => setTimeout(r, 0));
+    await el.updateComplete;
+
+    expect(el.shadowRoot.querySelector('.pdf-error')).not.toBeNull();
+  });
+
+  it('error message is in Hebrew', async () => {
+    const onDownload = vi.fn().mockRejectedValue(new Error('network'));
+    const el = await makeEl({ results: sampleResults, canShare: false, onDownload });
+
+    el.shadowRoot.querySelector('.pdf-btn').click();
+    await new Promise(r => setTimeout(r, 0));
+    await el.updateComplete;
+
+    const msg = el.shadowRoot.querySelector('.pdf-error__msg');
+    expect(msg).not.toBeNull();
+    // Message must contain Hebrew characters
+    expect(/[\u0590-\u05FF]/.test(msg.textContent)).toBe(true);
+  });
+
+  it('shows retry button after download failure', async () => {
+    const onDownload = vi.fn().mockRejectedValue(new Error('network'));
+    const el = await makeEl({ results: sampleResults, canShare: false, onDownload });
+
+    el.shadowRoot.querySelector('.pdf-btn').click();
+    await new Promise(r => setTimeout(r, 0));
+    await el.updateComplete;
+
+    // In error state, there is one button — the retry button
+    const btn = el.shadowRoot.querySelector('.pdf-btn');
+    expect(btn).not.toBeNull();
+    expect(btn.textContent.trim()).toContain('נסה');
+  });
+
+  it('retry button invokes the original handler again', async () => {
+    let callCount = 0;
+    const onDownload = vi.fn().mockImplementation(() => {
+      callCount++;
+      if (callCount === 1) return Promise.reject(new Error('first fail'));
+      return Promise.resolve();
+    });
+    const el = await makeEl({ results: sampleResults, canShare: false, onDownload });
+
+    // First click — fails
+    el.shadowRoot.querySelector('.pdf-btn').click();
+    await new Promise(r => setTimeout(r, 0));
+    await el.updateComplete;
+
+    expect(el.shadowRoot.querySelector('.pdf-error')).not.toBeNull();
+
+    // Retry click — succeeds
+    el.shadowRoot.querySelector('.pdf-btn').click();
+    await new Promise(r => setTimeout(r, 0));
+    await el.updateComplete;
+
+    expect(onDownload).toHaveBeenCalledTimes(2);
+    // Error cleared on success
+    expect(el.shadowRoot.querySelector('.pdf-error')).toBeNull();
+  });
+
+  it('error state clears when a new attempt begins', async () => {
+    const onDownload = vi.fn()
+      .mockRejectedValueOnce(new Error('fail'))
+      .mockResolvedValue(undefined);
+
+    const el = await makeEl({ results: sampleResults, canShare: false, onDownload });
+
+    // Trigger failure
+    el.shadowRoot.querySelector('.pdf-btn').click();
+    await new Promise(r => setTimeout(r, 0));
+    await el.updateComplete;
+    expect(el.shadowRoot.querySelector('.pdf-error')).not.toBeNull();
+
+    // Trigger retry — succeeds — error gone
+    el.shadowRoot.querySelector('.pdf-btn').click();
+    await new Promise(r => setTimeout(r, 0));
+    await el.updateComplete;
+    expect(el.shadowRoot.querySelector('.pdf-error')).toBeNull();
+  });
+
+  it('shows error after share failure too', async () => {
+    const onShare = vi.fn().mockRejectedValue(new Error('share failed'));
+    const el = await makeEl({ results: sampleResults, canShare: true, onShare });
+
+    el.shadowRoot.querySelector('.pdf-btn--primary').click();
+    await new Promise(r => setTimeout(r, 0));
+    await el.updateComplete;
+
+    expect(el.shadowRoot.querySelector('.pdf-error')).not.toBeNull();
+  });
+
+  it('does not show error when no failure has occurred', async () => {
+    const el = await makeEl({ results: sampleResults, canShare: false });
+    expect(el.shadowRoot.querySelector('.pdf-error')).toBeNull();
+  });
+});

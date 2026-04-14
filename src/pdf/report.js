@@ -77,12 +77,26 @@ const PILL_CRITICAL_BG = '#FEE2E2';  const PILL_CRITICAL_FG = '#B91C1C';
 const PILL_WARNING_BG  = '#FEF3C7';  const PILL_WARNING_FG  = '#92400E';
 
 // ── Preload state ─────────────────────────────────────────────────────────────
+// State machine: 'idle' → 'loading' → 'ready'
+//                          └────────→ 'failed'
+// 'failed' resets to 'loading' whenever _load() is called (i.e. on retry).
+//
+// _load() is the only function that mutates _state and _promise.
+// It is called by preloadPdf() on first startup and by generateReport() on retry.
 
-let _ready = null;
+export class PdfGenerationError extends Error {
+  constructor() {
+    super('PDF generation failed: assets could not be loaded');
+    this.name = 'PdfGenerationError';
+  }
+}
 
-export function preloadPdf() {
-  if (_ready) return;
-  _ready = Promise.all([
+let _state   = 'idle';   // 'idle' | 'loading' | 'ready' | 'failed'
+let _promise = null;     // current load Promise; null when idle
+
+function _load() {
+  _state   = 'loading';
+  _promise = Promise.all([
     import('pdfmake/build/pdfmake'),
     import('bidi-js').then(m => { _bidi = (m.default ?? m)(); }),
     fetch(regularFontUrl).then(r => {
@@ -94,7 +108,20 @@ export function preloadPdf() {
       return r.arrayBuffer();
     }),
   ]);
-  _ready.catch(err => console.error('[report] preload failed:', err));
+  _promise.then(() => { _state = 'ready'; }).catch(() => { _state = 'failed'; });
+  return _promise;
+}
+
+export function preloadPdf() {
+  if (_state !== 'idle') return;
+  _load().catch(err => console.error('[report] preload failed:', err));
+}
+
+/** For use in tests only — resets all module-level state to initial values. */
+export function _resetPreloadForTesting() {
+  _state   = 'idle';
+  _promise = null;
+  _bidi    = null;
 }
 
 // ── Entry point ───────────────────────────────────────────────────────────────
@@ -102,14 +129,33 @@ export function preloadPdf() {
 /**
  * Builds the PDF and returns { blob, filename }.
  *
+ * If the initial asset load failed, one automatic retry is attempted before
+ * giving up. Throws PdfGenerationError (not the raw cause) so callers can
+ * show a user-facing message without exposing internal error details.
+ *
  * @param {object} sessionState  — { answers, scores, alerts } from orchestrator
  * @param {object} config        — full QuestionnaireSet config
  * @param {object} session       — { name?, pid? } from app.js
  * @returns {Promise<{ blob: Blob, filename: string }>}
  */
 export async function generateReport(sessionState, config, session) {
-  if (!_ready) preloadPdf();
-  const [pdfmakeModule, , regularAB, boldAB] = await _ready;
+  // Ensure a load is in flight.
+  if (_state === 'idle') _load().catch(err => console.error('[report] preload failed:', err));
+
+  let assets;
+  try {
+    assets = await _promise;
+  } catch (firstErr) {
+    // Asset load failed — attempt one automatic retry.
+    console.error('[report] asset load failed, retrying once:', firstErr);
+    try {
+      assets = await _load();
+    } catch (retryErr) {
+      console.error('[report] asset retry failed:', retryErr);
+      throw new PdfGenerationError();
+    }
+  }
+  const [pdfmakeModule, , regularAB, boldAB] = assets;
   const pdfmake = pdfmakeModule.default ?? pdfmakeModule;
 
   const toBase64 = (ab) => {
