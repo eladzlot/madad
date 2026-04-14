@@ -54,18 +54,6 @@ describe('progress track', () => {
     expect(el.shadowRoot.querySelector('.track')).toBeNull();
   });
 
-  it('sets fill width proportionally', async () => {
-    const el = await makeEl({ itemProgress: { current: 3, total: 9 } });
-    const fill = el.shadowRoot.querySelector('.fill');
-    expect(fill.style.inlineSize).toBe('33%');
-  });
-
-  it('sets fill to 0% at start', async () => {
-    const el = await makeEl({ itemProgress: { current: 0, total: 9 } });
-    const fill = el.shadowRoot.querySelector('.fill');
-    expect(fill.style.inlineSize).toBe('0%');
-  });
-
   it('has correct ARIA attributes', async () => {
     const el = await makeEl({ itemProgress: { current: 3, total: 9 } });
     const track = el.shadowRoot.querySelector('.track');

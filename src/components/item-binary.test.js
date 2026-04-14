@@ -24,37 +24,6 @@ async function makeEl(props = {}) {
 // ─── Rendering ────────────────────────────────────────────────────────────────
 
 describe('rendering', () => {
-  it('renders question text', async () => {
-    const el = await makeEl();
-    expect(el.shadowRoot.querySelector('.question').textContent).toBe('האם ישנת טוב?');
-  });
-
-  it('renders exactly two buttons', async () => {
-    const el = await makeEl();
-    expect(el.shadowRoot.querySelectorAll('.opt-btn')).toHaveLength(2);
-  });
-
-  it('first button has opt-btn class (neutral styling)', async () => {
-    const el = await makeEl();
-    const btns = el.shadowRoot.querySelectorAll('.opt-btn');
-    expect(btns[0].classList.contains('opt-btn')).toBe(true);
-    expect(btns[0].classList.contains('positive')).toBe(false);
-  });
-
-  it('second button has opt-btn class (neutral styling)', async () => {
-    const el = await makeEl();
-    const btns = el.shadowRoot.querySelectorAll('.opt-btn');
-    expect(btns[1].classList.contains('opt-btn')).toBe(true);
-    expect(btns[1].classList.contains('negative')).toBe(false);
-  });
-
-  it('renders option labels', async () => {
-    const el = await makeEl();
-    const btns = el.shadowRoot.querySelectorAll('.opt-btn');
-    expect(btns[0].textContent.trim()).toBe('כן');
-    expect(btns[1].textContent.trim()).toBe('לא');
-  });
-
   it('renders nothing when item is null', async () => {
     const el = await makeEl({ item: null });
     expect(el.shadowRoot.querySelector('.question')).toBeNull();

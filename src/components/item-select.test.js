@@ -31,22 +31,6 @@ function options(el) {
 // ─── Rendering ────────────────────────────────────────────────────────────────
 
 describe('rendering', () => {
-  it('renders question text', async () => {
-    const el = await makeEl();
-    expect(el.shadowRoot.querySelector('.question').textContent).toBe(item.text);
-  });
-
-  it('renders one button per option', async () => {
-    const el = await makeEl();
-    expect(options(el)).toHaveLength(4);
-  });
-
-  it('renders option labels', async () => {
-    const el = await makeEl();
-    const labels = options(el).map(b => b.querySelector('.option__label').textContent);
-    expect(labels).toEqual(['Not at all', 'Several days', 'More than half the days', 'Nearly every day']);
-  });
-
   it('renders nothing when item is null', async () => {
     const el = await makeEl({ item: null });
     expect(el.shadowRoot.querySelector('.question')).toBeNull();

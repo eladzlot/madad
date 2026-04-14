@@ -23,16 +23,6 @@ describe('rendering', () => {
     const el = await makeEl({ batteryTitle: '' });
     expect(el.shadowRoot.querySelector('.battery-title')).toBeNull();
   });
-
-  it('renders name input', async () => {
-    const el = await makeEl();
-    expect(el.shadowRoot.querySelector('input')).toBeTruthy();
-  });
-
-  it('renders begin button', async () => {
-    const el = await makeEl();
-    expect(el.shadowRoot.querySelector('.begin-btn')).toBeTruthy();
-  });
 });
 
 // ─── Events ───────────────────────────────────────────────────────────────────

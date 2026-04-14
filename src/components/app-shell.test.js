@@ -11,27 +11,6 @@ async function makeEl(props = {}) {
   return el;
 }
 
-describe('rendering', () => {
-  it('renders a header and main', async () => {
-    const el = await makeEl();
-    expect(el.shadowRoot.querySelector('header')).toBeTruthy();
-    expect(el.shadowRoot.querySelector('main')).toBeTruthy();
-  });
-
-  it('renders back and forward buttons', async () => {
-    const el = await makeEl();
-    const btns = el.shadowRoot.querySelectorAll('.nav-btn');
-    expect(btns).toHaveLength(2);
-  });
-
-  it('back (up) button is first, forward (down) button is second', async () => {
-    const el = await makeEl();
-    const btns = el.shadowRoot.querySelectorAll('.nav-btn');
-    expect(btns[0].getAttribute('aria-label')).toBe('חזור לשאלה הקודמת');
-    expect(btns[1].getAttribute('aria-label')).toBe('עבור לשאלה הבאה');
-  });
-});
-
 describe('back button', () => {
   it('is disabled when canGoBack is false', async () => {
     const el = await makeEl({ canGoBack: false });

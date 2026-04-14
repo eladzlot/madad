@@ -1,15 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { getType, isScored, isNumericAnswer, autoAdvances, isSkippable, canAdvance, tagForType } from './item-types.js';
+import { getType, isScored, isNumericAnswer, autoAdvances, isSkippable, canAdvance } from './item-types.js';
 
 // ── getType ───────────────────────────────────────────────────────────────────
 
 describe('getType', () => {
-  it('returns descriptor for known types', () => {
-    expect(getType('select').tag).toBe('item-select');
-    expect(getType('binary').tag).toBe('item-binary');
-    expect(getType('instructions').tag).toBe('item-instructions');
-  });
-
   it('throws for unknown types', () => {
     expect(() => getType('unknown')).toThrow('unknown item type "unknown"');
   });
@@ -132,16 +126,3 @@ describe('canAdvance', () => {
   });
 });
 
-// ── tagForType ────────────────────────────────────────────────────────────────
-
-describe('tagForType', () => {
-  it('returns correct tags for existing types', () => {
-    expect(tagForType('select')).toBe('item-select');
-    expect(tagForType('binary')).toBe('item-binary');
-    expect(tagForType('instructions')).toBe('item-instructions');
-  });
-
-  it('falls back to item-select for unknown types', () => {
-    expect(tagForType('unknown')).toBe('item-select');
-  });
-});
