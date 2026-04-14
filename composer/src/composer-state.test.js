@@ -92,16 +92,13 @@ describe('buildUrl', () => {
   });
 
   it('includes transitive questionnaire sources when a battery references another config', () => {
-    // battery lives in intake.json but references questionnaires from standard.json
+    // battery lives in intake but references questionnaires from standard
     state.selected = ['clinical_intake'];
-    state.sourceByItem.set('clinical_intake', 'configs/prod/intake.json');
-    state.dependenciesBySource.set(
-      'configs/prod/intake.json',
-      ['configs/prod/standard.json']
-    );
+    state.sourceByItem.set('clinical_intake', 'intake');
+    state.dependenciesBySource.set('intake', ['standard']);
     const configs = new URL(buildUrl(ORIGIN)).searchParams.get('configs').split(',');
-    expect(configs).toContain('configs/prod/intake.json');
-    expect(configs).toContain('configs/prod/standard.json');
+    expect(configs).toContain('intake');
+    expect(configs).toContain('standard');
   });
 });
 

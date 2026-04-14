@@ -5,9 +5,12 @@
 // Public API:
 //   loadConfig(sources, options?)  → Promise<ResolvedConfig>
 //
-// sources: string[] — each entry is either:
-//   - A slug (no slashes, no protocol) → resolved to /configs/<slug>.json
-//   - A full URL (starts with https:// or http:// or /) → used as-is
+// sources: string[] — each entry is one of:
+//   - A short name (alphanumeric, hyphens, underscores only) → expanded to
+//     /<configBase><name>.json (default base: configs/prod/)
+//   - A root-relative path (starts with /) → used as-is
+//   - A path with slashes or .json extension → used as-is (legacy full path)
+//   - A full https:// or http:// URL → validated against allowedOrigins
 //
 // options:
 //   fetch: fn              — injectable fetch (default: globalThis.fetch)
@@ -18,6 +21,9 @@
 //   fetchTimeoutMs: number — abort fetch after this many ms (default: 10000).
 //                            Pass 0 to disable the timeout (e.g. in unit tests that
 //                            control timing themselves).
+//   configBase: string     — base path for short-name expansion (default: 'configs/prod/').
+//                            The expanded path is /<configBase><name>.json.
+//                            Override in tests or non-standard deployments.
 //
 // External-origin support is deliberately opt-in. To allow a trusted external
 // config server in the future, pass its origin at the call site:
@@ -68,8 +74,11 @@ export class ConfigValidationError extends Error {
 
 // resolveSource validates the source string and returns a URL/path safe to fetch.
 // allowedOrigins: Set<string> — permitted external https:// origins.
+// configBase: string — base path used when expanding short names.
 // Relative and same-origin paths are always allowed; http:// is never allowed.
-function resolveSource(source, allowedOrigins) {
+const SHORT_NAME_RE = /^[a-zA-Z0-9_-]+$/;
+
+function resolveSource(source, allowedOrigins, configBase) {
   if (/^https?:\/\//.test(source)) {
     let parsed;
     try { parsed = new URL(source); } catch {
@@ -92,16 +101,29 @@ function resolveSource(source, allowedOrigins) {
     );
   }
   if (source.startsWith('/')) return source;         // root-relative path
-  // A source with no slashes and no .json extension is a slug — expand to a relative path.
-  // Anything else (already has directory separators or an explicit extension) is used as-is.
+  // Reject path traversal in any non-absolute, non-external source.
+  if (source.includes('..')) {
+    throw new ConfigError(
+      `Invalid config source: "${source}". Path traversal is not permitted.`
+    );
+  }
+  // Paths containing slashes or ending with .json are legacy full paths — pass through.
   if (source.includes('/') || source.endsWith('.json')) return source;
-  return `configs/${source}.json`;
+  // Short name: alphanumeric, hyphens, underscores only. Reject anything else
+  // (e.g. path-traversal attempts like '../escape') before constructing a path.
+  if (!SHORT_NAME_RE.test(source)) {
+    throw new ConfigError(
+      `Invalid config source: "${source}". ` +
+      `Short names may only contain letters, digits, hyphens, and underscores.`
+    );
+  }
+  return `/${configBase}${source}.json`;
 }
 
 // ─── Fetch and validate a single file ────────────────────────────────────────
 
-async function fetchAndValidate(source, fetchFn, allowedOrigins, fetchTimeoutMs) {
-  const url = resolveSource(source, allowedOrigins);
+async function fetchAndValidate(source, fetchFn, allowedOrigins, fetchTimeoutMs, configBase) {
+  const url = resolveSource(source, allowedOrigins, configBase);
 
   // Optional abort-on-timeout. Disabled when fetchTimeoutMs is 0 or negative.
   let controller, timeoutId;
@@ -187,6 +209,10 @@ export async function loadConfig(sources, options = {}) {
     // fetchTimeoutMs: abort the fetch after this many milliseconds.
     // Default: 10 seconds. Pass 0 to disable (useful in tests that control timing).
     fetchTimeoutMs = 10_000,
+    // configBase: base path used when expanding short config names.
+    // Default: 'configs/prod/' → short name 'standard' expands to /configs/prod/standard.json
+    // Override in tests or non-standard deployments.
+    configBase = 'configs/prod/',
   } = options;
 
   if (!sources || sources.length === 0) {
@@ -194,7 +220,7 @@ export async function loadConfig(sources, options = {}) {
   }
 
   const results = await Promise.all(
-    sources.map(src => fetchAndValidate(src, fetchFn, allowedOrigins, fetchTimeoutMs))
+    sources.map(src => fetchAndValidate(src, fetchFn, allowedOrigins, fetchTimeoutMs, configBase))
   );
 
   const { questionnaires, batteries } = mergeConfigs(results);

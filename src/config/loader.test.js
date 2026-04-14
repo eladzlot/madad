@@ -27,10 +27,22 @@ function makeFetch(responses) {
 // ─── URL resolution ───────────────────────────────────────────────────────────
 
 describe('URL resolution', () => {
-  it('resolves slug to configs/<slug>.json', async () => {
-    const fetch = makeFetch({ 'configs/standard.json': { body: minimalConfig() } });
+  it('resolves slug to /configs/prod/<slug>.json', async () => {
+    const fetch = makeFetch({ '/configs/prod/standard.json': { body: minimalConfig() } });
     await loadConfig(['standard'], { fetch, fetchTimeoutMs: 0 });
-    expect(fetch.mock.calls[0][0]).toBe('configs/standard.json');
+    expect(fetch.mock.calls[0][0]).toBe('/configs/prod/standard.json');
+  });
+
+  it('respects configBase option when expanding short names', async () => {
+    const fetch = makeFetch({ '/configs/test/e2e.json': { body: minimalConfig() } });
+    await loadConfig(['e2e'], { fetch, fetchTimeoutMs: 0, configBase: 'configs/test/' });
+    expect(fetch.mock.calls[0][0]).toBe('/configs/test/e2e.json');
+  });
+
+  it('expands short names with hyphens and underscores', async () => {
+    const fetch = makeFetch({ '/configs/prod/my-config_v2.json': { body: minimalConfig() } });
+    await loadConfig(['my-config_v2'], { fetch, fetchTimeoutMs: 0 });
+    expect(fetch.mock.calls[0][0]).toBe('/configs/prod/my-config_v2.json');
   });
 
   it('uses full https URL when origin is explicitly allowed', async () => {
@@ -68,18 +80,36 @@ describe('URL resolution', () => {
     await loadConfig(['/custom/path.json'], { fetch, fetchTimeoutMs: 0 });
     expect(fetch.mock.calls[0][0]).toBe('/custom/path.json');
   });
+
+  it('rejects short name containing path traversal (..)', async () => {
+    await expect(
+      loadConfig(['../escape'], { fetch: vi.fn(), fetchTimeoutMs: 0 })
+    ).rejects.toBeInstanceOf(ConfigError);
+  });
+
+  it('rejects short name containing a space', async () => {
+    await expect(
+      loadConfig(['my config'], { fetch: vi.fn(), fetchTimeoutMs: 0 })
+    ).rejects.toBeInstanceOf(ConfigError);
+  });
+
+  it('rejects short name containing %', async () => {
+    await expect(
+      loadConfig(['my%20config'], { fetch: vi.fn(), fetchTimeoutMs: 0 })
+    ).rejects.toBeInstanceOf(ConfigError);
+  });
 });
 
 // ─── Fetch errors ─────────────────────────────────────────────────────────────
 
 describe('fetch errors', () => {
   it('throws ConfigFetchError on HTTP 404', async () => {
-    const fetch = makeFetch({ 'configs/missing.json': { ok: false, status: 404, statusText: 'Not Found' } });
+    const fetch = makeFetch({ '/configs/prod/missing.json': { ok: false, status: 404, statusText: 'Not Found' } });
     await expect(loadConfig(['missing'], { fetch })).rejects.toBeInstanceOf(ConfigFetchError);
   });
 
   it('throws ConfigFetchError on network error', async () => {
-    const fetch = makeFetch({ 'configs/bad.json': new TypeError('Failed to fetch') });
+    const fetch = makeFetch({ '/configs/prod/bad.json': new TypeError('Failed to fetch') });
     await expect(loadConfig(['bad'], { fetch })).rejects.toBeInstanceOf(ConfigFetchError);
   });
 });
@@ -88,12 +118,12 @@ describe('fetch errors', () => {
 
 describe('validation errors', () => {
   it('throws ConfigValidationError for invalid config', async () => {
-    const fetch = makeFetch({ 'configs/bad.json': { body: { not: 'valid' } } });
+    const fetch = makeFetch({ '/configs/prod/bad.json': { body: { not: 'valid' } } });
     await expect(loadConfig(['bad'], { fetch })).rejects.toBeInstanceOf(ConfigValidationError);
   });
 
   it('ConfigValidationError exposes validationErrors array', async () => {
-    const fetch = makeFetch({ 'configs/bad.json': { body: {} } });
+    const fetch = makeFetch({ '/configs/prod/bad.json': { body: {} } });
     const err = await loadConfig(['bad'], { fetch }).catch(e => e);
     expect(Array.isArray(err.validationErrors)).toBe(true);
     expect(err.validationErrors.length).toBeGreaterThan(0);
@@ -104,27 +134,27 @@ describe('validation errors', () => {
 
 describe('resolved config shape', () => {
   it('returns questionnaires and batteries as arrays', async () => {
-    const fetch = makeFetch({ 'configs/a.json': { body: minimalConfig([minimalQ()]) } });
+    const fetch = makeFetch({ '/configs/prod/a.json': { body: minimalConfig([minimalQ()]) } });
     const config = await loadConfig(['a'], { fetch });
     expect(Array.isArray(config.questionnaires)).toBe(true);
     expect(Array.isArray(config.batteries)).toBe(true);
   });
 
   it('returns version and resolvedAt', async () => {
-    const fetch = makeFetch({ 'configs/a.json': { body: minimalConfig([minimalQ()]) } });
+    const fetch = makeFetch({ '/configs/prod/a.json': { body: minimalConfig([minimalQ()]) } });
     const config = await loadConfig(['a'], { fetch });
     expect(config).toMatchObject({ version: expect.any(String), resolvedAt: expect.any(String) });
   });
 
   it('exposes dependencies array from config file', async () => {
     const body = { ...minimalConfig([minimalQ()]), dependencies: ['configs/prod/standard.json'] };
-    const fetch = makeFetch({ 'configs/a.json': { body } });
+    const fetch = makeFetch({ '/configs/prod/a.json': { body } });
     const config = await loadConfig(['a'], { fetch });
     expect(config.dependencies).toEqual(['configs/prod/standard.json']);
   });
 
   it('returns empty dependencies array when not declared', async () => {
-    const fetch = makeFetch({ 'configs/a.json': { body: minimalConfig([minimalQ()]) } });
+    const fetch = makeFetch({ '/configs/prod/a.json': { body: minimalConfig([minimalQ()]) } });
     const config = await loadConfig(['a'], { fetch });
     expect(config.dependencies).toEqual([]);
   });
@@ -139,8 +169,8 @@ describe('resolved config shape', () => {
 describe('merging multiple sources', () => {
   it('merges questionnaires from multiple files', async () => {
     const fetch = makeFetch({
-      'configs/a.json': { body: minimalConfig([minimalQ('phq9')]) },
-      'configs/b.json': { body: minimalConfig([minimalQ('gad7')]) },
+      '/configs/prod/a.json': { body: minimalConfig([minimalQ('phq9')]) },
+      '/configs/prod/b.json': { body: minimalConfig([minimalQ('gad7')]) },
     });
     const config = await loadConfig(['a', 'b'], { fetch });
     expect(config.questionnaires.map(q => q.id)).toEqual(expect.arrayContaining(['phq9', 'gad7']));
@@ -148,8 +178,8 @@ describe('merging multiple sources', () => {
 
   it('merges batteries from multiple files', async () => {
     const fetch = makeFetch({
-      'configs/a.json': { body: minimalConfig([minimalQ('phq9')], [minimalBattery('standard', 'phq9')]) },
-      'configs/b.json': { body: minimalConfig([minimalQ('gad7')], [minimalBattery('trauma', 'gad7')]) },
+      '/configs/prod/a.json': { body: minimalConfig([minimalQ('phq9')], [minimalBattery('standard', 'phq9')]) },
+      '/configs/prod/b.json': { body: minimalConfig([minimalQ('gad7')], [minimalBattery('trauma', 'gad7')]) },
     });
     const config = await loadConfig(['a', 'b'], { fetch });
     expect(config.batteries.map(b => b.id)).toEqual(expect.arrayContaining(['standard', 'trauma']));
@@ -157,16 +187,16 @@ describe('merging multiple sources', () => {
 
   it('throws ConfigError on duplicate questionnaire ID across files', async () => {
     const fetch = makeFetch({
-      'configs/a.json': { body: minimalConfig([minimalQ('phq9')]) },
-      'configs/b.json': { body: minimalConfig([minimalQ('phq9')]) },
+      '/configs/prod/a.json': { body: minimalConfig([minimalQ('phq9')]) },
+      '/configs/prod/b.json': { body: minimalConfig([minimalQ('phq9')]) },
     });
     await expect(loadConfig(['a', 'b'], { fetch })).rejects.toBeInstanceOf(ConfigError);
   });
 
   it('duplicate questionnaire error names the conflicting ID', async () => {
     const fetch = makeFetch({
-      'configs/a.json': { body: minimalConfig([minimalQ('phq9')]) },
-      'configs/b.json': { body: minimalConfig([minimalQ('phq9')]) },
+      '/configs/prod/a.json': { body: minimalConfig([minimalQ('phq9')]) },
+      '/configs/prod/b.json': { body: minimalConfig([minimalQ('phq9')]) },
     });
     const err = await loadConfig(['a', 'b'], { fetch }).catch(e => e);
     expect(err.message).toContain('phq9');
@@ -174,8 +204,8 @@ describe('merging multiple sources', () => {
 
   it('throws ConfigError on duplicate battery ID across files', async () => {
     const fetch = makeFetch({
-      'configs/a.json': { body: minimalConfig([minimalQ('phq9')], [minimalBattery('intake', 'phq9')]) },
-      'configs/b.json': { body: minimalConfig([minimalQ('gad7')], [minimalBattery('intake', 'gad7')]) },
+      '/configs/prod/a.json': { body: minimalConfig([minimalQ('phq9')], [minimalBattery('intake', 'phq9')]) },
+      '/configs/prod/b.json': { body: minimalConfig([minimalQ('gad7')], [minimalBattery('intake', 'gad7')]) },
     });
     await expect(loadConfig(['a', 'b'], { fetch })).rejects.toBeInstanceOf(ConfigError);
   });
@@ -186,13 +216,13 @@ describe('merging multiple sources', () => {
 describe('cross-entity ID collision (questionnaire ID = battery ID, same file)', () => {
   it('throws ConfigError when battery shares an ID with a questionnaire', async () => {
     const config = minimalConfig([minimalQ('intake')], [minimalBattery('intake', 'intake')]);
-    const fetch = makeFetch({ 'configs/a.json': { body: config } });
+    const fetch = makeFetch({ '/configs/prod/a.json': { body: config } });
     await expect(loadConfig(['a'], { fetch })).rejects.toBeInstanceOf(ConfigError);
   });
 
   it('does not throw when IDs are distinct', async () => {
     const config = minimalConfig([minimalQ('phq9')], [minimalBattery('standard', 'phq9')]);
-    const fetch = makeFetch({ 'configs/a.json': { body: config } });
+    const fetch = makeFetch({ '/configs/prod/a.json': { body: config } });
     await expect(loadConfig(['a'], { fetch })).resolves.toBeDefined();
   });
 });
@@ -205,7 +235,7 @@ describe('duplicate session key validation', () => {
       id: 'b', title: 'b',
       sequence: [{ questionnaireId: 'phq9' }, { questionnaireId: 'phq9' }],
     }]);
-    const fetch = makeFetch({ 'configs/a.json': { body: config } });
+    const fetch = makeFetch({ '/configs/prod/a.json': { body: config } });
     await expect(loadConfig(['a'], { fetch })).rejects.toBeInstanceOf(ConfigError);
   });
 
@@ -217,7 +247,7 @@ describe('duplicate session key validation', () => {
         { questionnaireId: 'phq9', instanceId: 'phq9_post' },
       ],
     }]);
-    const fetch = makeFetch({ 'configs/a.json': { body: config } });
+    const fetch = makeFetch({ '/configs/prod/a.json': { body: config } });
     await expect(loadConfig(['a'], { fetch })).resolves.toBeTruthy();
   });
 });
@@ -227,12 +257,12 @@ describe('duplicate session key validation', () => {
 describe('option set validation', () => {
   it('throws ConfigError for select with no options and no defaultOptionSetId', async () => {
     const q = { id: 'test', title: 'Test', items: [{ id: 'q1', type: 'select', text: 'Q1' }], scoring: { method: 'none' }, alerts: [] };
-    const fetch = makeFetch({ 'configs/a.json': { body: minimalConfig([q]) } });
+    const fetch = makeFetch({ '/configs/prod/a.json': { body: minimalConfig([q]) } });
     await expect(loadConfig(['a'], { fetch })).rejects.toBeInstanceOf(ConfigError);
   });
 
   it('accepts select with inline options', async () => {
-    const fetch = makeFetch({ 'configs/a.json': { body: minimalConfig([minimalQ()]) } });
+    const fetch = makeFetch({ '/configs/prod/a.json': { body: minimalConfig([minimalQ()]) } });
     await expect(loadConfig(['a'], { fetch })).resolves.toBeTruthy();
   });
 
@@ -242,7 +272,7 @@ describe('option set validation', () => {
       items: [{ id: 'q1', type: 'select', text: 'Q1', options: [{ label: 'No', value: 0 }, { label: 'Also No', value: 0 }, { label: 'Yes', value: 1 }] }],
       scoring: { method: 'none' }, alerts: [],
     };
-    const fetch = makeFetch({ 'configs/a.json': { body: minimalConfig([q]) } });
+    const fetch = makeFetch({ '/configs/prod/a.json': { body: minimalConfig([q]) } });
     await expect(loadConfig(['a'], { fetch })).rejects.toBeInstanceOf(ConfigError);
   });
 });
@@ -252,13 +282,13 @@ describe('option set validation', () => {
 describe('binary option count validation', () => {
   it('accepts binary with exactly 2 options', async () => {
     const q = { ...minimalQ(), items: [{ id: 'b1', type: 'binary', text: 'Q', options: [{ label: 'כן', value: 1 }, { label: 'לא', value: 0 }] }] };
-    const fetch = makeFetch({ 'configs/a.json': { body: minimalConfig([q]) } });
+    const fetch = makeFetch({ '/configs/prod/a.json': { body: minimalConfig([q]) } });
     await expect(loadConfig(['a'], { fetch })).resolves.toBeDefined();
   });
 
   it('throws when binary has 3 options', async () => {
     const q = { ...minimalQ(), items: [{ id: 'b1', type: 'binary', text: 'Q', options: [{ label: 'א', value: 1 }, { label: 'ב', value: 2 }, { label: 'ג', value: 3 }] }] };
-    const fetch = makeFetch({ 'configs/a.json': { body: minimalConfig([q]) } });
+    const fetch = makeFetch({ '/configs/prod/a.json': { body: minimalConfig([q]) } });
     await expect(loadConfig(['a'], { fetch })).rejects.toBeInstanceOf(ConfigError);
   });
 });
@@ -271,7 +301,7 @@ describe('dependency merging across multiple sources', () => {
 
   it('returns dependencies from a single config', async () => {
     const config = { ...minimalConfig([minimalQ()]), dependencies: ['configs/prod/trauma.json'] };
-    const fetch = makeFetch({ 'configs/a.json': { body: config } });
+    const fetch = makeFetch({ '/configs/prod/a.json': { body: config } });
     const result = await loadConfig(['a'], { fetch });
     expect(result.dependencies).toEqual(['configs/prod/trauma.json']);
   });
@@ -280,8 +310,8 @@ describe('dependency merging across multiple sources', () => {
     const configA = { ...minimalConfig([minimalQ('phq9')]), dependencies: ['configs/prod/trauma.json'] };
     const configB = { ...minimalConfig([minimalQ('gad7')]), dependencies: ['configs/prod/standard.json'] };
     const fetch = makeFetch({
-      'configs/a.json': { body: configA },
-      'configs/b.json': { body: configB },
+      '/configs/prod/a.json': { body: configA },
+      '/configs/prod/b.json': { body: configB },
     });
     const result = await loadConfig(['a', 'b'], { fetch });
     expect(result.dependencies).toContain('configs/prod/trauma.json');
@@ -293,15 +323,15 @@ describe('dependency merging across multiple sources', () => {
     const configA = { ...minimalConfig([minimalQ('phq9')]), dependencies: [shared] };
     const configB = { ...minimalConfig([minimalQ('gad7')]), dependencies: [shared] };
     const fetch = makeFetch({
-      'configs/a.json': { body: configA },
-      'configs/b.json': { body: configB },
+      '/configs/prod/a.json': { body: configA },
+      '/configs/prod/b.json': { body: configB },
     });
     const result = await loadConfig(['a', 'b'], { fetch });
     expect(result.dependencies.filter(d => d === shared)).toHaveLength(1);
   });
 
   it('returns empty array when no config declares dependencies', async () => {
-    const fetch = makeFetch({ 'configs/a.json': { body: minimalConfig([minimalQ()]) } });
+    const fetch = makeFetch({ '/configs/prod/a.json': { body: minimalConfig([minimalQ()]) } });
     const result = await loadConfig(['a'], { fetch });
     expect(result.dependencies).toEqual([]);
   });
@@ -338,14 +368,14 @@ describe('fetch timeout', () => {
   });
 
   it('timedOut flag is false on normal HTTP errors', async () => {
-    const fetch = makeFetch({ 'configs/a.json': { ok: false, status: 503, statusText: 'Service Unavailable' } });
+    const fetch = makeFetch({ '/configs/prod/a.json': { ok: false, status: 503, statusText: 'Service Unavailable' } });
     const err = await loadConfig(['a'], { fetch, fetchTimeoutMs: 5000 }).catch(e => e);
     expect(err).toBeInstanceOf(ConfigFetchError);
     expect(err.timedOut).toBe(false);
   });
 
   it('timedOut flag is false on network errors', async () => {
-    const fetch = makeFetch({ 'configs/a.json': new TypeError('Failed to fetch') });
+    const fetch = makeFetch({ '/configs/prod/a.json': new TypeError('Failed to fetch') });
     const err = await loadConfig(['a'], { fetch, fetchTimeoutMs: 5000 }).catch(e => e);
     expect(err).toBeInstanceOf(ConfigFetchError);
     expect(err.timedOut).toBe(false);
@@ -359,7 +389,7 @@ describe('fetch timeout', () => {
       const errPromise = promise.catch(e => e);
       await vi.runAllTimersAsync();
       const err = await errPromise;
-      expect(err.message).toContain('configs/a.json');
+      expect(err.message).toContain('/configs/prod/a.json');
     } finally {
       vi.useRealTimers();
     }
@@ -368,7 +398,7 @@ describe('fetch timeout', () => {
   it('does not fire timeout when fetch resolves before the deadline', async () => {
     vi.useFakeTimers();
     try {
-      const fetch = makeFetch({ 'configs/a.json': { body: minimalConfig([minimalQ()]) } });
+      const fetch = makeFetch({ '/configs/prod/a.json': { body: minimalConfig([minimalQ()]) } });
       // Resolves immediately — clearTimeout runs in finally before any timer fires.
       const resultPromise = loadConfig(['a'], { fetch, fetchTimeoutMs: 5000 });
       await vi.runAllTimersAsync();
@@ -395,7 +425,7 @@ describe('fetch timeout', () => {
       // Source 'a' resolves immediately so its timer is cleared before advancing time.
       // Source 'b' hangs and should time out, causing Promise.all to reject.
       const fetch = vi.fn((url, { signal } = {}) => {
-        if (url === 'configs/a.json') {
+        if (url === '/configs/prod/a.json') {
           return Promise.resolve({
             ok: true, status: 200, statusText: 'OK',
             json: async () => minimalConfig([minimalQ('phq9')]),
@@ -417,7 +447,7 @@ describe('fetch timeout', () => {
       const err = await errPromise;
       expect(err).toBeInstanceOf(ConfigFetchError);
       expect(err.timedOut).toBe(true);
-      expect(err.url).toBe('configs/b.json');
+      expect(err.url).toBe('/configs/prod/b.json');
     } finally {
       vi.useRealTimers();
     }

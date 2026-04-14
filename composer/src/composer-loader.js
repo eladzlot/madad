@@ -5,6 +5,22 @@
 import { loadConfig } from '/src/config/loader.js';
 import { state, MANIFEST_URL, getAppRoot } from './composer-state.js';
 
+// The base path for internal production configs (without leading slash).
+// Short names in generated patient URLs are derived by stripping this prefix
+// and the .json suffix. External URLs are stored as-is.
+// Single source of truth — update here if the folder structure ever changes.
+export const INTERNAL_CONFIG_PREFIX = 'configs/prod/';
+
+// Convert a stored sourceUrl to the token that goes in the patient URL.
+// Internal paths like 'configs/prod/standard.json' become 'standard'.
+// External URLs (https://...) and non-standard paths are returned unchanged.
+function toShortName(sourceUrl) {
+  if (sourceUrl.startsWith(INTERNAL_CONFIG_PREFIX) && sourceUrl.endsWith('.json')) {
+    return sourceUrl.slice(INTERNAL_CONFIG_PREFIX.length, -'.json'.length);
+  }
+  return sourceUrl;
+}
+
 export async function loadManifest() {
   const res = await fetch(MANIFEST_URL);
   if (!res.ok) throw new Error(`שגיאה בטעינת המניפסט: HTTP ${res.status}`);
@@ -57,21 +73,29 @@ export async function loadAllConfigs(manifest) {
 
     const { entry, config } = result.value;
 
+    // Convert the internal path to a short name for use in patient URLs.
+    // entry.url is e.g. 'configs/prod/standard.json' → shortName is 'standard'.
+    // External URLs are stored as-is.
+    const shortName = toShortName(entry.url);
+
     for (const b of config.batteries) {
-      state.batteries.push({ id: b.id, title: b.title, description: b.description ?? '', keywords: b.keywords ?? [], sourceUrl: entry.url, hidden: !!entry.hidden });
-      state.sourceByItem.set(b.id, entry.url);
+      state.batteries.push({ id: b.id, title: b.title, description: b.description ?? '', keywords: b.keywords ?? [], sourceUrl: shortName, hidden: !!entry.hidden });
+      state.sourceByItem.set(b.id, shortName);
     }
     for (const q of config.questionnaires) {
-      state.questionnaires.push({ id: q.id, title: q.title, description: q.description ?? '', keywords: q.keywords ?? [], sourceUrl: entry.url, hidden: !!entry.hidden });
-      state.sourceByItem.set(q.id, entry.url);
+      state.questionnaires.push({ id: q.id, title: q.title, description: q.description ?? '', keywords: q.keywords ?? [], sourceUrl: shortName, hidden: !!entry.hidden });
+      state.sourceByItem.set(q.id, shortName);
     }
 
-    // Record declared dependencies so buildUrl can include them automatically
-    const deps = (config.dependencies ?? []).map(dep =>
-      dep.startsWith('/') ? dep.slice(1) : dep
-    );
+    // Record declared dependencies so buildUrl can include them automatically.
+    // Both the key (this config's short name) and the values (dependency short names)
+    // must be in short-name form so buildUrl's sourceByItem lookups match correctly.
+    const deps = (config.dependencies ?? []).map(dep => {
+      const noSlash = dep.startsWith('/') ? dep.slice(1) : dep;
+      return toShortName(noSlash);
+    });
     if (deps.length) {
-      state.dependenciesBySource.set(entry.url, deps);
+      state.dependenciesBySource.set(shortName, deps);
     }
   }
 }

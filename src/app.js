@@ -34,7 +34,7 @@ import './components/welcome-screen.js';
 import './components/completion-screen.js';
 import './components/results-screen.js';
 
-const DEFAULT_CONFIG = 'prod/standard';
+const DEFAULT_CONFIG = 'standard';
 
 // ── Loading screen ────────────────────────────────────────────────────────────
 

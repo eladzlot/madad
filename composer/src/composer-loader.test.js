@@ -78,26 +78,26 @@ describe('loadAllConfigs', () => {
 
   it('sets sourceUrl on questionnaires', async () => {
     mockFetch.mockResolvedValueOnce(makeConfigResponse([minimalQ('phq9')]));
-    await loadAllConfigs({ configs: [{ name: 'Test', url: '/configs/a.json' }] });
-    expect(state.questionnaires[0].sourceUrl).toBe('configs/a.json');
+    await loadAllConfigs({ configs: [{ name: 'Test', url: '/configs/prod/standard.json' }] });
+    expect(state.questionnaires[0].sourceUrl).toBe('standard');
   });
 
   it('sets sourceUrl on batteries', async () => {
     mockFetch.mockResolvedValueOnce(makeConfigResponse([minimalQ('phq9')], [minimalBattery('intake')]));
-    await loadAllConfigs({ configs: [{ name: 'Test', url: '/configs/a.json' }] });
-    expect(state.batteries[0].sourceUrl).toBe('configs/a.json');
+    await loadAllConfigs({ configs: [{ name: 'Test', url: '/configs/prod/standard.json' }] });
+    expect(state.batteries[0].sourceUrl).toBe('standard');
   });
 
   it('populates sourceByItem map for questionnaires', async () => {
     mockFetch.mockResolvedValueOnce(makeConfigResponse([minimalQ('phq9')]));
-    await loadAllConfigs({ configs: [{ name: 'Test', url: '/configs/a.json' }] });
-    expect(state.sourceByItem.get('phq9')).toBe('configs/a.json');
+    await loadAllConfigs({ configs: [{ name: 'Test', url: '/configs/prod/standard.json' }] });
+    expect(state.sourceByItem.get('phq9')).toBe('standard');
   });
 
   it('populates sourceByItem map for batteries', async () => {
     mockFetch.mockResolvedValueOnce(makeConfigResponse([minimalQ('phq9')], [minimalBattery('intake')]));
-    await loadAllConfigs({ configs: [{ name: 'Test', url: '/configs/a.json' }] });
-    expect(state.sourceByItem.get('intake')).toBe('configs/a.json');
+    await loadAllConfigs({ configs: [{ name: 'Test', url: '/configs/prod/standard.json' }] });
+    expect(state.sourceByItem.get('intake')).toBe('standard');
   });
 
   it('carries description through (empty string when absent)', async () => {
@@ -213,21 +213,22 @@ describe('loadAllConfigs', () => {
       makeConfigResponseWithDeps([minimalQ('diamond_sr')], [minimalBattery('clinical_intake', 'Clinical Intake', 'diamond_sr')], ['configs/prod/standard.json'])
     );
     await loadAllConfigs({ configs: [{ name: 'Intake', url: '/configs/prod/intake.json' }] });
-    expect(state.dependenciesBySource.get('configs/prod/intake.json')).toEqual(['configs/prod/standard.json']);
+    // Both key and value are short names
+    expect(state.dependenciesBySource.get('intake')).toEqual(['standard']);
   });
 
   it('strips leading slash from declared dependency paths', async () => {
     mockFetch.mockResolvedValueOnce(
       makeConfigResponseWithDeps([minimalQ('q1')], [], ['/configs/prod/standard.json'])
     );
-    await loadAllConfigs({ configs: [{ name: 'Test', url: '/configs/a.json' }] });
-    expect(state.dependenciesBySource.get('configs/a.json')).toEqual(['configs/prod/standard.json']);
+    await loadAllConfigs({ configs: [{ name: 'Test', url: '/configs/prod/a.json' }] });
+    expect(state.dependenciesBySource.get('a')).toEqual(['standard']);
   });
 
   it('does not set dependenciesBySource entry when no dependencies declared', async () => {
     mockFetch.mockResolvedValueOnce(makeConfigResponse([minimalQ('phq9')]));
-    await loadAllConfigs({ configs: [{ name: 'Test', url: '/configs/a.json' }] });
-    expect(state.dependenciesBySource.has('configs/a.json')).toBe(false);
+    await loadAllConfigs({ configs: [{ name: 'Test', url: '/configs/prod/standard.json' }] });
+    expect(state.dependenciesBySource.has('standard')).toBe(false);
   });
 
   it('buildUrl includes dependency source when battery config declares it', async () => {
@@ -246,7 +247,39 @@ describe('loadAllConfigs', () => {
     state.selected = ['clinical_intake'];
     const url = buildUrl('http://localhost');
     const configs = new URL(url).searchParams.get('configs').split(',');
-    expect(configs).toContain('configs/prod/intake.json');
-    expect(configs).toContain('configs/prod/standard.json');
+    // Both emitted as short names
+    expect(configs).toContain('intake');
+    expect(configs).toContain('standard');
   });
+});
+
+// ── toShortName ───────────────────────────────────────────────────────────────
+
+import { INTERNAL_CONFIG_PREFIX } from './composer-loader.js';
+
+describe('INTERNAL_CONFIG_PREFIX and toShortName', () => {
+  it('INTERNAL_CONFIG_PREFIX is configs/prod/', () => {
+    expect(INTERNAL_CONFIG_PREFIX).toBe('configs/prod/');
+  });
+
+  // toShortName is not exported — we verify its effect through loadAllConfigs
+
+  it('internal path converts to short name in sourceByItem', async () => {
+    mockFetch.mockResolvedValueOnce(makeConfigResponse([minimalQ('phq9')]));
+    await loadAllConfigs({ configs: [{ name: 'Prod', url: '/configs/prod/standard.json' }] });
+    expect(state.sourceByItem.get('phq9')).toBe('standard');
+  });
+
+  it('internal path with hyphens converts correctly', async () => {
+    mockFetch.mockResolvedValueOnce(makeConfigResponse([minimalQ('q1')]));
+    await loadAllConfigs({ configs: [{ name: 'Test', url: '/configs/prod/my-config_v2.json' }] });
+    expect(state.sourceByItem.get('q1')).toBe('my-config_v2');
+  });
+
+  it('non-prod path is stored as-is in sourceByItem', async () => {
+    mockFetch.mockResolvedValueOnce(makeConfigResponse([minimalQ('e2e_q')]));
+    await loadAllConfigs({ configs: [{ name: 'E2E', url: '/configs/test/e2e.json', hidden: true }] });
+    expect(state.sourceByItem.get('e2e_q')).toBe('configs/test/e2e.json');
+  });
+
 });
