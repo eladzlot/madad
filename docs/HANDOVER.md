@@ -147,7 +147,7 @@ The e2e config has `"dev": true` in the manifest — it is skipped entirely in p
 
 ### What is stubbed / not implemented
 
-- **`randomize` node:** Recognised by schema and runner; execution throws `NotImplementedError`. Do not remove the schema definition.
+- **`randomize` node:** Fully implemented. Recognised by schema, shuffled by `sequence-runner.js`, scored by `scoring.js` (recurses into `node.ids`), and rendered in the PDF response table by `report.js`.
 - **Alert severity rendering in PDF:** fully implemented — `critical` (red), `warning` (amber), `info` (blue), `default` (grey). Alerts sorted critical-first. PHQ-9 suicidality is `critical`; PC-PTSD-5 and PCL-5 threshold alerts are `warning`.
 - **Embedded JSON attachment in PDF:** Planned. Not started.
 
@@ -249,7 +249,6 @@ See `public/configs/CONTRIBUTING.md` (human guide) or `public/configs/LLM_GUIDE.
 
 | Gap | Risk | Resolution |
 |---|---|---|
-| `randomize` throws `NotImplementedError` | Safe now; breaks if config author uses it | Documented in schema spec; validate:configs could warn |
 | Alert severity rendering | ✓ Complete | — |
 | Embedded JSON in PDF | Machine-readable output for clinic systems | Planned, not started |
 | Component branch coverage ~60% | UI regressions may go undetected | E2E tests compensate |

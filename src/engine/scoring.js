@@ -9,10 +9,16 @@ import { isScored } from '../item-types.js';
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 /**
- * Recursively collects all leaf items from a sequence that may contain if-nodes.
+/**
+ * Recursively collects all leaf items from a sequence that may contain
+ * if-nodes and randomize-nodes.
+ *
  * Since scoring runs after the questionnaire completes (all answers known),
  * we don't need to evaluate conditions — we collect items from all branches
  * and let the answer map determine which ones actually have values.
+ *
+ * randomize nodes are expanded by recursing into node.ids. Presentation order
+ * is irrelevant for scoring (sum / average / subscales are commutative).
  */
 function flattenItems(nodes) {
   const result = [];
@@ -20,10 +26,9 @@ function flattenItems(nodes) {
     if (node.type === 'if') {
       result.push(...flattenItems(node.then));
       result.push(...flattenItems(node.else ?? []));
-    } else if (node.type !== 'randomize') {
-      // randomize nodes are intentionally skipped here. When randomize is
-      // implemented, this block must recurse into node.ids so that items
-      // inside randomize blocks participate in scoring.
+    } else if (node.type === 'randomize') {
+      result.push(...flattenItems(node.ids ?? []));
+    } else {
       result.push(node);
     }
   }

@@ -497,3 +497,147 @@ describe('scoring.totalMethod = sum_of_items', () => {
 
 // ── subscale mean rounding in buildScoresLine ─────────────────────────────────
 // (tested via report.test.js — coverage here is via scoring.js)
+
+// ── randomize node scoring ────────────────────────────────────────────────────
+
+describe('randomize node scoring', () => {
+  const opts = [{ value: 0 }, { value: 1 }, { value: 2 }, { value: 3 }];
+
+  it('items inside a randomize node contribute to sum total', () => {
+    const q = {
+      items: [
+        { id: 'q1', type: 'select', options: opts },
+        {
+          type: 'randomize',
+          ids: [
+            { id: 'q2', type: 'select', options: opts },
+            { id: 'q3', type: 'select', options: opts },
+          ],
+        },
+      ],
+      scoring: { method: 'sum' },
+      alerts: [],
+    };
+    expect(score(q, { q1: 1, q2: 2, q3: 3 }).total).toBe(6);
+  });
+
+  it('items inside a randomize node contribute to average total', () => {
+    const q = {
+      items: [
+        {
+          type: 'randomize',
+          ids: [
+            { id: 'q1', type: 'select', options: opts },
+            { id: 'q2', type: 'select', options: opts },
+          ],
+        },
+      ],
+      scoring: { method: 'average' },
+      alerts: [],
+    };
+    expect(score(q, { q1: 2, q2: 0 }).total).toBe(1);
+  });
+
+  it('items inside a randomize node contribute to subscales', () => {
+    const q = {
+      items: [
+        {
+          type: 'randomize',
+          ids: [
+            { id: 'q1', type: 'select', options: opts },
+            { id: 'q2', type: 'select', options: opts },
+            { id: 'q3', type: 'select', options: opts },
+          ],
+        },
+      ],
+      scoring: {
+        method: 'subscales',
+        subscales: { a: ['q1', 'q2'], b: ['q3'] },
+      },
+      alerts: [],
+    };
+    const result = score(q, { q1: 1, q2: 2, q3: 3 });
+    expect(result.subscales.a).toBe(3);
+    expect(result.subscales.b).toBe(3);
+    expect(result.total).toBe(6);
+  });
+
+  it('reverse scoring works for items inside a randomize node', () => {
+    const q = {
+      items: [
+        {
+          type: 'randomize',
+          ids: [
+            { id: 'q1', type: 'select', reverse: true, options: opts },
+          ],
+        },
+      ],
+      scoring: { method: 'sum', maxPerItem: 3 },
+      alerts: [],
+    };
+    // answer=1, reversed = 3 - 1 = 2
+    expect(score(q, { q1: 1 }).total).toBe(2);
+  });
+
+  it('excluded items inside a randomize node are not scored', () => {
+    const q = {
+      items: [
+        {
+          type: 'randomize',
+          ids: [
+            { id: 'q1', type: 'select', options: opts },
+            { id: 'q2', type: 'select', options: opts },
+          ],
+        },
+      ],
+      scoring: { method: 'sum', exclude: ['q2'] },
+      alerts: [],
+    };
+    expect(score(q, { q1: 3, q2: 3 }).total).toBe(3);
+  });
+
+  it('randomize nested inside an if-node is scored correctly', () => {
+    const q = {
+      items: [
+        { id: 'gate', type: 'select', options: opts },
+        {
+          type: 'if',
+          condition: 'item.gate >= 1',
+          then: [
+            {
+              type: 'randomize',
+              ids: [
+                { id: 'q1', type: 'select', options: opts },
+                { id: 'q2', type: 'select', options: opts },
+              ],
+            },
+          ],
+          else: [],
+        },
+      ],
+      scoring: { method: 'sum' },
+      alerts: [],
+    };
+    // Branch taken: gate=2, q1=1, q2=2 → total 5
+    expect(score(q, { gate: 2, q1: 1, q2: 2 }).total).toBe(5);
+    // Branch not taken: gate=0, q1/q2 unanswered → total 0
+    expect(score(q, { gate: 0 }).total).toBe(0);
+  });
+
+  it('all-randomize questionnaire with no answers scores 0', () => {
+    const q = {
+      items: [
+        {
+          type: 'randomize',
+          ids: [
+            { id: 'q1', type: 'select', options: opts },
+            { id: 'q2', type: 'select', options: opts },
+          ],
+        },
+      ],
+      scoring: { method: 'sum' },
+      alerts: [],
+    };
+    expect(score(q, {}).total).toBe(0);
+  });
+});

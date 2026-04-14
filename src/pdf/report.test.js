@@ -577,22 +577,35 @@ describe('PdfGenerationError', () => {
 // ── preload state machine ─────────────────────────────────────────────────────
 // We spy on the module-level fetch and import to drive the state machine
 // without loading real fonts or pdfmake.
+//
+// All fetch mocks here resolve to rejections. The .catch handler attached by
+// preloadPdf() fires asynchronously and calls console.error — we silence it
+// for the whole block so the expected failure noise doesn't pollute test output.
+// afterEach flushes pending microtasks BEFORE calling _resetPreloadForTesting,
+// so the async state-mutation handlers (which set _state='failed') settle on
+// the current module state rather than racing with the reset.
 
 describe('preload state machine', () => {
-  afterEach(() => {
-    _resetPreloadForTesting();
-    vi.restoreAllMocks();
+  beforeAll(() => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
-  it('_resetPreloadForTesting resets to idle so preloadPdf can run again', () => {
-    // preloadPdf() is a no-op when state !== 'idle'.
-    // After reset the internal state goes back to idle,
-    // so calling preloadPdf() starts a new load.
+  afterEach(async () => {
+    // Flush the microtask queue so async .catch handlers settle before reset.
+    await Promise.resolve();
+    _resetPreloadForTesting();
+    vi.restoreAllMocks();
+    // Re-silence console.error for subsequent tests in this block.
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+  });
+
+  it('_resetPreloadForTesting resets to idle so preloadPdf can run again', async () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('network'));
 
     preloadPdf();
     expect(fetchSpy).toHaveBeenCalled(); // load started
 
+    await Promise.resolve(); // let rejection settle
     _resetPreloadForTesting();
     fetchSpy.mockClear();
 
@@ -600,7 +613,7 @@ describe('preload state machine', () => {
     expect(fetchSpy).toHaveBeenCalled(); // new load started after reset
   });
 
-  it('preloadPdf is a no-op when called a second time without reset', () => {
+  it('preloadPdf is a no-op when called a second time without reset', async () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('network'));
 
     preloadPdf();
@@ -608,6 +621,8 @@ describe('preload state machine', () => {
 
     preloadPdf(); // second call — must not start another load
     expect(fetchSpy.mock.calls.length).toBe(callCount);
+
+    await Promise.resolve(); // let rejection settle before afterEach resets
   });
 
   it('generateReport throws PdfGenerationError when both load attempts fail', async () => {
@@ -617,5 +632,74 @@ describe('preload state machine', () => {
     expect(PdfGenerationError).toBeTypeOf('function');
     const err = new PdfGenerationError();
     expect(err.name).toBe('PdfGenerationError');
+  });
+});
+
+// ── toBase64 chunked implementation ───────────────────────────────────────────
+// The function is an inner closure of generateReport and cannot be imported
+// directly. We replicate it here and verify:
+//   1. Output matches btoa() on arbitrary byte sequences.
+//   2. Output is identical to the old single-char implementation.
+//   3. Buffers whose length is not a multiple of the chunk size are handled.
+
+describe('toBase64 chunked implementation', () => {
+  // Replicate the new implementation exactly as it appears in report.js.
+  function toBase64(ab) {
+    const bytes = new Uint8Array(ab);
+    const CHUNK = 8192;
+    let binary = '';
+    for (let i = 0; i < bytes.length; i += CHUNK) {
+      binary += String.fromCharCode(...bytes.subarray(i, i + CHUNK));
+    }
+    return btoa(binary);
+  }
+
+  // Reference: the old single-character implementation.
+  function toBase64Ref(ab) {
+    const bytes = new Uint8Array(ab);
+    let binary = '';
+    for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+    return btoa(binary);
+  }
+
+  it('empty buffer produces empty Base64 string', () => {
+    const ab = new ArrayBuffer(0);
+    expect(toBase64(ab)).toBe('');
+  });
+
+  it('single byte matches reference implementation', () => {
+    const ab = new Uint8Array([0x41]).buffer; // 'A'
+    expect(toBase64(ab)).toBe(toBase64Ref(ab));
+    expect(toBase64(ab)).toBe(btoa('A'));
+  });
+
+  it('small buffer (< chunk size) matches reference implementation', () => {
+    const ab = new Uint8Array([72, 101, 108, 108, 111]).buffer; // 'Hello'
+    expect(toBase64(ab)).toBe(toBase64Ref(ab));
+  });
+
+  it('buffer exactly at chunk boundary (8192 bytes) matches reference', () => {
+    const bytes = new Uint8Array(8192);
+    for (let i = 0; i < bytes.length; i++) bytes[i] = i & 0xff;
+    expect(toBase64(bytes.buffer)).toBe(toBase64Ref(bytes.buffer));
+  });
+
+  it('buffer spanning multiple chunks (16385 bytes) matches reference', () => {
+    const bytes = new Uint8Array(16385);
+    for (let i = 0; i < bytes.length; i++) bytes[i] = (i * 7 + 13) & 0xff;
+    expect(toBase64(bytes.buffer)).toBe(toBase64Ref(bytes.buffer));
+  });
+
+  it('all byte values 0–255 round-trip correctly', () => {
+    const bytes = new Uint8Array(256);
+    for (let i = 0; i < 256; i++) bytes[i] = i;
+    expect(toBase64(bytes.buffer)).toBe(toBase64Ref(bytes.buffer));
+  });
+
+  it('produces valid Base64 (only A-Z a-z 0-9 + / = characters)', () => {
+    const bytes = new Uint8Array(300);
+    crypto.getRandomValues(bytes);
+    const result = toBase64(bytes.buffer);
+    expect(/^[A-Za-z0-9+/]+=*$/.test(result)).toBe(true);
   });
 });

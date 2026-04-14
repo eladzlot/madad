@@ -160,8 +160,11 @@ export async function generateReport(sessionState, config, session) {
 
   const toBase64 = (ab) => {
     const bytes = new Uint8Array(ab);
+    const CHUNK = 8192;
     let binary = '';
-    for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+    for (let i = 0; i < bytes.length; i += CHUNK) {
+      binary += String.fromCharCode(...bytes.subarray(i, i + CHUNK));
+    }
     return btoa(binary);
   };
 

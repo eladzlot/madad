@@ -138,6 +138,29 @@ async function main() {
     return;
   }
 
+  // Validate that all declared config dependencies were included in the URL.
+  // A config like intake.json references instruments from trauma.json; if the
+  // composer-generated URL omitted trauma.json the session will fail deep inside
+  // the orchestrator with a cryptic error. Surface it here with a clear message.
+  //
+  // Comparison is path-normalised: strip a leading slash before comparing so that
+  // '/configs/prod/trauma.json' and 'configs/prod/trauma.json' are treated as equal.
+  const normSource = s => s.replace(/^\//, '');
+  const loadedNorm = configSources.map(normSource);
+  const missingDeps = (config.dependencies ?? [])
+    .map(normSource)
+    .filter(dep => !loadedNorm.includes(dep));
+
+  if (missingDeps.length > 0) {
+    showError(
+      container,
+      'הקישור אינו שלם.',
+      'אנא פנה למטפל לקבלת קישור חדש.',
+    );
+    console.error(`Missing config dependencies: ${missingDeps.join(', ')}`);
+    return;
+  }
+
   // Resolve items to a sequence
   let sequence;
   try {
