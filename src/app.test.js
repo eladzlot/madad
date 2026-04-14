@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import '../tests/setup-dom.js';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 
 vi.mock('./components/item-select.js',       () => ({}));
 vi.mock('./components/item-binary.js',       () => ({}));
@@ -20,7 +20,7 @@ vi.mock('./engine/orchestrator.js', () => ({ createOrchestrator: vi.fn() }));
 vi.mock('./router.js',              () => ({ createRouter: vi.fn() }));
 vi.mock('./pdf/report.js',          () => ({ preloadPdf: vi.fn() }));
 
-import { showLoading, showError } from './app.js';
+import { showLoading, showError, findMissingDependencies } from './app.js';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -167,120 +167,54 @@ describe('showError — retryable', () => {
   });
 });
 
-// ─── Dependency validation ────────────────────────────────────────────────────
-// These tests drive main() via the module's mocked loadConfig / resolveItems.
-// We import the mocked modules so we can configure them per-test.
+// ─── findMissingDependencies ──────────────────────────────────────────────────
+// Tests the exported pure function that main() delegates to for dependency
+// validation. Each test calls the real app.js code — no inline logic copies.
 
-import { loadConfig } from './config/loader.js';
-import { resolveItems } from './resolve-items.js';
-import { createRouter } from './router.js';
-import { createController } from './controller.js';
-
-// Minimal stubs so a successful path doesn't crash on DOM operations
-const minimalConfig = (deps = []) => ({
-  questionnaires: [],
-  batteries: [],
-  dependencies: deps,
-  version: '1.0',
-  resolvedAt: new Date().toISOString(),
-});
-
-function stubSuccessfulFlow() {
-  createRouter.mockReturnValue({ replace: vi.fn(), onBack: vi.fn(), onForward: vi.fn() });
-  createController.mockReturnValue({ start: vi.fn() });
-  resolveItems.mockReturnValue([]);
-}
-
-// Helper: navigate to a URL and invoke main() by importing the module in a
-// controlled DOM environment. Because app.js runs main() only when #app exists,
-// we set up the DOM and trigger the module side-effect via dynamic import reset.
-//
-// Since Vitest caches modules, we test the exported helpers (showError, showLoading)
-// and the logic branches by directly exercising the dependency-check path through
-// a fresh call to main() — which we expose by importing and calling it.
-// The simplest approach: test the normalisation and filtering logic in isolation,
-// then verify the integration through the existing mock infrastructure.
-
-describe('dependency validation', () => {
-  let container;
-
-  beforeEach(() => {
-    container = document.createElement('div');
-    container.id = 'app';
-    document.body.appendChild(container);
-
-    // Default URL has items so we don't fail on the missing-items check
-    vi.stubGlobal('location', {
-      search: '?configs=configs%2Fprod%2Fintake.json&items=clinical_intake',
-      origin: 'http://localhost',
-      reload: vi.fn(),
-    });
+describe('findMissingDependencies', () => {
+  it('returns missing dependency when it is absent from configSources', () => {
+    const result = findMissingDependencies(
+      ['configs/prod/intake.json'],
+      ['configs/prod/trauma.json'],
+    );
+    expect(result).toEqual(['configs/prod/trauma.json']);
   });
 
-  afterEach(() => {
-    container.remove();
-    vi.unstubAllGlobals();
-    vi.clearAllMocks();
-  });
-
-  it('shows incomplete-link error when a declared dependency is missing from configSources', async () => {
-    // intake.json declares trauma.json as a dependency, but only intake is in the URL
-    loadConfig.mockResolvedValue(minimalConfig(['configs/prod/trauma.json']));
-    stubSuccessfulFlow();
-
-    // Dynamically import main() — we re-import app.js to get the real main()
-    const { main } = await import('./app.js?dep-test-1');
-    await main?.();
-
-    // If main is not exported (it isn't), exercise the check via the URL path
-    // by checking that showError was rendered into the container.
-    // Because main() isn't exported we verify the DOM state after the module runs.
-    // The module auto-runs main() when #app exists — but Vitest caches modules.
-    // Instead, verify the logic directly by reproducing the check.
-
-    // Direct logic test: normSource + filter
-    const normSource = s => s.replace(/^\//, '');
-    const configSources = ['configs/prod/intake.json'];
-    const dependencies  = ['configs/prod/trauma.json'];
-    const loadedNorm    = configSources.map(normSource);
-    const missing = dependencies.map(normSource).filter(dep => !loadedNorm.includes(dep));
-    expect(missing).toEqual(['configs/prod/trauma.json']);
-  });
-
-  it('passes when all dependencies are present in configSources', () => {
-    const normSource = s => s.replace(/^\//, '');
-    const configSources = ['configs/prod/intake.json', 'configs/prod/trauma.json', 'configs/prod/standard.json'];
-    const dependencies  = ['configs/prod/standard.json', 'configs/prod/trauma.json'];
-    const loadedNorm    = configSources.map(normSource);
-    const missing = dependencies.map(normSource).filter(dep => !loadedNorm.includes(dep));
-    expect(missing).toHaveLength(0);
+  it('returns empty array when all dependencies are present in configSources', () => {
+    const result = findMissingDependencies(
+      ['configs/prod/intake.json', 'configs/prod/trauma.json', 'configs/prod/standard.json'],
+      ['configs/prod/standard.json', 'configs/prod/trauma.json'],
+    );
+    expect(result).toHaveLength(0);
   });
 
   it('normalises a leading slash before comparing', () => {
-    const normSource = s => s.replace(/^\//, '');
-    // URL may have /configs/prod/trauma.json (absolute) vs configs/prod/trauma.json (relative)
-    const configSources = ['/configs/prod/intake.json', '/configs/prod/trauma.json'];
-    const dependencies  = ['configs/prod/trauma.json'];
-    const loadedNorm    = configSources.map(normSource);
-    const missing = dependencies.map(normSource).filter(dep => !loadedNorm.includes(dep));
-    expect(missing).toHaveLength(0);
+    // URL may supply /configs/prod/trauma.json (absolute) while the dependency
+    // is declared as configs/prod/trauma.json (relative) — must match.
+    const result = findMissingDependencies(
+      ['/configs/prod/intake.json', '/configs/prod/trauma.json'],
+      ['configs/prod/trauma.json'],
+    );
+    expect(result).toHaveLength(0);
   });
 
-  it('passes when dependencies array is empty', () => {
-    const normSource = s => s.replace(/^\//, '');
-    const configSources = ['configs/prod/standard.json'];
-    const dependencies  = [];
-    const loadedNorm    = configSources.map(normSource);
-    const missing = dependencies.map(normSource).filter(dep => !loadedNorm.includes(dep));
-    expect(missing).toHaveLength(0);
+  it('returns empty array when dependencies array is empty', () => {
+    const result = findMissingDependencies(['configs/prod/standard.json'], []);
+    expect(result).toHaveLength(0);
+  });
+
+  it('returns empty array when dependencies is null or undefined', () => {
+    expect(findMissingDependencies(['configs/prod/standard.json'], null)).toHaveLength(0);
+    expect(findMissingDependencies(['configs/prod/standard.json'], undefined)).toHaveLength(0);
   });
 
   it('detects multiple missing dependencies', () => {
-    const normSource = s => s.replace(/^\//, '');
-    const configSources = ['configs/prod/intake.json'];
-    const dependencies  = ['configs/prod/trauma.json', 'configs/prod/standard.json'];
-    const loadedNorm    = configSources.map(normSource);
-    const missing = dependencies.map(normSource).filter(dep => !loadedNorm.includes(dep));
-    expect(missing).toHaveLength(2);
+    const result = findMissingDependencies(
+      ['configs/prod/intake.json'],
+      ['configs/prod/trauma.json', 'configs/prod/standard.json'],
+    );
+    expect(result).toHaveLength(2);
+    expect(result).toContain('configs/prod/trauma.json');
+    expect(result).toContain('configs/prod/standard.json');
   });
 });

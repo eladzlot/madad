@@ -86,6 +86,16 @@ export function showError(container, message, detail = '', { retryable = false }
   }
 }
 
+// ── Dependency validation ─────────────────────────────────────────────────────
+// Pure function: returns dependency paths present in `dependencies` that are
+// absent from `configSources`, after stripping leading slashes from both sides.
+// Exported for unit testing.
+export function findMissingDependencies(configSources, dependencies) {
+  const norm = s => s.replace(/^\//, '');
+  const loaded = configSources.map(norm);
+  return (dependencies ?? []).map(norm).filter(dep => !loaded.includes(dep));
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 async function main() {
@@ -142,14 +152,7 @@ async function main() {
   // A config like intake.json references instruments from trauma.json; if the
   // composer-generated URL omitted trauma.json the session will fail deep inside
   // the orchestrator with a cryptic error. Surface it here with a clear message.
-  //
-  // Comparison is path-normalised: strip a leading slash before comparing so that
-  // '/configs/prod/trauma.json' and 'configs/prod/trauma.json' are treated as equal.
-  const normSource = s => s.replace(/^\//, '');
-  const loadedNorm = configSources.map(normSource);
-  const missingDeps = (config.dependencies ?? [])
-    .map(normSource)
-    .filter(dep => !loadedNorm.includes(dep));
+  const missingDeps = findMissingDependencies(configSources, config.dependencies);
 
   if (missingDeps.length > 0) {
     showError(
