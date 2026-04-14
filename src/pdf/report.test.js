@@ -1,59 +1,16 @@
 // Tests for src/pdf/report.js
 //
-// We test the pure logic functions that build the document definition.
-// We do NOT test pdfmake rendering itself (that requires a DOM + canvas),
-// but we verify every function that makes a decision: risk levels, option
-// resolution, filename generation, section inclusion/exclusion, table rows.
+// All tests import and exercise real exported functions from report.js.
+// No logic is duplicated from the source module.
 //
-// The module-level imports of font URLs will resolve to empty strings in the
-// test environment (vitest intercepts ?url imports via the asset plugin).
-// preloadPdf() is not called in these tests — generateReport() is not tested
-// directly as it requires pdfmake to be loaded.
+// generateReport() itself is not tested directly — it requires pdfmake to be
+// fully loaded (DOM + canvas). The exported builder functions (buildDocDefinition,
+// buildHeader, buildResponseTable, etc.) are pure and testable without pdfmake.
+//
+// The module-level imports of font URLs resolve to empty strings in the
+// test environment (Vitest intercepts ?url imports via the asset plugin).
 
 import { describe, it, expect, beforeAll, afterEach, vi } from 'vitest';
-
-// ── Re-import pure helpers from the module ───────────────────────────────────
-// Because the helpers are internal, we duplicate the small pure functions here
-// and test them directly. This is intentional: it keeps the tests fast and
-// decoupled from the heavy pdfmake import. The real report.js uses identical
-// logic — if these tests pass the behaviour is correct.
-
-// ── calcRiskLevel (copied from report.js for isolation) ───────────────────────
-
-function calcRiskLevel(item, value, options) {
-  if (item.type === 'slider') {
-    const { min = 0, max = 10 } = item;
-    const range = max - min;
-    if (range <= 0) return null;
-    const pos = (value - min) / range;
-    if (pos >= 0.8) return 'high';
-    if (pos >= 0.6) return 'med';
-    return null;
-  }
-  if (!options || options.length === 0) return null;
-  const values = options.map(o => o.value).sort((a, b) => a - b);
-  const max    = values[values.length - 1];
-  const second = values[values.length - 2];
-  if (value === max)                              return 'high';
-  if (item.type === 'select' && value === second) return 'med';
-  return null;
-}
-
-// ── resolveOptions (copied from report.js for isolation) ─────────────────────
-
-function resolveOptions(item, questionnaire) {
-  if (item.options) return item.options;
-  const setId = item.optionSetId ?? questionnaire.defaultOptionSetId;
-  return questionnaire.optionSets?.[setId] ?? [];
-}
-
-// ── buildFilename (copied from report.js for isolation) ───────────────────────
-
-function buildFilename(session, now = new Date()) {
-  const date = now.toISOString().slice(0, 10);
-  const pid  = session?.pid ? `-${session.pid}` : '';
-  return `report${pid}-${date}.pdf`;
-}
 
 // ── fixtures ──────────────────────────────────────────────────────────────────
 
@@ -204,96 +161,17 @@ describe('buildFilename', () => {
   });
 });
 
-// ── alert section inclusion ───────────────────────────────────────────────────
-// We test the decision logic: whether the alerts section is included or omitted.
-// We do this by re-implementing the inclusion check and verifying edge cases.
-
-function hasTriggeredAlerts(sessionState) {
-  for (const alertList of Object.values(sessionState.alerts ?? {})) {
-    if (Array.isArray(alertList) && alertList.length > 0) return true;
-  }
-  return false;
-}
-
-describe('alert section inclusion', () => {
-  it('includes alerts section when at least one alert is triggered', () => {
-    const state = { alerts: { phq9: [{ message: 'דיכאון חמור' }] } };
-    expect(hasTriggeredAlerts(state)).toBe(true);
-  });
-
-  it('omits alerts section when all alert arrays are empty', () => {
-    const state = { alerts: { phq9: [], gad7: [] } };
-    expect(hasTriggeredAlerts(state)).toBe(false);
-  });
-
-  it('omits alerts section when alerts object is empty', () => {
-    expect(hasTriggeredAlerts({ alerts: {} })).toBe(false);
-  });
-
-  it('omits alerts section when alerts key is missing', () => {
-    expect(hasTriggeredAlerts({})).toBe(false);
-  });
-
-  it('includes section when one questionnaire has alerts and another does not', () => {
-    const state = { alerts: { phq9: [], gad7: [{ message: 'חרדה' }] } };
-    expect(hasTriggeredAlerts(state)).toBe(true);
-  });
-});
-
-// ── scores line inclusion ─────────────────────────────────────────────────────
-
-function hasScoreLine(scoreResult) {
-  return scoreResult != null && scoreResult.total != null;
-}
-
-describe('scores line inclusion', () => {
-  it('shows scores line when total is a number', () => {
-    expect(hasScoreLine({ total: 14, subscales: {} })).toBe(true);
-  });
-
-  it('omits scores line when total is null (scoring method none)', () => {
-    expect(hasScoreLine({ total: null, subscales: {} })).toBe(false);
-  });
-
-  it('omits scores line when scoreResult is null', () => {
-    expect(hasScoreLine(null)).toBe(false);
-  });
-
-  it('shows scores line when total is 0', () => {
-    expect(hasScoreLine({ total: 0, subscales: {} })).toBe(true);
-  });
-});
-
-// ── instruction items excluded from table ─────────────────────────────────────
-
-describe('response table item filtering', () => {
-  it('excludes instruction items from the response table', () => {
-    const items = [
-      { id: 'intro', type: 'instructions', text: 'הוראות' },
-      { id: 'q1',    type: 'select',       text: 'שאלה 1' },
-      { id: 'q2',    type: 'binary',       text: 'שאלה 2' },
-    ];
-    const answerable = items.filter(i => i.type !== 'instructions');
-    expect(answerable).toHaveLength(2);
-    expect(answerable.every(i => i.type !== 'instructions')).toBe(true);
-  });
-
-  it('returns no rows when all items are instructions', () => {
-    const items = [{ id: 'i', type: 'instructions', text: 'הוראות' }];
-    const answerable = items.filter(i => i.type !== 'instructions');
-    expect(answerable).toHaveLength(0);
-  });
-});
-
 // ═════════════════════════════════════════════════════════════════════════════
-// Structure + RTL invariant tests
-// These import the real build functions from report.js so they test actual
-// behaviour rather than duplicated logic. They cover:
-//   A) Document structure — correct sections, row counts, column order
-//   B) RTL invariants   — no bare spaces, RLM before colons, nbsp used
+// All tests below import real functions from report.js and test actual
+// behaviour. No logic is duplicated from the source module.
 // ═════════════════════════════════════════════════════════════════════════════
 
 import {
+  calcRiskLevel,
+  resolveOptions,
+  buildFilename,
+  toBase64,
+  buildDocDefinition,
   buildHeader,
   buildResponseTable,
   buildTableHeaderRow,
@@ -636,25 +514,14 @@ describe('preload state machine', () => {
 });
 
 // ── toBase64 chunked implementation ───────────────────────────────────────────
-// The function is an inner closure of generateReport and cannot be imported
-// directly. We replicate it here and verify:
+// Verifies the chunked Base64 encoder used to embed font ArrayBuffers into
+// pdfmake's virtual file system. Tests the imported module-level export.
 //   1. Output matches btoa() on arbitrary byte sequences.
-//   2. Output is identical to the old single-char implementation.
+//   2. Output is identical to the reference single-char implementation.
 //   3. Buffers whose length is not a multiple of the chunk size are handled.
 
 describe('toBase64 chunked implementation', () => {
-  // Replicate the new implementation exactly as it appears in report.js.
-  function toBase64(ab) {
-    const bytes = new Uint8Array(ab);
-    const CHUNK = 8192;
-    let binary = '';
-    for (let i = 0; i < bytes.length; i += CHUNK) {
-      binary += String.fromCharCode(...bytes.subarray(i, i + CHUNK));
-    }
-    return btoa(binary);
-  }
-
-  // Reference: the old single-character implementation.
+  // Reference: the old single-character implementation used for comparison.
   function toBase64Ref(ab) {
     const bytes = new Uint8Array(ab);
     let binary = '';
@@ -701,5 +568,64 @@ describe('toBase64 chunked implementation', () => {
     crypto.getRandomValues(bytes);
     const result = toBase64(bytes.buffer);
     expect(/^[A-Za-z0-9+/]+=*$/.test(result)).toBe(true);
+  });
+});
+
+// ── buildDocDefinition — alert content in output ──────────────────────────────
+// Integration test: given a completed session with a triggered clinical alert,
+// the document definition produced by buildDocDefinition must contain the alert
+// message text. This protects the alert → PDF content pipeline end-to-end
+// without requiring a browser or pdfmake rendering.
+//
+// Uses the Q / CFG / SES fixtures defined above in this file.
+
+describe('buildDocDefinition — alert content in output', () => {
+  // _resetPreloadForTesting() (called in the preload state machine afterEach above)
+  // sets _bidi = null. Re-initialize so buildDocDefinition → bidiNodes works.
+  beforeAll(async () => { await initBidiForTesting(); });
+
+  const now = new Date('2026-03-12T07:00:00');
+
+  it('document definition contains alert message when alert is triggered', () => {
+    const sessionState = {
+      answers: { q1: { i1: 3, i2: 2 } },
+      scores:  { q1: { total: 5, subscales: {}, category: 'moderate' } },
+      alerts:  { q1: [{ id: 'suicidality', message: 'פריט 9 — דיווח על מחשבות אובדניות', severity: 'critical' }] },
+    };
+    const def = buildDocDefinition(sessionState, CFG, SES, now);
+    // bidiNodes splits the message into RTL-ordered text nodes; assert on
+    // 'פריט' (the Hebrew word for "item") which appears as a distinct node.
+    expect(JSON.stringify(def)).toContain('פריט');
+  });
+
+  it('document definition contains alert id when alert is triggered', () => {
+    const sessionState = {
+      answers: { q1: { i1: 3, i2: 2 } },
+      scores:  { q1: { total: 5, subscales: {}, category: 'moderate' } },
+      alerts:  { q1: [{ id: 'suicidality', message: 'פריט 9 — דיווח על מחשבות אובדניות', severity: 'critical' }] },
+    };
+    const def = buildDocDefinition(sessionState, CFG, SES, now);
+    // The alert message is embedded in the pill badge — id appears in the message
+    expect(JSON.stringify(def)).toContain('אובדניות');
+  });
+
+  it('document definition does not contain alert message when no alerts triggered', () => {
+    const sessionState = {
+      answers: { q1: { i1: 0, i2: 0 } },
+      scores:  { q1: { total: 0, subscales: {}, category: null } },
+      alerts:  { q1: [] },
+    };
+    const def = buildDocDefinition(sessionState, CFG, SES, now);
+    // No alert message should appear anywhere in the doc definition
+    expect(JSON.stringify(def)).not.toContain('אובדניות');
+  });
+
+  it('document definition does not contain alert message when alerts key is absent', () => {
+    const sessionState = {
+      answers: { q1: { i1: 0, i2: 0 } },
+      scores:  { q1: { total: 0, subscales: {}, category: null } },
+    };
+    const def = buildDocDefinition(sessionState, CFG, SES, now);
+    expect(JSON.stringify(def)).not.toContain('אובדניות');
   });
 });

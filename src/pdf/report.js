@@ -76,6 +76,20 @@ const HIGHLIGHT_ELEVATED_FG = '#78350F';
 const PILL_CRITICAL_BG = '#FEE2E2';  const PILL_CRITICAL_FG = '#B91C1C';
 const PILL_WARNING_BG  = '#FEF3C7';  const PILL_WARNING_FG  = '#92400E';
 
+// ── Font encoding ─────────────────────────────────────────────────────────────
+// Chunked approach avoids call-stack overflow that a single-char loop would
+// cause on large (1 MB+) font ArrayBuffers.
+// Exported for unit testing.
+export function toBase64(ab) {
+  const bytes = new Uint8Array(ab);
+  const CHUNK = 8192;
+  let binary = '';
+  for (let i = 0; i < bytes.length; i += CHUNK) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + CHUNK));
+  }
+  return btoa(binary);
+}
+
 // ── Preload state ─────────────────────────────────────────────────────────────
 // State machine: 'idle' → 'loading' → 'ready'
 //                          └────────→ 'failed'
@@ -157,16 +171,6 @@ export async function generateReport(sessionState, config, session) {
   }
   const [pdfmakeModule, , regularAB, boldAB] = assets;
   const pdfmake = pdfmakeModule.default ?? pdfmakeModule;
-
-  const toBase64 = (ab) => {
-    const bytes = new Uint8Array(ab);
-    const CHUNK = 8192;
-    let binary = '';
-    for (let i = 0; i < bytes.length; i += CHUNK) {
-      binary += String.fromCharCode(...bytes.subarray(i, i + CHUNK));
-    }
-    return btoa(binary);
-  };
 
   pdfmake.addVirtualFileSystem({
     'NotoSansHebrew-Regular.ttf': toBase64(regularAB),
