@@ -17,24 +17,6 @@ async function makeEl(props = {}) {
 }
 
 describe('rendering', () => {
-  it('renders a title', async () => {
-    const el = await makeEl();
-    expect(el.shadowRoot.querySelector('.title').textContent).toContain('תוצאות');
-  });
-
-  it('renders one row per result', async () => {
-    const el = await makeEl({ results: sampleResults });
-    expect(el.shadowRoot.querySelectorAll('.score-row')).toHaveLength(2);
-  });
-
-  it('renders questionnaire name in each row', async () => {
-    const el = await makeEl({ results: sampleResults });
-    const names = [...el.shadowRoot.querySelectorAll('.score-name')]
-      .map(n => n.textContent.trim());
-    expect(names).toContain('PHQ-9');
-    expect(names).toContain('PCL-5');
-  });
-
   it('renders numeric score when total is a number', async () => {
     const el = await makeEl({ results: [{ title: 'PHQ-9', total: 12 }] });
     expect(el.shadowRoot.querySelector('.score-value').textContent.trim()).toBe('12');

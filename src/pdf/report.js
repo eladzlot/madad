@@ -138,6 +138,17 @@ export function _resetPreloadForTesting() {
   _bidi    = null;
 }
 
+/**
+ * For use in tests only — resets preload state but preserves the bidi instance.
+ * Use this instead of _resetPreloadForTesting() when bidi is already initialised
+ * (e.g. via initBidiForTesting in beforeAll) to avoid paying the bidi-js import
+ * cost on every test reset.
+ */
+export function _resetPreloadStateOnly() {
+  _state   = 'idle';
+  _promise = null;
+}
+
 // ── Entry point ───────────────────────────────────────────────────────────────
 
 /**

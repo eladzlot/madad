@@ -100,6 +100,7 @@ copy "main.css"                        "src/styles/main.css"
 # ── PDF ────────────────────────────────────────────────────────────────────────
 copy "report.js"                       "src/pdf/report.js"
 copy "report.test.js"                  "src/pdf/report.test.js"
+copy "generate-report.test.js"         "src/pdf/generate-report.test.js"
 
 # ── App shell ──────────────────────────────────────────────────────────────────
 copy "index.html"                      "index.html"

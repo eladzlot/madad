@@ -2,6 +2,7 @@
 import '../tests/setup-dom.js';
 import { describe, it, expect, vi } from 'vitest';
 import { createController } from './controller.js';
+import { createEngine } from './engine/engine.js';
 
 // item-* components don't need to be registered — controller just
 // calls document.createElement(tag) and sets properties on the element.
@@ -36,29 +37,22 @@ function makeQuestionnaire(id = 'phq9') {
 }
 
 function makeEngine(questionnaire, existingAnswers = {}) {
-  const items = questionnaire.items.slice();
-  let index = -1;
-  const _answers = { ...existingAnswers };
-
-  return {
-    advance: vi.fn(() => {
-      index++;
-      if (index >= items.length) return null;
-      return items[index];
-    }),
-    back: vi.fn(() => {
-      index = Math.max(0, index - 1);
-      return items[index];
-    }),
-    recordAnswer: vi.fn((id, val) => { _answers[id] = val; }),
-    currentItem: vi.fn(() => index >= 0 && index < items.length ? items[index] : null),
-    answers: vi.fn(() => ({ ..._answers })),
-    canGoBack: vi.fn(() => index > 0),
-    isComplete: vi.fn(() => index >= items.length),
-    progress: vi.fn(() => ({ current: index + 1, total: items.length })),
-    scoreResult: vi.fn(() => null),
-    alertResults: vi.fn(() => null),
-  };
+  // Use the real engine so the controller-engine interface contract is exercised.
+  // vi.spyOn wraps each method: the real implementation is preserved (calls
+  // through), but .mock.calls tracking and .mockReturnValue overrides work as
+  // before for tests that need to control specific return values.
+  const engine = createEngine(questionnaire, questionnaire.id, existingAnswers);
+  vi.spyOn(engine, 'advance');
+  vi.spyOn(engine, 'back');
+  vi.spyOn(engine, 'recordAnswer');
+  vi.spyOn(engine, 'answers');
+  vi.spyOn(engine, 'canGoBack');
+  vi.spyOn(engine, 'isComplete');
+  vi.spyOn(engine, 'progress');
+  vi.spyOn(engine, 'scoreResult');
+  vi.spyOn(engine, 'alertResults');
+  vi.spyOn(engine, 'currentItem');
+  return engine;
 }
 
 // Mock router — records push/replace calls and lets tests fire popstate manually.
@@ -190,8 +184,12 @@ describe('answer and advance', () => {
 
   it('calls orchestrator.engineComplete when engine returns null', () => {
     vi.useFakeTimers();
-    const { container, engine, orchestrator } = makeSetup();
-    engine.advance.mockReturnValueOnce(null);
+    // Single-item questionnaire: setup's start() advances to q1, then the
+    // advance event below causes engine.advance() to return null (exhausted).
+    const questionnaire = makeQuestionnaire();
+    questionnaire.items = [{ id: 'q1', type: 'select', text: 'שאלה 1' }];
+    const engine = makeEngine(questionnaire);
+    const { container, orchestrator } = makeSetup({ questionnaire, engine });
     container.querySelector('item-select')
       .dispatchEvent(new CustomEvent('advance', { bubbles: true }));
     vi.advanceTimersByTime(150);
@@ -307,9 +305,8 @@ describe('router back — shell back event calls history.back()', () => {
   });
 
   it('calls orchestrator.engineCrossBack when at first item and popstate fires', () => {
-    const { router, orchestrator, engine } = makeSetup();
-    // engine is at first item (canGoBack returns false)
-    engine.canGoBack.mockReturnValue(false);
+    const { router, orchestrator } = makeSetup();
+    // engine is at first item after makeSetup(); canGoBack() returns false naturally
     router._fireBack('q');
     expect(orchestrator.engineCrossBack).toHaveBeenCalledOnce();
   });
@@ -382,8 +379,6 @@ describe('router forward — shell forward event calls history.forward()', () =>
       { id: 'q1', type: 'select', text: 'שאלה 1' },
     ];
     const engine = makeEngine(questionnaire);
-    // No answer recorded for the text item
-    engine.answers.mockReturnValue({});
     const { container } = makeSetup({ questionnaire, engine });
 
     const advanceBefore = engine.advance.mock.calls.length;
@@ -422,8 +417,7 @@ describe('router forward — popstate forward advances to next item', () => {
     ];
     const engine = makeEngine(questionnaire);
     const { router } = makeSetup({ questionnaire, engine });
-    // engine is on the instructions item — no answer recorded
-    engine.answers.mockReturnValue({});
+    // engine is on the instructions item — no answer recorded (real engine returns {} naturally)
 
     const advanceBefore = engine.advance.mock.calls.length;
     router._fireForward('q');
@@ -436,8 +430,7 @@ describe('router forward — popstate forward advances to next item', () => {
   it('does not advance if current item has no answer', () => {
     vi.useFakeTimers();
     const { engine, router } = makeSetup();
-    // No answer recorded — engine.answers() returns empty
-    engine.answers.mockReturnValue({});
+    // No answer recorded — real engine.answers() returns {} naturally
 
     const advanceBefore = engine.advance.mock.calls.length;
     router._fireForward('q');
@@ -449,12 +442,10 @@ describe('router forward — popstate forward advances to next item', () => {
 
   it('mounts next item after forward popstate', () => {
     vi.useFakeTimers();
-    const { container, engine, router } = makeSetup();
+    const { container, router } = makeSetup();
     // Answer first item so forward is valid
     container.querySelector('item-select')
       .dispatchEvent(new CustomEvent('answer', { detail: { value: 2 }, bubbles: true }));
-    // Make engine return the second item on next advance
-    engine.advance.mockReturnValueOnce({ id: 'q2', type: 'select', text: 'שאלה 2', options: [] });
 
     router._fireForward('q');
     vi.advanceTimersByTime(150);
@@ -684,7 +675,7 @@ describe('_onPopBack cancels the pending advance timer (Bug C-2)', () => {
     // Swipe back immediately — fires before the 150ms is up
     // First advance to second item to make back possible
     vi.advanceTimersByTime(150);  // let the advance land on q2
-    engine.canGoBack.mockReturnValue(true);
+    // real engine is now at q2, canGoBack() returns true naturally
 
     // Now simulate: tap on q2 (starts a new timer), then immediately swipe back
     container.querySelector('item-select')
@@ -703,9 +694,8 @@ describe('_onPopBack cancels the pending advance timer (Bug C-2)', () => {
 describe('onQuestionnaireStart: first advance returns null (zero-item questionnaire)', () => {
   it('calls orchestrator.engineComplete immediately if first advance returns null', () => {
     const questionnaire = makeQuestionnaire();
-    // Make the engine immediately return null on first advance (empty questionnaire)
+    questionnaire.items = [];   // real engine returns null on first advance
     const engine = makeEngine(questionnaire);
-    engine.advance.mockReturnValue(null);
 
     const { orchestrator } = makeSetup({ questionnaire, engine });
     // onQuestionnaireStart is called during start() — engineComplete should have fired
@@ -714,8 +704,8 @@ describe('onQuestionnaireStart: first advance returns null (zero-item questionna
 
   it('does not mount an item element if first advance returns null', () => {
     const questionnaire = makeQuestionnaire();
+    questionnaire.items = [];   // real engine returns null on first advance
     const engine = makeEngine(questionnaire);
-    engine.advance.mockReturnValue(null);
 
     const { container } = makeSetup({ questionnaire, engine });
     expect(container.querySelector('item-select')).toBeNull();

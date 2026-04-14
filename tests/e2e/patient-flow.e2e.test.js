@@ -143,7 +143,7 @@ test.describe('PHQ-9 questionnaire flow', () => {
 
   test('back button is hidden on first item', async ({ page }) => {
     const backBtn = page.locator('app-shell >> button[aria-label="חזור לשאלה הקודמת"]');
-    await expect(backBtn).toHaveCSS('opacity', '0');
+    await expect(backBtn).toBeDisabled();
   });
 
   test('back button appears after advancing past first item', async ({ page }) => {
@@ -151,7 +151,7 @@ test.describe('PHQ-9 questionnaire flow', () => {
     await clickLikertOption(page, 0);
     await expect(page.locator('item-select')).toBeVisible();
     const backBtn = page.locator('app-shell >> button[aria-label="חזור לשאלה הקודמת"]');
-    await expect(backBtn).not.toHaveCSS('opacity', '0');
+    await expect(backBtn).not.toBeDisabled();
   });
 
   test('back navigation returns to previous item with answer preserved', async ({ page }) => {
@@ -248,7 +248,7 @@ test.describe('results screen', () => {
 
   test('back button is hidden on results screen (session locked)', async ({ page }) => {
     const backBtn = page.locator('app-shell >> button[aria-label="חזור לשאלה הקודמת"]');
-    await expect(backBtn).toHaveCSS('opacity', '0');
+    await expect(backBtn).toBeDisabled();
   });
 
   test('browser back from results does not return to questionnaire', async ({ page }) => {

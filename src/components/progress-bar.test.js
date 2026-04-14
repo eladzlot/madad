@@ -83,10 +83,11 @@ describe('battery row', () => {
 });
 
 describe('reactivity', () => {
-  it('updates fill width when itemProgress changes', async () => {
+  it('updates progress value when itemProgress changes', async () => {
     const el = await makeEl({ itemProgress: { current: 1, total: 9 } });
     el.itemProgress = { current: 9, total: 9 };
     await el.updateComplete;
-    expect(el.shadowRoot.querySelector('.fill').style.inlineSize).toBe('100%');
+    const track = el.shadowRoot.querySelector('.track');
+    expect(track.getAttribute('aria-valuenow')).toBe('100');
   });
 });
