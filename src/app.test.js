@@ -20,7 +20,7 @@ vi.mock('./engine/orchestrator.js', () => ({ createOrchestrator: vi.fn() }));
 vi.mock('./router.js',              () => ({ createRouter: vi.fn() }));
 vi.mock('./pdf/report.js',          () => ({ preloadPdf: vi.fn() }));
 
-import { showLoading, showError, findMissingDependencies } from './app.js';
+import { showLoading, showError } from './app.js';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -167,54 +167,3 @@ describe('showError — retryable', () => {
   });
 });
 
-// ─── findMissingDependencies ──────────────────────────────────────────────────
-// Tests the exported pure function that main() delegates to for dependency
-// validation. Each test calls the real app.js code — no inline logic copies.
-
-describe('findMissingDependencies', () => {
-  it('returns missing dependency when it is absent from configSources', () => {
-    const result = findMissingDependencies(
-      ['configs/prod/intake.json'],
-      ['configs/prod/trauma.json'],
-    );
-    expect(result).toEqual(['configs/prod/trauma.json']);
-  });
-
-  it('returns empty array when all dependencies are present in configSources', () => {
-    const result = findMissingDependencies(
-      ['configs/prod/intake.json', 'configs/prod/trauma.json', 'configs/prod/standard.json'],
-      ['configs/prod/standard.json', 'configs/prod/trauma.json'],
-    );
-    expect(result).toHaveLength(0);
-  });
-
-  it('normalises a leading slash before comparing', () => {
-    // URL may supply /configs/prod/trauma.json (absolute) while the dependency
-    // is declared as configs/prod/trauma.json (relative) — must match.
-    const result = findMissingDependencies(
-      ['/configs/prod/intake.json', '/configs/prod/trauma.json'],
-      ['configs/prod/trauma.json'],
-    );
-    expect(result).toHaveLength(0);
-  });
-
-  it('returns empty array when dependencies array is empty', () => {
-    const result = findMissingDependencies(['configs/prod/standard.json'], []);
-    expect(result).toHaveLength(0);
-  });
-
-  it('returns empty array when dependencies is null or undefined', () => {
-    expect(findMissingDependencies(['configs/prod/standard.json'], null)).toHaveLength(0);
-    expect(findMissingDependencies(['configs/prod/standard.json'], undefined)).toHaveLength(0);
-  });
-
-  it('detects multiple missing dependencies', () => {
-    const result = findMissingDependencies(
-      ['configs/prod/intake.json'],
-      ['configs/prod/trauma.json', 'configs/prod/standard.json'],
-    );
-    expect(result).toHaveLength(2);
-    expect(result).toContain('configs/prod/trauma.json');
-    expect(result).toContain('configs/prod/standard.json');
-  });
-});

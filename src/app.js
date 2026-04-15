@@ -86,16 +86,6 @@ export function showError(container, message, detail = '', { retryable = false }
   }
 }
 
-// ── Dependency validation ─────────────────────────────────────────────────────
-// Pure function: returns dependency paths present in `dependencies` that are
-// absent from `configSources`, after stripping leading slashes from both sides.
-// Exported for unit testing.
-export function findMissingDependencies(configSources, dependencies) {
-  const norm = s => s.replace(/^\//, '');
-  const loaded = configSources.map(norm);
-  return (dependencies ?? []).map(norm).filter(dep => !loaded.includes(dep));
-}
-
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 async function main() {
@@ -145,22 +135,6 @@ async function main() {
       { retryable: true },
     );
     console.error(err);
-    return;
-  }
-
-  // Validate that all declared config dependencies were included in the URL.
-  // A config like intake.json references instruments from trauma.json; if the
-  // composer-generated URL omitted trauma.json the session will fail deep inside
-  // the orchestrator with a cryptic error. Surface it here with a clear message.
-  const missingDeps = findMissingDependencies(configSources, config.dependencies);
-
-  if (missingDeps.length > 0) {
-    showError(
-      container,
-      'הקישור אינו שלם.',
-      'אנא פנה למטפל לקבלת קישור חדש.',
-    );
-    console.error(`Missing config dependencies: ${missingDeps.join(', ')}`);
     return;
   }
 

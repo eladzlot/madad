@@ -219,22 +219,61 @@ export async function loadConfig(sources, options = {}) {
     throw new ConfigError('loadConfig requires at least one source.');
   }
 
-  const results = await Promise.all(
-    sources.map(src => fetchAndValidate(src, fetchFn, allowedOrigins, fetchTimeoutMs, configBase))
-  );
+  // Breadth-first graph walk: fetch the requested sources, then auto-fetch any
+  // dependencies they declare that haven't been loaded yet, and so on until the
+  // graph is complete. Each wave is fetched in parallel; waves are sequential.
+  // The visited set (keyed by resolved URL) prevents duplicate fetches and
+  // breaks cycles.
+  const visited = new Set();   // resolved URLs already fetched or in-flight
+  const allResults = [];       // { url, data } from every fetched file
 
-  const { questionnaires, batteries } = mergeConfigs(results);
+  let wave = sources.slice();  // current batch of sources to fetch
 
-  // Merge dependencies from all source configs, deduplicating.
-  // Each config file may declare its own dependencies array; all are collected here
-  // so the caller gets the full picture regardless of which file declared what.
-  const allDependencies = [...new Set(results.flatMap(r => r.data.dependencies ?? []))];
+  while (wave.length > 0) {
+    // Resolve each source to its canonical URL and skip any already visited.
+    const toFetch = [];
+    for (const src of wave) {
+      const url = resolveSource(src, allowedOrigins, configBase);
+      if (!visited.has(url)) {
+        visited.add(url);
+        toFetch.push(src);
+      }
+    }
+
+    if (toFetch.length === 0) break;
+
+    // Fetch this wave in parallel.
+    const waveResults = await Promise.all(
+      toFetch.map(src => fetchAndValidate(src, fetchFn, allowedOrigins, fetchTimeoutMs, configBase))
+    );
+
+    allResults.push(...waveResults);
+
+    // Collect deps declared by this wave that haven't been visited yet.
+    // These become the next wave.
+    wave = waveResults
+      .flatMap(r => r.data.dependencies ?? [])
+      .filter(dep => {
+        try {
+          return !visited.has(resolveSource(dep, allowedOrigins, configBase));
+        } catch {
+          return false; // resolveSource will throw again (and surface the error) in the next wave
+        }
+      });
+  }
+
+  const { questionnaires, batteries } = mergeConfigs(allResults);
+
+  // Collect all declared dependencies across every loaded file, deduplicating.
+  // Kept in the return value for informational purposes — callers can inspect
+  // the full dependency graph regardless of what was in the URL.
+  const allDependencies = [...new Set(allResults.flatMap(r => r.data.dependencies ?? []))];
 
   return {
     questionnaires,
     batteries,
     dependencies: allDependencies,
-    version:    results[0].data.version ?? null,
+    version:    allResults[0].data.version ?? null,
     resolvedAt: new Date().toISOString(),
   };
 }

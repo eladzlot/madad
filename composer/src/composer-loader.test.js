@@ -209,18 +209,22 @@ describe('loadAllConfigs', () => {
   // ── dependency declaration ────────────────────────────────────────────────────
 
   it('populates dependenciesBySource when config declares dependencies', async () => {
-    mockFetch.mockResolvedValueOnce(
-      makeConfigResponseWithDeps([minimalQ('diamond_sr')], [minimalBattery('clinical_intake', 'Clinical Intake', 'diamond_sr')], ['configs/prod/standard.json'])
-    );
+    mockFetch
+      .mockResolvedValueOnce(
+        makeConfigResponseWithDeps([minimalQ('diamond_sr')], [minimalBattery('clinical_intake', 'Clinical Intake', 'diamond_sr')], ['standard'])
+      )
+      .mockResolvedValueOnce(makeConfigResponse([minimalQ('std_q')])); // auto-fetched dep
     await loadAllConfigs({ configs: [{ name: 'Intake', url: '/configs/prod/intake.json' }] });
     // Both key and value are short names
     expect(state.dependenciesBySource.get('intake')).toEqual(['standard']);
   });
 
   it('strips leading slash from declared dependency paths', async () => {
-    mockFetch.mockResolvedValueOnce(
-      makeConfigResponseWithDeps([minimalQ('q1')], [], ['/configs/prod/standard.json'])
-    );
+    mockFetch
+      .mockResolvedValueOnce(
+        makeConfigResponseWithDeps([minimalQ('q1')], [], ['/configs/prod/standard.json'])
+      )
+      .mockResolvedValueOnce(makeConfigResponse([minimalQ('std_q')])); // auto-fetched dep
     await loadAllConfigs({ configs: [{ name: 'Test', url: '/configs/prod/a.json' }] });
     expect(state.dependenciesBySource.get('a')).toEqual(['standard']);
   });
@@ -232,17 +236,17 @@ describe('loadAllConfigs', () => {
   });
 
   it('buildUrl includes dependency source when battery config declares it', async () => {
-    // Load intake.json which has clinical_intake battery and depends on standard.json
-    mockFetch.mockResolvedValueOnce(
-      makeConfigResponseWithDeps(
-        [minimalQ('diamond_sr')],
-        [minimalBattery('clinical_intake', 'Clinical Intake', 'diamond_sr')],
-        ['configs/prod/standard.json']
+    mockFetch
+      .mockResolvedValueOnce(
+        makeConfigResponseWithDeps(
+          [minimalQ('diamond_sr')],
+          [minimalBattery('clinical_intake', 'Clinical Intake', 'diamond_sr')],
+          ['standard']
+        )
       )
-    );
+      .mockResolvedValueOnce(makeConfigResponse([minimalQ('std_q')])); // auto-fetched dep
     await loadAllConfigs({ configs: [{ name: 'Intake', url: '/configs/prod/intake.json' }] });
 
-    // Select the battery
     const { buildUrl } = await import('./composer-state.js');
     state.selected = ['clinical_intake'];
     const url = buildUrl('http://localhost');

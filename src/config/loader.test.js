@@ -147,10 +147,13 @@ describe('resolved config shape', () => {
   });
 
   it('exposes dependencies array from config file', async () => {
-    const body = { ...minimalConfig([minimalQ()]), dependencies: ['configs/prod/standard.json'] };
-    const fetch = makeFetch({ '/configs/prod/a.json': { body } });
+    const body = { ...minimalConfig([minimalQ()]), dependencies: ['standard'] };
+    const fetch = makeFetch({
+      '/configs/prod/a.json': { body },
+      '/configs/prod/standard.json': { body: minimalConfig([minimalQ('std_q')]) },
+    });
     const config = await loadConfig(['a'], { fetch });
-    expect(config.dependencies).toEqual(['configs/prod/standard.json']);
+    expect(config.dependencies).toEqual(['standard']);
   });
 
   it('returns empty dependencies array when not declared', async () => {
@@ -300,31 +303,37 @@ describe('dependency merging across multiple sources', () => {
   // not just the first one.
 
   it('returns dependencies from a single config', async () => {
-    const config = { ...minimalConfig([minimalQ()]), dependencies: ['configs/prod/trauma.json'] };
-    const fetch = makeFetch({ '/configs/prod/a.json': { body: config } });
+    const config = { ...minimalConfig([minimalQ()]), dependencies: ['trauma'] };
+    const fetch = makeFetch({
+      '/configs/prod/a.json': { body: config },
+      '/configs/prod/trauma.json': { body: minimalConfig([minimalQ('trauma_q')]) },
+    });
     const result = await loadConfig(['a'], { fetch });
-    expect(result.dependencies).toEqual(['configs/prod/trauma.json']);
+    expect(result.dependencies).toEqual(['trauma']);
   });
 
   it('merges dependencies from both configs when loading two sources', async () => {
-    const configA = { ...minimalConfig([minimalQ('phq9')]), dependencies: ['configs/prod/trauma.json'] };
-    const configB = { ...minimalConfig([minimalQ('gad7')]), dependencies: ['configs/prod/standard.json'] };
+    const configA = { ...minimalConfig([minimalQ('phq9')]), dependencies: ['trauma'] };
+    const configB = { ...minimalConfig([minimalQ('gad7')]), dependencies: ['standard'] };
     const fetch = makeFetch({
       '/configs/prod/a.json': { body: configA },
       '/configs/prod/b.json': { body: configB },
+      '/configs/prod/trauma.json': { body: minimalConfig([minimalQ('trauma_q')]) },
+      '/configs/prod/standard.json': { body: minimalConfig([minimalQ('std_q')]) },
     });
     const result = await loadConfig(['a', 'b'], { fetch });
-    expect(result.dependencies).toContain('configs/prod/trauma.json');
-    expect(result.dependencies).toContain('configs/prod/standard.json');
+    expect(result.dependencies).toContain('trauma');
+    expect(result.dependencies).toContain('standard');
   });
 
   it('deduplicates dependencies shared across multiple configs', async () => {
-    const shared = 'configs/prod/standard.json';
+    const shared = 'standard';
     const configA = { ...minimalConfig([minimalQ('phq9')]), dependencies: [shared] };
     const configB = { ...minimalConfig([minimalQ('gad7')]), dependencies: [shared] };
     const fetch = makeFetch({
       '/configs/prod/a.json': { body: configA },
       '/configs/prod/b.json': { body: configB },
+      '/configs/prod/standard.json': { body: minimalConfig([minimalQ('std_q')]) },
     });
     const result = await loadConfig(['a', 'b'], { fetch });
     expect(result.dependencies.filter(d => d === shared)).toHaveLength(1);
@@ -334,6 +343,81 @@ describe('dependency merging across multiple sources', () => {
     const fetch = makeFetch({ '/configs/prod/a.json': { body: minimalConfig([minimalQ()]) } });
     const result = await loadConfig(['a'], { fetch });
     expect(result.dependencies).toEqual([]);
+  });
+});
+
+// ─── Automatic dependency loading ─────────────────────────────────────────────
+
+describe('automatic dependency loading', () => {
+  it('auto-fetches a declared dependency not in sources', async () => {
+    const intake = { ...minimalConfig([minimalQ('phq9')]), dependencies: ['standard'] };
+    const standard = minimalConfig([minimalQ('gad7')]);
+    const fetch = makeFetch({
+      '/configs/prod/intake.json': { body: intake },
+      '/configs/prod/standard.json': { body: standard },
+    });
+    const result = await loadConfig(['intake'], { fetch });
+    // Both questionnaires are in the merged result
+    expect(result.questionnaires.map(q => q.id)).toContain('phq9');
+    expect(result.questionnaires.map(q => q.id)).toContain('gad7');
+  });
+
+  it('auto-fetches transitive dependencies (depth 2)', async () => {
+    const a = { ...minimalConfig([minimalQ('q_a')]), dependencies: ['b'] };
+    const b = { ...minimalConfig([minimalQ('q_b')]), dependencies: ['c'] };
+    const c = minimalConfig([minimalQ('q_c')]);
+    const fetch = makeFetch({
+      '/configs/prod/a.json': { body: a },
+      '/configs/prod/b.json': { body: b },
+      '/configs/prod/c.json': { body: c },
+    });
+    const result = await loadConfig(['a'], { fetch });
+    expect(result.questionnaires.map(q => q.id)).toContain('q_a');
+    expect(result.questionnaires.map(q => q.id)).toContain('q_b');
+    expect(result.questionnaires.map(q => q.id)).toContain('q_c');
+  });
+
+  it('does not fetch a dependency already in sources', async () => {
+    const intake = { ...minimalConfig([minimalQ('phq9')]), dependencies: ['standard'] };
+    const standard = minimalConfig([minimalQ('gad7')]);
+    const fetch = makeFetch({
+      '/configs/prod/intake.json': { body: intake },
+      '/configs/prod/standard.json': { body: standard },
+    });
+    // standard is explicitly in sources AND declared as dependency
+    await loadConfig(['intake', 'standard'], { fetch });
+    // standard.json should only be fetched once
+    const standardCalls = fetch.mock.calls.filter(c => c[0] === '/configs/prod/standard.json');
+    expect(standardCalls).toHaveLength(1);
+  });
+
+  it('handles circular dependencies without infinite loop', async () => {
+    const a = { ...minimalConfig([minimalQ('q_a')]), dependencies: ['b'] };
+    const b = { ...minimalConfig([minimalQ('q_b')]), dependencies: ['a'] };
+    const fetch = makeFetch({
+      '/configs/prod/a.json': { body: a },
+      '/configs/prod/b.json': { body: b },
+    });
+    // Must resolve without hanging
+    const result = await loadConfig(['a'], { fetch });
+    expect(result.questionnaires.map(q => q.id)).toContain('q_a');
+    expect(result.questionnaires.map(q => q.id)).toContain('q_b');
+    // Each file fetched exactly once
+    expect(fetch.mock.calls.filter(c => c[0] === '/configs/prod/a.json')).toHaveLength(1);
+    expect(fetch.mock.calls.filter(c => c[0] === '/configs/prod/b.json')).toHaveLength(1);
+  });
+
+  it('short name in dependencies array expands correctly', async () => {
+    const intake = { ...minimalConfig([minimalQ('phq9')]), dependencies: ['standard'] };
+    const standard = minimalConfig([minimalQ('gad7')]);
+    const fetch = makeFetch({
+      '/configs/prod/intake.json': { body: intake },
+      '/configs/prod/standard.json': { body: standard },
+    });
+    const result = await loadConfig(['intake'], { fetch });
+    // standard fetched via short-name expansion
+    expect(fetch.mock.calls.some(c => c[0] === '/configs/prod/standard.json')).toBe(true);
+    expect(result.questionnaires.map(q => q.id)).toContain('gad7');
   });
 });
 
