@@ -18,6 +18,10 @@
       "dev": true
     },
     {
+      "name": "טורדנות כפייתית OCD",
+      "url": "/configs/prod/ocd.json"
+    },
+    {
       "name": "שאלוני ילדים",
       "url": "/configs/prod/child.json"
     }
