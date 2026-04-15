@@ -2532,6 +2532,126 @@
         "method": "average",
         "maxPerItem": 12
       }
+    },
+    {
+      "id": "ecrs",
+      "title": "שאלון התקשרות (ECR-S)",
+      "description": "שאלון בן 12 פריטים להערכת חרדת התקשרות והימנעות.",
+      "keywords": ["attachment", "ECR", "התקשרות"],
+      "defaultOptionSetId": "likert7",
+      "optionSets": {
+        "likert7": [
+          { "label": "מאוד לא מסכים", "value": 1 },
+          { "label": "לא מסכים", "value": 2 },
+          { "label": "קצת לא מסכים", "value": 3 },
+          { "label": "ניטרלי", "value": 4 },
+          { "label": "קצת מסכים", "value": 5 },
+          { "label": "מסכים", "value": 6 },
+          { "label": "מאוד מסכים", "value": 7 }
+        ]
+      },
+      "items": [
+        { "id": "1", "type": "select", "text": "זה עוזר לפנות לאנשים אחרים ברגעים של צורך", "reverse": true },
+        { "id": "2", "type": "select", "text": "אני נזקקת להרבה אישורים לכך שאני אהובה" },
+        { "id": "3", "type": "select", "text": "אני רוצה להתקרב לאנשים אבל נסוגה מהם" },
+        { "id": "4", "type": "select", "text": "אני מרגישה שאנשים לא רוצים להיות קרובים כפי שאני רוצה" },
+        { "id": "5", "type": "select", "text": "אני פונה לאנשים אחרים לנחמה", "reverse": true },
+        { "id": "6", "type": "select", "text": "הרצון שלי לקרבה מרחיק אנשים" },
+        { "id": "7", "type": "select", "text": "אני מנסה להימנע מקרבה" },
+        { "id": "8", "type": "select", "text": "אינני מודאגת שינטשו אותי", "reverse": true },
+        { "id": "9", "type": "select", "text": "אני דנה בבעיות עם אנשים קרובים", "reverse": true },
+        { "id": "10", "type": "select", "text": "אני מתוסכלת כשאחרים לא זמינים" },
+        { "id": "11", "type": "select", "text": "אני נעשית מתוחה מקרבה יתר" },
+        { "id": "12", "type": "select", "text": "אני מודאגת שלא אכפת לאחרים ממני" }
+      ],
+      "scoring": {
+        "method": "subscales",
+        "maxPerItem": 7,
+        "subscales": {
+          "anxiety": ["2","4","6","8","10","12"],
+          "avoidance": ["1","3","5","7","9","11"]
+        }
+      },
+      "subscaleLabels": {
+        "anxiety": "חרדת התקשרות",
+        "avoidance": "הימנעות מהתקשרות"
+      }
+    },
+    {
+      "id": "dass21",
+      "title": "שאלון דיכאון, חרדה וסטרס (DASS-21)",
+      "description": "שאלון בן 21 פריטים להערכת דיכאון, חרדה וסטרס במהלך השבוע האחרון.",
+      "keywords": ["DASS", "DASS-21", "דיכאון", "חרדה", "סטרס"],
+      "defaultOptionSetId": "dass4",
+      "optionSets": {
+        "dass4": [
+          { "label": "האמירה לא מתארת את מצבי כלל", "value": 0 },
+          { "label": "האמירה מתארת את מצבי באופן חלקי, או בחלק מהזמן", "value": 1 },
+          { "label": "האמירה מתארת את מצבי באופן ניכר, או בחלק ניכר מהזמן", "value": 2 },
+          { "label": "האמירה מתארת את מצבי מאוד, או ברוב הזמן", "value": 3 }
+        ]
+      },
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "קרא/י כל אמירה וסמן/י עד כמה היא מתארת את מצבך במהלך השבוע האחרון."
+        },
+        { "id": "1", "type": "select", "text": "התקשיתי להיות נינוח" },
+        { "id": "2", "type": "select", "text": "חשתי ביובש בפה" },
+        { "id": "3", "type": "select", "text": "התקשיתי לחוות כל הרגשה חיובית" },
+        { "id": "4", "type": "select", "text": "חשתי קושי בנשימה" },
+        { "id": "5", "type": "select", "text": "לא היו לי הכוחות לעשות דברים" },
+        { "id": "6", "type": "select", "text": "נטיתי להגזים בתגובותיי למצבים מסוימים" },
+        { "id": "7", "type": "select", "text": "חשתי רעד" },
+        { "id": "8", "type": "select", "text": "הרגשתי שאני מתעצבן יותר מדי" },
+        { "id": "9", "type": "select", "text": "חששתי ממצבים בהם אולי אכנס לחרדה ואעשה צחוק מעצמי" },
+        { "id": "10", "type": "select", "text": "הרגשתי שאין לי למה לצפות בחיים" },
+        { "id": "11", "type": "select", "text": "הרגשתי שאני קצר רוח" },
+        { "id": "12", "type": "select", "text": "התקשיתי להירגע" },
+        { "id": "13", "type": "select", "text": "חוויתי דכדוך ותחושות עצבות" },
+        { "id": "14", "type": "select", "text": "הייתי חסר סובלנות כלפי כל דבר שהפריע לי" },
+        { "id": "15", "type": "select", "text": "הרגשתי שאני קרוב למצב של פאניקה" },
+        { "id": "16", "type": "select", "text": "לא הצלחתי להתלהב משום דבר" },
+        { "id": "17", "type": "select", "text": "הערכתי העצמית הייתה נמוכה" },
+        { "id": "18", "type": "select", "text": "הרגשתי רגיש ופגיע למדי" },
+        { "id": "19", "type": "select", "text": "חשתי בפעילות ליבי ללא מאמץ" },
+        { "id": "20", "type": "select", "text": "הייתי מפוחד ללא סיבה מיוחדת" },
+        { "id": "21", "type": "select", "text": "הרגשתי שהחיים חסרי משמעות" }
+      ],
+      "scoring": {
+        "method": "subscales",
+        "subscales": {
+          "depression": ["3", "5", "10", "13", "16", "17", "21"],
+          "anxiety": ["2", "4", "7", "9", "15", "19", "20"],
+          "stress": ["1", "6", "8", "11", "12", "14", "18"]
+        }
+      },
+      "subscaleLabels": {
+        "depression": "דיכאון",
+        "anxiety": "חרדה",
+        "stress": "סטרס"
+      },
+      "alerts": [
+        {
+          "id": "depression_severe",
+          "condition": "subscale.depression >= 11",
+          "message": "דיכאון חמור+",
+          "severity": "warning"
+        },
+        {
+          "id": "anxiety_severe",
+          "condition": "subscale.anxiety >= 8",
+          "message": "חרדה חמורה+",
+          "severity": "warning"
+        },
+        {
+          "id": "stress_severe",
+          "condition": "subscale.stress >= 13",
+          "message": "סטרס חמור+",
+          "severity": "warning"
+        }
+      ]
     }
   ]
 }
