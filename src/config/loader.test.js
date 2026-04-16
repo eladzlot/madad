@@ -391,6 +391,38 @@ describe('automatic dependency loading', () => {
     expect(standardCalls).toHaveLength(1);
   });
 
+  // Regression test for: dependency declared as a full path without a leading
+  // slash (e.g. 'configs/prod/standard.json') was treated as a different key
+  // in the visited set than the same file loaded via its short name ('standard',
+  // which expands to '/configs/prod/standard.json').  The mismatch caused the
+  // file to be fetched twice, and mergeConfigs threw a duplicate-ID ConfigError.
+  // Real-world trigger: intake.json declares dependencies as full paths without
+  // a leading slash; the Composer URL includes both 'standard' and 'intake' as
+  // short-name sources.
+  it('does not duplicate-fetch when dependency path lacks a leading slash but source was loaded via short name', async () => {
+    const standard = minimalConfig([minimalQ('gad7')]);
+    // intake declares the dep as a legacy full path (no leading slash), the way
+    // intake.json does in production: 'configs/prod/standard.json'.
+    const intake = {
+      ...minimalConfig([minimalQ('phq9')]),
+      dependencies: ['configs/prod/standard.json'],
+    };
+    const fetch = makeFetch({
+      '/configs/prod/intake.json':  { body: intake },
+      '/configs/prod/standard.json': { body: standard },
+    });
+    // Both sources supplied as short names (as the Composer builds the URL).
+    // standard is also declared as a dep of intake via its full path — should
+    // not be fetched a second time.
+    const result = await loadConfig(['intake', 'standard'], { fetch });
+    // Both questionnaires present with no duplicate-ID error
+    expect(result.questionnaires.map(q => q.id)).toContain('phq9');
+    expect(result.questionnaires.map(q => q.id)).toContain('gad7');
+    // standard.json fetched exactly once
+    const standardCalls = fetch.mock.calls.filter(c => c[0] === '/configs/prod/standard.json');
+    expect(standardCalls).toHaveLength(1);
+  });
+
   it('handles circular dependencies without infinite loop', async () => {
     const a = { ...minimalConfig([minimalQ('q_a')]), dependencies: ['b'] };
     const b = { ...minimalConfig([minimalQ('q_b')]), dependencies: ['a'] };

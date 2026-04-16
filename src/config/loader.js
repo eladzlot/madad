@@ -107,8 +107,15 @@ function resolveSource(source, allowedOrigins, configBase) {
       `Invalid config source: "${source}". Path traversal is not permitted.`
     );
   }
-  // Paths containing slashes or ending with .json are legacy full paths — pass through.
-  if (source.includes('/') || source.endsWith('.json')) return source;
+  // Paths containing slashes or ending with .json are legacy full paths.
+  // Normalise to root-relative (prepend '/') so the visited-set key matches
+  // the key produced by the short-name branch, which always starts with '/'.
+  // Without this, 'configs/prod/standard.json' and the short name 'standard'
+  // (which expands to '/configs/prod/standard.json') appear as different keys
+  // and the same file is fetched twice, causing a duplicate-ID merge error.
+  if (source.includes('/') || source.endsWith('.json')) {
+    return source.startsWith('/') ? source : '/' + source;
+  }
   // Short name: alphanumeric, hyphens, underscores only. Reject anything else
   // (e.g. path-traversal attempts like '../escape') before constructing a path.
   if (!SHORT_NAME_RE.test(source)) {
