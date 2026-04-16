@@ -156,9 +156,13 @@ test.describe('PHQ-9 questionnaire flow', () => {
 
   test('back navigation returns to previous item with answer preserved', async ({ page }) => {
     await clickContinue(page);
-    // Capture history length before answering so we can confirm the router pushed
-    // a new entry before calling goBack() — item-select stays in DOM during transition
-    // so toBeVisible() is not a reliable signal that auto-advance has completed.
+    // Wait for item-select to be visible before capturing history length.
+    // The controller uses setTimeout(fn, 0) for instructions advances, so
+    // page.evaluate() can execute in the browser before that timer fires —
+    // yielding a stale history.length of 2 instead of 3. Waiting for
+    // item-select to appear guarantees the timer has fired, router.push('q')
+    // has run, and the DOM and history are stable.
+    await expect(page.locator('item-select')).toBeVisible();
     const lenBefore = await page.evaluate(() => window.history.length);
     await clickLikertOption(page, 2);
     await page.waitForFunction(n => window.history.length > n, lenBefore);
