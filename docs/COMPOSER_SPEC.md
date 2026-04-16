@@ -19,17 +19,17 @@ The Composer **does not create or edit configuration files**. It only constructs
 The Composer generates URLs with the following parameters:
 
 `configs`
-: Comma-separated list of relative config paths. Only configs required to resolve the selected items are included (own file + declared dependencies).
+: Comma-separated list of **config short names**. Each short name resolves to `/configs/prod/<name>.json`. The short name is derived from the manifest entry's URL by stripping the `configs/prod/` prefix and `.json` suffix.
 
 `items`
 : Comma-separated ordered list of questionnaire or battery IDs. Order defines session order. Batteries are expanded by the runtime into their full sequences.
 
 `pid`
-: Optional patient identifier.
+: Optional patient identifier. Must match `^[a-zA-Z0-9\u0590-\u05FF_-]{1,64}$` (see `src/pid.js`); invalid values are silently dropped by the patient runtime.
 
 Example:
 ```
-https://app.example.com/?configs=configs/prod/standard.json,configs/prod/intake.json&items=phq9,gad7&pid=ABC123
+https://app.example.com/?configs=standard,intake&items=phq9,clinical_intake&pid=ABC123
 ```
 
 Rules:
@@ -38,7 +38,22 @@ Rules:
 - Mixing batteries and questionnaires is supported
 - Only required configs are included (dependency auto-include, see below)
 - `pid` is optional
-- Config paths use **relative paths, no leading slash** so the patient app resolves them correctly at any base path
+
+### Short names as a stable URL contract
+
+The Composer emits short names (e.g. `standard`, `intake`, `trauma`) rather than full paths. These short names are a **stable external contract** once URLs are shared — a link sent via WhatsApp or saved in a clinician's notes must continue to resolve indefinitely. This has three consequences:
+
+1. **The `configs/prod/` prefix is frozen.** Moving production configs to a different folder would invalidate every existing link.
+2. **Short names flatten the namespace.** Two configs with the same basename (e.g. `configs/prod/standard.json` and `configs/v2/standard.json`) would collide on the short name `standard`. Adding a `v2` namespace would require versioned short names (e.g. `v2.standard`).
+3. **Never rename a prod config file.** Renaming `standard.json` to `adult.json` breaks every existing link to its questionnaires. Add a new file instead.
+
+Hand-crafted URLs may also use full paths (`configs=configs/prod/standard.json`) — `loadConfig` accepts both forms. The Composer always emits the short form for brevity.
+
+### Global ID namespace
+
+Questionnaire IDs and battery IDs share a single namespace **across every config file the patient app loads**. Once a questionnaire with ID `phq9` ships in `standard.json`, that ID is effectively reserved forever — no other config can use `phq9`, and `standard.json` cannot reuse `phq9` for a different questionnaire without breaking existing patient links that reference it.
+
+This is enforced at load time: `loadConfig` throws `ConfigError: Duplicate questionnaire ID` if two loaded configs declare the same ID. The `validate:configs` CI script catches this before deployment.
 
 ---
 

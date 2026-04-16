@@ -210,13 +210,13 @@ Instruction items are excluded from both `current` and `total`. `remainingCount(
 
 ## 7. Orchestrator — Battery-Level Use
 
-`createOrchestrator(config, batteryId, callbacks)` wraps a sequence runner over `battery.sequence` and manages the full session lifecycle.
+`createOrchestrator(config, { sequence }, callbacks)` wraps a sequence runner over the provided battery-level sequence and manages the full session lifecycle.
 
 ### 7.1 Construction
 
-Throws immediately at construction if `batteryId` is not found in `config.batteries`.
+The `sequence` is a pre-built list of battery nodes (questionnaire refs + control-flow nodes). Production callers build this via `resolveItems()` (see IMPLEMENTATION_SPEC.md §16.1), which converts the `items=` URL tokens into an expanded sequence. The orchestrator throws if `source` does not have a `sequence` property.
 
-Builds a `questionnaireMap` from `config.questionnaires` (keyed by `questionnaireId`) for O(1) lookup.
+Questionnaire lookups use `config.questionnaires` (a plain array) with a linear scan — the arrays are small (tens of items) so an explicit map is not needed.
 
 ### 7.2 DSL Context
 

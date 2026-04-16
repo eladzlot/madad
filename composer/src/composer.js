@@ -1,6 +1,10 @@
 // composer.js — entry point for the Composer tool.
 // Bootstraps the app: loads manifest, loads configs, renders UI.
 
+// Styles bundled by Vite. A separate hashed CSS file is emitted in dist/assets/
+// and the build injects a <link> tag into composer/index.html automatically.
+import './composer.css';
+
 import { loadManifest, loadAllConfigs } from './composer-loader.js';
 import { render, injectStyles, initRoot, escapeHtml } from './composer-render.js';
 import { initHandlers } from './composer-handlers.js';

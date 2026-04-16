@@ -21,7 +21,7 @@ Nothing in `src/engine/` or `src/config/` touches the DOM.
 import { createController } from './controller.js';
 
 const controller = createController(container, router);
-controller.start(config, batteryId, { createOrchestrator, session });
+controller.start(config, { sequence }, { createOrchestrator, session });
 ```
 
 `container` is the host element the controller appends into. `router` is the router instance (see §3). All components must be registered (imported) in `app.js` before `start()` is called.

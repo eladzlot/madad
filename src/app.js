@@ -22,6 +22,7 @@ import { createController } from './controller.js';
 import { createOrchestrator } from './engine/orchestrator.js';
 import { createRouter } from './router.js';
 import { preloadPdf } from './pdf/report.js';
+import { sanitizePid } from './pid.js';
 import './components/item-select.js';
 import './components/item-binary.js';
 import './components/item-instructions.js';
@@ -93,11 +94,10 @@ async function main() {
 
   const configsParam = params.get('configs');
   const itemsParam   = params.get('items');
-  const pidRaw = params.get('pid') ?? null;
-  // Validate PID: alphanumeric, Hebrew chars, hyphen, underscore, max 64 chars.
-  // Reject silently (treat as absent) to avoid leaking crafted values into error messages.
-  const PID_PATTERN = /^[a-zA-Z0-9\u0590-\u05FF_-]{1,64}$/;
-  const pid = pidRaw && PID_PATTERN.test(pidRaw) ? pidRaw : null;
+  // PID validation lives in src/pid.js — single source of truth shared with the composer.
+  // Invalid PIDs are silently treated as absent rather than surfaced in error messages,
+  // to avoid reflecting crafted strings back into the UI.
+  const pid = sanitizePid(params.get('pid'));
 
   const configSources = configsParam
     ? configsParam.split(',').map(s => s.trim()).filter(Boolean)

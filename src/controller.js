@@ -7,7 +7,7 @@ import { tagForType, canAdvance, autoAdvances } from './item-types.js';
 // Usage:
 //   const controller = createController(container, router);
 //   controller.start(config, source, { createOrchestrator });
-//   source: { batteryId: string } | { sequence: BatteryNode[] }
+//   source: { sequence: BatteryNode[] }
 //
 // Components must be registered before calling start() — import them in app.js.
 //
@@ -215,7 +215,11 @@ export function createController(container, router) {
     _shellEl.canGoForward = false;
 
     const results = Object.entries((sessionState ?? {}).scores ?? {}).map(([key, scoreResult]) => {
-      const q = _config.questionnaires.find(q => q.id === key || key.startsWith(q.id));
+      // Resolve questionnaire via the orchestrator's sessionKey → questionnaireId
+      // map. Falls back to treating the key as a questionnaireId for older
+      // callers (tests) that may not populate questionnaireIds.
+      const qId = sessionState?.questionnaireIds?.[key] ?? key;
+      const q   = _config.questionnaires.find(q => q.id === qId);
       return {
         title:    q?.title ?? key,
         total:    scoreResult?.total ?? null,
@@ -311,7 +315,7 @@ export function createController(container, router) {
 
   // ── Public API ───────────────────────────────────────────────────────────
 
-  // source: { batteryId: string } | { sequence: BatteryNode[] }
+  // source: { sequence: BatteryNode[] }
   function start(config, source, { createOrchestrator, session = {} } = {}) {
     _config  = config;
     _session = session;

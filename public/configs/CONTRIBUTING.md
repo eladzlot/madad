@@ -19,9 +19,9 @@
 
 6. **Test manually** at:
    ```
-   http://localhost:5173/?configs=configs/prod/standard.json&items=YOUR_ID
+   http://localhost:5173/?configs=standard&items=YOUR_ID
    ```
-   Replace `standard.json` with whichever file you added to.
+   Replace `standard` with the short name of whichever file you added to (see "Adding a new config file" below for how short names are derived).
 
 7. **Open a pull request** with only the config file(s) changed.
 
@@ -59,11 +59,14 @@ If no existing file fits your instrument:
    { "name": "Your config display name", "url": "/configs/prod/yourname.json" }
    ```
 
+   The short name is derived from this URL by stripping `configs/prod/` and `.json` — so the example above gives short name `yourname`. Short names appear in generated patient URLs and in `dependencies` arrays (see step 3).
+
 3. If this config uses instruments from another config, declare the dependency:
    ```json
-   { "dependencies": ["configs/prod/standard.json"] }
+   { "dependencies": ["standard"] }
    ```
-   The Composer will include the dependency automatically in generated URLs.
+
+   The Composer will include the dependency automatically in generated URLs. **Use short names in the `dependencies` array** — they match what appears in patient URLs and avoid ambiguity about path format. The legacy full-path form (`"configs/prod/standard.json"`) is also accepted by the loader, but new configs should use short names.
 
 ---
 

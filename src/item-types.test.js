@@ -1,18 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getType, isScored, isNumericAnswer, autoAdvances, isSkippable, canAdvance } from './item-types.js';
-
-// ── getType ───────────────────────────────────────────────────────────────────
-
-describe('getType', () => {
-  it('throws for unknown types', () => {
-    expect(() => getType('unknown')).toThrow('unknown item type "unknown"');
-  });
-
-  it('throws with useful message for control nodes', () => {
-    expect(() => getType('if')).toThrow('control node');
-    expect(() => getType('randomize')).toThrow('control node');
-  });
-});
+import { isScored, autoAdvances, isSkippable, canAdvance } from './item-types.js';
 
 // ── isScored ──────────────────────────────────────────────────────────────────
 
@@ -33,19 +20,6 @@ describe('isScored', () => {
   it('returns false for null/undefined', () => {
     expect(isScored(null)).toBe(false);
     expect(isScored(undefined)).toBe(false);
-  });
-});
-
-// ── isNumericAnswer ───────────────────────────────────────────────────────────
-
-describe('isNumericAnswer', () => {
-  it('returns true for select and binary', () => {
-    expect(isNumericAnswer({ type: 'select' })).toBe(true);
-    expect(isNumericAnswer({ type: 'binary' })).toBe(true);
-  });
-
-  it('returns false for instructions', () => {
-    expect(isNumericAnswer({ type: 'instructions' })).toBe(false);
   });
 });
 

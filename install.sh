@@ -103,8 +103,7 @@ copy "report.test.js"                  "src/pdf/report.test.js"
 copy "generate-report.test.js"         "src/pdf/generate-report.test.js"
 
 # ── App shell ──────────────────────────────────────────────────────────────────
-copy "index.html"                      "index.html"
-copy "app-index.html"                      "index.html"
+copy "app-index.html"                  "index.html"
 copy "landing-index.html"              "landing/index.html"
 copy "composer-index.html"             "composer/index.html"
 copy "app.js"                          "src/app.js"
@@ -114,6 +113,8 @@ copy "controller.test.js"              "src/controller.test.js"
 copy "router.js"                       "src/router.js"
 copy "resolve-items.js"                "src/resolve-items.js"
 copy "resolve-items.test.js"           "src/resolve-items.test.js"
+copy "pid.js"                          "src/pid.js"
+copy "pid.test.js"                     "src/pid.test.js"
 
 copy "main.css"                        "src/styles/main.css"
 
@@ -127,6 +128,7 @@ copy "composer-loader.test.js"    "composer/src/composer-loader.test.js"
 copy "composer-render.js"         "composer/src/composer-render.js"
 copy "composer-state.js"          "composer/src/composer-state.js"
 copy "composer-state.test.js"     "composer/src/composer-state.test.js"
+copy "composer.css"               "composer/src/composer.css"
 copy "configs.json"               "public/composer/configs.json"
 copy "configs.test.json"          "public/composer/configs.test.json"
 
@@ -166,7 +168,7 @@ copy "ci.yml"                          ".github/workflows/ci.yml"
 copy "deploy.yml"                      ".github/workflows/deploy.yml"
 
 copy "vite.config.js"                  "vite.config.js"
-copy "eslint.config.js"                "eslintite.config.js"
+copy "eslint.config.js"                "eslint.config.js"
 
 
 echo ""

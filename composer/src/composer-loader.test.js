@@ -9,6 +9,11 @@ beforeEach(() => {
   state.dependenciesBySource  = new Map();
   state.selected              = [];
   state.warnings              = [];
+  // Reset the shared mockFetch so queued .mockResolvedValueOnce() responses
+  // from a previous test don't leak forward. Without this, a test that queues
+  // two responses but only consumes one leaves the second in the queue, where
+  // it gets picked up as the first response of the next test.
+  mockFetch.mockReset();
 });
 
 // We need to mock fetch before importing loader functions
@@ -209,22 +214,21 @@ describe('loadAllConfigs', () => {
   // ── dependency declaration ────────────────────────────────────────────────────
 
   it('populates dependenciesBySource when config declares dependencies', async () => {
-    mockFetch
-      .mockResolvedValueOnce(
-        makeConfigResponseWithDeps([minimalQ('diamond_sr')], [minimalBattery('clinical_intake', 'Clinical Intake', 'diamond_sr')], ['standard'])
-      )
-      .mockResolvedValueOnce(makeConfigResponse([minimalQ('std_q')])); // auto-fetched dep
+    // The composer sets loadDependencies:false — declared deps are recorded in
+    // state.dependenciesBySource (for URL generation) but NOT auto-fetched.
+    // Each manifest entry is fetched exactly once by the composer itself.
+    mockFetch.mockResolvedValueOnce(
+      makeConfigResponseWithDeps([minimalQ('diamond_sr')], [minimalBattery('clinical_intake', 'Clinical Intake', 'diamond_sr')], ['standard'])
+    );
     await loadAllConfigs({ configs: [{ name: 'Intake', url: '/configs/prod/intake.json' }] });
     // Both key and value are short names
     expect(state.dependenciesBySource.get('intake')).toEqual(['standard']);
   });
 
   it('strips leading slash from declared dependency paths', async () => {
-    mockFetch
-      .mockResolvedValueOnce(
-        makeConfigResponseWithDeps([minimalQ('q1')], [], ['/configs/prod/standard.json'])
-      )
-      .mockResolvedValueOnce(makeConfigResponse([minimalQ('std_q')])); // auto-fetched dep
+    mockFetch.mockResolvedValueOnce(
+      makeConfigResponseWithDeps([minimalQ('q1')], [], ['/configs/prod/standard.json'])
+    );
     await loadAllConfigs({ configs: [{ name: 'Test', url: '/configs/prod/a.json' }] });
     expect(state.dependenciesBySource.get('a')).toEqual(['standard']);
   });
@@ -235,7 +239,48 @@ describe('loadAllConfigs', () => {
     expect(state.dependenciesBySource.has('standard')).toBe(false);
   });
 
+  // Regression test: previously the composer passed no options to loadConfig,
+  // and loadConfig's dependency auto-fetch merged dep configs into the result.
+  // The composer then also loaded the same dep via its own manifest entry,
+  // so the dep's items got registered twice — producing duplicate DOM IDs
+  // like two inputs with id="chk-phq9", which broke the Playwright e2e suite.
+  // This test locks in the contract that the composer fetches each manifest
+  // entry exactly once, regardless of what deps those configs declare.
+  it('does not double-register items when a manifest entry is also a declared dependency', async () => {
+    mockFetch
+      .mockResolvedValueOnce(
+        makeConfigResponseWithDeps(
+          [minimalQ('diamond_sr')],
+          [minimalBattery('clinical_intake', 'Clinical Intake', 'diamond_sr')],
+          ['configs/prod/standard.json']  // intake declares standard as a dep
+        )
+      )
+      .mockResolvedValueOnce(makeConfigResponse([minimalQ('phq9')]));
+
+    await loadAllConfigs({
+      configs: [
+        { name: 'Intake',   url: '/configs/prod/intake.json' },
+        { name: 'Standard', url: '/configs/prod/standard.json' },
+      ],
+    });
+
+    // Each manifest entry is fetched exactly once — the dep is NOT auto-fetched,
+    // because the composer is managing the full config set itself.
+    expect(mockFetch.mock.calls).toHaveLength(2);
+
+    // phq9 (from standard) appears exactly once in the registry, not twice.
+    const phq9Entries = state.questionnaires.filter(q => q.id === 'phq9');
+    expect(phq9Entries).toHaveLength(1);
+    // And attributed to the correct source (standard, not intake).
+    expect(phq9Entries[0].sourceUrl).toBe('standard');
+  });
+
   it('buildUrl includes dependency source when battery config declares it', async () => {
+    // The composer loads every manifest entry directly; declared dependencies
+    // are used by buildUrl() to include them in the patient URL even when the
+    // patient selects items only from the declaring config. To set up this
+    // test we register two configs directly (intake + standard) rather than
+    // relying on dep auto-fetch.
     mockFetch
       .mockResolvedValueOnce(
         makeConfigResponseWithDeps(
@@ -244,14 +289,20 @@ describe('loadAllConfigs', () => {
           ['standard']
         )
       )
-      .mockResolvedValueOnce(makeConfigResponse([minimalQ('std_q')])); // auto-fetched dep
-    await loadAllConfigs({ configs: [{ name: 'Intake', url: '/configs/prod/intake.json' }] });
+      .mockResolvedValueOnce(makeConfigResponse([minimalQ('std_q')]));
+    await loadAllConfigs({
+      configs: [
+        { name: 'Intake',   url: '/configs/prod/intake.json' },
+        { name: 'Standard', url: '/configs/prod/standard.json' },
+      ],
+    });
 
     const { buildUrl } = await import('./composer-state.js');
     state.selected = ['clinical_intake'];
     const url = buildUrl('http://localhost');
     const configs = new URL(url).searchParams.get('configs').split(',');
-    // Both emitted as short names
+    // Both emitted as short names — intake because clinical_intake lives there,
+    // standard because intake declares it as a dependency.
     expect(configs).toContain('intake');
     expect(configs).toContain('standard');
   });

@@ -4,11 +4,14 @@
 // Public API:
 //   createOrchestrator(config, source, callbacks)
 //
-//   `source` is one of:
-//     { batteryId: string }   — looks up a named battery in config.batteries
-//     { sequence: Node[] }    — uses a pre-built sequence directly (composer/items URL model)
+//   `source` must be { sequence: Node[] } — a pre-built sequence.
+//   Production callers go through resolveItems() (src/resolve-items.js),
+//   which turns the URL's `items=` tokens (battery IDs, questionnaire IDs)
+//   into a flat sequence of battery nodes. There is no battery-lookup branch
+//   here — resolveItems already handles that.
 //
-//   config.questionnaires must be a Map<id, { data: Questionnaire }> (from loadConfig).
+//   config.questionnaires must be a plain array of Questionnaire objects
+//   (from loadConfig).
 //
 //   Methods:
 //     .start()                  → void  — initializes runner, advances to first questionnaire
@@ -16,7 +19,7 @@
 //     .engineCrossBack()        → void  — called by UI when engine signals cross-boundary back
 //     .sessionKey()             → string | null
 //     .currentEngine()          → engine | null
-//     .sessionState()           → { answers, scores, alerts }  (live reference)
+//     .sessionState()           → { answers, scores, alerts, questionnaireIds }  (live reference)
 //     .isComplete()             → boolean
 //     .progress()               → { current: number, total: number | null }
 //
@@ -32,22 +35,15 @@ export function createOrchestrator(config, source, callbacks = {}) {
   const { onQuestionnaireStart, onSessionComplete, onError } = callbacks;
 
   // ── Resolve sequence ─────────────────────────────────────────────────────
+  // The orchestrator only accepts a pre-built sequence. Production callers
+  // go through resolveItems() (src/resolve-items.js), which takes the URL's
+  // `items=` tokens and produces a sequence. There is no battery-lookup
+  // branch here — resolveItems handles that too.
 
-  let sequence;
-
-  if (source && 'sequence' in source) {
-    // Pre-built sequence from resolveItems() — used by the items URL model
-    sequence = source.sequence;
-  } else if (source && 'batteryId' in source) {
-    // Named battery lookup — used by internal/legacy callers
-    const battery = config.batteries?.find(b => b.id === source.batteryId);
-    if (!battery) {
-      throw new Error(`Orchestrator: battery "${source.batteryId}" not found in config`);
-    }
-    sequence = battery.sequence;
-  } else {
-    throw new Error('Orchestrator: source must be { batteryId } or { sequence }');
+  if (!source || !('sequence' in source)) {
+    throw new Error('Orchestrator: source must be { sequence }');
   }
+  const sequence = source.sequence;
 
   // ── Questionnaire lookup ─────────────────────────────────────────────────
   // config.questionnaires is a plain array.
@@ -59,9 +55,17 @@ export function createOrchestrator(config, source, callbacks = {}) {
   // ── Session state ────────────────────────────────────────────────────────
 
   const state = {
-    answers: {},   // { [sessionKey]: { [itemId]: any } }
-    scores:  {},   // { [sessionKey]: { total, subscales, category } }
-    alerts:  {},   // { [sessionKey]: Alert[] }
+    answers:          {},   // { [sessionKey]: { [itemId]: any } }
+    scores:           {},   // { [sessionKey]: { total, subscales, category } }
+    alerts:           {},   // { [sessionKey]: Alert[] }
+    // sessionKey → questionnaireId. Required because sessionKey may be either
+    // node.questionnaireId or node.instanceId (a free-form alias used to
+    // distinguish repeated questionnaire instances within one battery).
+    // Without this map, downstream code (PDF, results screen) cannot recover
+    // the questionnaire definition from a sessionKey when instanceId is used —
+    // and a startsWith() heuristic would mis-resolve when one questionnaire ID
+    // is a prefix of another (e.g. 'phq9' vs 'phq9_followup').
+    questionnaireIds: {},   // { [sessionKey]: questionnaireId }
   };
 
   // ── Runner & engine ──────────────────────────────────────────────────────
@@ -106,6 +110,7 @@ export function createOrchestrator(config, source, callbacks = {}) {
     if (!state.answers[sessionKey]) {
       state.answers[sessionKey] = {};
     }
+    state.questionnaireIds[sessionKey] = node.questionnaireId;
 
     _currentSessionKey = sessionKey;
     _currentEngine = createEngine(questionnaire, sessionKey, state.answers[sessionKey]);
@@ -170,6 +175,7 @@ export function createOrchestrator(config, source, callbacks = {}) {
     }
 
     _currentSessionKey = sessionKey;
+    state.questionnaireIds[sessionKey] = node.questionnaireId;
 
     const existingAnswers = state.answers[sessionKey] ?? {};
     _currentEngine = createEngine(questionnaire, sessionKey, existingAnswers);

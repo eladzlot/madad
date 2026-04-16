@@ -236,9 +236,11 @@ Multi-config dependencies: if a config references instruments from another confi
 The `test/e2e.json` file is marked `"dev": true` in the manifest — never loads in production.
 
 ### URL design
-Config paths in `configs=` URL parameters are **relative** (no leading slash): `configs/prod/standard.json`. This resolves correctly from any base path (`/`, `/madad/`, etc.) without runtime detection. The Composer's `getAppRoot()` in `composer-state.js` derives the app root from `window.location.href` and prepends it to manifest paths for fetching, then stores the path without a leading slash as `sourceUrl` for use in generated URLs.
+The Composer emits **short names** in `configs=` URL parameters (e.g. `?configs=standard,intake`). Short names are the manifest entry's URL with the `configs/prod/` prefix and `.json` suffix stripped. They are a stable external contract — see `docs/COMPOSER_SPEC.md` for the full rules (don't rename prod configs, don't reuse short names across namespaces, etc.).
 
-**Do not use absolute paths (`/configs/...`) in generated patient URLs** — they break at non-root deployments.
+The loader (`src/config/loader.js`) also accepts full paths (`configs/prod/standard.json`) and root-relative paths (`/configs/prod/standard.json`) for hand-crafted URLs and legacy callers. All three forms normalise to the same canonical URL internally, so a config appearing in both `configs=` and as a declared dependency is only fetched once.
+
+**Do not use absolute paths (`/configs/...`) in generated patient URLs** — they break at non-root deployments. Use short names.
 
 ### Adding an instrument
 See `public/configs/CONTRIBUTING.md` (human guide) or `public/configs/LLM_GUIDE.md` (LLM guide). The process is config-only — no application code changes required for standard Likert/binary instruments.

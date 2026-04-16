@@ -1,10 +1,16 @@
 // composer-state.js
-// Shared mutable state, URL builder, search matcher, and PID validator.
+// Shared mutable state, URL builder, and search matcher.
 // All other composer modules import from here — nothing else holds state.
+//
+// PID validation is defined in src/pid.js — single source of truth shared
+// with the patient app. Re-exported here so existing callers don't need to
+// know which module owns the rules.
+
+import { PID_PATTERN, pidWarning } from '../../src/pid.js';
 
 // Relative URL — resolves correctly at any base path deployment.
 export const MANIFEST_URL = 'configs.json';
-export const PID_PATTERN  = /^[a-zA-Z0-9\u0590-\u05FF_-]*$/;
+export { PID_PATTERN, pidWarning };
 
 export const state = {
   batteries:             [],       // [{ id, title, description, sourceUrl }]
@@ -54,14 +60,7 @@ export function getAppRoot() {
 }
 
 // ── PID validation ────────────────────────────────────────────────────────────
-
-export function pidWarning(pid) {
-  if (!pid) return null;
-  if (!PID_PATTERN.test(pid)) {
-    return 'המזהה מכיל תווים לא מומלצים. השתמש באותיות, ספרות, מקף או קו תחתון.';
-  }
-  return null;
-}
+// Re-exported from src/pid.js above. See that module for the rules.
 
 // ── Search ────────────────────────────────────────────────────────────────────
 

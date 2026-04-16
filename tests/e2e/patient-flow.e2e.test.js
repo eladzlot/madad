@@ -404,16 +404,22 @@ test.describe('error handling', () => {
     await expect(page.locator('#app')).toContainText('לא ניתן לטעון את השאלון');
   });
 
-  test('missing config dependency shows incomplete-link error before welcome screen', async ({ page }) => {
-    // intake.json declares trauma.json and standard.json as dependencies.
-    // Loading intake alone (without its dependencies) must surface a clear
-    // error before the welcome screen, not a cryptic runtime failure later.
-    await page.goto('/configs/prod/intake.json&items=clinical_intake'.replace(/^/, '/?configs='));
-    await expect(page.locator('#app')).toContainText('הקישור אינו שלם', { timeout: 8000 });
-    // Welcome screen must not appear.
-    await expect(page.locator('welcome-screen')).not.toBeVisible();
-    // Error must not have a retry button — incomplete link needs a new link, not a reload.
-    await expect(page.locator('[data-action="retry"]')).not.toBeVisible();
+  test('URL missing a required dep is auto-completed via the config\'s declared dependencies', async ({ page }) => {
+    // intake.json declares standard.json and trauma.json as dependencies.
+    // clinical_intake is a battery in intake.json whose sequence references
+    // questionnaires living in those dependencies (phq9 in standard, pcl5 in
+    // trauma). Even when the URL lists only intake — a hand-crafted or
+    // truncated link — the config loader auto-fetches declared deps, so the
+    // battery resolves and the welcome screen appears.
+    //
+    // The Composer still includes deps explicitly in generated URLs for
+    // clarity and traceability; this test just verifies the runtime is
+    // resilient to a URL that omits them.
+    await page.goto('/?configs=configs/prod/intake.json&items=clinical_intake');
+    await expect(page.locator('welcome-screen')).toBeVisible({ timeout: 8000 });
+    // No error screen — neither load-error nor resolution-error should appear.
+    await expect(page.locator('#app')).not.toContainText('לא ניתן לטעון');
+    await expect(page.locator('#app')).not.toContainText('הקישור שגוי');
   });
 
   test('aborted config fetch shows load-error screen with retry button', async ({ page }) => {

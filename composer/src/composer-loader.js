@@ -2,7 +2,7 @@
 // Fetches the manifest and loads all listed configs.
 // Failures are partial — warns and continues rather than halting.
 
-import { loadConfig } from '/src/config/loader.js';
+import { loadConfig } from '../../src/config/loader.js';
 import { state, MANIFEST_URL, getAppRoot } from './composer-state.js';
 
 // The base path for internal production configs (without leading slash).
@@ -27,57 +27,6 @@ export async function loadManifest() {
   return res.json();
 }
 
-// Creates a fetch wrapper used when calling loadConfig from the Composer.
-//
-// Problem: loadConfig (in the main app) auto-fetches dependencies declared
-// in each config's "dependencies" field. It passes those paths directly to
-// fetch(), so the browser resolves them relative to the current page URL.
-// From the Composer at /composer/ that becomes /composer/configs/prod/…
-// instead of the correct /configs/prod/…, returning the SPA's index.html
-// and causing a JSON parse error.
-//
-// This wrapper fixes two things:
-//
-// 1. URL resolution — relative / root-relative paths are resolved against
-//    appRoot (e.g. http://localhost:5173/) rather than the current page URL.
-//
-// 2. Double-registration prevention — when loadConfig auto-fetches a dep
-//    that is already listed in the manifest (and therefore loaded separately
-//    by loadAllConfigs with correct sourceUrl attribution), we return an
-//    empty-but-valid config stub instead of the real data. This prevents
-//    loadConfig from merging those items into the calling config's result
-//    under the wrong sourceUrl. loadAllConfigs will register them correctly
-//    via their own manifest entry.
-//
-// The mainFetchUrl argument identifies the primary source for this
-// particular loadConfig call so it is never treated as a dep intercept.
-function makeComposerFetch(appRoot, manifestFetchUrls, mainFetchUrl) {
-  return (url, init) => {
-    // Normalise to string — loadConfig may pass URL objects in some paths.
-    const urlStr = typeof url === 'string' ? url : (url?.href ?? String(url));
-
-    // Resolve relative and root-relative paths against appRoot.
-    let resolved = urlStr;
-    if (!/^https?:\/\//.test(urlStr)) {
-      const noSlash = urlStr.startsWith('/') ? urlStr.slice(1) : urlStr;
-      resolved = appRoot + noSlash;
-    }
-
-    // Intercept auto-fetches of configs that loadAllConfigs handles
-    // separately via the manifest. Return an empty valid stub so loadConfig
-    // merges nothing from this dep into the current config's result.
-    if (resolved !== mainFetchUrl && manifestFetchUrls.has(resolved)) {
-      return Promise.resolve({
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve({ id: 'dep_stub', version: '1.0', questionnaires: [], batteries: [] }),
-      });
-    }
-
-    return globalThis.fetch(resolved, init);
-  };
-}
-
 export async function loadAllConfigs(manifest) {
   // The manifest uses root-relative paths like /configs/prod/standard.json.
   // To fetch correctly at any base path (/, /madad/, etc.) we resolve them
@@ -94,16 +43,6 @@ export async function loadAllConfigs(manifest) {
   const IS_DEV = typeof import.meta !== 'undefined' && import.meta.env?.DEV === true;
   const activeConfigs = manifest.configs.filter(entry => !entry.dev || IS_DEV);
 
-  // Pre-compute the set of absolute fetch URLs for all manifest entries.
-  // makeComposerFetch uses this to identify dep auto-fetches that should
-  // be stubbed out (because loadAllConfigs will load them separately).
-  const manifestFetchUrls = new Set(
-    activeConfigs.map(entry => {
-      const noSlash = entry.url.startsWith('/') ? entry.url.slice(1) : entry.url;
-      return appRoot + noSlash;
-    })
-  );
-
   const results = await Promise.allSettled(
     activeConfigs.map(entry => {
       // Build absolute fetch URL: appRoot (e.g. http://localhost:4173/madad/)
@@ -113,11 +52,13 @@ export async function loadAllConfigs(manifest) {
       // sourceUrl stored without leading slash — resolves correctly from any page
       const sourceUrl = pathNoSlash;
 
-      // Wrap fetch so that loadConfig's internal dependency auto-fetches use
-      // absolute URLs rooted at appRoot rather than at /composer/.
-      const composerFetch = makeComposerFetch(appRoot, manifestFetchUrls, fetchUrl);
-
-      return loadConfig([fetchUrl], { fetch: composerFetch })
+      // loadDependencies: false — the manifest enumerates every config we
+      // want to load. If loadConfig also auto-fetched declared dependencies,
+      // intake.json (which depends on standard.json) would cause standard's
+      // questionnaires to be merged into intake's result here, AND the
+      // separate standard.json manifest entry would register them again,
+      // producing duplicate items in state.questionnaires.
+      return loadConfig([fetchUrl], { loadDependencies: false })
         .then(config => ({ entry: { ...entry, url: sourceUrl }, config }))
         .catch(err => { err.url = fetchUrl; return Promise.reject(err); });
     })

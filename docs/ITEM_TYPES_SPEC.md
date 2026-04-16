@@ -58,19 +58,14 @@ Currently each concern is handled by its own ad-hoc `type === 'select'` conditio
   defaultValue: null,              // value used to initialise the item if re-entered
 
   // Skippability
-  skippableByDefault: true,        // whether unanswered = valid to advance past
-                                   // can be overridden per-item by item.required = true
+  skippableDefault: true,          // whether unanswered = valid to advance past
+                                   // can be overridden per-item by item.required
 
   // Scoring
   contributesToScore: false,       // whether engine.scoring counts this type
-  answerIsNumeric: false,          // whether the answer value is always a number
-                                   // (needed for DSL context and scoring skip logic)
 
-  // PDF
-  pdfRenderer: 'text',             // key into PDF_RENDERERS map (see §2.3)
-
-  // Config validation
-  validateItem: (item, q, errors) => {},  // called by config-validation.js
+  // Answer shape — used by canAdvance()
+  answerShape: 'scalar',           // 'scalar' | 'array' | 'object'
 }
 ```
 
@@ -320,13 +315,13 @@ Config JSON
 #### 5.1 `src/item-types.js` — NEW FILE
 
 The registry. Exports:
-- `TYPE_REGISTRY` — `{ [type]: TypeDescriptor }` — the full registry
-- `getType(type)` — safe lookup, throws `ConfigError` for unknown types
 - `isScored(item)` — replaces all `type === 'select' || type === 'binary'` checks
-- `isNumericAnswer(item)` — whether answer can appear in DSL context
-- `autoAdvances(item)` — replaces ADVANCE_DELAY_MS logic in controller
-- `isRequiredByDefault(item)` — default skip/require behaviour
+- `autoAdvances(item)` — whether the component auto-advances after answer
+- `isSkippable(item)` — default skip/require behaviour, respecting `item.required` override
 - `canAdvance(item, answer)` — full logic including required override and array/object check
+- `tagForType(type)` — custom element tag for this item type
+
+The registry itself is not exported — callers go through the helper functions. (An earlier plan exposed `getType`, `isNumericAnswer`, and a `pdfRenderer` key, but those were never used in practice — the PDF renderer in `src/pdf/report.js` branches on `item.type` directly.)
 
 This is the only file that needs to change when a new type is added (plus the component and PDF renderer for that type).
 
@@ -447,14 +442,17 @@ const PDF_RENDERERS = {
 };
 ```
 
-**`buildQuestionnaireSections`** — currently calls `buildItemRow` for every answerable item. Replace with:
+**`buildQuestionnaireSections`** — currently calls `buildItemRow` for every answerable item. Replace with a type-based dispatch:
 ```js
-import { getType } from '../item-types.js';
-const rendererKey = getType(item.type).pdfRenderer;
-const renderer = PDF_RENDERERS[rendererKey];
-const rows = renderer(item, rowNum, rawAnswer, questionnaire);
-// renderer returns row[] for composite, row for others — normalise:
-return Array.isArray(rows[0]) ? rows : [rows];
+// report.js branches directly on item.type rather than going through a registry key.
+// The dispatch is kept inline because there are only a handful of types and the
+// renderers have different return signatures (single row vs array of rows).
+if (item.type === 'instructions') return renderInstructions(item);
+if (item.type === 'text')         return buildTextBlock(item, answer);
+if (item.type === 'multiselect')  return buildMultiselectBlock(item, answer);
+// scored types (select, binary, slider) fall through to the shared item row
+rowNum++;
+tableRows.push(buildItemRow(item, rowNum, answer, questionnaire));
 ```
 
 **`buildTextRow`** — two visible columns: `#` and item text as usual, then the answer spans the full remaining width in a wrapped cell. Column widths: `[COL_NUM, *]` (dynamic). This requires the text row to define its own `widths` — which means the response table can't be a single table with fixed `COL_WIDTHS`. See §6 (Breaking Change) below.

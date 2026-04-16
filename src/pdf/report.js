@@ -463,9 +463,14 @@ function buildHr() {
 export function buildSummaryBlock(sessionState, config) {
   // Build rows in config order, but keyed by sessionKey (not q.id).
   // sessionKey = node.instanceId ?? node.questionnaireId from orchestrator.
-  // We match by looking up each answered sessionKey against config questionnaires.
+  // Resolve via questionnaireIds map so instanceId-based sessions find their
+  // questionnaire; fall back to treating key as questionnaireId for callers
+  // (tests) that don't go through the orchestrator.
   const sessionEntries = Object.keys(sessionState.answers ?? {})
-    .map(sessionKey => ({ sessionKey, q: config.questionnaires?.find(q => q.id === sessionKey) }))
+    .map(sessionKey => {
+      const qId = sessionState.questionnaireIds?.[sessionKey] ?? sessionKey;
+      return { sessionKey, q: config.questionnaires?.find(q => q.id === qId) };
+    })
     .filter(({ q }) => q != null)
     // preserve config questionnaire order
     .sort((a, b) => {
@@ -541,9 +546,11 @@ export function buildSummaryBlock(sessionState, config) {
 
 export function buildDetailSections(sessionState, config) {
   // Iterate completed sessions in answer order; look up the questionnaire definition.
-  // This correctly handles instanceId-based sessionKeys and missing questionnaires.
+  // Resolve via questionnaireIds map so instanceId-based sessions find their
+  // questionnaire definition. Falls back to treating sessionKey as questionnaireId.
   return Object.entries(sessionState.answers ?? {}).map(([sessionKey, answers]) => {
-    const q = config.questionnaires?.find(q => q.id === sessionKey);
+    const qId = sessionState.questionnaireIds?.[sessionKey] ?? sessionKey;
+    const q   = config.questionnaires?.find(q => q.id === qId);
     if (!q) return null;
 
     return {
@@ -880,32 +887,4 @@ export function buildFooter() {
       margin:    [PAGE_MARGIN, 8, PAGE_MARGIN, 0],
     }],
   });
-}
-
-// ── Backward-compat exports ───────────────────────────────────────────────────
-// These functions are tested directly and/or called from external code.
-// buildHeader previously took (session, config, now) — config was used only for
-// the version footer (now in buildFooter).
-
-export { buildHeader as _buildHeaderNew };
-
-/**
- * @param {object} session
- * @param {object} _config  — accepted for backward compat, ignored
- * @param {Date}   now
- */
-export function buildHeaderCompat(session, _config, now) {
-  return buildHeader(session, now);
-}
-
-// buildAlertSection — replaced by inline pills in summary/section headers.
-// Kept as a no-op export so existing tests and imports don't break at runtime.
-export function buildAlertSection() {
-  return null;
-}
-
-// buildScoresLine — replaced by buildSubscoresLine (columns-based).
-// Kept for test compatibility; returns null so callers degrade gracefully.
-export function buildScoresLine() {
-  return null;
 }

@@ -24,6 +24,13 @@
 //   configBase: string     — base path for short-name expansion (default: 'configs/prod/').
 //                            The expanded path is /<configBase><name>.json.
 //                            Override in tests or non-standard deployments.
+//   loadDependencies: bool — whether to auto-fetch configs declared in each
+//                            file's "dependencies" array. Default: true.
+//                            Set to false when the caller manages the full set
+//                            of configs itself (e.g. the Composer, which loads
+//                            every manifest entry directly and would otherwise
+//                            register the same items twice — once from the
+//                            direct fetch, once from the dependency auto-fetch).
 //
 // External-origin support is deliberately opt-in. To allow a trusted external
 // config server in the future, pass its origin at the call site:
@@ -220,6 +227,11 @@ export async function loadConfig(sources, options = {}) {
     // Default: 'configs/prod/' → short name 'standard' expands to /configs/prod/standard.json
     // Override in tests or non-standard deployments.
     configBase = 'configs/prod/',
+    // loadDependencies: when false, declared "dependencies" in each config are
+    // ignored (no auto-fetch). The Composer sets this because it loads every
+    // manifest entry itself and dep auto-fetch would cause double-registration.
+    // See file-header comment.
+    loadDependencies = true,
   } = options;
 
   if (!sources || sources.length === 0) {
@@ -257,7 +269,9 @@ export async function loadConfig(sources, options = {}) {
     allResults.push(...waveResults);
 
     // Collect deps declared by this wave that haven't been visited yet.
-    // These become the next wave.
+    // These become the next wave. Skip entirely when caller opted out of
+    // dependency auto-loading.
+    if (!loadDependencies) break;
     wave = waveResults
       .flatMap(r => r.data.dependencies ?? [])
       .filter(dep => {

@@ -160,7 +160,7 @@ The quickest path is to use an LLM:
 2. Describe the instrument you want to add
 3. Copy the JSON output into the appropriate config file
 4. Run `npm run validate:configs` and fix any errors
-5. Test at `http://localhost:5173/?configs=configs/prod/standard.json&items=YOUR_ID`
+5. Test at `http://localhost:5173/?configs=standard&items=YOUR_ID`
 
 For the full manual process, see [`public/configs/CONTRIBUTING.md`](public/configs/CONTRIBUTING.md).
 

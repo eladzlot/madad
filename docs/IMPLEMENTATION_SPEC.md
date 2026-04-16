@@ -466,14 +466,16 @@ Each source passed to `loadConfig()` is one of:
 
 | Source type | Example | Resolution |
 |---|---|---|
-| Slug (no slashes, no `.json`) | `prod/standard` | → `configs/prod/standard.json` (relative) |
-| Relative path | `configs/prod/standard.json` | used as-is (relative) |
+| Short name (alphanumeric, `_`, `-` — no slashes, no `.json`) | `standard` | → `/configs/prod/standard.json` (root-relative) |
+| Relative path with slash or `.json` | `configs/prod/standard.json` | → `/configs/prod/standard.json` (prepended to root-relative) |
 | Root-relative path | `/configs/prod/standard.json` | used as-is (absolute from origin) |
 | Full URL | `https://trusted.example.com/q.json` | allowed only if origin is in `allowedOrigins` |
 
-Relative and slug-resolved paths are resolved by the browser relative to the current page URL. This means the same path works correctly at any base path deployment (`/`, `/madad/`, etc.) without any runtime path detection.
+Both the short-name and relative-path forms are normalised to the same root-relative URL internally, so `'standard'`, `'configs/prod/standard.json'`, and `'/configs/prod/standard.json'` are all recognised as the same file (the loader's visited-set de-duplicates them). This matters when the same config appears both as an explicit `configs=` entry and as a declared dependency of another config — it must not be fetched twice.
 
-**Rule:** Always use relative paths or slugs in `configs=` URL parameters. Root-relative paths (`/configs/...`) are only used internally by the Composer loader, which resolves them against the app root before passing to `loadConfig`.
+The short-name form is what the Composer generates in patient URLs — it's the shortest stable spelling. The relative-path form is accepted for hand-crafted URLs and legacy callers.
+
+**Rule:** Prefer short names in `configs=` URL parameters. Root-relative paths (`/configs/...`) are accepted but not used by the Composer.
 
 #### External-origin config loading
 
@@ -528,7 +530,7 @@ Multiple sources are fetched in parallel.
 
 ### 9.5 Default config
 
-If no `configs` URL parameter is present, the app shell defaults to the slug `prod/standard`, which resolves to `configs/prod/standard.json`. The loader has no knowledge of defaults.
+If no `configs` URL parameter is present, the app shell defaults to the short name `standard`, which `loadConfig` expands to `/configs/prod/standard.json`. The loader has no knowledge of defaults — the fallback lives in `src/app.js` as `DEFAULT_CONFIG = 'standard'`.
 
 ### 9.6 Injectable fetch
 
@@ -649,22 +651,17 @@ The orchestrator manages the session at the battery level. It is responsible for
 The orchestrator accepts a `source` object as its second argument:
 
 ```js
-// Named battery — looks up battery by ID in config.batteries (Map)
-createOrchestrator(config, { batteryId: 'intake' }, callbacks)
-
-// Pre-built sequence — used by the items URL model (see §12)
 createOrchestrator(config, { sequence: [...] }, callbacks)
 ```
 
-Both forms produce an identical sequence structure handed to the sequence runner. The pre-built sequence path is used by the app shell when resolving `items` URL tokens; the `batteryId` path is available for internal use.
+`sequence` is always a pre-built battery-level sequence. The app shell builds it from the `items=` URL tokens via `resolveItems()` (§16.1), which handles both battery expansion and questionnaire resolution. The orchestrator does not perform battery lookups itself.
 
 ### 11.2 Initialization
 
 At session start the orchestrator:
-1. Resolves the source (named battery lookup or pre-built sequence)
-2. Initializes the sequence runner with the battery sequence
-3. Calls `isSequenceDeterminate()` on the runner to determine progress display mode
-4. Hands the first questionnaire to the engine
+1. Initializes the sequence runner with the provided sequence
+2. Calls `isSequenceDeterminate()` on the runner to determine progress display mode
+3. Hands the first questionnaire to the engine
 
 ### 11.3 Transition
 
@@ -845,9 +842,9 @@ All components must:
 
 | Parameter | Required | Default | Description |
 |---|---|---|---|
-| `configs` | No | `prod/standard` | Comma-separated config sources (slugs or relative paths). Slug `prod/standard` resolves to `configs/prod/standard.json`. |
+| `configs` | No | `standard` | Comma-separated config sources. Short names (`standard`, `intake`) or paths. Short name `standard` resolves to `/configs/prod/standard.json`. See §9.1 for the full resolution rules. |
 | `items` | Yes | — | Comma-separated ordered list of questionnaire or battery IDs |
-| `pid` | No | — | Optional patient identifier |
+| `pid` | No | — | Optional patient identifier (see `src/pid.js` for validation rules) |
 
 If `items` is absent or empty, a pre-welcome error screen is shown in Hebrew. If `configs` is absent, the default config is loaded.
 
@@ -1036,10 +1033,11 @@ pdfmake must be pinned to a separate named chunk (`pdf-vendor`) in the Vite conf
 
 ## 22. Security
 
-- CSP: `default-src 'self'`; `script-src 'self'`; `font-src 'self' data:`; `img-src 'self' data:`; `connect-src 'self'`
-- All URL parameter values (name, pid) must be sanitized on read: NFKC normalization, length cap, strip markup.
-- SRI attributes on font and pdfmake script tags.
-- No secrets, tokens, or credentials exist anywhere in this system.
+- **CSP** is injected at build time via `vite.config.js`. Current policy: `default-src 'self'`, `script-src 'self'`, `style-src 'self' 'unsafe-inline'` (required by Lit's `adoptedStyleSheets`), `font-src 'self' blob:`, `worker-src blob:`, `connect-src 'self'`, `object-src 'none'`, `base-uri 'self'`. Applied in production builds only; dev mode bypasses CSP because Vite's HMR requires inline scripts and WebSocket connections.
+- **URL parameter validation.** `pid` is validated against `PID_PATTERN` in `src/pid.js` (ASCII + Hebrew letters, digits, `-`, `_`, length 1-64) and silently dropped if invalid. `configs` and `items` are parsed as comma-separated lists and each token is validated by `loadConfig`/`resolveItems`. Invalid tokens produce an error screen; they are never reflected back into the UI.
+- **Same-origin config loading** is the default. External config URLs require an explicit `allowedOrigins` set at the call site (see §9.1).
+- **No secrets, tokens, or credentials** exist anywhere in this system. No backend, no telemetry, no third-party analytics.
+- **Deployment is a static site.** GitHub Pages cannot serve custom HTTP headers, so CSP is injected via `<meta>` instead. Teams deploying to infrastructure that can serve real headers should also set CSP as a response header for defense-in-depth.
 
 ---
 
