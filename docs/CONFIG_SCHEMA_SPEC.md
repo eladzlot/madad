@@ -113,15 +113,20 @@ Each option object:
 
 ### 5.2 Binary Item
 
+A two-button yes/no item. Stores the chosen option's numeric `value`. The two options are typically `{label: "כן", value: 1}` and `{label: "לא", value: 0}`, but the labels and values are entirely controlled by the config — there are no built-in defaults.
+
 | Field | Type | Required | Description |
 |---|---|---|---|
 | `id` | string (ID) | yes | |
 | `type` | `"binary"` | yes | |
 | `text` | string | yes | |
-| `labels` | object | no | `{ "yes": "string", "no": "string" }`. Defaults to כן/לא. |
-| `reverse` | boolean | no | |
+| `options` | array | yes* | Exactly two option objects (`{label, value}`). Required unless `optionSetId` is set, or the questionnaire defines `defaultOptionSetId`. |
+| `optionSetId` | string (ID) | no | References a shared option set on the questionnaire. Mutually exclusive with `options`. |
+| `reverse` | boolean | no | If true, apply reverse scoring. Requires `maxPerItem` on scoring spec. |
 | `weight` | number | no | Default 1. |
 | `required` | boolean | no | If `false`, item is skippable. Default: required. |
+
+The validator rejects bare binary items (no `options`, no `optionSetId`, no questionnaire-level `defaultOptionSetId`) with an actionable error.
 
 ### 5.3 Instructions Item
 

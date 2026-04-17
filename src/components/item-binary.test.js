@@ -29,30 +29,10 @@ describe('rendering', () => {
     expect(el.shadowRoot.querySelector('.question')).toBeNull();
   });
 
-  it('uses כן/לא defaults when item has no options', async () => {
+  it('renders nothing when item has no options (validator guarantees this never happens at runtime)', async () => {
     const noOptionsItem = { id: 'q1', type: 'binary', text: 'Did this happen?' };
     const el = await makeEl({ item: noOptionsItem });
-    const btns = el.shadowRoot.querySelectorAll('.opt-btn');
-    expect(btns[0].textContent.trim()).toBe('כן');
-    expect(btns[1].textContent.trim()).toBe('לא');
-  });
-
-  it('default כן button fires answer with value 1', async () => {
-    const noOptionsItem = { id: 'q1', type: 'binary', text: 'Did this happen?' };
-    const el = await makeEl({ item: noOptionsItem });
-    const answered = [];
-    el.addEventListener('answer', e => answered.push(e.detail.value));
-    el.shadowRoot.querySelectorAll('.opt-btn')[0].click();
-    expect(answered).toEqual([1]);
-  });
-
-  it('default לא button fires answer with value 0', async () => {
-    const noOptionsItem = { id: 'q1', type: 'binary', text: 'Did this happen?' };
-    const el = await makeEl({ item: noOptionsItem });
-    const answered = [];
-    el.addEventListener('answer', e => answered.push(e.detail.value));
-    el.shadowRoot.querySelectorAll('.opt-btn')[1].click();
-    expect(answered).toEqual([0]);
+    expect(el.shadowRoot.querySelector('.question')).toBeNull();
   });
 
 });

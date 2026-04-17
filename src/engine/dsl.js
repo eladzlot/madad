@@ -60,11 +60,30 @@ function tokenize(expression) {
     // whitespace
     if (/\s/.test(src[i])) { i++; continue; }
 
-    // numbers
+    // numbers — strict shape: digits, optional single decimal point followed
+    // by at least one digit. Rejects `3.`, `3.1.2`, `3..5`, `3.x`.
     if (/[0-9]/.test(src[i])) {
-      let num = '';
-      while (i < src.length && /[0-9.]/.test(src[i])) num += src[i++];
-      tokens.push({ type: TOKEN.NUMBER, value: parseFloat(num) });
+      const start = i;
+      while (i < src.length && /[0-9]/.test(src[i])) i++;
+      if (i < src.length && src[i] === '.') {
+        i++; // consume the dot
+        const fracStart = i;
+        while (i < src.length && /[0-9]/.test(src[i])) i++;
+        if (i === fracStart) {
+          throw new DSLSyntaxError(
+            `malformed number "${src.slice(start, i)}": decimal point must be followed by digits`,
+            expression
+          );
+        }
+        // After a valid fractional part, another '.' is illegal (e.g. `3.1.2`).
+        if (i < src.length && src[i] === '.') {
+          throw new DSLSyntaxError(
+            `malformed number "${src.slice(start, i + 1)}": multiple decimal points`,
+            expression
+          );
+        }
+      }
+      tokens.push({ type: TOKEN.NUMBER, value: parseFloat(src.slice(start, i)) });
       continue;
     }
 

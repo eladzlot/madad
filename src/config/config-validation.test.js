@@ -275,7 +275,21 @@ describe('select item without options', () => {
       scoring: { method: 'none' }, alerts: [],
     };
     const errors = collectConfigErrors(minimalConfig([q]));
-    expect(errors.some(e => e.includes('no options'))).toBe(true);
+    expect(errors.some(e => e.includes('missing options'))).toBe(true);
+  });
+
+  it('binary item without options gets a copy-pasteable כן/לא fix in the error', () => {
+    const q = {
+      id: 'q', title: 'Q',
+      items: [{ id: '1', type: 'binary', text: 'Q1' }],
+      scoring: { method: 'none' }, alerts: [],
+    };
+    const errors = collectConfigErrors(minimalConfig([q]));
+    const msg = errors.find(e => e.includes('missing options'));
+    expect(msg).toBeDefined();
+    expect(msg).toContain('כן');
+    expect(msg).toContain('לא');
+    expect(msg).toContain('defaultOptionSetId');
   });
 
   it('no error when select item uses defaultOptionSetId', () => {

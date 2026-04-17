@@ -77,7 +77,7 @@ If no existing file fits your instrument:
 - **Hebrew item text** — the platform language is Hebrew.
 - **Validated scoring** — ranges and alert thresholds must match the published, validated version. Do not adjust them.
 - **Open-source instruments only** — do not add proprietary instruments (e.g. BDI-II) without verifying the license.
-- **Binary items** — don't need options; the platform provides default כן/לא labels.
+- **Binary items** — require explicit option labels. Either inline `options: [{"label": "כן", "value": 1}, {"label": "לא", "value": 0}]` on the item, or set `defaultOptionSetId` on the questionnaire with a matching entry in `optionSets`. There is no built-in fallback.
 - **Gating items** — if an item should be answered but not scored (e.g. a trauma exposure question), use `"scoring": { "method": "sum", "exclude": ["item_id"] }`.
 
 ---

@@ -21,6 +21,40 @@ describe('literals', () => {
   it('evaluates a negative literal', () => expect(evaluate('-2',   {}, 'number')).toBe(-2));
 });
 
+// ─── Number Tokenization ─────────────────────────────────────────────────────
+
+describe('number tokenization (strict)', () => {
+  // Positive controls — these must keep working
+  it('accepts integer',           () => expect(evaluate('42',     {}, 'number')).toBe(42));
+  it('accepts simple decimal',    () => expect(evaluate('3.14',   {}, 'number')).toBe(3.14));
+  it('accepts decimal in expr',   () => expect(evaluate('3.5 + 1.5', {}, 'number')).toBe(5));
+  it('accepts multi-digit ints',  () => expect(evaluate('100',    {}, 'number')).toBe(100));
+
+  // Malformed: these previously silently truncated; must now throw
+  it('rejects two decimal points (3.1.2)',
+    () => expect(() => evaluate('3.1.2', {}, 'number')).toThrow(DSLSyntaxError));
+
+  it('rejects consecutive dots (3..5)',
+    () => expect(() => evaluate('3..5', {}, 'number')).toThrow(DSLSyntaxError));
+
+  it('rejects trailing dot (3.)',
+    () => expect(() => evaluate('3.', {}, 'number')).toThrow(DSLSyntaxError));
+
+  it('rejects trailing dot before identifier (3.x)',
+    () => expect(() => evaluate('3.x', {}, 'number')).toThrow(DSLSyntaxError));
+
+  it('rejects trailing dot inside expression (3. + 1)',
+    () => expect(() => evaluate('3. + 1', {}, 'number')).toThrow(DSLSyntaxError));
+
+  it('rejects leading dot (.5) — consistent with no-leading-dot policy',
+    () => expect(() => evaluate('.5', {}, 'number')).toThrow(DSLSyntaxError));
+
+  // Catch the regression that motivated this fix: `3.1.2 + 1`
+  // previously evaluated to 4.1 silently. Must throw.
+  it('rejects 3.1.2 + 1 (the original silent-corruption case)',
+    () => expect(() => evaluate('3.1.2 + 1', {}, 'number')).toThrow(DSLSyntaxError));
+});
+
 // ─── References ──────────────────────────────────────────────────────────────
 
 describe('references', () => {

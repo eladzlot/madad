@@ -295,7 +295,7 @@ Every entry in the items array is an item. Items have a type that determines how
 
 `select` — a question with an ordered numeric scale. Contains the question text and either an inline `options` array (each option with a display label and numeric value), or an `optionSetId` referencing a named option set on the questionnaire. If neither is present, the questionnaire's `defaultOptionSetId` is used. Optional flags for reverse scoring (`reverse`) and item weight (`weight`). Contributes to scoring. Required by default.
 
-`binary` — a yes/no question. Contains the question text and optional custom labels for the two options (defaults to כן/לא). Stores values as 1 (yes) and 0 (no). Contributes to scoring. Required by default.
+`binary` — a yes/no question. Contains the question text and option labels. Labels are supplied either inline as `options`, via `optionSetId` referencing a named option set on the questionnaire, or via the questionnaire's `defaultOptionSetId`. There are no built-in fallback labels — the validator rejects bare binary items. Stores the chosen option's numeric `value` (typically 1 for yes, 0 for no, set by the option set). Contributes to scoring. Required by default.
 
 `instructions` — a non-scored display item. Contains only a text body. Rendered as an instruction screen with a continue button. Ignored by scoring, excluded from the response table in the PDF. Skippable (never requires an answer).
 

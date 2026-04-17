@@ -61,8 +61,8 @@ src/pdf/report.js              ← PDF generation (pdfmake, lazy-loaded)
 ### What is complete and tested
 
 - Full patient flow: welcome → items → completion → results → PDF
-- All item types: select (Likert), binary (yes/no with default כן/לא labels), instructions, text, slider, multiselect
-- Binary items render with default כן/לא labels when no options are provided (options are optional)
+- All item types: select (Likert), binary (yes/no, requires explicit option labels), instructions, text, slider, multiselect
+- Binary items require explicit option labels — supplied inline as `options`, via `optionSetId`, or via the questionnaire's `defaultOptionSetId`. The validator rejects bare binary items.
 - Scoring: sum, average, subscales (sum or mean), custom DSL formula
 - Scoring `exclude` field: item IDs listed in `scoring.exclude` are answered and shown in PDF but do not contribute to the total or any subscale. Used by PC-PTSD-5 for the gating exposure question.
 - Alert evaluation (item-level and score-level conditions)
@@ -178,7 +178,7 @@ The e2e config has `"dev": true` in the manifest — it is skipped entirely in p
 │   │   ├── app-shell.js
 │   │   ├── welcome-screen.js
 │   │   ├── item-select.js
-│   │   ├── item-binary.js        # Default כן/לא when no options provided
+│   │   ├── item-binary.js        # Two-button yes/no — labels supplied by config
 │   │   ├── item-instructions.js
 │   │   ├── item-text.js
 │   │   ├── item-slider.js
@@ -281,7 +281,7 @@ The following security controls are in place. Do not remove them without underst
 - Config system: AJV validation, semantic validation, cross-file merging, `dependencies` field
 - `scoring.exclude` field — items answered and shown in PDF but excluded from total/subscales
 - Trauma config: `pc_ptsd5` (binary screener with `exclude`), `pcl5`, `ptci`, `trauma_eval` battery
-- Binary item default labels: `כן`/`לא` when no options provided
+- Binary item labels: supplied per-questionnaire via `options`, `optionSetId`, or `defaultOptionSetId` — no hardcoded fallback
 - Composer manifest `dev: true` flag — e2e config invisible in production
 - Landing page: direction 5 redesign (typographic, minimal, RTL Hebrew)
 - Favicon: SVG `מ` on teal, all index.html files updated
@@ -355,4 +355,4 @@ To add a new instrument: `public/configs/CONTRIBUTING.md`.
 - **`composer-state.js` `getAppRoot()`** — derives app root by stripping `/composer/...` from `window.location.href`. Any change to Composer URL structure requires updating this.
 - **Security controls in §6a** — specifically: do not revert error rendering to `innerHTML`, do not remove PID/name validation, do not remove the `allowedOrigins` check from `loadConfig`. Each of these was introduced to fix a concrete vulnerability.
 - **`allowedOrigins` default in `loadConfig`** — defaults to `location.origin` (same-origin only). If you change this default to be permissive, you re-open the external config injection vulnerability. The correct pattern for future external-config support is to pass an explicit `allowedOrigins` set at the call site in `src/app.js`.
-- **`scoring.exclude` and `config-validation.js`** — binary items are allowed to have no options (they default to כן/לא). The validator explicitly skips the options check for binary items without `optionSetId`. Do not revert this.
+- **`config-validation.js` binary-item options check** — binary items must have explicit options (inline, via `optionSetId`, or via the questionnaire's `defaultOptionSetId`). The validator rejects bare binary items with an actionable error message that includes a copy-pasteable fix snippet. Do not loosen this — explicit per-questionnaire labels are clinically safer (Hebrew vs. English, different wording per instrument) than a hardcoded global default. The component contains no fallback labels.

@@ -128,9 +128,13 @@ function checkItemOptions(items, q, optionSetIds, errors) {
 
     const ref = item.optionSetId ?? q.defaultOptionSetId;
     if (!ref) {
+      const fix = item.type === 'binary'
+        ? `Add to the item: "options": [{"label": "כן", "value": 1}, {"label": "לא", "value": 0}], ` +
+          `or set "defaultOptionSetId" on the questionnaire (with a matching entry in "optionSets").`
+        : `Add inline "options": [...] to the item, set "optionSetId" referencing an entry in "optionSets", ` +
+          `or set "defaultOptionSetId" on the questionnaire.`;
       errors.push(
-        `${label} (${item.type}): no options, no optionSetId, ` +
-        `and no defaultOptionSetId on the questionnaire.`
+        `${label} (${item.type}): missing options. ${fix}`
       );
       continue;
     }

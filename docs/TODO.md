@@ -53,8 +53,8 @@ The phrase **"Continue with TODO"** means: do the above, then pick up the curren
 
 ## 1. Status
 
-**Currently working on:** idle — P0-0 complete. Next candidate: P0-3 (small, self-contained) or P0-1/P0-2/P0-7 (validation expansion, largest piece).
-**Last session ended:** 2026-04-17 — P0-0 shipped. 966 tests passing.
+**Currently working on:** idle — P0-4 complete. Remaining P0s: P0-1/P0-2/P0-7 (validation cluster), P0-5 (randomize in checkCrossFileBatteryRefs), P0-6 (calcRiskLevel reverse-scored).
+**Last session ended:** 2026-04-17 — P0-4 shipped. 973 tests passing.
 **Blocked on:** nothing.
 
 ---
@@ -70,8 +70,8 @@ Task IDs are stable and match `REVIEW.md` section references. Status values: `to
 | P0-0 | Fix cross-questionnaire back navigation (+ integration test) | done | See archive A-1. D-1 applied. |
 | P0-1 | Validate alert DSL at config-load time | todo | |
 | P0-2 | Validate `customFormula` and `if` conditions at load time | todo | Related to P0-1 — may share a validation helper |
-| P0-3 | Fix DSL tokenizer malformed-number acceptance | todo | |
-| P0-4 | Resolve binary-item contradiction | todo | Decision D-4: keep validator strict; update docs, delete dead code |
+| P0-3 | Fix DSL tokenizer malformed-number acceptance | done | See archive A-2. D-5 applied. |
+| P0-4 | Resolve binary-item contradiction | done | See archive A-3. D-4 + D-6 applied. |
 | P0-5 | Add randomize to `checkCrossFileBatteryRefs` | todo | |
 | P0-6 | Fix `calcRiskLevel` for reverse-scored items | todo | |
 | P0-7 | Add DSL reference integrity check at load time | todo | Related to P0-1, P0-2 |
@@ -149,6 +149,28 @@ Append-only. Date format: YYYY-MM-DD.
 
 ---
 
+### D-5 — DSL number literals: strict shape, no leading or trailing dot
+**Date:** 2026-04-17
+**Context:** P0-3. Tokenizer's `/[0-9.]/` greedy consume + `parseFloat` silently truncated `3.1.2 → 3.1`, `3..5 → 3`, `3. → 3`. Bug surface for LLM-authored configs.
+**Decision:** Number tokens must match `[0-9]+(\.[0-9]+)?` exactly. A decimal point requires at least one digit on each side. A second decimal point immediately after a valid fractional part is rejected. Leading-dot literals (`.5`) remain unsupported — they were never supported, no config uses them, and adding them would expand surface for no gain. Negative literals continue to come from the unary-minus parser rule.
+**Rejected alternative:** Permissive parse + warn. Rejected: silent number corruption is the worst class of clinical bug; loud failure is the only safe choice.
+**Scope impact:** `src/engine/dsl.js` tokenizer only. Pure tightening — no valid expression's behavior changes. All bundled configs validate unchanged.
+
+---
+
+### D-6 — P0-4 scope corrections to D-4
+**Date:** 2026-04-17
+**Context:** P0-4 implementation. Pre-flight reading uncovered three deviations from D-4's stated scope.
+**Decision (addendum to D-4, not superseding):**
+1. **`LLM_GUIDE.md` needs no change.** D-4 listed it. Inspection showed lines 121–131 already explicitly document "Binary items have no built-in default labels." Strike from D-4's worklist.
+2. **`item-binary.test.js` had 3 tests exercising the dead fallback** (lines 32–56). D-4 didn't mention the test surface. These were deleted; replaced with 1 positive test asserting the component renders nothing when options are absent (defense-in-depth, since the validator already prevents this in production).
+3. **`CONFIG_SCHEMA_SPEC.md` §5.2 documented a `labels: {yes, no}` field that does not exist** anywhere in the schema, code, or any config. D-4 said "if it documents path forms" but understated this — the field was pure fiction. Rewrote §5.2 to use the real `options` / `optionSetId` / `defaultOptionSetId` shape consistent with §5.1 (select).
+4. **HANDOVER §10's "do not revert" note was protecting a behavior that did not exist.** It claimed the validator skipped the options check. Replaced with a note pinning the actual current behavior.
+
+**Scope impact:** None on code or contracts beyond what D-4 already approved. Documentation now matches reality across HANDOVER (§3, §4, §6, §10), IMPLEMENTATION_SPEC §5, CONFIG_SCHEMA_SPEC §5.2, and CONTRIBUTING.
+
+---
+
 ## 5. Task Archive
 
 ### A-1 — P0-0 Cross-questionnaire back navigation
@@ -164,5 +186,36 @@ Append-only. Date format: YYYY-MM-DD.
 
 **Decisions referenced:** D-1.
 **Test delta:** 961 → 966 passing. Zero regressions.
+
+---
+
+### A-2 — P0-3 DSL tokenizer malformed-number rejection
+**Completed:** 2026-04-17
+**Summary:** Tightened `tokenize()` number branch to consume strictly `[0-9]+(\.[0-9]+)?`. Inputs like `3.`, `3.x`, `3.1.2`, `3..5` now throw `DSLSyntaxError` with a message identifying the malformed literal. Eliminates the silent-corruption case `3.1.2 + 1 → 4.1`.
+**Files changed:**
+- `src/engine/dsl.js` — rewrote number branch in `tokenize()`.
+- `src/engine/dsl.test.js` — new `describe('number tokenization (strict)')` block, 11 tests (4 positive controls, 7 rejection cases).
+- `docs/DSL_SPEC.md` — §2.4 gained a strict-shape definition + rejection table.
+
+**Decisions referenced:** D-5.
+**Test delta:** dsl.test.js 79 → 90 passing. Full suite green. `npm run validate:configs` clean — no bundled config relied on the loose tokenization.
+
+---
+
+### A-3 — P0-4 Binary-item contradiction resolved
+**Completed:** 2026-04-17
+**Summary:** Code, tests, and docs now agree on a single rule: binary items require explicit option labels (inline `options`, `optionSetId`, or questionnaire-level `defaultOptionSetId`). Validator stays strict. Component fallback `DEFAULT_OPTIONS` (dead at runtime) deleted. Validator error message gained an actionable copy-pasteable fix snippet specialized per item type.
+**Files changed:**
+- `src/components/item-binary.js` — deleted both `DEFAULT_OPTIONS` declarations and the `?? DEFAULT_OPTIONS` fallback in `_selectByIndex` and `render`. Render now no-ops if `options[0]` or `options[1]` is missing (defense-in-depth).
+- `src/components/item-binary.test.js` — deleted 3 fallback-asserting tests; added 1 positive test pinning new no-render behavior. Net −2.
+- `src/config/config-validation.js` — error message for missing options now includes a copy-pasteable fix, specialized per item type (binary gets `כן`/`לא` snippet).
+- `src/config/config-validation.test.js` — updated wording assertion; added new test pinning the binary-specific actionable error.
+- `docs/HANDOVER.md` — §3 lines 64–65, §4 line 181, §6 line 284, §10 line 358 all corrected. The §10 "do not revert" entry was actively misleading (claimed validator skipped the check); rewritten to pin actual behavior.
+- `docs/IMPLEMENTATION_SPEC.md` line 298 — binary item description rewritten.
+- `docs/CONFIG_SCHEMA_SPEC.md` §5.2 — full rewrite. Old table documented a `labels: {yes, no}` field that **never existed** in the schema, code, or any config. Replaced with the real `options` / `optionSetId` shape, mirroring §5.1's structure.
+- `public/configs/CONTRIBUTING.md` line 80 — flipped from "don't need options; platform provides defaults" to the actual rule.
+
+**Decisions referenced:** D-4, D-6.
+**Test delta:** 974 → 973 (−3 deleted dead-fallback tests, +1 new positive component test, +1 new validator test = net −1). Full suite green. 6/6 configs validate.
 
 *Format: `TaskID — one-line summary — files — D-N references`*

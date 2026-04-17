@@ -75,6 +75,18 @@ Scans the expression left-to-right, producing a flat array of typed tokens:
 
 Whitespace is skipped. Unknown characters throw `DSLSyntaxError`.
 
+**Number shape (strict).** A `NUMBER` token matches `[0-9]+(\.[0-9]+)?` — one or more digits, optionally followed by a decimal point and one or more digits. The following are all rejected with `DSLSyntaxError`:
+
+| Input    | Reason                              |
+|----------|-------------------------------------|
+| `3.`     | trailing decimal point, no fraction |
+| `3.x`    | decimal point not followed by digit |
+| `3.1.2`  | multiple decimal points             |
+| `3..5`   | consecutive decimal points          |
+| `.5`     | leading decimal point not supported |
+
+Negative literals are produced by the unary-minus parser rule, not by the tokenizer.
+
 ### 2.5 Parser
 
 Recursive-descent parser producing an AST. Operator precedence (highest to lowest):
