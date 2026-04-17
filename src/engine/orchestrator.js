@@ -24,7 +24,16 @@
 //     .progress()               → { current: number, total: number | null }
 //
 // Callbacks (all optional):
-//   onQuestionnaireStart(engine, sessionKey, questionnaire)  — new questionnaire ready
+//   onQuestionnaireStart(engine, sessionKey, questionnaire)
+//     — new questionnaire ready, fresh engine, patient has not seen an item yet.
+//       Caller is expected to advance the engine to the first item.
+//   onQuestionnaireResume(engine, sessionKey, questionnaire)
+//     — a previous questionnaire is being re-entered via cross-boundary back.
+//       The engine is already positioned on its last item (answered).
+//       Caller must NOT advance — mount the current item directly.
+//       Falls back to onQuestionnaireStart if omitted, but the fallback is
+//       wrong for any caller that advances in onQuestionnaireStart; prefer
+//       implementing both explicitly.
 //   onSessionComplete(sessionState)           — all questionnaires done
 //   onError(error)                            — unrecoverable error
 
@@ -32,7 +41,13 @@ import { createSequenceRunner } from './sequence-runner.js';
 import { createEngine } from './engine.js';
 
 export function createOrchestrator(config, source, callbacks = {}) {
-  const { onQuestionnaireStart, onSessionComplete, onError } = callbacks;
+  const { onQuestionnaireStart, onQuestionnaireResume, onSessionComplete, onError } = callbacks;
+
+  // If the caller didn't supply onQuestionnaireResume, fall back to
+  // onQuestionnaireStart. This keeps single-callback callers working, but
+  // any caller whose start path advances the engine will see the cross-back
+  // round-trip bug that prompted this split. Implement both explicitly.
+  const resumeCallback = onQuestionnaireResume ?? onQuestionnaireStart;
 
   // ── Resolve sequence ─────────────────────────────────────────────────────
   // The orchestrator only accepts a pre-built sequence. Production callers
@@ -189,7 +204,10 @@ export function createOrchestrator(config, source, callbacks = {}) {
     while (item !== null) { item = _currentEngine.advance(); }
     _currentEngine.back();
 
-    onQuestionnaireStart?.(_currentEngine, sessionKey, questionnaire);
+    // Fire the resume callback — NOT onQuestionnaireStart.
+    // The engine is already positioned on its last item; the caller must
+    // mount that item directly and not advance. See file-header comment.
+    resumeCallback?.(_currentEngine, sessionKey, questionnaire);
   }
 
   // ── Public accessors ─────────────────────────────────────────────────────

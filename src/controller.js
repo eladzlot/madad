@@ -280,6 +280,26 @@ export function createController(container, router) {
     }
   }
 
+  // Called after engineCrossBack positions the engine on the previous
+  // questionnaire's last item. The engine is already pointing at the right
+  // item — we must NOT advance, only mount. Advancing here would move past
+  // the last item, return null, trigger engineComplete, and re-enter the
+  // next questionnaire (the cross-back round-trip bug).
+  function onQuestionnaireResume(engine, sessionKey, questionnaire) {
+    _engine = engine;
+    _questionnaire = questionnaire;
+
+    const current = engine.currentItem();
+    if (current === null) {
+      // Defensive: an empty questionnaire somehow being resumed. Treat as
+      // already complete and let the orchestrator move on.
+      _orchestrator.engineComplete();
+      return;
+    }
+    router.push('q');
+    mountItem(current);
+  }
+
   function onSessionComplete(sessionState) {
     _sessionState = sessionState;
     if (_itemEl) { _itemEl.remove(); _itemEl = null; }
@@ -324,6 +344,7 @@ export function createController(container, router) {
     mountShell();
     _orchestrator = createOrchestrator(config, source, {
       onQuestionnaireStart,
+      onQuestionnaireResume,
       onSessionComplete,
       onError,
     });

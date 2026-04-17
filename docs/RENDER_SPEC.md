@@ -124,6 +124,9 @@ The shell's `back` and `forward` buttons call `history.back()` / `history.forwar
 **`onQuestionnaireStart(engine, sessionKey, questionnaire)`:**
 Stores `_engine` and `_questionnaire`. Calls `engine.advance()` for the first item. If it returns null (empty questionnaire), calls `orchestrator.engineComplete()` immediately. Otherwise calls `router.push('q')` and `mountItem(first)`.
 
+**`onQuestionnaireResume(engine, sessionKey, questionnaire)`:**
+Fired by `orchestrator.engineCrossBack()` when the patient navigates back across a questionnaire boundary. The engine is already positioned on the previous questionnaire's last item — the controller must NOT advance. Stores `_engine` and `_questionnaire`, calls `router.push('q')`, and mounts `engine.currentItem()` directly. If `currentItem()` is null (defensive — empty questionnaire being resumed), calls `orchestrator.engineComplete()` instead.
+
 **`onSessionComplete(sessionState)`:**
 1. Removes `_itemEl` and `_progressEl`
 2. Sets `_shellEl.canGoBack = true`, `canGoForward = false`

@@ -275,7 +275,7 @@ Otherwise:
 3. Re-initialises the engine with the existing answers for that session key
 4. Drains the new engine to completion by calling `advance()` until it returns `null`
 5. Calls `engine.back()` once to un-complete and land on the last item
-6. Calls `onQuestionnaireStart(engine, sessionKey, questionnaire)`
+6. Calls `onQuestionnaireResume(engine, sessionKey, questionnaire)` — **not** `onQuestionnaireStart`. The engine is already on the right item; the controller must mount it directly without advancing. Callers that omit `onQuestionnaireResume` fall back to `onQuestionnaireStart` for backward compatibility, but the fallback is wrong for any caller whose start path advances the engine (see orchestrator file-header comment).
 
 The drain-then-back sequence reconstructs the engine's resolved path through all items, so `canGoBack()` works correctly and progress is accurate once the patient is on the last item.
 

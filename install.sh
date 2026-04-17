@@ -31,6 +31,8 @@ copy "SEQUENCE_SPEC.md"                "docs/SEQUENCE_SPEC.md"
 copy "RENDER_SPEC.md"                  "docs/RENDER_SPEC.md"
 copy "COMPOSER_SPEC.md"                "docs/COMPOSER_SPEC.md"
 copy "HANDOVER.md"                     "docs/HANDOVER.md"
+copy "TODO.md"                         "docs/TODO.md"
+copy "REVIEW.md"                       "docs/REVIEW.md"
 copy "INSTRUMENTS.md"                  "docs/INSTRUMENTS.md"
 copy "LLM_GUIDE.md"                    "public/configs/LLM_GUIDE.md"
 copy "CONTRIBUTING.md"                 "public/configs/CONTRIBUTING.md"
@@ -170,6 +172,13 @@ copy "deploy.yml"                      ".github/workflows/deploy.yml"
 copy "vite.config.js"                  "vite.config.js"
 copy "eslint.config.js"                "eslint.config.js"
 
+# ── Self-install ───────────────────────────────────────────────────────────────
+# Overwrite this script with a newly downloaded version, then ensure it's
+# executable. Done last because `mv` overwrites the running script file, which
+# bash handles safely (the script is already loaded into memory), but any copy
+# after this point would target the new file instead of the old one.
+copy "install.sh"                      "install.sh"
+chmod +x "$PROJECT/install.sh"
 
 echo ""
 echo "Done."

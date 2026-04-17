@@ -406,6 +406,53 @@ describe('engineCrossBack()', () => {
     expect(onStart).toHaveBeenCalledOnce();
   });
 
+  it('fires onQuestionnaireResume (not onQuestionnaireStart) on cross-back', () => {
+    // Regression for the cross-back round-trip bug (P0-0): the orchestrator
+    // must distinguish fresh entry from cross-back re-entry at the callback
+    // layer. A caller whose onQuestionnaireStart advances the engine would
+    // otherwise advance past the last item and ricochet forward.
+    const config = makeConfig(
+      [makeQ('phq9'), makeQ('gad7')],
+      [linearBattery('b', 'phq9', 'gad7')]
+    );
+    const onStart  = vi.fn();
+    const onResume = vi.fn();
+    const orc = createOrchestrator(config, fromBattery(config, 'b'), {
+      onQuestionnaireStart:  onStart,
+      onQuestionnaireResume: onResume,
+    });
+    orc.start();
+    drainEngine(orc.currentEngine());
+    orc.engineComplete();             // onStart called 2× (phq9, gad7)
+    expect(onStart).toHaveBeenCalledTimes(2);
+    expect(onResume).not.toHaveBeenCalled();
+
+    orc.engineCrossBack();            // should fire onResume for phq9
+    expect(onStart).toHaveBeenCalledTimes(2);   // unchanged
+    expect(onResume).toHaveBeenCalledTimes(1);
+    const [engine, key, q] = onResume.mock.calls[0];
+    expect(key).toBe('phq9');
+    expect(q.id).toBe('phq9');
+    expect(engine.currentItem()).toEqual(select('q2'));
+  });
+
+  it('falls back to onQuestionnaireStart when onQuestionnaireResume is omitted', () => {
+    // Back-compat: callers that only supply onQuestionnaireStart continue to
+    // receive the cross-back callback. Documented as imperfect but preserved.
+    const config = makeConfig(
+      [makeQ('phq9'), makeQ('gad7')],
+      [linearBattery('b', 'phq9', 'gad7')]
+    );
+    const onStart = vi.fn();
+    const orc = createOrchestrator(config, fromBattery(config, 'b'), { onQuestionnaireStart: onStart });
+    orc.start();
+    drainEngine(orc.currentEngine());
+    orc.engineComplete();
+    orc.engineCrossBack();
+    // 3 calls: phq9 start, gad7 start, phq9 cross-back fallback
+    expect(onStart).toHaveBeenCalledTimes(3);
+  });
+
   it('re-initializes previous questionnaire engine', () => {
     const config = makeConfig(
       [makeQ('phq9'), makeQ('gad7')],
