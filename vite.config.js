@@ -27,7 +27,16 @@ function cspPlugin() {
 }
 
 export default defineConfig(({ mode }) => ({
-  base: mode === 'development' ? '/' : '/madad/',
+  // Base path for all built assets and runtime URLs.
+  //   • dev:        '/'         — Vite dev server always serves at root
+  //   • prod:       '/madad/'   — GitHub Pages deploys to /madad/
+  //   • CI matrix:  process.env.MADAD_BASE — lets the dist-smoke job rebuild
+  //                 under '/', '/some/deep/path/', etc., to verify nothing in
+  //                 the bundle has hardcoded a base assumption. Must start and
+  //                 end with '/'.
+  base: mode === 'development'
+    ? '/'
+    : (process.env.MADAD_BASE || '/madad/'),
   build: {
     chunkSizeWarningLimit: 1100, // pdf-vendor (pdfmake) is lazy-loaded; real budget enforced by scripts/check-size.mjs
     rollupOptions: {

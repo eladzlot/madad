@@ -55,10 +55,14 @@ jobs:
         run: npm run size
 
       # ── E2E tests ───────────────────────────────────────────────────────────
+      # Runs both projects. The dist-smoke project is the deploy gate: if the
+      # built bundle is broken at the production base (/madad/), this fails
+      # and Pages does not get the bad artifact. This is the line of defense
+      # that did not exist when the "לא ניתן לטעון את השאלון" bug shipped.
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
-      - name: E2E tests
+      - name: E2E tests (dev + dist-smoke)
         run: npm run e2e
 
       - name: Upload E2E report

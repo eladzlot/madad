@@ -109,20 +109,73 @@ test.describe('dist smoke — production bundle at production base', () => {
   test('composer page loads manifest and all production configs without 404s', async ({ page, baseURL }) => {
     const origin = new URL(baseURL).origin;
     const badResponses = watchForBadResponses(page, origin);
+    const consoleErrors = watchForConsoleErrors(page);
 
     await page.goto('composer/');
 
-    // Composer fetches manifest.json + every prod config via composer-loader.js.
-    // A separate path-bug could live there, so asserting 0 bad responses here
-    // is a real, independent signal.
+    // The composer bootstraps by fetching the manifest, then every config it
+    // lists. composer-loader.js builds those URLs from getAppRoot() and joins
+    // each manifest entry's relative URL — a code path entirely separate from
+    // the patient app's loadConfig short-name expansion. A path bug could live
+    // here independently of the one that produced "לא ניתן לטעון" in the
+    // patient app, so this test must do more than the patient test does.
     //
-    // Wait for the composer shell to render a known element — keep the match
-    // loose to avoid coupling to layout details. The presence of any top-level
-    // composer custom element is enough to confirm the JS ran.
-    await expect(page.locator('body')).toBeVisible();
-    // Give the manifest + config fetches time to settle.
+    // .c-brand-name renders only after the manifest fetch resolves and
+    // composer-render.js runs. If it appears, JS executed without erroring out
+    // and the DOM was populated — that's a real bootstrap signal, not just
+    // "the HTML loaded".
+    await expect(page.locator('.c-brand-name')).toContainText('מדד', { timeout: 10_000 });
+
+    // The error path: composer.js writes a .c-error block into #composer-app
+    // when manifest/config loading throws (see composer.js line 25). Assert
+    // it's absent — covers both manifest 404s and per-config schema failures.
+    await expect(page.locator('.c-error')).toHaveCount(0);
+
+    // Wait for the manifest + all config fetches to complete before asserting
+    // on the network record.
     await page.waitForLoadState('networkidle');
 
     expect(badResponses, 'Same-origin resources must all return 2xx/3xx').toEqual([]);
+
+    const realErrors = consoleErrors.filter(e => !/favicon/i.test(e));
+    expect(realErrors, 'No CSP violations or runtime errors on composer load').toEqual([]);
+  });
+
+  test('landing page renders and its demo CTA loads a working questionnaire', async ({ page, baseURL }) => {
+    const origin = new URL(baseURL).origin;
+    const badResponses = watchForBadResponses(page, origin);
+    const consoleErrors = watchForConsoleErrors(page);
+
+    await page.goto('landing/');
+
+    // Landing is a static page — no module-loaded JS, no fetched configs,
+    // just HTML + CSS + fonts. The minimum signal that it rendered correctly
+    // is the hero headline (text content rendered server-side, no JS needed).
+    // Failure here typically means a CSS/font path broke under the deploy base.
+    await expect(page.locator('.hero-headline').first()).toBeVisible({ timeout: 10_000 });
+
+    // The "try a demo" CTA in the final section uses the LEGACY full-path form
+    // (configs=configs/prod/standard.json) — a different branch in the loader
+    // than the short-name form the patient app uses by default. The base-path
+    // bug that produced "לא ניתן לטעון" affected both branches; this assertion
+    // is the regression gate for the legacy branch specifically.
+    //
+    // Find the link that points at the patient app with configs= and items=,
+    // then click it and confirm the welcome screen renders (i.e. the legacy
+    // path expanded correctly under the deploy base).
+    const demoLink = page.locator('a[href*="configs="][href*="items="]').first();
+    await expect(demoLink).toBeVisible();
+    await demoLink.click();
+
+    // After navigation the patient app should have loaded the config and
+    // rendered its welcome screen. Same assertion as the patient test —
+    // and same Hebrew error text we never want to see.
+    await expect(page.locator('welcome-screen')).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText('לא ניתן לטעון את השאלון')).toHaveCount(0);
+
+    expect(badResponses, 'Same-origin resources must all return 2xx/3xx').toEqual([]);
+
+    const realErrors = consoleErrors.filter(e => !/favicon/i.test(e));
+    expect(realErrors, 'No CSP violations or runtime errors across landing → patient flow').toEqual([]);
   });
 });

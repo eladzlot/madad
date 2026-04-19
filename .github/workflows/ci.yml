@@ -45,10 +45,18 @@ jobs:
         run: npm run size
 
       # ── E2E tests ───────────────────────────────────────────────────────────
+      # Runs both Playwright projects:
+      #   • chromium    — dev server at localhost:5173 (existing patient/composer suites)
+      #   • dist-smoke  — vite preview at localhost:4173/madad/, exercises the
+      #                   built bundle at the production base path. Catches the
+      #                   class of bugs that only manifest under non-root
+      #                   deployment (absolute-path fetches, missing chunks,
+      #                   CSP violations). The build step above produces the
+      #                   dist/ that preview serves — order matters.
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
-      - name: E2E tests
+      - name: E2E tests (dev + dist-smoke)
         run: npm run e2e
 
       - name: Upload E2E report
@@ -56,5 +64,60 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+  # ── Dist-smoke matrix: rebuild and re-test under additional base paths ─────
+  # The main `ci` job above already runs dist-smoke at the default production
+  # base (/madad/). This matrix job runs the same smoke test under additional
+  # base paths to catch the broader class of "something assumes a specific base"
+  # bugs — e.g. a future hosting migration to root, or a path-prefix change.
+  #
+  # Each entry rebuilds dist/ with MADAD_BASE injected into vite.config.js,
+  # then runs only the dist-smoke project against that bundle. Production
+  # deployment is unaffected — deploy.yml always builds with the default base.
+  dist-smoke-matrix:
+    name: Dist smoke @ ${{ matrix.base }}
+    runs-on: ubuntu-latest
+    needs: ci    # only run if the main pipeline (lint/test/build/e2e) passed
+
+    strategy:
+      fail-fast: false  # one base failing should not hide the others
+      matrix:
+        base:
+          - '/'
+          - '/some/deep/path/'
+
+    env:
+      MADAD_BASE: ${{ matrix.base }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build (base=${{ matrix.base }})
+        run: npm run build
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Dist smoke (base=${{ matrix.base }})
+        # Only the dist-smoke project — the dev e2e suite already ran in `ci`.
+        run: npx playwright test --project=dist-smoke
+
+      - name: Upload report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-base-${{ strategy.job-index }}
           path: playwright-report/
           retention-days: 7

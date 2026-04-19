@@ -16,7 +16,7 @@
 //   Ambiguous tokens (exist in both maps, or conflicted across configs) throw
 //   an ItemResolutionError, which is shown as a pre-welcome error screen.
 
-import { loadConfig } from './config/loader.js';
+import { loadConfig, ConfigFetchError } from './config/loader.js';
 import { resolveItems } from './resolve-items.js';
 import { createController } from './controller.js';
 import { createOrchestrator } from './engine/orchestrator.js';
@@ -125,15 +125,24 @@ async function main() {
   try {
     config = await loadConfig(configSources);
   } catch (err) {
-    const detail = err.timedOut
-      ? 'הבקשה ארכה זמן רב מדי. בדוק את חיבור האינטרנט ונסה שנית.'
-      : 'בדוק את חיבור האינטרנט ונסה שנית, או פנה למטפל לקבלת קישור חדש.';
-    showError(
-      container,
-      'לא ניתן לטעון את השאלון.',
-      detail,
-      { retryable: true },
-    );
+    // Three failure modes, three messages:
+    //   • timeout                  → connection issue, suggest retry
+    //   • HTTP 4xx/5xx              → broken link or server problem, contact therapist
+    //   • network error / other     → ambiguous, suggest both
+    // The previous code conflated all three into "check your internet", which
+    // sent patients hunting for a connection problem when the real cause was
+    // a broken URL — which they cannot fix and their therapist needs to know about.
+    let title = 'לא ניתן לטעון את השאלון.';
+    let detail;
+    if (err instanceof ConfigFetchError && err.timedOut) {
+      detail = 'הבקשה ארכה זמן רב מדי. בדוק את חיבור האינטרנט ונסה שנית.';
+    } else if (err instanceof ConfigFetchError && err.httpStatus !== null) {
+      title  = 'הקישור שגוי או שאינו זמין.';
+      detail = 'אנא פנה למטפל שלך לקבלת קישור חדש.';
+    } else {
+      detail = 'בדוק את חיבור האינטרנט ונסה שנית, או פנה למטפל לקבלת קישור חדש.';
+    }
+    showError(container, title, detail, { retryable: true });
     console.error(err);
     return;
   }

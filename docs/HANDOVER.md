@@ -83,6 +83,7 @@ src/pdf/report.js              ← PDF generation (pdfmake, lazy-loaded)
 - Deploy workflow: `.github/workflows/deploy.yml` — same + GitHub Pages deployment
 - **870 unit tests passing across 30 test files**
 - E2E tests passing (Chromium; mobile-safari locally only)
+- Dist-smoke E2E project (`tests/e2e/*.dist.test.js`) — runs Playwright against the *built* bundle served at the production base (`/madad/`) via `vite preview`. Catches the class of "works on dev, broken on dist" bugs that unit tests and the dev e2e suite cannot see (absolute-path fetches that bypass Vite's base, missing chunks, CSP violations). CI runs it at `/madad/` plus a multi-base matrix (`/`, `/some/deep/path/`).
 - MIT license (`LICENSE`) + instrument notice (`CONTENT_LICENSE.md`)
 
 ### Instrument library
@@ -254,6 +255,7 @@ See `public/configs/CONTRIBUTING.md` (human guide) or `public/configs/LLM_GUIDE.
 | Alert severity rendering | ✓ Complete | — |
 | Embedded JSON in PDF | Machine-readable output for clinic systems | Planned, not started |
 | Component branch coverage ~60% | UI regressions may go undetected | E2E tests compensate |
+| Production-only failures invisible to dev/unit tests | Bugs reach patients (e.g. the base-path bug that produced "לא ניתן לטעון את השאלון" on `/madad/` while dev worked) | ✓ Resolved — `dist-smoke` Playwright project runs against the built bundle at the production base in CI; deploy is gated on it |
 
 ## 6a. Security model (summary)
 
@@ -302,6 +304,7 @@ The following security controls are in place. Do not remove them without underst
 - Validator cross-file battery reference check: `checkCrossFileBatteryRefs()` in `config-validation.js` — catches undeclared dependencies at `npm run validate:configs` time
 - `intake.json` dependency fix: added `standard.json` to dependencies (v1.2.2)
 - Composer sidebar contrast improved: section labels, hints, URL box, placeholder nudged lighter
+- **Base-path resolution fix** — `loadConfig` now accepts a `baseUrl` option (default `import.meta.env.BASE_URL`) and prepends it to short-name and legacy-relative config paths. Without this, the production bundle fetched `/configs/prod/standard.json` instead of `/madad/configs/prod/standard.json` and every patient saw "לא ניתן לטעון את השאלון". Closed by the `dist-smoke` Playwright project (runs against built bundle at production base) plus a CI multi-base matrix. `ConfigFetchError` gained an `httpStatus` field; `app.js` now distinguishes timeout / HTTP error / network error and shows a more honest message in each case (the previous catch told every patient to check their internet, including for 404s — which are not patient-fixable).
 
 ## 8. Next steps
 
@@ -350,8 +353,9 @@ To add a new instrument: `public/configs/CONTRIBUTING.md`.
 - **`QuestionnaireSet.schema.json`** — changing without running `npm run build:validator` and updating `config-validation.js` and existing configs will break validation. Always run `build:validator` after schema changes.
 - **`src/pdf/report.js` — RTL rendering** — pdfmake has incomplete bidi support. bidi-js (UAX-9 conformant) is used for mixed Hebrew/Latin text via `bidiNodes()`. Numbers go in `direction:'ltr'` nodes, category on its own line, never `rtl:true`. See `IMPLEMENTATION_SPEC.md §19.3`.
 - **`src/pdf/report.js` — pdfmake API** — use `getBuffer()` (Promise-based). `getBlob(callback)` silently hangs in pdfmake 0.3.x.
-- **`vite.config.js`** — `base` is `'/'` in development mode and `'/madad/'` in all other modes. `pdfmake` is pinned to a named chunk via `manualChunks` to keep it lazy-loaded and out of the entry bundle.
+- **`vite.config.js`** — `base` is `'/'` in development mode and `'/madad/'` in all other modes (overridable via `MADAD_BASE` env var for the CI multi-base matrix). `pdfmake` is pinned to a named chunk via `manualChunks` to keep it lazy-loaded and out of the entry bundle.
 - **Config URL format** — `configs=` params must use relative paths (no leading slash). See §5 above.
+- **`loadConfig` `baseUrl` default** — defaults to `import.meta.env.BASE_URL`, which Vite inlines to `'/madad/'` at build time. Removing this re-introduces the production-only "לא ניתן לטעון את השאלון" bug: short config names would expand to root-relative paths (`/configs/prod/...`) that bypass Vite's `base` and 404 on every non-root deployment. The dist-smoke Playwright project (`tests/e2e/*.dist.test.js`, run by `npm run e2e:dist`) is the regression gate — it loads the built bundle at the production base and asserts no same-origin 4xx responses.
 - **`composer-state.js` `getAppRoot()`** — derives app root by stripping `/composer/...` from `window.location.href`. Any change to Composer URL structure requires updating this.
 - **Security controls in §6a** — specifically: do not revert error rendering to `innerHTML`, do not remove PID/name validation, do not remove the `allowedOrigins` check from `loadConfig`. Each of these was introduced to fix a concrete vulnerability.
 - **`allowedOrigins` default in `loadConfig`** — defaults to `location.origin` (same-origin only). If you change this default to be permissive, you re-open the external config injection vulnerability. The correct pattern for future external-config support is to pass an explicit `allowedOrigins` set at the call site in `src/app.js`.

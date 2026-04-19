@@ -521,6 +521,45 @@ describe('fetch timeout', () => {
     expect(err.timedOut).toBe(false);
   });
 
+  // The httpStatus field lets callers distinguish HTTP errors (server returned
+  // 4xx/5xx → "the link is broken, contact your therapist") from network/timeout
+  // errors (→ "check your connection"). app.js relies on this distinction; if
+  // these tests regress, the patient-facing error message becomes ambiguous again.
+  it('sets httpStatus on HTTP 404', async () => {
+    const fetch = makeFetch({ '/configs/prod/a.json': { ok: false, status: 404, statusText: 'Not Found' } });
+    const err = await loadConfig(['a'], { fetch, fetchTimeoutMs: 0 }).catch(e => e);
+    expect(err).toBeInstanceOf(ConfigFetchError);
+    expect(err.httpStatus).toBe(404);
+  });
+
+  it('sets httpStatus on HTTP 503', async () => {
+    const fetch = makeFetch({ '/configs/prod/a.json': { ok: false, status: 503, statusText: 'Service Unavailable' } });
+    const err = await loadConfig(['a'], { fetch, fetchTimeoutMs: 0 }).catch(e => e);
+    expect(err.httpStatus).toBe(503);
+  });
+
+  it('leaves httpStatus null on network errors', async () => {
+    const fetch = makeFetch({ '/configs/prod/a.json': new TypeError('Failed to fetch') });
+    const err = await loadConfig(['a'], { fetch, fetchTimeoutMs: 0 }).catch(e => e);
+    expect(err).toBeInstanceOf(ConfigFetchError);
+    expect(err.httpStatus).toBeNull();
+  });
+
+  it('leaves httpStatus null on timeout', async () => {
+    vi.useFakeTimers();
+    try {
+      const fetch = makeHangingFetch();
+      const promise = loadConfig(['a'], { fetch, fetchTimeoutMs: 5000 });
+      const errPromise = promise.catch(e => e);
+      await vi.runAllTimersAsync();
+      const err = await errPromise;
+      expect(err.timedOut).toBe(true);
+      expect(err.httpStatus).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('error message names the timed-out URL', async () => {
     vi.useFakeTimers();
     try {

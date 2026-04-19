@@ -64,6 +64,12 @@ export class ConfigFetchError extends Error {
     // HTTP error or network failure. Callers can use this to show a "check your
     // connection" message rather than a "bad URL" message.
     this.timedOut = false;
+    // Set to the HTTP status code (number) when the fetch completed but the
+    // server returned a 4xx/5xx. Stays null for network-layer failures (DNS,
+    // CORS, connection reset) and timeouts. Lets callers distinguish "the link
+    // is broken" (HTTP error → tell patient to contact therapist) from "your
+    // connection is bad" (network error → tell patient to check internet).
+    this.httpStatus = null;
   }
 }
 
@@ -156,7 +162,11 @@ async function fetchAndValidate(source, fetchFn, allowedOrigins, fetchTimeoutMs,
   try {
     const fetchOptions = controller ? { signal: controller.signal } : undefined;
     const res = await fetchFn(url, fetchOptions);
-    if (!res.ok) throw new ConfigFetchError(url, `HTTP ${res.status} ${res.statusText}`);
+    if (!res.ok) {
+      const httpErr = new ConfigFetchError(url, `HTTP ${res.status} ${res.statusText}`);
+      httpErr.httpStatus = res.status;
+      throw httpErr;
+    }
     data = await res.json();
   } catch (err) {
     if (err instanceof ConfigFetchError) throw err;
