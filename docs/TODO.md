@@ -53,8 +53,8 @@ The phrase **"Continue with TODO"** means: do the above, then pick up the curren
 
 ## 1. Status
 
-**Currently working on:** idle — P0-4 complete. Remaining P0s: P0-1/P0-2/P0-7 (validation cluster), P0-5 (randomize in checkCrossFileBatteryRefs), P0-6 (calcRiskLevel reverse-scored).
-**Last session ended:** 2026-04-17 — P0-4 shipped. 973 tests passing.
+**Currently working on:** idle — all small P0s complete. Only P0-1/P0-2/P0-7 (validation cluster) remaining at P0.
+**Last session ended:** 2026-04-17 — P0-5 + P0-6 shipped. 981 tests passing.
 **Blocked on:** nothing.
 
 ---
@@ -72,8 +72,8 @@ Task IDs are stable and match `REVIEW.md` section references. Status values: `to
 | P0-2 | Validate `customFormula` and `if` conditions at load time | todo | Related to P0-1 — may share a validation helper |
 | P0-3 | Fix DSL tokenizer malformed-number acceptance | done | See archive A-2. D-5 applied. |
 | P0-4 | Resolve binary-item contradiction | done | See archive A-3. D-4 + D-6 applied. |
-| P0-5 | Add randomize to `checkCrossFileBatteryRefs` | todo | |
-| P0-6 | Fix `calcRiskLevel` for reverse-scored items | todo | |
+| P0-5 | Add randomize to `checkCrossFileBatteryRefs` | done | See archive A-4. |
+| P0-6 | Fix `calcRiskLevel` for reverse-scored items | done | See archive A-5. D-7 applied. |
 | P0-7 | Add DSL reference integrity check at load time | todo | Related to P0-1, P0-2 |
 
 ### P1 — API stability, author experience
@@ -171,6 +171,16 @@ Append-only. Date format: YYYY-MM-DD.
 
 ---
 
+### D-7 — `calcRiskLevel` reverse handling: invert sort direction, not lookup `maxPerItem`
+**Date:** 2026-04-17
+**Context:** P0-6. PDF risk highlighting picked the highest raw option value as "high" risk. For `reverse: true` items, the lowest raw value is the clinically worst answer — opposite of what was being highlighted.
+**Decision:** When `item.reverse === true`, sort `options` ascending instead of descending and pick worst/second-worst from the same end. The function already receives `options` — no need to thread `maxPerItem` from the scoring spec, which would couple PDF rendering to scoring config shape.
+**Rejected alternative (REVIEW's suggestion):** Compute `effectiveValue = item.reverse ? (maxPerItem - value) : value` and compare against reverse-adjusted option values. Works, but requires plumbing `maxPerItem` into `buildItemRow` and `calcRiskLevel`. Sort-direction inversion achieves the same result with zero new parameters.
+**Slider note:** Sliders don't carry a `reverse` flag in this codebase (verified against `item-slider.js` and all bundled configs). Slider risk branch is untouched. If reverse-sliders are introduced later, the same sort-inversion pattern applies — but the slider branch uses a percentage-of-range computation, not options sort, so it would need its own fix.
+**Scope impact:** `src/pdf/report.js` `calcRiskLevel()` only. Pure correctness fix. Existing non-reverse tests unchanged in behavior.
+
+---
+
 ## 5. Task Archive
 
 ### A-1 — P0-0 Cross-questionnaire back navigation
@@ -217,5 +227,29 @@ Append-only. Date format: YYYY-MM-DD.
 
 **Decisions referenced:** D-4, D-6.
 **Test delta:** 974 → 973 (−3 deleted dead-fallback tests, +1 new positive component test, +1 new validator test = net −1). Full suite green. 6/6 configs validate.
+
+---
+
+### A-4 — P0-5 `checkCrossFileBatteryRefs` randomize recursion
+**Completed:** 2026-04-17
+**Summary:** Cross-file dependency check in `collectRefs()` walked `sequence`/`then`/`else` but missed `randomize.ids`. A battery using `randomize` to reference a questionnaire from an undeclared config escaped detection at validate time. One-line fix mirrors the existing `then`/`else` branches.
+**Files changed:**
+- `src/config/config-validation.js` — added `if (node.ids) refs.push(...collectRefs(node.ids));` to `collectRefs()`.
+- `src/config/config-validation.test.js` — added 3 tests: top-level randomize with missing dependency, randomize with declared dependency (no error), and randomize nested inside `if-then`.
+
+**Decisions referenced:** none (pure REVIEW-aligned fix; no novel design choice).
+**Test delta:** 973 → 976 passing. Full suite green. 6/6 configs validate.
+
+---
+
+### A-5 — P0-6 `calcRiskLevel` reverse-scored items
+**Completed:** 2026-04-17
+**Summary:** PDF risk highlighting (high/med background colors on the response table) treated the highest raw value as worst. For `reverse: true` items, the lowest raw value is clinically worst — the PDF was highlighting safe answers as high-risk. Fix inverts the sort direction when `item.reverse` is true; everything else is unchanged.
+**Files changed:**
+- `src/pdf/report.js` — rewrote sort step in `calcRiskLevel()`: `options.map(o => o.value).sort((a, b) => item.reverse ? a - b : b - a)`. Picks worst/second-worst from index 0/1. Comment explains the clinical reasoning. Slider branch untouched (no slider in this codebase uses reverse — verified against `item-slider.js` and all bundled configs).
+- `src/pdf/report.test.js` — added 5 tests: reverse-scored select (high/med/null bands), reverse-scored binary, and reverse with non-sequential option values.
+
+**Decisions referenced:** D-7.
+**Test delta:** 976 → 981 passing. Full suite green. 6/6 configs validate.
 
 *Format: `TaskID — one-line summary — files — D-N references`*

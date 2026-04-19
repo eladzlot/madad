@@ -151,6 +151,7 @@ copy "top3.json"               "tests/fixtures/top3.json"
 # ── E2E tests ──────────────────────────────────────────────────────────────────
 copy "patient-flow.e2e.test.js"        "tests/e2e/patient-flow.e2e.test.js"
 copy "composer.e2e.test.js"            "tests/e2e/composer.e2e.test.js"
+copy "dist-smoke.dist.test.js"         "tests/e2e/dist-smoke.dist.test.js"
 
 # ── Scripts ────────────────────────────────────────────────────────────────────
 copy "validate-configs.mjs"            "scripts/validate-configs.mjs"

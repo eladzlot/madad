@@ -850,12 +850,16 @@ export function calcRiskLevel(item, value, options) {
 
   if (!options || options.length === 0) return null;
 
-  const values = options.map(o => o.value).sort((a, b) => a - b);
-  const max    = values[values.length - 1];
-  const second = values[values.length - 2];
+  // For reverse-scored items, the lowest raw value carries the highest clinical
+  // risk (e.g. "אינני מודאגת שינטשו אותי" with value 0 = strong endorsement of
+  // attachment anxiety after reversal). Sort descending for normal items, ascending
+  // for reverse, then read worst/second-worst from the same end.
+  const sorted = options.map(o => o.value).sort((a, b) => item.reverse ? a - b : b - a);
+  const worst        = sorted[0];
+  const secondWorst  = sorted[1];
 
-  if (value === max) return 'high';
-  if (item.type === 'select' && value === second) return 'med';
+  if (value === worst) return 'high';
+  if (item.type === 'select' && value === secondWorst) return 'med';
   return null;
 }
 

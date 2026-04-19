@@ -309,6 +309,7 @@ export function checkCrossFileBatteryRefs(configFiles) {
       if (node.questionnaireId) refs.push(node.questionnaireId);
       if (node.then) refs.push(...collectRefs(node.then));
       if (node.else) refs.push(...collectRefs(node.else));
+      if (node.ids)  refs.push(...collectRefs(node.ids));
     }
     return refs;
   }

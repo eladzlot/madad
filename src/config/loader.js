@@ -81,11 +81,17 @@ export class ConfigValidationError extends Error {
 
 // resolveSource validates the source string and returns a URL/path safe to fetch.
 // allowedOrigins: Set<string> — permitted external https:// origins.
-// configBase: string — base path used when expanding short names.
+// configBase:    string — base path used when expanding short names.
+// baseUrl:       string — deployment base path (Vite's import.meta.env.BASE_URL),
+//                always starts and ends with '/'. Prepended to short-name and
+//                legacy-relative paths so they resolve correctly under non-root
+//                deployments (e.g. GitHub Pages at /madad/). Root-relative paths
+//                (source starts with '/') bypass this — callers using absolute
+//                paths are opting out of base-aware resolution.
 // Relative and same-origin paths are always allowed; http:// is never allowed.
 const SHORT_NAME_RE = /^[a-zA-Z0-9_-]+$/;
 
-function resolveSource(source, allowedOrigins, configBase) {
+function resolveSource(source, allowedOrigins, configBase, baseUrl) {
   if (/^https?:\/\//.test(source)) {
     let parsed;
     try { parsed = new URL(source); } catch {
@@ -115,13 +121,13 @@ function resolveSource(source, allowedOrigins, configBase) {
     );
   }
   // Paths containing slashes or ending with .json are legacy full paths.
-  // Normalise to root-relative (prepend '/') so the visited-set key matches
-  // the key produced by the short-name branch, which always starts with '/'.
-  // Without this, 'configs/prod/standard.json' and the short name 'standard'
-  // (which expands to '/configs/prod/standard.json') appear as different keys
-  // and the same file is fetched twice, causing a duplicate-ID merge error.
+  // Normalise to baseUrl-prefixed (e.g. '/madad/configs/prod/standard.json')
+  // so the visited-set key matches the key produced by the short-name branch.
+  // Without consistent prefixing, 'configs/prod/standard.json' and the short
+  // name 'standard' would appear as different keys and the same file would be
+  // fetched twice, causing a duplicate-ID merge error.
   if (source.includes('/') || source.endsWith('.json')) {
-    return source.startsWith('/') ? source : '/' + source;
+    return source.startsWith('/') ? source : baseUrl + source;
   }
   // Short name: alphanumeric, hyphens, underscores only. Reject anything else
   // (e.g. path-traversal attempts like '../escape') before constructing a path.
@@ -131,13 +137,13 @@ function resolveSource(source, allowedOrigins, configBase) {
       `Short names may only contain letters, digits, hyphens, and underscores.`
     );
   }
-  return `/${configBase}${source}.json`;
+  return `${baseUrl}${configBase}${source}.json`;
 }
 
 // ─── Fetch and validate a single file ────────────────────────────────────────
 
-async function fetchAndValidate(source, fetchFn, allowedOrigins, fetchTimeoutMs, configBase) {
-  const url = resolveSource(source, allowedOrigins, configBase);
+async function fetchAndValidate(source, fetchFn, allowedOrigins, fetchTimeoutMs, configBase, baseUrl) {
+  const url = resolveSource(source, allowedOrigins, configBase, baseUrl);
 
   // Optional abort-on-timeout. Disabled when fetchTimeoutMs is 0 or negative.
   let controller, timeoutId;
@@ -232,6 +238,12 @@ export async function loadConfig(sources, options = {}) {
     // manifest entry itself and dep auto-fetch would cause double-registration.
     // See file-header comment.
     loadDependencies = true,
+    // baseUrl: deployment base path (Vite's import.meta.env.BASE_URL). Prepended
+    // to short-name and legacy-relative config paths so they resolve correctly
+    // under non-root deployments (e.g. GitHub Pages at /madad/). In dev this is
+    // '/', in production it is '/madad/'. Callers that need a custom base (tests,
+    // special deployments) can override. Must start and end with '/'.
+    baseUrl = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.BASE_URL) || '/',
   } = options;
 
   if (!sources || sources.length === 0) {
@@ -252,7 +264,7 @@ export async function loadConfig(sources, options = {}) {
     // Resolve each source to its canonical URL and skip any already visited.
     const toFetch = [];
     for (const src of wave) {
-      const url = resolveSource(src, allowedOrigins, configBase);
+      const url = resolveSource(src, allowedOrigins, configBase, baseUrl);
       if (!visited.has(url)) {
         visited.add(url);
         toFetch.push(src);
@@ -263,7 +275,7 @@ export async function loadConfig(sources, options = {}) {
 
     // Fetch this wave in parallel.
     const waveResults = await Promise.all(
-      toFetch.map(src => fetchAndValidate(src, fetchFn, allowedOrigins, fetchTimeoutMs, configBase))
+      toFetch.map(src => fetchAndValidate(src, fetchFn, allowedOrigins, fetchTimeoutMs, configBase, baseUrl))
     );
 
     allResults.push(...waveResults);
@@ -276,7 +288,7 @@ export async function loadConfig(sources, options = {}) {
       .flatMap(r => r.data.dependencies ?? [])
       .filter(dep => {
         try {
-          return !visited.has(resolveSource(dep, allowedOrigins, configBase));
+          return !visited.has(resolveSource(dep, allowedOrigins, configBase, baseUrl));
         } catch {
           return false; // resolveSource will throw again (and surface the error) in the next wave
         }

@@ -80,6 +80,33 @@ describe('calcRiskLevel', () => {
     expect(calcRiskLevel({ type: 'select' }, 0,  opts)).toBeNull();
   });
 
+  // ── reverse-scored items ──
+
+  it('reverse-scored select: "high" when value equals min option (clinically worst)', () => {
+    expect(calcRiskLevel({ type: 'select', reverse: true }, 0, FREQ_OPTIONS)).toBe('high');
+  });
+
+  it('reverse-scored select: "med" when value equals second-lowest', () => {
+    expect(calcRiskLevel({ type: 'select', reverse: true }, 1, FREQ_OPTIONS)).toBe('med');
+  });
+
+  it('reverse-scored select: null for top values (clinically safe)', () => {
+    expect(calcRiskLevel({ type: 'select', reverse: true }, 3, FREQ_OPTIONS)).toBeNull();
+    expect(calcRiskLevel({ type: 'select', reverse: true }, 2, FREQ_OPTIONS)).toBeNull();
+  });
+
+  it('reverse-scored binary: "high" when value equals min', () => {
+    expect(calcRiskLevel({ type: 'binary', reverse: true }, 0, YESNO_OPTIONS)).toBe('high');
+    expect(calcRiskLevel({ type: 'binary', reverse: true }, 1, YESNO_OPTIONS)).toBeNull();
+  });
+
+  it('reverse-scored with non-sequential values: lowest raw still wins', () => {
+    const opts = [{ value: 0 }, { value: 5 }, { value: 10 }];
+    expect(calcRiskLevel({ type: 'select', reverse: true }, 0,  opts)).toBe('high');
+    expect(calcRiskLevel({ type: 'select', reverse: true }, 5,  opts)).toBe('med');
+    expect(calcRiskLevel({ type: 'select', reverse: true }, 10, opts)).toBeNull();
+  });
+
   // ── slider (range-based) ──
 
   it('slider: returns "high" when value is in top 20% of range', () => {

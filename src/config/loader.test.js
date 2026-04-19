@@ -98,6 +98,30 @@ describe('URL resolution', () => {
       loadConfig(['my%20config'], { fetch: vi.fn(), fetchTimeoutMs: 0 })
     ).rejects.toBeInstanceOf(ConfigError);
   });
+
+  // Regression: prior to baseUrl threading, the short-name branch always prepended
+  // a literal '/' and the legacy-relative branch always prepended '/', meaning
+  // the patient app (deployed at /madad/) would fetch /configs/prod/standard.json
+  // instead of /madad/configs/prod/standard.json and every questionnaire would
+  // fail to load on production. The baseUrl option fixes this; app.js passes
+  // import.meta.env.BASE_URL so dev and prod both work.
+  it('prepends baseUrl to short-name expansion (non-root deployment)', async () => {
+    const fetch = makeFetch({ '/madad/configs/prod/standard.json': { body: minimalConfig() } });
+    await loadConfig(['standard'], { fetch, fetchTimeoutMs: 0, baseUrl: '/madad/' });
+    expect(fetch.mock.calls[0][0]).toBe('/madad/configs/prod/standard.json');
+  });
+
+  it('prepends baseUrl to legacy relative paths (non-root deployment)', async () => {
+    const fetch = makeFetch({ '/madad/configs/prod/standard.json': { body: minimalConfig() } });
+    await loadConfig(['configs/prod/standard.json'], { fetch, fetchTimeoutMs: 0, baseUrl: '/madad/' });
+    expect(fetch.mock.calls[0][0]).toBe('/madad/configs/prod/standard.json');
+  });
+
+  it('leaves absolute paths untouched even when baseUrl is non-root', async () => {
+    const fetch = makeFetch({ '/custom/path.json': { body: minimalConfig() } });
+    await loadConfig(['/custom/path.json'], { fetch, fetchTimeoutMs: 0, baseUrl: '/madad/' });
+    expect(fetch.mock.calls[0][0]).toBe('/custom/path.json');
+  });
 });
 
 // ─── Fetch errors ─────────────────────────────────────────────────────────────

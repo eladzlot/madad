@@ -450,4 +450,45 @@ describe('checkCrossFileBatteryRefs', () => {
     // diamond is own — must not appear
     expect(errors.some(e => e.includes('"diamond"'))).toBe(false);
   });
+
+  // ─── randomize recursion ────────────────────────────────────────────────────
+
+  it('catches missing dependency in a randomize.ids ref', () => {
+    const files = [
+      makeFile('a.json', [], [{
+        id: 'bat', title: 'bat',
+        sequence: [{ type: 'randomize', ids: [{ questionnaireId: 'phq9' }] }],
+      }]),
+      makeFile('public/configs/prod/standard.json', [q('phq9')]),
+    ];
+    const errors = checkCrossFileBatteryRefs(files);
+    expect(errors.some(e => e.includes('"phq9"'))).toBe(true);
+  });
+
+  it('no error for randomize ref when dependency is declared', () => {
+    const files = [
+      makeFile('a.json', [], [{
+        id: 'bat', title: 'bat',
+        sequence: [{ type: 'randomize', ids: [{ questionnaireId: 'phq9' }] }],
+      }], ['configs/prod/standard.json']),
+      makeFile('public/configs/prod/standard.json', [q('phq9')]),
+    ];
+    expect(checkCrossFileBatteryRefs(files)).toEqual([]);
+  });
+
+  it('catches missing dependency nested inside if-then-randomize', () => {
+    const files = [
+      makeFile('a.json', [], [{
+        id: 'bat', title: 'bat',
+        sequence: [{
+          type: 'if', condition: 'true',
+          then: [{ type: 'randomize', ids: [{ questionnaireId: 'pcl5' }] }],
+          else: [],
+        }],
+      }]),
+      makeFile('public/configs/prod/trauma.json', [q('pcl5')]),
+    ];
+    const errors = checkCrossFileBatteryRefs(files);
+    expect(errors.some(e => e.includes('"pcl5"'))).toBe(true);
+  });
 });

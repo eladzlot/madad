@@ -13,12 +13,13 @@
     "coverage": "vitest run --coverage",
     "e2e": "playwright test",
     "e2e:ui": "playwright test --ui",
+    "e2e:dist": "npm run build && playwright test --project=dist-smoke",
     "lint": "eslint src tests composer/src",
     "lint:fix": "eslint src tests composer/src --fix",
     "validate:configs": "node scripts/validate-configs.mjs",
     "size": "node scripts/check-size.mjs",
     "build:og": "bash scripts/build-og-image.sh",
-    "ci": "npm run lint && npm test && npm run validate:configs && npm run build && npm run size && npm run e2e"
+    "ci": "npm run lint && npm test && npm run validate:configs && npm run e2e:ui && npm run e2e:dist && npm run size"
   },
   "dependencies": {
     "ajv": "^8.18.0",
