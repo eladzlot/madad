@@ -22,6 +22,10 @@
       "url": "/configs/prod/ocd.json"
     },
     {
+      "name": "שאלוני כעס",
+      "url": "/configs/prod/anger.json"
+    },
+    {
       "name": "שאלוני ילדים",
       "url": "/configs/prod/child.json"
     }
