@@ -29,7 +29,7 @@ A static web application for clinical psychological assessment. No backend, no d
 public/configs/*.json          ← Clinical content (instruments, scoring, alerts)
         │
         ▼
-src/config/loader.js           ← Fetches, validates (AJV), merges configs
+shared/config/loader.js           ← Fetches, validates (AJV), merges configs
         │
         ▼
 src/engine/
@@ -50,7 +50,7 @@ src/components/                ← Lit web components (UI only, no logic)
 src/pdf/report.js              ← PDF generation (pdfmake, lazy-loaded)
 ```
 
-**Core rule:** `src/engine/` and `src/config/` are pure logic — no DOM, no framework. DOM lives only in `src/components/`, `src/controller.js`, and `src/app.js`.
+**Core rule:** `src/engine/` and `shared/config/` are pure logic — no DOM, no framework. DOM lives only in `src/components/`, `src/controller.js`, and `src/app.js`.
 
 **Technology:** Vanilla JS + ES Modules. Lit for components. Vite for build. Vitest for unit tests. Playwright for E2E. pdfmake for PDF. AJV for config validation.
 
@@ -150,7 +150,7 @@ The e2e config has `"dev": true` in the manifest — it is skipped entirely in p
 
 - **`randomize` node:** Fully implemented. Recognised by schema, shuffled by `sequence-runner.js`, scored by `scoring.js` (recurses into `node.ids`), and rendered in the PDF response table by `report.js`.
 - **Alert severity rendering in PDF:** fully implemented — `critical` (red), `warning` (amber), `info` (blue), `default` (grey). Alerts sorted critical-first. PHQ-9 suicidality is `critical`; PC-PTSD-5 and PCL-5 threshold alerts are `warning`.
-- **Embedded JSON attachment in PDF:** Planned. Not started.
+- **Embedded JSON attachment in PDF:** Complete. Every PDF embeds a `data.json` envelope (`shared/pdf/envelope-schema.js`, `IMPLEMENTATION_SPEC.md` §19.4a) — the read side (Aggregate) is the next build.
 
 ---
 
@@ -239,7 +239,7 @@ The `test/e2e.json` file is marked `"dev": true` in the manifest — never loads
 ### URL design
 The Composer emits **short names** in `configs=` URL parameters (e.g. `?configs=standard,intake`). Short names are the manifest entry's URL with the `configs/prod/` prefix and `.json` suffix stripped. They are a stable external contract — see `docs/COMPOSER_SPEC.md` for the full rules (don't rename prod configs, don't reuse short names across namespaces, etc.).
 
-The loader (`src/config/loader.js`) also accepts full paths (`configs/prod/standard.json`) and root-relative paths (`/configs/prod/standard.json`) for hand-crafted URLs and legacy callers. All three forms normalise to the same canonical URL internally, so a config appearing in both `configs=` and as a declared dependency is only fetched once.
+The loader (`shared/config/loader.js`) also accepts full paths (`configs/prod/standard.json`) and root-relative paths (`/configs/prod/standard.json`) for hand-crafted URLs and legacy callers. All three forms normalise to the same canonical URL internally, so a config appearing in both `configs=` and as a declared dependency is only fetched once.
 
 **Do not use absolute paths (`/configs/...`) in generated patient URLs** — they break at non-root deployments. Use short names.
 
@@ -253,7 +253,7 @@ See `public/configs/CONTRIBUTING.md` (human guide) or `public/configs/LLM_GUIDE.
 | Gap | Risk | Resolution |
 |---|---|---|
 | Alert severity rendering | ✓ Complete | — |
-| Embedded JSON in PDF | Machine-readable output for clinic systems | Planned, not started |
+| Embedded JSON in PDF | ✓ Complete | `data.json` envelope in every PDF — see `IMPLEMENTATION_SPEC.md` §19.4a |
 | Component branch coverage ~60% | UI regressions may go undetected | E2E tests compensate |
 | Production-only failures invisible to dev/unit tests | Bugs reach patients (e.g. the base-path bug that produced "לא ניתן לטעון את השאלון" on `/madad/` while dev worked) | ✓ Resolved — `dist-smoke` Playwright project runs against the built bundle at the production base in CI; deploy is gated on it |
 
@@ -263,8 +263,8 @@ The following security controls are in place. Do not remove them without underst
 
 | Control | Location | What it prevents |
 |---|---|---|
-| `allowedOrigins` in `loadConfig` | `src/config/loader.js` | External servers injecting malicious configs via crafted `?configs=` URLs. Default: same-origin only. |
-| `http://` rejection | `src/config/loader.js` | Config loading over unencrypted transport. |
+| `allowedOrigins` in `loadConfig` | `shared/config/loader.js` | External servers injecting malicious configs via crafted `?configs=` URLs. Default: same-origin only. |
+| `http://` rejection | `shared/config/loader.js` | Config loading over unencrypted transport. |
 | `textContent` in error rendering | `src/app.js`, `src/controller.js` | XSS via error messages containing HTML from crafted URL parameters. |
 | PID validation (`PID_PATTERN`, max 64 chars) | `src/app.js` | Crafted PIDs entering error surfaces or the PDF filename. |
 | Name length cap (200 chars) + BiDi strip | `src/components/welcome-screen.js` | Oversized or directionally-manipulated names in the PDF. |
@@ -308,8 +308,8 @@ The following security controls are in place. Do not remove them without underst
 
 ## 8. Next steps
 
-### Step A — PDF: embedded JSON attachment
-Embed a machine-readable `data.json` attachment in the PDF. Allows clinic systems to parse scores without reading the visual PDF.
+### ~~Step A — PDF: embedded JSON attachment~~ ✓ Complete
+Every PDF embeds a `data.json` envelope (`shared/pdf/envelope-schema.js`; `IMPLEMENTATION_SPEC.md` §19.4a). Next in this stream: the Aggregate surface that reads it (`docs/AGGREGATE_SPEC.md`).
 
 ### Step B — Interpretation type field (optional)
 Add `"type": "severity" | "screening"` to interpretation blocks so the PDF and future tooling can distinguish validated severity bands from screening cutoffs. Current approach: encode the distinction in the label text (e.g. "סף סינון"). Revisit if UI needs change.

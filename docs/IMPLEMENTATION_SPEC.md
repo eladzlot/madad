@@ -981,6 +981,29 @@ Keeping the category on its own line is essential — mixing a Hebrew category s
    - Second-highest value (select only): soft yellow background (`#FFF6DB`, text `#8A6A00`)
 5. **Footer** — generation timestamp, app version, config version, app URL (`window.location.origin`).
 
+### 19.4a Embedded data.json envelope
+
+Every generated PDF carries a machine-readable JSON attachment named
+`data.json`, embedded via pdfmake's `files` dictionary (rendered by pdfkit as
+a named `/EmbeddedFiles` entry — visible in PDF viewers' attachment panels and
+extractable by any PDF-aware parser). This is the integration boundary with
+the Aggregate surface (`docs/AGGREGATE_SPEC.md` §3).
+
+- **Schema owner:** `shared/pdf/envelope-schema.js` — exports
+  `ENVELOPE_VERSION`, `buildEnvelope()` (used by `report.js`), and
+  `validateEnvelope()` (used by the Aggregate read path). One module, both
+  sides — the writer and reader cannot drift.
+- **Payload:** `schemaVersion`, `generatedAt` (ISO 8601), `appVersion`
+  (from `package.json` via the `__APP_VERSION__` Vite define; forensic only),
+  `pid` / `name` (nullable, opaque), `instruments[]`
+  (`questionnaireId`, `title`, `configFile` — the source config short name
+  annotated by `shared/config/loader.js` at merge time), and the full
+  `sessionState` (`answers`, `scores`, `alerts`, `questionnaireIds`).
+- **Encoding:** UTF-8 JSON → base64 data URL in `buildDocDefinition()`.
+  No network request; CSP-neutral.
+- **Versioning:** `ENVELOPE_VERSION` bumps only on top-level shape changes.
+  Every shipped version stays readable forever (AGGREGATE_SPEC §3.2).
+
 ### 19.5 Future: replace bidiNodes() with bidi-js
 
 The current `bidiNodes()` function is a hand-rolled approximation of the Unicode Bidirectional Algorithm. It handles common cases (Hebrew+Latin mixing, digit isolation, parenthesis mirroring) but is fragile — each new punctuation pattern discovered in instrument content may require a new special case.

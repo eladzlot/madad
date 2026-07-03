@@ -1,4 +1,7 @@
 import { defineConfig } from 'vite';
+import { readFileSync } from 'fs';
+
+const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8'));
 
 // Injects a Content-Security-Policy <meta> tag into every HTML page at build time.
 // Not applied in dev mode — Vite's HMR client requires inline scripts and ws: connections
@@ -37,6 +40,8 @@ export default defineConfig(({ mode }) => ({
   base: mode === 'development'
     ? '/'
     : (process.env.MADAD_BASE || '/madad/'),
+  // Recorded in the PDF's embedded data.json envelope (forensic only).
+  define: { __APP_VERSION__: JSON.stringify(pkg.version) },
   build: {
     chunkSizeWarningLimit: 1100, // pdf-vendor (pdfmake) is lazy-loaded; real budget enforced by scripts/check-size.mjs
     rollupOptions: {

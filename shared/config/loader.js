@@ -146,6 +146,19 @@ function resolveSource(source, allowedOrigins, configBase, baseUrl) {
   return `${baseUrl}${configBase}${source}.json`;
 }
 
+// configFileLabel derives the stable, deployment-independent label recorded on
+// each questionnaire as `configFile` (consumed by the PDF envelope — see
+// shared/pdf/envelope-schema.js). URLs matching the standard config base
+// reduce to their short name ('standard'); anything else keeps the full URL.
+function configFileLabel(url, configBase, baseUrl) {
+  const prefix = `${baseUrl}${configBase}`;
+  if (url.startsWith(prefix) && url.endsWith('.json')) {
+    const name = url.slice(prefix.length, -'.json'.length);
+    if (SHORT_NAME_RE.test(name)) return name;
+  }
+  return url;
+}
+
 // ─── Fetch and validate a single file ────────────────────────────────────────
 
 async function fetchAndValidate(source, fetchFn, allowedOrigins, fetchTimeoutMs, configBase, baseUrl) {
@@ -188,7 +201,7 @@ async function fetchAndValidate(source, fetchFn, allowedOrigins, fetchTimeoutMs,
 
   validateConfigData(data, url);
 
-  return { url, data };
+  return { url, data, configFile: configFileLabel(url, configBase, baseUrl) };
 }
 
 // ─── Merge ────────────────────────────────────────────────────────────────────
@@ -199,7 +212,7 @@ function mergeConfigs(results) {
   const seenQIds = new Set();
   const seenBIds = new Set();
 
-  for (const { url, data } of results) {
+  for (const { url, data, configFile } of results) {
     for (const q of data.questionnaires ?? []) {
       if (seenQIds.has(q.id)) {
         throw new ConfigError(
@@ -208,6 +221,9 @@ function mergeConfigs(results) {
         );
       }
       seenQIds.add(q.id);
+      // Annotated post-validation: records which config file the questionnaire
+      // came from, for the PDF envelope's instruments[].configFile field.
+      q.configFile = configFile;
       questionnaires.push(q);
     }
     for (const b of data.batteries ?? []) {

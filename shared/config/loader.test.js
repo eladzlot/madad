@@ -189,6 +189,29 @@ describe('resolved config shape', () => {
   it('throws when no sources provided', async () => {
     await expect(loadConfig([], { fetch: vi.fn() })).rejects.toBeInstanceOf(ConfigError);
   });
+
+  it('annotates each questionnaire with its source configFile short name', async () => {
+    const fetch = makeFetch({
+      '/configs/prod/a.json': { body: minimalConfig([minimalQ('phq9')]) },
+      '/configs/prod/b.json': { body: minimalConfig([minimalQ('gad7')]) },
+    });
+    const config = await loadConfig(['a', 'b'], { fetch });
+    expect(config.questionnaires.find(q => q.id === 'phq9').configFile).toBe('a');
+    expect(config.questionnaires.find(q => q.id === 'gad7').configFile).toBe('b');
+  });
+
+  it('annotates configFile with the full URL when source is not under configBase', async () => {
+    const url = 'https://example.com/my-config.json';
+    const fetch = makeFetch({ [url]: { body: minimalConfig([minimalQ()]) } });
+    const config = await loadConfig([url], { fetch, allowedOrigins: new Set(['https://example.com']) });
+    expect(config.questionnaires[0].configFile).toBe(url);
+  });
+
+  it('annotates configFile with short name under a non-root baseUrl', async () => {
+    const fetch = makeFetch({ '/madad/configs/prod/a.json': { body: minimalConfig([minimalQ()]) } });
+    const config = await loadConfig(['a'], { fetch, baseUrl: '/madad/' });
+    expect(config.questionnaires[0].configFile).toBe('a');
+  });
 });
 
 // ─── Merging multiple sources ─────────────────────────────────────────────────

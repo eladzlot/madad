@@ -14,7 +14,8 @@ export default [
   {
     files: ['src/**/*.js', 'shared/**/*.js', 'clinician/**/*.js', 'composer/src/**/*.js'],
     languageOptions: {
-      globals: globals.browser,
+      // __APP_VERSION__ is inlined at build time by Vite/Vitest `define`.
+      globals: { ...globals.browser, __APP_VERSION__: 'readonly' },
     },
   },
   // Test files — both browser (happy-dom) and vitest globals

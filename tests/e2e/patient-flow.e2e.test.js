@@ -483,6 +483,15 @@ test.describe('PDF download', () => {
     ]);
 
     expect(download.suggestedFilename()).toMatch(/\.pdf$/i);
+
+    // The PDF must carry the embedded data.json envelope (the Aggregate
+    // integration boundary). Named embedded files appear in the raw PDF as
+    // an /EmbeddedFiles name tree entry plus the attachment's filename.
+    const path = await download.path();
+    const { readFileSync } = await import('fs');
+    const pdfBytes = readFileSync(path).toString('latin1');
+    expect(pdfBytes).toContain('/EmbeddedFiles');
+    expect(pdfBytes).toContain('data.json');
   });
 });
 

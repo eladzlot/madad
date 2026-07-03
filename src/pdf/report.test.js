@@ -208,6 +208,7 @@ import {
   preloadPdf,
   _resetPreloadForTesting,
 } from './report.js';
+import { ENVELOPE_VERSION, validateEnvelope } from '../../shared/pdf/envelope-schema.js';
 
 // Initialise bidi-js before any test runs — bidiNodes requires it.
 beforeAll(async () => { await initBidiForTesting(); });
@@ -654,5 +655,63 @@ describe('buildDocDefinition — alert content in output', () => {
     };
     const def = buildDocDefinition(sessionState, CFG, SES, now);
     expect(JSON.stringify(def)).not.toContain('אובדניות');
+  });
+});
+
+// ── buildDocDefinition — embedded data.json envelope ──────────────────────────
+// Every PDF carries a machine-readable data.json attachment (the Aggregate
+// integration boundary, AGGREGATE_SPEC §3). These tests decode the attachment
+// back out of the doc definition and assert it is a valid envelope that
+// faithfully reproduces the session.
+
+describe('buildDocDefinition — embedded data.json envelope', () => {
+  beforeAll(async () => { await initBidiForTesting(); });
+
+  const now = new Date('2026-03-12T07:00:00Z');
+  const sessionState = {
+    answers: { q1: { i1: 3, i2: 2 } },
+    scores:  { q1: { total: 5, subscales: {}, category: 'moderate' } },
+    alerts:  { q1: [{ id: 'a1', message: 'התראה', severity: 'warning' }] },
+    questionnaireIds: { q1: 'q1' },
+  };
+
+  function decodePayload(def) {
+    const src = def.files['data.json'].src;
+    const b64 = src.replace(/^data:application\/json;base64,/, '');
+    const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+    return JSON.parse(new TextDecoder().decode(bytes));
+  }
+
+  it('attaches data.json as a base64 JSON data URL', () => {
+    const def = buildDocDefinition(sessionState, CFG, SES, now);
+    expect(def.files['data.json'].src).toMatch(/^data:application\/json;base64,/);
+    expect(def.files['data.json'].type).toBe('application/json');
+  });
+
+  it('payload is a valid envelope', () => {
+    const def = buildDocDefinition(sessionState, CFG, SES, now);
+    const payload = decodePayload(def);
+    expect(validateEnvelope(payload)).toEqual({ valid: true, errors: [] });
+    expect(payload.schemaVersion).toBe(ENVELOPE_VERSION);
+  });
+
+  it('payload reproduces the session faithfully, including Hebrew text', () => {
+    const def = buildDocDefinition(sessionState, CFG, SES, now);
+    const payload = decodePayload(def);
+    expect(payload.pid).toBe('P001');
+    expect(payload.name).toBe('ישראל ישראלי');
+    expect(payload.generatedAt).toBe('2026-03-12T07:00:00.000Z');
+    expect(payload.instruments).toEqual([
+      { questionnaireId: 'q1', title: 'בדיקה', configFile: null },
+    ]);
+    expect(payload.sessionState.answers).toEqual(sessionState.answers);
+    expect(payload.sessionState.scores).toEqual(sessionState.scores);
+    expect(payload.sessionState.alerts).toEqual(sessionState.alerts);
+  });
+
+  it('records the app version injected at build time', () => {
+    const def = buildDocDefinition(sessionState, CFG, SES, now);
+    // Vitest injects __APP_VERSION__ from package.json via define.
+    expect(decodePayload(def).appVersion).toBe('1.0.0');
   });
 });

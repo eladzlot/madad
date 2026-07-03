@@ -27,6 +27,11 @@
 
 import regularFontUrl from '../../public/fonts/NotoSansHebrew-Regular.ttf?url';
 import boldFontUrl    from '../../public/fonts/NotoSansHebrew-Bold.ttf?url';
+import { buildEnvelope } from '../../shared/pdf/envelope-schema.js';
+
+// App version recorded in the embedded envelope (forensic only). Vite/Vitest
+// inline __APP_VERSION__ from package.json at build time via `define`.
+const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'dev';
 
 // ── Branding ──────────────────────────────────────────────────────────────────
 const getAppUrl = () => {
@@ -336,7 +341,21 @@ export function buildDocDefinition(sessionState, config, session, now = new Date
     ...buildDetailSections(sessionState, config),
   ].filter(Boolean);
 
+  // Machine-readable copy of the session, embedded as a data.json attachment.
+  // This is the integration boundary with the Aggregate surface — every PDF
+  // carries the full session payload (AGGREGATE_SPEC §3). Encoded as a data
+  // URL because pdfkit decodes those natively with no network round-trip.
+  const envelope = buildEnvelope({ sessionState, config, session, appVersion: APP_VERSION, now });
+  const payload  = new TextEncoder().encode(JSON.stringify(envelope));
+
   return {
+    files: {
+      'data.json': {
+        src:  `data:application/json;base64,${toBase64(payload.buffer)}`,
+        type: 'application/json',
+        description: 'Madad session data (machine-readable)',
+      },
+    },
     pageSize:    'A4',
     pageMargins: [PAGE_MARGIN, PAGE_MARGIN, PAGE_MARGIN, PAGE_MARGIN + 10],
     defaultStyle: {
