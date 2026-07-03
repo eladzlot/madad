@@ -1,6 +1,6 @@
 {
   "id": "child",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "questionnaires": [
     {
       "id": "scared_child",
@@ -301,6 +301,7 @@
       },
       "interpretations": {
         "target": "total",
+        "type": "screening",
         "ranges": [
           {
             "min": 0,
@@ -311,6 +312,12 @@
             "min": 25,
             "max": 82,
             "label": "מעל סף סינון לחרדה (סף סינון)"
+          }
+        ],
+        "cutoffs": [
+          {
+            "value": 25,
+            "label": "סף סינון"
           }
         ]
       },
@@ -629,6 +636,7 @@
       },
       "interpretations": {
         "target": "total",
+        "type": "screening",
         "ranges": [
           {
             "min": 0,
@@ -639,6 +647,12 @@
             "min": 25,
             "max": 82,
             "label": "מעל סף סינון לחרדה (סף סינון)"
+          }
+        ],
+        "cutoffs": [
+          {
+            "value": 25,
+            "label": "סף סינון"
           }
         ]
       },

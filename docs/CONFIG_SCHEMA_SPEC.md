@@ -219,7 +219,9 @@ Not scored. Answer stored as `number[]` of 1-based indices. Available in DSL via
 | Field | Type | Required | Description |
 |---|---|---|---|
 | `target` | string | no | `"total"` (default) or a subscale ID |
+| `type` | string | no | What the ranges ladder represents: `"severity"` (graded clinical ladder — rendered as background bands in trajectory charts) or `"screening"` (below/above-threshold dichotomy — no bands). Absent = no chart overlay from ranges; PDF labelling unaffected. |
 | `ranges` | array | yes | Array of range objects |
+| `cutoffs` | array | no | Explicit clinical threshold lines for trajectory charts. Min 1 entry when present. |
 
 Each range object:
 
@@ -229,7 +231,28 @@ Each range object:
 | `max` | number | yes | Inclusive upper bound |
 | `label` | string | yes | Category label returned when score falls in range |
 
-Ranges should be non-overlapping and cover the full expected score range. The loader does not enforce this — the first matching range wins.
+Ranges must be non-overlapping (validation-enforced: the score→category lookup is first-match, so an overlap would make the reported category order-dependent) and should cover the full expected score range.
+
+Each cutoff object:
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `value` | number | yes | Score at which the line is drawn. A literal value — never derived from range boundaries. |
+| `label` | string | no | Short line label (e.g. `"סף סינון"`) |
+
+`type` and `cutoffs` are orthogonal: an instrument may carry severity bands, cutoff lines, both, or neither. Everything is explicit — Aggregate renders exactly what the config declares, with no inference.
+
+## 7a. Psychometrics
+
+Optional per-questionnaire block enabling the Reliable Change Index in trajectory charts (`AGGREGATE_SPEC.md` §5.3). When absent, the RCI line silently doesn't render.
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `reliability` | number | yes | Total-score reliability coefficient, exclusive (0,1) |
+| `sd` | number | yes | Normative standard deviation of the total score, > 0 |
+| `source` | string | yes | Citation the values were taken from |
+
+Ship this block only on instruments where the literature supports the values.
 
 ---
 

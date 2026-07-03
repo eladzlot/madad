@@ -53,9 +53,9 @@ The phrase **"Continue with TODO"** means: do the above, then pick up the curren
 
 ## 1. Status
 
-**Currently working on:** idle — all small P0s complete. Only P0-1/P0-2/P0-7 (validation cluster) remaining at P0.
-**Last session ended:** 2026-04-17 — P0-5 + P0-6 shipped. 981 tests passing.
-**Blocked on:** nothing.
+**Currently working on:** AGG stream — Aggregate surface design sprint complete (D-8…D-11); next task AGG-1.
+**Last session ended:** 2026-07-03 — shared/ migration landed; PDF data.json envelope shipped (commit c92da8c, **not yet deployed** — deploy withheld by user; envelope data only accrues once pushed). 1010 tests passing.
+**Blocked on:** nothing. (P0-1/P0-2/P0-7 validation cluster explicitly deprioritized by user 2026-07-03 in favor of the Aggregate stream.)
 
 ---
 
@@ -75,6 +75,20 @@ Task IDs are stable and match `REVIEW.md` section references. Status values: `to
 | P0-5 | Add randomize to `checkCrossFileBatteryRefs` | done | See archive A-4. |
 | P0-6 | Fix `calcRiskLevel` for reverse-scored items | done | See archive A-5. D-7 applied. |
 | P0-7 | Add DSL reference integrity check at load time | todo | Related to P0-1, P0-2 |
+
+### AGG — Aggregate surface (docs/AGGREGATE_SPEC.md)
+
+Build slices per D-11. Slice 1 goes to pilot therapists before later slices are built.
+
+| ID | Title | Status | Notes |
+|---|---|---|---|
+| AGG-0 | Envelope in PDFs (`shared/pdf/envelope-schema.js` + report.js attachment) | done | Commit c92da8c. Awaiting deploy. |
+| AGG-1 | Schema: interpretations `type` + `cutoffs[]`; optional `psychometrics` block | done | See archive A-6. D-12 applied. |
+| AGG-2 | Slice 1 — usable core: surface scaffold, upload + per-file status, parse-pdf, chart (total line, bands, time axis, 5-session window), pid filter, raw-data list | todo | D-9 (parser), D-10 (charts) |
+| AGG-3 | Slice 2 — interaction & a11y: tooltips, keyboard nav, detail panel, view-as-table | todo | |
+| AGG-4 | Slice 3 — RCI line + subscale toggles | todo | Blocked on AGG-P content |
+| AGG-5 | Slice 4 — PNG/SVG export | todo | |
+| AGG-P | Psychometrics content: reliability/SD/source per instrument | todo | **User-owned clinical workstream** — can start now; long pole for AGG-4 |
 
 ### P1 — API stability, author experience
 
@@ -181,7 +195,65 @@ Append-only. Date format: YYYY-MM-DD.
 
 ---
 
+### D-8 — Envelope shape deltas vs AGGREGATE_SPEC §3.2 sketch
+**Date:** 2026-07-03
+**Context:** AGG-0 implementation. The spec's envelope sketch showed `sessionState: { answers, scores, alerts }` and per-instrument `configFile`.
+**Decision:**
+1. `sessionState` embeds the **full orchestrator state including `questionnaireIds`** — without it, instance-keyed sessions (`phq9#1`) cannot be mapped back to instruments on the read side. The spec's "unmodified state object" language governs; the sketch was approximate. `alerts` is an object keyed by sessionKey (the real shape), not the sketch's `[]`.
+2. `instruments[].configFile` is the **config short name** (`standard`), annotated on each questionnaire by `shared/config/loader.js` at merge time; full URL for external configs; `null` when unknown.
+3. `appVersion` is `package.json` version inlined via the `__APP_VERSION__` Vite/Vitest define; `'dev'` fallback outside builds. Forensic only.
+4. `validateEnvelope` tolerates unknown extra fields (forward compat) but rejects `schemaVersion` newer than the build (per spec §5.7).
+
+---
+
+### D-9 — Aggregate PDF reader: hand-rolled, zero dependencies
+**Date:** 2026-07-03
+**Context:** AGG-2. Reading `data.json` back out of uploaded PDFs. Streams are FlateDecode-compressed (pdfkit default).
+**Decision:** Hand-rolled extractor (~200 lines) in `aggregate/src/parse-pdf.js`: locate the `/EmbeddedFiles` name-tree entry, inflate via browser-native `DecompressionStream('deflate')`. No pdf-lib.
+**Rationale:** We only parse our own pdfmake output; the spec sanctions per-file warnings as the failure mode for anything else. pdf-lib (~130 KB gz) buys robustness against re-saved/rewritten PDFs (rare — forwarding doesn't rewrite) and still requires manual name-tree walking.
+**Escape hatch:** parse-pdf.js is an isolated module with a clean contract; if pilots surface rewritten PDFs, swap in pdf-lib without touching callers.
+
+---
+
+### D-10 — Charts: hand-rolled SVG; time axis is LTR
+**Date:** 2026-07-03
+**Context:** AGG-2. Chart requirements (severity bands, RCI dashed lines, baseline marker, pagination, SVG→PNG export, no animation) are exactly what charting libraries fight.
+**Decision:**
+1. Hand-rolled SVG rendered by Lit components. No charting library.
+2. **Time flows left-to-right** — supersedes AGGREGATE_SPEC's original RTL axis (spec updated). Dates/numbers are LTR even in Hebrew documents; page chrome stays RTL.
+3. A single uploaded session renders as a real chart (marker + bands + axes, no line, no empty-state) — meaningful from the first PDF.
+4. **Complexity guardrail** (user's concern: hand-rolled "getting out of hand"): geometry/scales/ticks live in pure, unit-tested modules with no DOM; the Lit component only maps a precomputed render-model to SVG elements and never calculates. If the chart layer grows past ~500 lines of logic, stop and reassess against a library.
+
+---
+
+### D-11 — Aggregate v1 ships in slices; desktop-first
+**Date:** 2026-07-03
+**Context:** Scope for AGGREGATE_SPEC v1 (rich). Real clinicians are already using the product; fastest feedback wins.
+**Decision:** Four slices (AGG-2 … AGG-5): usable core → interaction/a11y → RCI + subscales → export. Slice 1 goes to the pilot therapists before later slices are built. Desktop-first per AGGREGATE_SPEC §1.2: upload is `<input type=file multiple>` (drag-drop as enhancement), layout degrades to one column, no mobile-specific UX in v1.
+
+---
+
+### D-12 — Chart overlays: block-level `type` + explicit `cutoffs[]`, everything optional
+**Date:** 2026-07-03
+**Context:** AGG-1. AGGREGATE_SPEC originally put `type: severity|screening` on each range. User requirements: all fields optional (many instruments have no interpretations); an instrument may carry **both** severity bands and a screening cutoff; no behind-the-scenes derivation.
+**Decision:**
+1. `interpretations.type` is **block-level and optional**: `"severity"` → ranges render as bands; `"screening"` → documentational, no bands; absent → no overlay. Not per-range.
+2. Screening thresholds live in a separate optional `interpretations.cutoffs: [{value, label?}]` array — each entry is a solid line at a **literal value**, never derived from range boundaries.
+3. `psychometrics` optional per questionnaire: `{reliability ∈ (0,1), sd > 0, source}`, all three required when present.
+4. New semantic validation: interpretation ranges must be disjoint (and min ≤ max). The score→category lookup (`src/engine/scoring.js` `interpret()`) is first-match-wins, so overlap makes the PDF category label order-dependent — this is also why screening ranges could not simply be mixed into `ranges[]`.
+**Rejected alternative:** per-range `type` (the spec's original wording) — cannot express "both" without overlapping entries in `ranges[]`, which ambiguates the category lookup; and deriving cutoff position from `ranges[1].min` is implicit logic the user explicitly rejected.
+**Scope impact:** Schema + regenerated validator; `config-validation.js` overlap rule; 14 prod questionnaires annotated (severity: phq9, gad7, isi, wsas; screening + cutoff: pc_ptsd5@4, dar5@12, oci_r@21, pdss_sr@9, spin@21, oasis@8, roci@22, procsi@18, scared_child@25, scared_parent@25 — user approved classification); config versions bumped (standard 1.7.0, trauma/anger/ocd/child 1.1.0). Patient app behaviour unchanged.
+
+---
+
 ## 5. Task Archive
+
+### A-6 — AGG-1 Interpretations `type`/`cutoffs` + `psychometrics` schema
+**Completed:** 2026-07-03
+**Summary:** Chart-overlay config surface per D-12. Schema gained optional `interpretations.type` enum, `interpretations.cutoffs[]`, and per-questionnaire `psychometrics`; validator regenerated; disjoint-ranges semantic rule added; all 14 prod instruments with interpretations annotated; docs updated (CONFIG_SCHEMA_SPEC §7/§7a, LLM_GUIDE incl. removing the false "overlapping ranges allowed" claim, AGGREGATE_SPEC §5.2 + §10).
+**Files changed:** `shared/config/QuestionnaireSet.schema.json`, `shared/config/validate-schema.js` (generated), `shared/config/config-validation.js` (+ tests), `shared/config/QuestionnaireSet.schema.test.js`, 5 prod configs, 4 docs.
+**Decisions referenced:** D-12.
+**Test delta:** 1010 → 1023 passing. 7/7 configs validate.
 
 ### A-1 — P0-0 Cross-questionnaire back navigation
 **Completed:** 2026-04-17

@@ -396,7 +396,48 @@ Maps a total score to a category label shown in the PDF.
 
 `target` is `"total"` for the overall score, or a subscale ID for subscale-level interpretation.
 
-Ranges are inclusive on both ends. The first matching range wins. Cover the full possible score range without gaps. Overlapping ranges are allowed but the first match takes priority.
+Ranges are inclusive on both ends. Cover the full possible score range without gaps. **Ranges must not overlap** — the validator rejects overlapping ranges because the score→category lookup is first-match and an overlap would make the reported category ambiguous.
+
+### `type` — what the ranges represent (optional)
+
+```json
+"interpretations": {
+  "target": "total",
+  "type": "severity",
+  "ranges": [ ... ]
+}
+```
+
+- `"severity"` — the ranges are a graded clinical ladder (minimal/mild/moderate/severe). Trajectory charts render them as background bands.
+- `"screening"` — the ranges are a below/above-threshold dichotomy. No bands are rendered.
+- Absent — no chart overlay; ranges still label scores in the PDF.
+
+### `cutoffs` — clinical threshold lines (optional)
+
+```json
+"interpretations": {
+  "target": "total",
+  "type": "screening",
+  "ranges": [ ... ],
+  "cutoffs": [{ "value": 21, "label": "סף סינון" }]
+}
+```
+
+Each cutoff renders as a solid horizontal line at `value` in trajectory charts. Values are literal scores, never derived from range boundaries. An instrument may have both `type: "severity"` bands and `cutoffs` lines.
+
+## Psychometrics (optional, per questionnaire)
+
+Enables the Reliable Change Index line in trajectory charts. Include only when the literature supports the values; omit otherwise (the chart silently skips RCI).
+
+```json
+"psychometrics": {
+  "reliability": 0.89,
+  "sd": 5.7,
+  "source": "Kroenke et al. 2001"
+}
+```
+
+All three keys are required when the block is present: `reliability` in (0,1), `sd` > 0, `source` is the citation the values came from.
 
 ---
 

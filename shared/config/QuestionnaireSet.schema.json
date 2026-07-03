@@ -123,6 +123,9 @@
         "interpretations": {
           "$ref": "#/$defs/interpretations"
         },
+        "psychometrics": {
+          "$ref": "#/$defs/psychometrics"
+        },
         "alerts": {
           "type": "array",
           "items": {
@@ -566,6 +569,11 @@
           "type": "string",
           "minLength": 1
         },
+        "type": {
+          "type": "string",
+          "enum": ["severity", "screening"],
+          "description": "What the ranges ladder represents. 'severity' ranges render as background bands in trajectory charts; 'screening' documents a dichotomous below/above-threshold ladder (no bands). Optional — absent means no chart overlay from ranges."
+        },
         "ranges": {
           "type": "array",
           "minItems": 1,
@@ -590,6 +598,52 @@
               }
             }
           }
+        },
+        "cutoffs": {
+          "type": "array",
+          "minItems": 1,
+          "description": "Explicit clinical thresholds, each rendered as a solid horizontal line in trajectory charts. Values are literal scores — never derived from range boundaries.",
+          "items": {
+            "type": "object",
+            "required": [
+              "value"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "value": {
+                "type": "number"
+              },
+              "label": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      }
+    },
+    "psychometrics": {
+      "type": "object",
+      "required": [
+        "reliability",
+        "sd",
+        "source"
+      ],
+      "additionalProperties": false,
+      "description": "Total-score psychometrics for Reliable Change Index computation (AGGREGATE_SPEC §5.3). Optional — absent means no RCI line renders.",
+      "properties": {
+        "reliability": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "exclusiveMaximum": 1
+        },
+        "sd": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1
         }
       }
     },

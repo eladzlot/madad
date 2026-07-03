@@ -115,6 +115,47 @@ describe('binary item options', () => {
   });
 });
 
+// ─── Interpretation range overlap ─────────────────────────────────────────────
+
+describe('interpretation range overlap', () => {
+  const qWithRanges = (ranges) => ({ ...minimalQ(), interpretations: { target: 'total', ranges } });
+
+  it('accepts disjoint ranges regardless of array order', () => {
+    const errors = collectConfigErrors(minimalConfig([qWithRanges([
+      { min: 10, max: 27, label: 'חמור' },
+      { min: 0, max: 9, label: 'קל' },
+    ])]));
+    expect(errors).toEqual([]);
+  });
+
+  it('accepts non-contiguous (gapped) ranges', () => {
+    const errors = collectConfigErrors(minimalConfig([qWithRanges([
+      { min: 0, max: 4, label: 'קל' },
+      { min: 10, max: 27, label: 'חמור' },
+    ])]));
+    expect(errors).toEqual([]);
+  });
+
+  it('reports overlapping ranges', () => {
+    const errors = collectConfigErrors(minimalConfig([qWithRanges([
+      { min: 0, max: 10, label: 'קל' },
+      { min: 10, max: 27, label: 'חמור' },
+    ])]));
+    expect(errors.some(e => e.includes('overlap'))).toBe(true);
+  });
+
+  it('reports a range whose min exceeds its max', () => {
+    const errors = collectConfigErrors(minimalConfig([qWithRanges([
+      { min: 9, max: 0, label: 'הפוך' },
+    ])]));
+    expect(errors.some(e => e.includes('greater than max'))).toBe(true);
+  });
+
+  it('ignores questionnaires without interpretations', () => {
+    expect(collectConfigErrors(minimalConfig([minimalQ()]))).toEqual([]);
+  });
+});
+
 // ─── validateConfigData ───────────────────────────────────────────────────────
 
 describe('validateConfigData', () => {

@@ -250,6 +250,35 @@ function checkSliderItems(data, errors) {
   }
 }
 
+// Interpretation ranges must not overlap: the category lookup in
+// src/engine/scoring.js is first-match-wins, so an overlap makes the
+// category label shown in the PDF depend silently on array order.
+// Range order in the array is free; only the numeric spans matter.
+function checkInterpretationRanges(data, errors) {
+  for (const q of data.questionnaires ?? []) {
+    const ranges = q.interpretations?.ranges;
+    if (!ranges) continue;
+    for (const r of ranges) {
+      if (r.min > r.max) {
+        errors.push(
+          `Questionnaire "${q.id}": interpretation range "${r.label}" has min (${r.min}) greater than max (${r.max}).`
+        );
+      }
+    }
+    const sorted = [...ranges].sort((a, b) => a.min - b.min);
+    for (let i = 1; i < sorted.length; i++) {
+      const prev = sorted[i - 1], curr = sorted[i];
+      if (curr.min <= prev.max) {
+        errors.push(
+          `Questionnaire "${q.id}": interpretation ranges "${prev.label}" (${prev.min}–${prev.max}) and ` +
+          `"${curr.label}" (${curr.min}–${curr.max}) overlap. Ranges must be disjoint — ` +
+          `the score→category lookup is first-match and an overlap makes the reported category ambiguous.`
+        );
+      }
+    }
+  }
+}
+
 export function collectConfigErrors(data) {
   const errors = [];
   checkDuplicateSessionKeys(data, errors);
@@ -257,6 +286,7 @@ export function collectConfigErrors(data) {
   checkOptionSets(data, errors);
   checkScoringRefs(data, errors);
   checkSliderItems(data, errors);
+  checkInterpretationRanges(data, errors);
   checkCrossEntityIdCollisions(data, errors);
   return errors;
 }

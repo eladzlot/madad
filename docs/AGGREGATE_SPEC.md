@@ -38,6 +38,17 @@ exists.
   the clinician already uses (email, file system, USB stick); Aggregate
   doesn't transport them.
 
+### 1.2 Form factor
+
+Aggregate is **desktop-first** (decided 2026-07-03). Aggregation is a
+sit-down review activity: multi-file selection, wide time-axis charts,
+cross-instrument comparison. Mobile is not actively broken — upload is a
+plain `<input type="file" multiple>` (drag-and-drop is a desktop
+enhancement, not the mechanism) and the layout degrades to a single
+column — but no mobile-specific UX is built in v1. If pilot clinicians
+turn out to live on their phones (e.g. WhatsApp as the de-facto PDF
+archive), that is a v2 signal, not a v1 requirement.
+
 ---
 
 ## 2. Position in the system
@@ -178,7 +189,10 @@ For each instrument with a quantitative `total` score, Aggregate renders
 one chart:
 
 - X-axis: real dates from each PDF's `generatedAt`. Time flows
-  right-to-left (older on the right) to match Hebrew RTL reading order.
+  **left-to-right** (older on the left). Decided 2026-07-03, superseding
+  this spec's original right-to-left axis: dates and numbers are LTR even
+  inside Hebrew documents, and clinicians read trajectory charts with the
+  universal charting convention. The surrounding page remains RTL.
 - Y-axis: total score, scaled 0 to instrument max.
 - Severity bands as horizontal background fills (when applicable).
 - A single line connecting session points, with markers at each session.
@@ -190,15 +204,24 @@ legend. Total is on by default; subscales are off by default.
 
 ### 5.2 Severity bands and screening cutoffs
 
-Each instrument's `interpretations.ranges[]` carries a `type` field:
-either `"severity"` or `"screening"`.
+*Revised 2026-07-03 (supersedes the original per-range `type` design):
+overlays are driven by two orthogonal, fully explicit config fields —
+a block-level `type` on `interpretations` and a separate `cutoffs[]`
+array. Screening thresholds are never derived from range boundaries,
+because ranges also drive the PDF's score→category lookup
+(first-match), and overloading them would either ambiguate that lookup
+or require inference. See `CONFIG_SCHEMA_SPEC.md` §7.*
 
-- ≥3 ranges of `"severity"` → render as horizontal background bands,
-  one band per range, coloured by severity (warm tones, lifted from the
-  PDF's existing palette).
-- A single `"screening"` cutoff → render as a single solid horizontal
-  line at the cutoff value.
-- No `interpretations` block → no overlay.
+- `interpretations.type: "severity"` → render `ranges[]` as horizontal
+  background bands, one band per range, coloured by severity (warm
+  tones, lifted from the PDF's existing palette).
+- `interpretations.cutoffs[]` → each entry renders as a solid
+  horizontal line at its literal `value`, labelled by its `label`.
+- `type: "screening"` documents a dichotomous ladder; it renders no
+  bands itself — the visible line comes from the instrument's
+  `cutoffs[]` entry.
+- An instrument may declare bands, cutoff lines, both, or neither.
+  No `type` and no `cutoffs` → no overlay.
 
 Severity bands fade out when the total series is hidden (subscales-only
 view). Bands describe total-score ranges; applying them to a subscale
@@ -253,6 +276,11 @@ than 5 uploaded:
 With ≤5 sessions, the chart spans the full available width; X-axis
 spacing reflects real time gaps between sessions. Empty right side
 (when only 1–2 sessions exist) reads visually as "future."
+
+A **single session must render as a real chart**: one marker, severity
+bands, axes, and labels all present — no connecting line, and no
+empty-state placeholder. The chart is meaningful from the first upload;
+the empty right side is an implicit invitation to add the next session.
 
 Brush/zoom across the full history is a v2 feature.
 
@@ -377,10 +405,13 @@ Decided as not-now. Revisiting requires updating this document.
 
 Aggregate requires changes to existing specs and configs:
 
-- `CONFIG_SCHEMA_SPEC.md` — interpretation ranges gain `type:
-  "severity" | "screening"`; questionnaires gain optional
-  `psychometrics`.
-- `IMPLEMENTATION_SPEC.md §19` — embedded `data.json` payload
-  documented; `ENVELOPE_VERSION` constant introduced.
+- ✅ `CONFIG_SCHEMA_SPEC.md` §7/§7a — `interpretations` gained
+  block-level `type` and `cutoffs[]`; questionnaires gained optional
+  `psychometrics`. All 14 prod instruments with interpretations
+  annotated (2026-07-03). Psychometrics values pending (AGG-P).
+- ✅ `IMPLEMENTATION_SPEC.md §19.4a` — embedded `data.json` payload
+  documented; `ENVELOPE_VERSION` constant introduced
+  (`shared/pdf/envelope-schema.js`).
 - `BEHAVIORAL_SPEC.md §3, §8, §10` — Aggregate exists as a clinician
   surface; PDFs are now also Aggregate input; privacy wording updated.
+  (Pending — update when the surface ships.)

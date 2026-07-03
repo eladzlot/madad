@@ -564,6 +564,98 @@ describe('interpretations', () => {
       interpretations: { ranges: [] },
     })],
   })).toBe(true));
+
+  const RANGES = [
+    { min: 0, max: 9, label: 'קל' },
+    { min: 10, max: 27, label: 'חמור' },
+  ];
+
+  it('accepts type severity and type screening', () => {
+    for (const type of ['severity', 'screening']) {
+      expect(valid({
+        ...minimalConfig,
+        questionnaires: [makeQuestionnaire({
+          interpretations: { target: 'total', type, ranges: RANGES },
+        })],
+      })).toBe(true);
+    }
+  });
+
+  it('rejects unknown type values', () => expect(invalid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire({
+      interpretations: { target: 'total', type: 'diagnostic', ranges: RANGES },
+    })],
+  })).toBe(true));
+
+  it('accepts cutoffs with value and optional label', () => expect(valid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire({
+      interpretations: {
+        target: 'total',
+        type: 'screening',
+        ranges: RANGES,
+        cutoffs: [{ value: 10, label: 'סף סינון' }, { value: 20 }],
+      },
+    })],
+  })).toBe(true));
+
+  it('rejects cutoffs without value, empty cutoffs, and unknown cutoff keys', () => {
+    for (const cutoffs of [[{ label: 'סף' }], [], [{ value: 10, color: 'red' }]]) {
+      expect(invalid({
+        ...minimalConfig,
+        questionnaires: [makeQuestionnaire({
+          interpretations: { target: 'total', ranges: RANGES, cutoffs },
+        })],
+      })).toBe(true);
+    }
+  });
+});
+
+// ─── Psychometrics ────────────────────────────────────────────────────────────
+
+describe('psychometrics', () => {
+  it('accepts a valid psychometrics block', () => expect(valid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire({
+      psychometrics: { reliability: 0.89, sd: 5.7, source: 'Kroenke et al. 2001' },
+    })],
+  })).toBe(true));
+
+  it('rejects reliability outside (0,1)', () => {
+    for (const reliability of [0, 1, 1.2, -0.5]) {
+      expect(invalid({
+        ...minimalConfig,
+        questionnaires: [makeQuestionnaire({
+          psychometrics: { reliability, sd: 5.7, source: 'x' },
+        })],
+      })).toBe(true);
+    }
+  });
+
+  it('rejects non-positive sd', () => {
+    for (const sd of [0, -1]) {
+      expect(invalid({
+        ...minimalConfig,
+        questionnaires: [makeQuestionnaire({
+          psychometrics: { reliability: 0.9, sd, source: 'x' },
+        })],
+      })).toBe(true);
+    }
+  });
+
+  it('rejects a psychometrics block missing any required key', () => {
+    for (const partial of [
+      { sd: 5.7, source: 'x' },
+      { reliability: 0.9, source: 'x' },
+      { reliability: 0.9, sd: 5.7 },
+    ]) {
+      expect(invalid({
+        ...minimalConfig,
+        questionnaires: [makeQuestionnaire({ psychometrics: partial })],
+      })).toBe(true);
+    }
+  });
 });
 
 // ─── Alerts ───────────────────────────────────────────────────────────────────
