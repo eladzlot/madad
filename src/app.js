@@ -16,13 +16,13 @@
 //   Ambiguous tokens (exist in both maps, or conflicted across configs) throw
 //   an ItemResolutionError, which is shown as a pre-welcome error screen.
 
-import { loadConfig, ConfigFetchError } from './config/loader.js';
+import { loadConfig, ConfigFetchError } from '../shared/config/loader.js';
 import { resolveItems } from './resolve-items.js';
 import { createController } from './controller.js';
 import { createOrchestrator } from './engine/orchestrator.js';
 import { createRouter } from './router.js';
 import { preloadPdf } from './pdf/report.js';
-import { sanitizePid } from './pid.js';
+import { sanitizePid } from '../shared/pid.js';
 import './components/item-select.js';
 import './components/item-binary.js';
 import './components/item-instructions.js';
@@ -94,7 +94,7 @@ async function main() {
 
   const configsParam = params.get('configs');
   const itemsParam   = params.get('items');
-  // PID validation lives in src/pid.js — single source of truth shared with the composer.
+  // PID validation lives in shared/pid.js — single source of truth shared with the composer.
   // Invalid PIDs are silently treated as absent rather than surfaced in error messages,
   // to avoid reflecting crafted strings back into the UI.
   const pid = sanitizePid(params.get('pid'));

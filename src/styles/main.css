@@ -1,7 +1,7 @@
 /* Global styles — base reset, layout, font, direction.
    No component-specific rules live here. */
 
-@import './tokens.css';
+@import '../../shared/styles/tokens.css';
 
 @font-face {
   font-family: 'Noto Sans Hebrew';

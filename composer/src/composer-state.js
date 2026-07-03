@@ -2,11 +2,11 @@
 // Shared mutable state, URL builder, and search matcher.
 // All other composer modules import from here — nothing else holds state.
 //
-// PID validation is defined in src/pid.js — single source of truth shared
+// PID validation is defined in shared/pid.js — single source of truth shared
 // with the patient app. Re-exported here so existing callers don't need to
 // know which module owns the rules.
 
-import { PID_PATTERN, pidWarning } from '../../src/pid.js';
+import { PID_PATTERN, pidWarning } from '../../shared/pid.js';
 
 // Relative URL — resolves correctly at any base path deployment.
 export const MANIFEST_URL = 'configs.json';
@@ -60,7 +60,7 @@ export function getAppRoot() {
 }
 
 // ── PID validation ────────────────────────────────────────────────────────────
-// Re-exported from src/pid.js above. See that module for the rules.
+// Re-exported from shared/pid.js above. See that module for the rules.
 
 // ── Search ────────────────────────────────────────────────────────────────────
 

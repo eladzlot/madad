@@ -3,7 +3,7 @@
  * validate-configs.mjs
  *
  * Validates every JSON file in public/configs/ against the QuestionnaireSet
- * schema and semantic rules from src/config/config-validation.js.
+ * schema and semantic rules from shared/config/config-validation.js.
  *
  * Usage:
  *   node scripts/validate-configs.mjs [path...]
@@ -19,13 +19,13 @@ import { readFileSync, readdirSync, statSync } from 'fs';
 import { resolve, relative, join } from 'path';
 import { fileURLToPath } from 'url';
 import Ajv from 'ajv/dist/2020.js';
-import { collectConfigErrors, checkCrossFileBatteryRefs } from '../src/config/config-validation.js';
+import { collectConfigErrors, checkCrossFileBatteryRefs } from '../shared/config/config-validation.js';
 
 // ── Paths ─────────────────────────────────────────────────────────────────────
 
 const __dirname   = fileURLToPath(new URL('.', import.meta.url));
 const ROOT        = resolve(__dirname, '..');
-const SCHEMA_PATH = join(ROOT, 'src/config/QuestionnaireSet.schema.json');
+const SCHEMA_PATH = join(ROOT, 'shared/config/QuestionnaireSet.schema.json');
 const CONFIGS_DIR = join(ROOT, 'public/configs');
 
 // ── AJV setup ─────────────────────────────────────────────────────────────────

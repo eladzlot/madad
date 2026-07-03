@@ -2,7 +2,7 @@
 // Fetches the manifest and loads all listed configs.
 // Failures are partial — warns and continues rather than halting.
 
-import { loadConfig } from '../../src/config/loader.js';
+import { loadConfig } from '../../shared/config/loader.js';
 import { state, MANIFEST_URL, getAppRoot } from './composer-state.js';
 
 // The base path for internal production configs (without leading slash).

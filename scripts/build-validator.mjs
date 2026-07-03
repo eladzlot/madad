@@ -1,7 +1,7 @@
 /**
  * build-validator.mjs
  *
- * Generates src/config/validate-schema.js — a pre-compiled, CSP-safe Ajv
+ * Generates shared/config/validate-schema.js — a pre-compiled, CSP-safe Ajv
  * standalone validator for QuestionnaireSet.schema.json.
  *
  * Run whenever QuestionnaireSet.schema.json changes:
@@ -22,7 +22,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const Ajv = require('ajv/dist/2020.js');
 const standalone = require('ajv/dist/standalone/index.js');
-const schema = require('../src/config/QuestionnaireSet.schema.json');
+const schema = require('../shared/config/QuestionnaireSet.schema.json');
 
 // optimize: 0 prevents Ajv from emitting `require()` calls for runtime helpers.
 // esm: true ensures the output uses ES module syntax (export/import).
@@ -51,7 +51,7 @@ code = code.replace(
   ucs2length + '\nconst func1 = ucs2length;'
 );
 
-const outPath = resolve(__dirname, '../src/config/validate-schema.js');
+const outPath = resolve(__dirname, '../shared/config/validate-schema.js');
 writeFileSync(outPath, `/* eslint-disable */\n${code}`);
 
 console.log(`✓ validate-schema.js written (${(code.length / 1024).toFixed(1)} KB)`);
