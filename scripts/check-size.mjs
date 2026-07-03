@@ -36,9 +36,10 @@ const BUDGETS = [
   // chunk name pattern          limit       label
   { pattern: /pdf-vendor/,       limit: 500 * KB, label: 'pdf-vendor  (pdfmake — lazy)' },
   { pattern: /^main/,            limit:  30 * KB, label: 'main        (app + Lit + engine)' },
+  { pattern: /^aggregate/,       limit:  40 * KB, label: 'aggregate   (charts + parser + Lit)' },
 ];
 
-const TOTAL_BUDGET = 530 * KB;
+const TOTAL_BUDGET = 570 * KB;
 
 // ── Gzip size measurement ─────────────────────────────────────────────────────
 

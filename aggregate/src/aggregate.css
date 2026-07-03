@@ -1,0 +1,16 @@
+/* Aggregate surface styles. Layout is desktop-first (AGGREGATE_SPEC §1.2):
+   max-width container, single column; charts span the container width.
+   Design tokens come from shared/styles/tokens.css. */
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  background: var(--color-bg, #fafaf9);
+  color: var(--color-text, #1c1917);
+}
+
+.a-loading {
+  padding: 4rem;
+  text-align: center;
+  color: var(--color-text-muted, #78716c);
+}

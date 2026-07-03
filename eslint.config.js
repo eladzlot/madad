@@ -12,7 +12,7 @@ export default [
   },
   // Browser environment — app source, shared layer, clinician layer, composer
   {
-    files: ['src/**/*.js', 'shared/**/*.js', 'clinician/**/*.js', 'composer/src/**/*.js'],
+    files: ['src/**/*.js', 'shared/**/*.js', 'clinician/**/*.js', 'composer/src/**/*.js', 'aggregate/src/**/*.js'],
     languageOptions: {
       // __APP_VERSION__ is inlined at build time by Vite/Vitest `define`.
       globals: { ...globals.browser, __APP_VERSION__: 'readonly' },
@@ -20,7 +20,7 @@ export default [
   },
   // Test files — both browser (happy-dom) and vitest globals
   {
-    files: ['src/**/*.test.js', 'shared/**/*.test.js', 'clinician/**/*.test.js', 'tests/**/*.js'],
+    files: ['src/**/*.test.js', 'shared/**/*.test.js', 'clinician/**/*.test.js', 'aggregate/src/**/*.test.js', 'tests/**/*.js'],
     languageOptions: {
       globals: { ...globals.browser, ...globals.node },
     },

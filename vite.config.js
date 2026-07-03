@@ -46,9 +46,10 @@ export default defineConfig(({ mode }) => ({
     chunkSizeWarningLimit: 1100, // pdf-vendor (pdfmake) is lazy-loaded; real budget enforced by scripts/check-size.mjs
     rollupOptions: {
       input: {
-        main:     'index.html',
-        composer: 'composer/index.html',
-        landing:  'landing/index.html',
+        main:      'index.html',
+        composer:  'composer/index.html',
+        aggregate: 'aggregate/index.html',
+        landing:   'landing/index.html',
       },
       output: {
         manualChunks: {
