@@ -1,5 +1,6 @@
 /* Aggregate surface styles. Layout is desktop-first (AGGREGATE_SPEC §1.2):
-   max-width container, single column; charts span the container width.
+   max-width container, single column; charts span the container width and
+   the layout degrades gracefully on narrow screens.
    Design tokens come from shared/styles/tokens.css. */
 
 body {
@@ -9,8 +10,28 @@ body {
   color: var(--color-text, #1c1917);
 }
 
-.a-loading {
-  padding: 4rem;
+.a-container {
+  max-inline-size: 880px;
+  margin-inline: auto;
+  padding: var(--space-lg, 1.5rem) var(--space-md, 1rem) 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md, 1rem);
+}
+
+.a-header h1 {
+  margin: 0 0 .25rem;
+  font-size: 1.4rem;
+}
+
+.a-privacy {
+  margin: 0;
+  font-size: var(--font-size-sm, .875rem);
+  color: var(--color-text-muted, #78716c);
+}
+
+.a-empty {
   text-align: center;
   color: var(--color-text-muted, #78716c);
+  padding: var(--space-lg, 1.5rem);
 }

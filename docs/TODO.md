@@ -53,9 +53,9 @@ The phrase **"Continue with TODO"** means: do the above, then pick up the curren
 
 ## 1. Status
 
-**Currently working on:** AGG stream — Aggregate surface design sprint complete (D-8…D-11); next task AGG-1.
-**Last session ended:** 2026-07-03 — shared/ migration landed; PDF data.json envelope shipped (commit c92da8c, **not yet deployed** — deploy withheld by user; envelope data only accrues once pushed). 1010 tests passing.
-**Blocked on:** nothing. (P0-1/P0-2/P0-7 validation cluster explicitly deprioritized by user 2026-07-03 in favor of the Aggregate stream.)
+**Currently working on:** AGG stream — slice 1 (AGG-2) complete; next: AGG-3 (interaction & a11y) or deploy.
+**Last session ended:** 2026-07-04 — Aggregate slice 1 built and green: /aggregate/ surface, zero-dep PDF parser, store, SVG trajectory charts, pid filter, raw-data list, e2e round-trip (patient PDF → chart) + dist-smoke. 1081 unit tests, 92 e2e.
+**Blocked on:** nothing. **Still not deployed** — envelope data only accrues once pushed; deploy withheld by user. (P0-1/P0-2/P0-7 validation cluster deprioritized by user 2026-07-03.)
 
 ---
 
@@ -84,7 +84,7 @@ Build slices per D-11. Slice 1 goes to pilot therapists before later slices are 
 |---|---|---|---|
 | AGG-0 | Envelope in PDFs (`shared/pdf/envelope-schema.js` + report.js attachment) | done | Commit c92da8c. Awaiting deploy. |
 | AGG-1 | Schema: interpretations `type` + `cutoffs[]`; optional `psychometrics` block | done | See archive A-6. D-12 applied. |
-| AGG-2 | Slice 1 — usable core: surface scaffold, upload + per-file status, parse-pdf, chart (total line, bands, time axis, 5-session window), pid filter, raw-data list | todo | D-9 (parser), D-10 (charts) |
+| AGG-2 | Slice 1 — usable core: surface scaffold, upload + per-file status, parse-pdf, chart (total line, bands, time axis, 5-session window), pid filter, raw-data list | done | See archive A-7. D-9/D-10 applied. |
 | AGG-3 | Slice 2 — interaction & a11y: tooltips, keyboard nav, detail panel, view-as-table | todo | |
 | AGG-4 | Slice 3 — RCI line + subscale toggles | todo | Blocked on AGG-P content |
 | AGG-5 | Slice 4 — PNG/SVG export | todo | |
@@ -254,6 +254,13 @@ Append-only. Date format: YYYY-MM-DD.
 **Files changed:** `shared/config/QuestionnaireSet.schema.json`, `shared/config/validate-schema.js` (generated), `shared/config/config-validation.js` (+ tests), `shared/config/QuestionnaireSet.schema.test.js`, 5 prod configs, 4 docs.
 **Decisions referenced:** D-12.
 **Test delta:** 1010 → 1023 passing. 7/7 configs validate.
+
+### A-7 — AGG-2 Aggregate surface, slice 1
+**Completed:** 2026-07-04
+**Summary:** `/aggregate/` ships the usable core: multi-file upload (input + drag-drop) with per-file typed statuses, zero-dep envelope extraction (D-9: Filespec scan + DecompressionStream), framework-free store (no dedup per spec §4; pid as filter), pure chart geometry (scales + chart-model, LTR time per D-10, severity bands + cutoff lines from AGG-1 fields, 5-session window with pagination, single-point rendering, baseline marker, alert rings), thin Lit SVG component, raw-data list for non-quantitative instruments. Overlay configs load by short name only (base-path safety); legacy-path configs chart without overlays.
+**Files:** `aggregate/` (index.html, src/{aggregate.js,css, parse-pdf, store, chart/{scales,chart-model,trajectory-chart}, components/{upload-list,pid-filter,raw-data-list}} + tests), `tests/e2e/aggregate.e2e.test.js`, dist-smoke aggregate test, vite/vitest/eslint/lint/check-size wiring.
+**Decisions referenced:** D-9, D-10, D-11, D-12.
+**Test delta:** 1023 → 1081 unit; e2e 85 → 92 (round-trip: real patient PDF → chart, incl. no-dedup and bad-file paths).
 
 ### A-1 — P0-0 Cross-questionnaire back navigation
 **Completed:** 2026-04-17

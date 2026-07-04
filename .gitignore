@@ -5,3 +5,6 @@ test-results/
 .playwright/
 
 /*.zip
+
+# Generated PDF fixtures — regenerate with `npm run pdf:fixtures`
+tests/fixtures/pdfs/

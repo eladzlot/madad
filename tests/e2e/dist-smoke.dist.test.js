@@ -141,6 +141,35 @@ test.describe('dist smoke — production bundle at production base', () => {
     expect(realErrors, 'No CSP violations or runtime errors on composer load').toEqual([]);
   });
 
+  test('aggregate page loads and accepts an upload without 404s or errors', async ({ page, baseURL }) => {
+    const origin = new URL(baseURL).origin;
+    const badResponses = watchForBadResponses(page, origin);
+    const consoleErrors = watchForConsoleErrors(page);
+
+    await page.goto('aggregate/');
+
+    // The upload zone rendering means the Lit entry module executed — the
+    // signal that all chunks (aggregate + shared lit-element) resolved under
+    // the deploy base.
+    await expect(page.locator('upload-list')).toBeVisible({ timeout: 10_000 });
+
+    // Exercise the parse path with an inline non-Madad PDF: the per-file
+    // warning proves parse-pdf.js ran in the production bundle (its
+    // DecompressionStream path is exactly the kind of thing a CSP or
+    // bundling regression could silently break).
+    await page.locator('upload-list input[type="file"]').setInputFiles({
+      name: 'other.pdf',
+      mimeType: 'application/pdf',
+      buffer: Buffer.from('%PDF-1.4\n1 0 obj\n<< >>\nendobj\n%%EOF'),
+    });
+    await expect(page.locator('upload-list li.failed')).toContainText('לא דוח מדד');
+
+    expect(badResponses, 'Same-origin resources must all return 2xx/3xx').toEqual([]);
+
+    const realErrors = consoleErrors.filter(e => !/favicon/i.test(e));
+    expect(realErrors, 'No CSP violations or runtime errors on aggregate load').toEqual([]);
+  });
+
   test('landing page renders and its demo CTA loads a working questionnaire', async ({ page, baseURL }) => {
     const origin = new URL(baseURL).origin;
     const badResponses = watchForBadResponses(page, origin);
