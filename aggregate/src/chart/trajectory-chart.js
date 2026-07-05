@@ -16,14 +16,15 @@
 
 import { LitElement, html, svg, css } from 'lit';
 import { buildChartModel } from './chart-model.js';
+import { buildHeatmapModel } from './heatmap-model.js';
 
 export class TrajectoryChart extends LitElement {
   static properties = {
     series:        { type: Object },   // { questionnaireId, title, points } from store.series()
     questionnaire: { type: Object },   // config questionnaire (interpretations, subscaleLabels) or undefined
-    _offset:       { state: true },    // window offset: 0 = newest page
     _tooltip:      { state: true },    // { marker, x, y } in host px, or null
     _showTable:    { state: true },
+    _showHeatmap:  { state: true },
   };
 
   static styles = css`
@@ -93,39 +94,80 @@ export class TrajectoryChart extends LitElement {
       margin-block-start: var(--space-xs, .25rem);
     }
 
-    .pager {
+    .toggles {
       display: flex;
-      align-items: center;
-      justify-content: center;
       gap: var(--space-sm, .5rem);
-      font-size: var(--font-size-sm, .875rem);
-      color: var(--color-text-muted, #78716c);
     }
 
-    .pager button {
-      border: 1px solid var(--color-border, #e7e5e4);
-      background: none;
-      border-radius: 6px;
-      inline-size: 28px;
-      block-size: 28px;
-      cursor: pointer;
-      color: inherit;
-      font-size: 14px;
-    }
-
-    .pager button:disabled {
-      opacity: 0.35;
-      cursor: default;
-    }
-
-    .table-toggle {
+    .table-toggle,
+    .heatmap-toggle {
       border: none;
       background: none;
+      font-family: inherit;
       color: var(--color-text-muted, #78716c);
       font-size: var(--font-size-sm, .8rem);
       cursor: pointer;
       text-decoration: underline;
       padding: .25rem;
+    }
+
+    .heatmap-scroll {
+      overflow-x: auto;
+      margin-block-start: var(--space-sm, .5rem);
+    }
+
+    table.heatmap {
+      border-collapse: collapse;
+      font-size: var(--font-size-sm, .8rem);
+      inline-size: 100%;
+    }
+
+    table.heatmap th[scope='col'] {
+      font-weight: var(--font-weight-medium, 500);
+      color: var(--color-text-muted, #78716c);
+      padding: .2rem .3rem;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+    }
+
+    table.heatmap th[scope='row'] {
+      font-weight: var(--font-weight-normal, 400);
+      color: var(--color-text-muted, #78716c);
+      text-align: right;
+      padding: .2rem .4rem;
+      max-inline-size: 300px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    table.heatmap td.cell {
+      text-align: center;
+      padding: .25rem .5rem;
+      min-inline-size: 34px;
+      border: 2px solid var(--a-card-bg, #fff);
+      border-radius: 4px;
+      font-variant-numeric: tabular-nums;
+      /* Fixed dark ink: cell fills are light pastels in both color schemes. */
+      color: #162232;
+    }
+
+    table.heatmap td.cell.empty {
+      color: var(--color-text-muted, #78716c);
+      background: none;
+    }
+
+    /* Compact mode: color chips instead of numbered cells. */
+    table.heatmap.compact td.cell {
+      min-inline-size: 10px;
+      padding: 0;
+      block-size: 22px;
+      border-width: 1px;
+    }
+
+    table.heatmap.compact th[scope='col'] {
+      font-size: .7rem;
+      padding-inline: .1rem;
     }
 
     table {
@@ -153,22 +195,13 @@ export class TrajectoryChart extends LitElement {
     super();
     this.series = null;
     this.questionnaire = undefined;
-    this._offset = 0;
     this._tooltip = null;
     this._showTable = false;
+    this._showHeatmap = false;
   }
 
   willUpdate(changed) {
-    // New data resets the view to the most recent window.
-    if (changed.has('series')) {
-      this._offset = 0;
-      this._tooltip = null;
-    }
-  }
-
-  _page(direction) {
-    this._offset = Math.max(0, this._offset + direction);
-    this._tooltip = null;
+    if (changed.has('series')) this._tooltip = null;
   }
 
   // ── Tooltip ────────────────────────────────────────────────────────────────
@@ -240,7 +273,6 @@ export class TrajectoryChart extends LitElement {
     const m = buildChartModel({
       points: this.series.points,
       interpretations: this.questionnaire?.interpretations,
-      windowOffset: this._offset,
     });
 
     return html`
@@ -306,30 +338,64 @@ export class TrajectoryChart extends LitElement {
       ${this._tooltip ? this._renderTooltip() : ''}
 
       <div class="footer-row">
-        <button
-          class="table-toggle"
-          aria-pressed=${this._showTable ? 'true' : 'false'}
-          @click=${() => { this._showTable = !this._showTable; }}
-        >${this._showTable ? 'הסתרת טבלה' : 'תצוגת טבלה'}</button>
-
-        ${m.pagination ? html`
-          <div class="pager" dir="ltr">
+        <span class="toggles">
+          <button
+            class="table-toggle"
+            aria-pressed=${this._showTable ? 'true' : 'false'}
+            @click=${() => { this._showTable = !this._showTable; }}
+          >${this._showTable ? 'הסתרת טבלה' : 'תצוגת טבלה'}</button>
+          ${this.questionnaire ? html`
             <button
-              @click=${() => this._page(1)}
-              ?disabled=${!m.pagination.hasOlder}
-              aria-label="מפגשים קודמים"
-            >‹</button>
-            <span dir="rtl">מציג ${m.pagination.from}–${m.pagination.to} מתוך ${m.pagination.total}</span>
-            <button
-              @click=${() => this._page(-1)}
-              ?disabled=${!m.pagination.hasNewer}
-              aria-label="מפגשים חדשים יותר"
-            >›</button>
-          </div>
-        ` : ''}
+              class="heatmap-toggle"
+              aria-pressed=${this._showHeatmap ? 'true' : 'false'}
+              @click=${() => { this._showHeatmap = !this._showHeatmap; }}
+            >${this._showHeatmap ? 'הסתרת מפת פריטים' : 'מפת פריטים'}</button>
+          ` : ''}
+        </span>
       </div>
 
+      ${this._showHeatmap && this.questionnaire ? this._renderHeatmap() : ''}
       ${this._showTable ? this._renderTable() : ''}
+    `;
+  }
+
+  // The per-item heatmap: which symptoms are moving. Rows = scored items in
+  // questionnaire order, columns = all sessions, cell fill = answer as a
+  // fraction of the item's max on the same warm ramp the bands use.
+  // Past COMPACT_THRESHOLD sessions the cells drop their numbers and shrink
+  // to color chips (values in tooltips) so a year of weekly sessions still
+  // fits in the card without horizontal scrolling.
+  _renderHeatmap() {
+    const m = buildHeatmapModel({ points: this.series.points, questionnaire: this.questionnaire });
+    if (!m.rows.length) return html``;
+    // The table lives in the RTL page (item texts read naturally, labels on
+    // the right), but time must flow left-to-right to match the chart above
+    // (D-10). In RTL, DOM order renders right-to-left — so columns render
+    // reversed: newest first in the DOM = rightmost on screen.
+    const columns = [...m.columns].reverse();
+    const cells = (r) => [...r.cells].reverse();
+    return html`
+      <div class="heatmap-scroll">
+        <table class="heatmap ${m.compact ? 'compact' : ''}">
+          <thead>
+            <tr>
+              <th scope="col"></th>
+              ${columns.map(c => html`<th scope="col">${c.displayLabel}</th>`)}
+            </tr>
+          </thead>
+          <tbody>
+            ${m.rows.map(r => html`
+              <tr>
+                <th scope="row" title=${r.text}>${r.text}</th>
+                ${cells(r).map((c, i) => c
+                  ? html`<td class="cell" style="background:${c.fill}"
+                         title="${columns[i].label} · ${c.value}">${m.compact ? '' : c.value}</td>`
+                  : html`<td class="cell empty" title="${columns[i].label} · —">${m.compact ? '' : '—'}</td>`)}
+              </tr>
+            `)}
+          </tbody>
+        </table>
+      </div>
     `;
   }
 

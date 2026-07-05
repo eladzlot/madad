@@ -246,6 +246,15 @@ Append-only. Date format: YYYY-MM-DD.
 
 ---
 
+### D-13 — Chart shows every session; the 5 is a minimum axis span, not a window
+**Date:** 2026-07-05
+**Context:** AGG-3 review. The original AGGREGATE_SPEC §5.4 prescribed a 5-session visible window with pagination; implemented as such. User correction: the graph must show *at least* 5 time points with **no upper limit** — the chunking made longer histories harder to read (and disagreed with the heatmap, which always shows everything).
+**Decision:** No windowing, no pagination. All sessions render always. The x-domain spans at least `MIN_TIME_SLOTS − 1 = 4` median inter-session intervals (default one week), so sparse histories cluster left with visible "future"; the real span is never truncated. Dense series thin x-labels to ~8 (newest always labelled — same rule as the heatmap). Marker separability at extreme densities is the clinician's responsibility (no clustering in v1).
+**Supersedes:** the §5.4 portion of the original spec; AGGREGATE_SPEC updated.
+**Scope impact:** chart-model (windowOffset/pagination removed; `paddedTimeDomain` in scales.js), trajectory-chart (pager UI removed).
+
+---
+
 ## 5. Task Archive
 
 ### A-6 — AGG-1 Interpretations `type`/`cutoffs` + `psychometrics` schema
@@ -268,6 +277,14 @@ Append-only. Date format: YYYY-MM-DD.
 **Files:** store.js (file retention, sessionId, getSession), chart-model.js (marker payload, label geometry), trajectory-chart.js (tooltip/keyboard/table; `interpretations` prop → `questionnaire`), components/session-detail.js (new), aggregate.js wiring, tests throughout, aggregate e2e interaction tests.
 **Decisions referenced:** D-10.
 **Test delta:** 1081 → 1096 unit; e2e 92 → 96.
+
+### A-9 — Aggregate UI round + per-item heatmap
+**Completed:** 2026-07-05
+**Summary:** User-review round on slice 2: theme made continuous with the Composer (shared tokens, Noto Sans Hebrew, navy brand header, dark mode); detail panel scoped to one questionnaire and now lists every answered item (question text + response label + value from config); severity bands tile the full plot (integer-range gaps chained, top band to axis top); band labels inside-right / cutoff labels inside-left; y-labels shifted + X_INSET so markers clear the axis. Then the **per-item heatmap** ("מפת פריטים" toggle): rows = scored items in questionnaire order, columns = sessions chronologically (rendered reversed inside the RTL table so time flows LTR like the chart), cell fill = value/itemMax on the shared severity ramp — answers "which symptoms are moving". Heatmap requires the config questionnaire; toggle hidden otherwise.
+**Files:** heatmap-model.js (new, pure + tests), trajectory-chart.js (toggle + render), store points gain answers, chart-model exports SEVERITY_RAMP, aggregate.css theme rewrite, session-detail rewrite, component restyles.
+**Compact mode:** past 12 sessions the heatmap drops in-cell numbers and renders color chips (values in tooltips, headers thinned to ~8 with the newest always labelled) — a year of weekly sessions fits in the card with no horizontal scroll (verified: 20 columns at scrollWidth == clientWidth).
+**Decisions referenced:** D-10, D-12.
+**Test delta:** 1096 → 1118 unit; e2e 96 (structure unchanged). Includes D-13: pagination removed, full series always visible, padded time domain.
 
 ### A-1 — P0-0 Cross-questionnaire back navigation
 **Completed:** 2026-04-17

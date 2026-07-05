@@ -173,11 +173,19 @@ async function main() {
 
   mkdirSync(outDir, { recursive: true });
 
+  // Two sessions on the same date would collide on report-<pid>-<date>.pdf;
+  // suffix duplicates so both files survive (real patients get distinct
+  // browser-download names the same way).
+  const usedNames = new Map();
+
   for (const s of scenario.sessions) {
     const now = new Date(`${s.date}T09:30:00`);
     const sessionState = buildSessionState(questionnaires, s.instruments);
     const dd = buildDocDefinition(sessionState, config, session, now);
-    const filename = buildFilename(session, now);
+    let filename = buildFilename(session, now);
+    const seen = usedNames.get(filename) ?? 0;
+    usedNames.set(filename, seen + 1);
+    if (seen > 0) filename = filename.replace(/\.pdf$/, ` (${seen}).pdf`);
     const outPath = join(outDir, filename);
 
     const buffer = await pdfmake.createPdf(dd).getBuffer();

@@ -264,18 +264,23 @@ literature supports it.
 
 Baseline = first uploaded session. There is no override UI in v1.
 
-### 5.4 The visible window
+### 5.4 The time axis
 
-The default visible window is the **most recent 5 sessions**. With more
-than 5 uploaded:
+*Revised 2026-07-05 (D-13, supersedes the original 5-session window +
+pagination design, which made longer histories harder to read):*
 
-- The chart paginates horizontally with arrow controls.
-- A small badge displays "מציג 6–10 מתוך 12" or similar.
-- The default view is anchored to the most recent end.
+**Every uploaded session is always on screen.** There is no windowing
+and no pagination — the series simply grows denser. The axis instead
+guarantees a *minimum* span: it always covers at least 5
+session-intervals (the median observed inter-session interval; one week
+until two sessions exist). Consequences:
 
-With ≤5 sessions, the chart spans the full available width; X-axis
-spacing reflects real time gaps between sessions. Empty right side
-(when only 1–2 sessions exist) reads visually as "future."
+- 1–2 sessions cluster at the left; the empty right side reads
+  visually as "future."
+- Dense series thin their date labels to ~8, the newest always
+  labelled (same rule as the item heatmap).
+- The clinician is responsible for not uploading more sessions than
+  are visually separable; markers do not currently collapse or cluster.
 
 A **single session must render as a real chart**: one marker, severity
 bands, axes, and labels all present — no connecting line, and no

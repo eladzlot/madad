@@ -76,18 +76,10 @@ describe('trajectory-chart — rendering', () => {
     expect(el.shadowRoot.querySelectorAll('circle')).toHaveLength(2);   // marker + ring
   });
 
-  it('pages backwards and forwards through more than 5 sessions', async () => {
-    const el = await makeEl({ series: series(pts(7)) });
-    const pagerText = () => el.shadowRoot.querySelector('.pager span').textContent;
-    expect(pagerText()).toContain('3–7');
-
-    el.shadowRoot.querySelectorAll('.pager button')[0].click();   // older
-    await el.updateComplete;
-    expect(pagerText()).toContain('1–2');
-
-    el.shadowRoot.querySelectorAll('.pager button')[1].click();   // newer
-    await el.updateComplete;
-    expect(pagerText()).toContain('3–7');
+  it('shows every session with no pagination (D-13)', async () => {
+    const el = await makeEl({ series: series(pts(12)) });
+    expect(markers(el)).toHaveLength(12);
+    expect(el.shadowRoot.querySelector('.pager')).toBeNull();
   });
 });
 
@@ -152,6 +144,63 @@ describe('trajectory-chart — keyboard & selection', () => {
 
     markers(el)[0].dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
     expect(events[1]).toEqual({ sessionId: 0, sessionKey: 'phq9', questionnaireId: 'phq9' });
+  });
+});
+
+describe('trajectory-chart — item heatmap', () => {
+  const QUESTIONNAIRE = {
+    defaultOptionSetId: 'freq',
+    optionSets: { freq: [{ label: 'a', value: 0 }, { label: 'b', value: 3 }] },
+    items: [
+      { id: 'q1', type: 'select', text: 'שאלה ראשונה' },
+      { id: 'q2', type: 'select', text: 'שאלה שנייה' },
+    ],
+  };
+
+  it('toggles a heatmap grid with one row per answered item', async () => {
+    const el = await makeEl({
+      series: series(pts(2, { answers: { q1: 3, q2: 0 } })),
+      questionnaire: QUESTIONNAIRE,
+    });
+    expect(el.shadowRoot.querySelector('table.heatmap')).toBeNull();
+
+    el.shadowRoot.querySelector('.heatmap-toggle').click();
+    await el.updateComplete;
+
+    const heatmap = el.shadowRoot.querySelector('table.heatmap');
+    expect(heatmap).not.toBeNull();
+    expect(heatmap.querySelectorAll('tbody tr')).toHaveLength(2);
+    expect(heatmap.querySelectorAll('tbody td.cell')).toHaveLength(4);   // 2 items × 2 sessions
+    // Hot and cold cells get different fills.
+    const [hot, cold] = [...heatmap.querySelectorAll('tbody tr')].map(
+      tr => tr.querySelector('td').getAttribute('style'));
+    expect(hot).not.toBe(cold);
+  });
+
+  it('offers no heatmap toggle without a config questionnaire', async () => {
+    const el = await makeEl({ series: series(pts(2)) });
+    expect(el.shadowRoot.querySelector('.heatmap-toggle')).toBeNull();
+  });
+
+  it('renders compact color chips (no in-cell numbers, tooltips instead) past the threshold', async () => {
+    const points = Array.from({ length: 20 }, (_, i) => ({
+      sessionId: i,
+      sessionKey: 'phq9',
+      date: D(`2026-01-${String(i + 1).padStart(2, '0')}T10:00:00Z`),
+      total: 1,
+      subscales: {},
+      alerts: [],
+      answers: { q1: 3 },
+    }));
+    const el = await makeEl({ series: series(points), questionnaire: QUESTIONNAIRE });
+    el.shadowRoot.querySelector('.heatmap-toggle').click();
+    await el.updateComplete;
+
+    const heatmap = el.shadowRoot.querySelector('table.heatmap');
+    expect(heatmap.classList.contains('compact')).toBe(true);
+    const cell = heatmap.querySelector('tbody td.cell');
+    expect(cell.textContent.trim()).toBe('');
+    expect(cell.getAttribute('title')).toMatch(/· 3$/);
   });
 });
 

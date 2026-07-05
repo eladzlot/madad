@@ -8,9 +8,16 @@
 // Coordinate system: SVG viewBox units, y grows downward, time flows
 // left-to-right (D-10 — supersedes the spec's original RTL axis).
 
-import { linearScale, timeScale, yTickValues, niceMax } from './scales.js';
+import { linearScale, timeScale, paddedTimeDomain, yTickValues, niceMax } from './scales.js';
 
-export const DEFAULT_WINDOW_SIZE = 5;   // AGGREGATE_SPEC §5.4
+// The axis always spans at least this many session-slots (§5.4 / D-13):
+// few sessions cluster left with visible "future"; beyond that the series
+// simply grows denser — every session is always on screen.
+export const MIN_TIME_SLOTS = 5;
+
+// At most ~this many x-axis date labels; thinned when denser, the newest
+// always keeps its label.
+const X_LABEL_TARGET = 8;
 
 export const DIMS = {
   width: 800,
@@ -22,9 +29,10 @@ export const DIMS = {
 // clear of the y-axis labels and the last marker clear of the right edge.
 export const X_INSET = 16;
 
-// Warm severity ramp, lowest → highest band (lifted from the PDF's palette
-// family). Bands sample this ramp evenly by index.
-const SEVERITY_RAMP = ['#F4F7F4', '#FDFBEF', '#FDF3DF', '#FCE9E1', '#FBE0E0'];
+// Warm severity ramp, lowest → highest (lifted from the PDF's palette
+// family). Bands sample this ramp evenly by index; the item heatmap reuses
+// it so cell colors and band colors speak the same language.
+export const SEVERITY_RAMP = ['#F4F7F4', '#FDFBEF', '#FDF3DF', '#FCE9E1', '#FBE0E0'];
 
 // Default date label: day.month in local time, year appended when the
 // visible points span more than one year. Injectable for tests (UTC).
@@ -37,8 +45,6 @@ function defaultFormatDate(date, { withYear = false } = {}) {
  * @param {object}   args
  * @param {Array}    args.points           — [{date, total, category, alerts, ...}] sorted ascending
  * @param {object}   [args.interpretations] — the instrument's interpretations block (or undefined)
- * @param {number}   [args.windowOffset]   — 0 = newest window; 1 = one page older; …
- * @param {number}   [args.windowSize]
  * @param {object}   [args.dims]
  * @param {Function} [args.formatDate]
  * @returns {object} render model
@@ -46,8 +52,6 @@ function defaultFormatDate(date, { withYear = false } = {}) {
 export function buildChartModel({
   points,
   interpretations,
-  windowOffset = 0,
-  windowSize = DEFAULT_WINDOW_SIZE,
   dims = DIMS,
   formatDate = defaultFormatDate,
 }) {
@@ -60,20 +64,13 @@ export function buildChartModel({
   };
 
   if (!points || points.length === 0) {
-    return { width, height, plot, empty: true, bands: [], cutoffs: [], markers: [], linePath: null, xTicks: [], yTicks: [], pagination: null };
+    return { width, height, plot, empty: true, bands: [], cutoffs: [], markers: [], linePath: null, xTicks: [], yTicks: [] };
   }
 
-  // ── Visible window: anchored to the newest end, paged backwards ──────────
-  const total = points.length;
-  const pageCount = Math.max(1, Math.ceil(total / windowSize));
-  const offset = Math.min(Math.max(0, windowOffset), pageCount - 1);
-  const end = total - offset * windowSize;             // exclusive
-  const start = Math.max(0, end - windowSize);
-  const visible = points.slice(start, end);
-
-  const pagination = total > windowSize
-    ? { from: start + 1, to: end, total, hasOlder: start > 0, hasNewer: end < total }
-    : null;
+  // Every session is always on screen (D-13 — no windowing, no pagination);
+  // the axis just spans at least MIN_TIME_SLOTS session-intervals so sparse
+  // histories cluster left with visible "future".
+  const visible = points;
 
   // ── Scales ────────────────────────────────────────────────────────────────
   const bandRanges = interpretations?.type === 'severity' ? (interpretations.ranges ?? []) : [];
@@ -89,7 +86,8 @@ export function buildChartModel({
   );
   const yMax = niceMax(rawMax);
   const y = linearScale(yMax, plot.y + plot.h, plot.y);
-  const x = timeScale(visible.map(p => p.date), plot.x + X_INSET, plot.x + plot.w - X_INSET);
+  const domain = paddedTimeDomain(visible.map(p => p.date), MIN_TIME_SLOTS);
+  const x = timeScale(domain, plot.x + X_INSET, plot.x + plot.w - X_INSET);
 
   // ── Overlays ──────────────────────────────────────────────────────────────
   // Band labels sit inside the right edge of the plot, cutoff labels inside
@@ -143,9 +141,8 @@ export function buildChartModel({
     sessionId: p.sessionId ?? null,
     sessionKey: p.sessionKey ?? null,
     fileName: p.fileName ?? null,
-    // Baseline = first session of the uploaded set (§5.3), marked only
-    // when it is actually visible in the current window.
-    baseline: start === 0 && i === 0,
+    // Baseline = first session of the uploaded set (§5.3).
+    baseline: i === 0,
   }));
 
   const linePath = markers.length > 1
@@ -153,10 +150,15 @@ export function buildChartModel({
     : null;
 
   // ── Ticks ─────────────────────────────────────────────────────────────────
+  // Dense series thin their date labels to ~X_LABEL_TARGET, anchored so the
+  // newest session always keeps its label (same rule as the heatmap).
   const yTicks = yTickValues(yMax).map(v => ({ y: y(v), label: String(v) }));
-  const xTicks = markers.map(m => ({ x: m.x, label: m.label }));
+  const step = Math.max(1, Math.ceil(markers.length / X_LABEL_TARGET));
+  const xTicks = markers
+    .filter((_, i) => (markers.length - 1 - i) % step === 0)
+    .map(m => ({ x: m.x, label: m.label }));
 
-  return { width, height, plot, empty: false, bands, cutoffs, markers, linePath, xTicks, yTicks, pagination };
+  return { width, height, plot, empty: false, bands, cutoffs, markers, linePath, xTicks, yTicks };
 }
 
 function round(n) {

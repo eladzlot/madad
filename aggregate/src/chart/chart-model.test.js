@@ -2,7 +2,7 @@
 // Every layout rule the SVG component relies on is pinned here as data.
 
 import { describe, it, expect } from 'vitest';
-import { linearScale, timeScale, yTickValues, niceMax } from './scales.js';
+import { linearScale, timeScale, paddedTimeDomain, yTickValues, niceMax } from './scales.js';
 import { buildChartModel, DIMS, X_INSET } from './chart-model.js';
 
 // UTC formatter so tests are timezone-independent.
@@ -33,16 +33,54 @@ describe('linearScale', () => {
 });
 
 describe('timeScale', () => {
-  it('positions dates proportionally to elapsed time', () => {
+  it('positions dates proportionally to elapsed time within the domain', () => {
     const x = timeScale([D('2026-01-01'), D('2026-01-11')], 0, 100);
     expect(x(D('2026-01-01'))).toBe(0);
     expect(x(D('2026-01-11'))).toBe(100);
     expect(x(D('2026-01-06'))).toBe(50);
   });
 
-  it('anchors a single date at the left edge (future to the right)', () => {
-    const x = timeScale([D('2026-01-01')], 40, 100);
+  it('a degenerate domain anchors at the range start', () => {
+    const x = timeScale([D('2026-01-01'), D('2026-01-01')], 40, 100);
     expect(x(D('2026-01-01'))).toBe(40);
+  });
+});
+
+describe('paddedTimeDomain', () => {
+  const WEEK = 7 * 24 * 3600 * 1000;
+
+  it('≥5 sessions: domain is simply first→last', () => {
+    const dates = Array.from({ length: 5 }, (_, i) => new Date(Date.UTC(2026, 0, 1 + i * 7)));
+    expect(paddedTimeDomain(dates)).toEqual([dates[0], dates[4]]);
+  });
+
+  it('a single session pads 4 default weeks of future', () => {
+    const d = D('2026-01-01');
+    const [start, end] = paddedTimeDomain([d]);
+    expect(start).toBe(d);
+    expect(end.getTime() - d.getTime()).toBe(4 * WEEK);
+  });
+
+  it('sparse sessions pad using the median observed interval', () => {
+    const dates = [D('2026-01-01'), D('2026-01-08')];   // one week apart
+    const [, end] = paddedTimeDomain(dates);
+    // 5 slots of one week from the first session.
+    expect(end.getTime() - dates[0].getTime()).toBe(4 * WEEK);
+  });
+
+  it('padding scales with the cadence: 2 sessions always sit in the first of 4 slots', () => {
+    const dates = [D('2026-01-01'), D('2026-06-01')];   // 5-month cadence
+    const [, end] = paddedTimeDomain(dates);
+    const gap = dates[1].getTime() - dates[0].getTime();
+    expect(end.getTime() - dates[0].getTime()).toBe(4 * gap);
+  });
+
+  it('never truncates the real span when one gap dwarfs the median', () => {
+    const dates = [D('2026-01-01'), D('2026-01-08'), D('2026-01-15'), D('2027-01-01')];
+    const [, end] = paddedTimeDomain(dates);
+    // Median interval is a week → padding would end far before the real
+    // last session; the domain must still reach it.
+    expect(end).toEqual(dates[3]);
   });
 });
 
@@ -210,44 +248,49 @@ describe('buildChartModel — overlays', () => {
   });
 });
 
-// ── chart model: windowing & pagination ───────────────────────────────────────
+// ── chart model: full series (D-13 — no windowing) ────────────────────────────
 
-describe('buildChartModel — window & pagination', () => {
-  const twelve = Array.from({ length: 12 }, (_, i) =>
-    pt(`2026-01-${String(i + 1).padStart(2, '0')}T10:00:00Z`, i));
+describe('buildChartModel — full series', () => {
+  const many = (n) => Array.from({ length: n }, (_, i) =>
+    pt(new Date(Date.UTC(2026, 0, 1 + i * 7, 10)).toISOString(), i));
 
-  it('≤5 sessions: no pagination, all visible', () => {
-    const m = model(twelve.slice(0, 5));
-    expect(m.pagination).toBeNull();
-    expect(m.markers).toHaveLength(5);
+  it('every session is always on screen — 12, 30, 52 sessions alike', () => {
+    for (const n of [12, 30, 52]) {
+      const m = model(many(n));
+      expect(m.markers).toHaveLength(n);
+      expect(m.linePath).not.toBeNull();
+    }
   });
 
-  it('default window shows the most recent 5 of 12', () => {
-    const m = model(twelve);
-    expect(m.markers.map(k => k.total)).toEqual([7, 8, 9, 10, 11]);
-    expect(m.pagination).toEqual({ from: 8, to: 12, total: 12, hasOlder: true, hasNewer: false });
-  });
-
-  it('offset pages backwards through history', () => {
-    const m = model(twelve, { windowOffset: 1 });
-    expect(m.markers.map(k => k.total)).toEqual([2, 3, 4, 5, 6]);
-    expect(m.pagination).toEqual({ from: 3, to: 7, total: 12, hasOlder: true, hasNewer: true });
-  });
-
-  it('oldest page clamps to the start and marks the baseline', () => {
-    const m = model(twelve, { windowOffset: 99 });
-    expect(m.markers.map(k => k.total)).toEqual([0, 1]);
-    expect(m.pagination).toEqual({ from: 1, to: 2, total: 12, hasOlder: false, hasNewer: true });
+  it('the baseline is always the first session', () => {
+    const m = model(many(12));
     expect(m.markers[0].baseline).toBe(true);
+    expect(m.markers.slice(1).every(k => !k.baseline)).toBe(true);
   });
 
-  it('baseline is not marked on windows that exclude the first session', () => {
-    const m = model(twelve);
-    expect(m.markers.every(k => !k.baseline)).toBe(true);
+  it('sparse histories cluster left: 2 weekly sessions occupy the first of ~4 week-slots', () => {
+    const m = model([
+      pt('2026-01-01T10:00:00Z', 5),
+      pt('2026-01-08T10:00:00Z', 4),
+    ]);
+    const innerW = m.plot.w - 2 * X_INSET;
+    const secondX = m.markers[1].x - (m.plot.x + X_INSET);
+    expect(secondX).toBeCloseTo(innerW / 4, 5);   // 1 of 4 intervals — future to the right
   });
 
-  it('marker geometry stays inside the plot area', () => {
-    const m = model(twelve);
+  it('dense series thin their date labels, newest always labelled', () => {
+    const m = model(many(52));
+    expect(m.xTicks.length).toBeLessThanOrEqual(8);
+    expect(m.xTicks.at(-1).x).toBe(m.markers.at(-1).x);
+  });
+
+  it('≤8 sessions keep a label per session', () => {
+    const m = model(many(8));
+    expect(m.xTicks).toHaveLength(8);
+  });
+
+  it('marker geometry stays inside the plot area even when dense', () => {
+    const m = model(many(52));
     for (const k of m.markers) {
       expect(k.x).toBeGreaterThanOrEqual(m.plot.x);
       expect(k.x).toBeLessThanOrEqual(m.plot.x + m.plot.w);
@@ -257,7 +300,7 @@ describe('buildChartModel — window & pagination', () => {
   });
 
   it('uses the default DIMS viewBox', () => {
-    const m = model(twelve);
+    const m = model(many(12));
     expect(m.width).toBe(DIMS.width);
     expect(m.height).toBe(DIMS.height);
   });

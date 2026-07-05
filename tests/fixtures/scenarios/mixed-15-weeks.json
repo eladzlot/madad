@@ -1,0 +1,23 @@
+{
+  "pid": "DEMO-015",
+  "name": null,
+  "config": "public/configs/prod/standard.json",
+  "sessions": [
+    { "date": "2026-03-20", "instruments": { "phq9": 21, "wsas": 30 } },
+    { "date": "2026-03-27", "instruments": { "phq9": 19 } },
+    { "date": "2026-03-28", "instruments": { "asi_3": 38 } },
+    { "date": "2026-04-03", "instruments": { "phq9": 20 } },
+    { "date": "2026-04-10", "instruments": { "phq9": 17 } },
+    { "date": "2026-04-17", "instruments": { "phq9": 15, "wsas": 24 } },
+    { "date": "2026-04-24", "instruments": { "phq9": 16 } },
+    { "date": "2026-05-01", "instruments": { "phq9": 13 } },
+    { "date": "2026-05-08", "instruments": { "phq9": 12 } },
+    { "date": "2026-05-15", "instruments": { "phq9": 10, "wsas": 16 } },
+    { "date": "2026-05-22", "instruments": { "phq9": 11 } },
+    { "date": "2026-05-29", "instruments": { "phq9": 8 } },
+    { "date": "2026-06-05", "instruments": { "phq9": 7 } },
+    { "date": "2026-06-12", "instruments": { "phq9": 6, "wsas": 9 } },
+    { "date": "2026-06-19", "instruments": { "phq9": 4 } },
+    { "date": "2026-06-26", "instruments": { "phq9": 5 } }
+  ]
+}

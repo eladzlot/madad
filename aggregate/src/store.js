@@ -91,6 +91,7 @@ export function createStore() {
             subscales: score.subscales ?? {},
             category: score.category ?? null,
             alerts: envelope.sessionState.alerts?.[sessionKey] ?? [],
+            answers: envelope.sessionState.answers?.[sessionKey] ?? {},
             pid: envelope.pid ?? null,
             fileName,
           });
