@@ -204,6 +204,69 @@ describe('trajectory-chart — item heatmap', () => {
   });
 });
 
+describe('trajectory-chart — image export (§6)', () => {
+  it('offers PNG and SVG export buttons', async () => {
+    const el = await makeEl({ series: series(pts(2)) });
+    expect(el.shadowRoot.querySelector('.export-png')).not.toBeNull();
+    expect(el.shadowRoot.querySelector('.export-svg')).not.toBeNull();
+  });
+
+  it('offers the pid checkbox (default off) only when all points share one pid', async () => {
+    const withPid = await makeEl({ series: series(pts(2, { pid: 'TRC-001' })) });
+    const checkbox = withPid.shadowRoot.querySelector('.export-pid input');
+    expect(checkbox).not.toBeNull();
+    expect(checkbox.checked).toBe(false);
+
+    const noPid = await makeEl({ series: series(pts(2)) });
+    expect(noPid.shadowRoot.querySelector('.export-pid')).toBeNull();
+  });
+});
+
+describe('trajectory-chart — copy to clipboard (§6)', () => {
+  function stubClipboard() {
+    const written = [];
+    // Swallow the pending blob promise — happy-dom never fires Image.onload,
+    // so rasterization stays pending; the copy contract under test is the
+    // synchronous ClipboardItem construction + clipboard.write call.
+    globalThis.ClipboardItem = class {
+      constructor(items) {
+        this.types = Object.keys(items);
+        Object.values(items).forEach(v => Promise.resolve(v).catch(() => {}));
+      }
+    };
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { write: vi.fn(async (items) => written.push(...items)) },
+      configurable: true,
+    });
+    return written;
+  }
+
+  it('copy writes an image/png ClipboardItem and shows transient feedback', async () => {
+    const written = stubClipboard();
+    try {
+      const el = await makeEl({ series: series(pts(2)) });
+      const btn = el.shadowRoot.querySelector('.export-copy');
+      expect(btn).not.toBeNull();
+      expect(btn.textContent).toContain('העתקה');
+
+      btn.click();
+      await new Promise(r => setTimeout(r));
+      await el.updateComplete;
+
+      expect(written).toHaveLength(1);
+      expect(written[0].types).toEqual(['image/png']);
+      expect(el.shadowRoot.querySelector('.export-copy').textContent).toContain('הועתק');
+    } finally {
+      delete globalThis.ClipboardItem;
+    }
+  });
+
+  it('hides the copy button when the Clipboard API is unavailable', async () => {
+    const el = await makeEl({ series: series(pts(2)) });
+    expect(el.shadowRoot.querySelector('.export-copy')).toBeNull();
+  });
+});
+
 describe('trajectory-chart — view as table', () => {
   it('toggles a table of the full series with subscale columns', async () => {
     const el = await makeEl({

@@ -161,6 +161,81 @@ test.describe('aggregate interaction', () => {
   });
 });
 
+// ── Image export (AGGREGATE_SPEC §6) ──────────────────────────────────────────
+
+test.describe('aggregate image export', () => {
+  test('SVG export carries the chart framing; pid appears only when opted in', async ({ page }) => {
+    const pdfFile = await downloadReport(page, 0);   // session pid = E2E-001
+
+    await page.goto('/aggregate/');
+    await uploadInput(page).setInputFiles(pdfFile);
+    const chart = page.locator('trajectory-chart');
+    await expect(chart).toBeVisible();
+
+    const downloadSvg = async () => {
+      const [download] = await Promise.all([
+        page.waitForEvent('download', { timeout: 10_000 }),
+        chart.locator('.export-svg').click(),
+      ]);
+      expect(download.suggestedFilename()).toMatch(/^madad-phq9_test-\d{4}-\d{2}-\d{2}\.svg$/);
+      const { readFileSync } = await import('fs');
+      return readFileSync(await download.path(), 'utf8');
+    };
+
+    // Default: title, timestamp footer, brand — and no pid.
+    const plain = await downloadSvg();
+    expect(plain).toContain('PHQ-9 (E2E)');
+    expect(plain).toContain('הופק');
+    expect(plain).toContain('מדד');
+    expect(plain).not.toContain('E2E-001');
+
+    // Opt in → pid stamped.
+    await chart.locator('.export-pid input').check();
+    const withPid = await downloadSvg();
+    expect(withPid).toContain('מזהה: E2E-001');
+  });
+
+  test('copy places a PNG on the clipboard with visible feedback', async ({ page, context, browserName }) => {
+    test.skip(browserName !== 'chromium', 'clipboard permission grants are chromium-only in Playwright');
+    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+    const pdfFile = await downloadReport(page, 0);
+
+    await page.goto('/aggregate/');
+    await uploadInput(page).setInputFiles(pdfFile);
+    const chart = page.locator('trajectory-chart');
+    await expect(chart).toBeVisible();
+
+    await chart.locator('.export-copy').click();
+    await expect(chart.locator('.export-copy')).toContainText('הועתק');
+
+    const types = await page.evaluate(async () => {
+      const [item] = await navigator.clipboard.read();
+      return item.types;
+    });
+    expect(types).toContain('image/png');
+  });
+
+  test('PNG export rasterizes in-browser and downloads a real image', async ({ page }) => {
+    const pdfFile = await downloadReport(page, 0);
+
+    await page.goto('/aggregate/');
+    await uploadInput(page).setInputFiles(pdfFile);
+    const chart = page.locator('trajectory-chart');
+    await expect(chart).toBeVisible();
+
+    const [download] = await Promise.all([
+      page.waitForEvent('download', { timeout: 10_000 }),
+      chart.locator('.export-png').click(),
+    ]);
+    expect(download.suggestedFilename()).toMatch(/\.png$/);
+    const { readFileSync } = await import('fs');
+    const buffer = readFileSync(await download.path());
+    // PNG magic bytes; a broken canvas path would download nothing or an SVG.
+    expect(buffer.subarray(0, 8)).toEqual(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]));
+    expect(buffer.length).toBeGreaterThan(10_000);   // 1600×1000 chart, not a stub
+  });
+});
+
 // ── Bad-file handling (AGGREGATE_SPEC §5.7) ───────────────────────────────────
 
 test.describe('aggregate bad-file handling', () => {

@@ -53,8 +53,8 @@ The phrase **"Continue with TODO"** means: do the above, then pick up the curren
 
 ## 1. Status
 
-**Currently working on:** AGG stream — slices 1+2 (AGG-2, AGG-3) complete; next: AGG-4 (RCI — blocked on AGG-P) or AGG-5 (export) or aggregate deploy decision.
-**Last session ended:** 2026-07-04 — Slice 2 shipped: tooltips, keyboard-operable markers, session detail panel with in-memory PDF re-download, view-as-table, chart label placement fixes. 1096 unit tests, 96 e2e. Envelope (c92da8c) **deployed to production** 2026-07-04; aggregate surface itself still local by user choice.
+**Currently working on:** AGG stream — slices 1, 2, 4 (AGG-2, AGG-3, AGG-5) complete; next: AGG-4 (RCI — blocked on AGG-P) or aggregate deploy decision.
+**Last session ended:** 2026-07-05 — Slice 4 shipped: image export per spec §6 — copy-to-clipboard (primary), PNG/SVG download (standalone SVG with title/date-range/timestamp/footer, pid opt-in, in-browser 2× rasterization). 1144 unit tests, 110 e2e. Envelope (c92da8c) **deployed to production** 2026-07-04; aggregate surface itself still local by user choice.
 **Blocked on:** AGG-4 needs AGG-P (user's psychometrics literature pass). (P0-1/P0-2/P0-7 validation cluster deprioritized by user 2026-07-03.)
 
 ---
@@ -87,7 +87,8 @@ Build slices per D-11. Slice 1 goes to pilot therapists before later slices are 
 | AGG-2 | Slice 1 — usable core: surface scaffold, upload + per-file status, parse-pdf, chart (total line, bands, time axis, 5-session window), pid filter, raw-data list | done | See archive A-7. D-9/D-10 applied. |
 | AGG-3 | Slice 2 — interaction & a11y: tooltips, keyboard nav, detail panel, view-as-table | done | See archive A-8. |
 | AGG-4 | Slice 3 — RCI line + subscale toggles | todo | Blocked on AGG-P content |
-| AGG-5 | Slice 4 — PNG/SVG export | todo | |
+| AGG-5 | Slice 4 — PNG/SVG export | done | See archive A-10. |
+| AGG-6 | Design dive: aggregate visual refresh | todo | User-flagged 2026-07-05: the chart-card footer has accumulated too many plain underlined-link actions (table, heatmap, copy, PNG, SVG) and reads old-fashioned — wants a deeper design pass, not a spot fix |
 | AGG-P | Psychometrics content: reliability/SD/source per instrument | todo | **User-owned clinical workstream** — can start now; long pole for AGG-4 |
 
 ### P1 — API stability, author experience
@@ -292,6 +293,15 @@ Append-only. Date format: YYYY-MM-DD.
 **Compact mode:** past 12 sessions the heatmap drops in-cell numbers and renders color chips (values in tooltips, headers thinned to ~8 with the newest always labelled) — a year of weekly sessions fits in the card with no horizontal scroll (verified: 20 columns at scrollWidth == clientWidth).
 **Decisions referenced:** D-10, D-12.
 **Test delta:** 1096 → 1118 unit; e2e 96 (structure unchanged). Includes D-13: pagination removed, full series always visible, padded time domain.
+
+### A-10 — AGG-5 Aggregate slice 4: PNG/SVG image export
+**Completed:** 2026-07-05
+**Summary:** Spec §6 image export. `export-svg.js` (pure, node-tested like chart-model) builds a standalone 800×500 SVG document — reuses `buildChartModel` with the chart's shared x-domain (D-14: the export shows what the clinician saw) but stamps literal light-theme colors, since an exported file has no page stylesheet to resolve CSS vars. Framing per spec: instrument title + date range header, generation timestamp + "מדד" footer — always; patient name — never representable (builder has no name input); pid — opt-in checkbox, default off, offered only when *every* charted point shares one pid (`uniquePid`; a mixed chart must not carry one patient's id). `export-image.js` is thin browser glue: SVG blob download, or blob-URL → `Image` → canvas at 2× (1600×1000 px) → `toBlob` PNG — no data leaves the device. Per-chart footer controls: "ייצוא תמונה: העתקה / PNG / SVG". Filename `madad-{questionnaireId}-{yyyy-mm-dd}.{ext}`.
+**Copy to clipboard (user addition, primary action — spec §6 revised):** "העתקה" rasterizes the same PNG and puts it on the clipboard with transient "הועתק ✓" feedback; the dominant sharing flow is paste-into-email/chat, not file management. Safari gesture rule honoured: the `ClipboardItem` is constructed synchronously with the *pending* blob promise (an await before `clipboard.write` voids the user gesture in WebKit). Button hidden when the async Clipboard API is unavailable.
+**Not included:** the §6 "subscale lines" export option — moot until AGG-4 ships subscale rendering; add it to the export controls then.
+**Files:** chart/export-svg.js + tests (new), chart/export-image.js (new), trajectory-chart.js (controls + `_export`), aggregate e2e export tests (SVG content contract incl. pid opt-in; PNG magic-byte + size check pinning the rasterization path in chromium and webkit).
+**Decisions referenced:** D-10, D-14.
+**Test delta:** 1118 → 1144 unit; e2e 104 → 110 (export download tests × 2 browsers + clipboard test, chromium-only — Playwright can't grant clipboard permissions in WebKit). `export-image.js` has no unit coverage by design (pure browser API glue) — the e2e PNG + clipboard tests are its guard.
 
 ### A-1 — P0-0 Cross-questionnaire back navigation
 **Completed:** 2026-04-17

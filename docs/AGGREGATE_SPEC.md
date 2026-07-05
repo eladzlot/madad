@@ -339,9 +339,16 @@ sees per-file status in the upload list and adjusts.
 
 ## 6. Image export
 
-Charts can be exported as PNG (primary) or SVG (secondary) for
-out-of-band sharing — typically with a colleague, supervisor, or
-referring physician for an outcome judgement.
+Charts can be exported for out-of-band sharing — typically with a
+colleague, supervisor, or referring physician for an outcome judgement.
+Three actions, in order of prominence (revised 2026-07-05: copy added
+as the primary action — the dominant real flow is pasting into an email
+or chat, not managing files):
+
+1. **Copy to clipboard** (PNG) — hidden when the browser lacks the
+   async Clipboard API.
+2. **PNG download** (primary download form)
+3. **SVG download** (secondary)
 
 **Always on the image:** instrument title, the chart itself, date range,
 generation timestamp, "מדד" footer.

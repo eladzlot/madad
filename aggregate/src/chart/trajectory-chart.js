@@ -17,6 +17,8 @@
 import { LitElement, html, svg, css } from 'lit';
 import { buildChartModel } from './chart-model.js';
 import { buildHeatmapModel } from './heatmap-model.js';
+import { buildExportSvg, exportFilename, uniquePid } from './export-svg.js';
+import { svgBlob, svgToPngBlob, triggerDownload, canCopyImage, copyPngToClipboard } from './export-image.js';
 
 export class TrajectoryChart extends LitElement {
   static properties = {
@@ -26,6 +28,8 @@ export class TrajectoryChart extends LitElement {
     _tooltip:      { state: true },    // { marker, x, y } in host px, or null
     _showTable:    { state: true },
     _showHeatmap:  { state: true },
+    _exportPid:    { state: true },    // include pid on exported images (§6: opt-in, default off)
+    _copied:       { state: true },    // transient "copied ✓" feedback on the copy button
   };
 
   static styles = css`
@@ -101,7 +105,8 @@ export class TrajectoryChart extends LitElement {
     }
 
     .table-toggle,
-    .heatmap-toggle {
+    .heatmap-toggle,
+    .export-btn {
       border: none;
       background: none;
       font-family: inherit;
@@ -110,6 +115,22 @@ export class TrajectoryChart extends LitElement {
       cursor: pointer;
       text-decoration: underline;
       padding: .25rem;
+    }
+
+    .export {
+      display: flex;
+      align-items: center;
+      gap: var(--space-xs, .25rem);
+      color: var(--color-text-muted, #78716c);
+      font-size: var(--font-size-sm, .8rem);
+    }
+
+    .export-pid {
+      display: flex;
+      align-items: center;
+      gap: .25rem;
+      cursor: pointer;
+      margin-inline-end: var(--space-xs, .25rem);
     }
 
     .heatmap-scroll {
@@ -213,6 +234,8 @@ export class TrajectoryChart extends LitElement {
     this._tooltip = null;
     this._showTable = false;
     this._showHeatmap = false;
+    this._exportPid = false;
+    this._copied = false;
   }
 
   willUpdate(changed) {
@@ -260,6 +283,46 @@ export class TrajectoryChart extends LitElement {
       bubbles: true,
       composed: true,
     }));
+  }
+
+  // ── Export (AGGREGATE_SPEC §6) ─────────────────────────────────────────────
+
+  // Copy to clipboard (primary), PNG or SVG download — all rendered
+  // entirely in the browser. The export uses the same shared x-domain as
+  // the on-screen chart, so the image shows exactly what the clinician saw.
+  _buildExport(now) {
+    return buildExportSvg({
+      series: this.series,
+      questionnaire: this.questionnaire,
+      domain: this.domain,
+      pid: this._exportPid ? uniquePid(this.series.points) : null,
+      now,
+    });
+  }
+
+  async _export(format) {
+    const now = new Date();
+    const { svg: doc, width, height } = this._buildExport(now);
+    try {
+      const blob = format === 'svg'
+        ? svgBlob(doc)
+        : await svgToPngBlob(doc, { width, height, scale: 2 });
+      triggerDownload(blob, exportFilename(this.series.questionnaireId, now, format));
+    } catch (err) {
+      console.error('[aggregate] image export failed:', err);
+    }
+  }
+
+  async _copy() {
+    const { svg: doc, width, height } = this._buildExport(new Date());
+    try {
+      await copyPngToClipboard(doc, { width, height, scale: 2 });
+      this._copied = true;
+      clearTimeout(this._copiedTimer);
+      this._copiedTimer = setTimeout(() => { this._copied = false; }, 1500);
+    } catch (err) {
+      console.error('[aggregate] clipboard copy failed:', err);
+    }
   }
 
   _markerAria(k) {
@@ -367,6 +430,26 @@ export class TrajectoryChart extends LitElement {
               @click=${() => { this._showHeatmap = !this._showHeatmap; }}
             >${this._showHeatmap ? 'הסתרת מפת פריטים' : 'מפת פריטים'}</button>
           ` : ''}
+        </span>
+        <span class="export">
+          ${uniquePid(this.series.points) != null ? html`
+            <label class="export-pid">
+              <input
+                type="checkbox"
+                .checked=${this._exportPid}
+                @change=${(e) => { this._exportPid = e.target.checked; }}
+              >
+              כולל מזהה
+            </label>
+          ` : ''}
+          <span>ייצוא תמונה:</span>
+          ${canCopyImage() ? html`
+            <button class="export-btn export-copy" @click=${() => this._copy()}>
+              ${this._copied ? 'הועתק ✓' : 'העתקה'}
+            </button>
+          ` : ''}
+          <button class="export-btn export-png" @click=${() => this._export('png')}>PNG</button>
+          <button class="export-btn export-svg" @click=${() => this._export('svg')}>SVG</button>
         </span>
       </div>
 
