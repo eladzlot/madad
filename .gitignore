@@ -8,3 +8,6 @@ test-results/
 
 # Generated PDF fixtures — regenerate with `npm run pdf:fixtures`
 tests/fixtures/pdfs/
+
+# Vite dep-optimizer cache (vite-node writes it at the repo root)
+.vite/

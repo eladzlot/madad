@@ -121,14 +121,28 @@ export class TrajectoryChart extends LitElement {
       border-collapse: collapse;
       font-size: var(--font-size-sm, .8rem);
       inline-size: 100%;
+      /* Equal-width session columns regardless of header content — auto
+         layout would widen labelled columns over thinned (empty) ones. */
+      table-layout: fixed;
+    }
+
+    /* The row-header column is the only fixed-width one (set on the thead
+       corner cell, which fixed layout uses); session columns split the
+       remainder equally. */
+    table.heatmap thead th:first-child {
+      inline-size: 280px;
     }
 
     table.heatmap th[scope='col'] {
       font-weight: var(--font-weight-medium, 500);
       color: var(--color-text-muted, #78716c);
-      padding: .2rem .3rem;
+      padding: .2rem 0;
       text-align: center;
       font-variant-numeric: tabular-nums;
+      /* A date label may be wider than a compact column; it overflows
+         symmetrically into its label-less neighbours, axis-style. */
+      white-space: nowrap;
+      overflow: visible;
     }
 
     table.heatmap th[scope='row'] {
@@ -136,7 +150,6 @@ export class TrajectoryChart extends LitElement {
       color: var(--color-text-muted, #78716c);
       text-align: right;
       padding: .2rem .4rem;
-      max-inline-size: 300px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
