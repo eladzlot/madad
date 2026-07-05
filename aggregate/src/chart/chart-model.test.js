@@ -305,3 +305,35 @@ describe('buildChartModel — full series', () => {
     expect(m.height).toBe(DIMS.height);
   });
 });
+
+// ── chart model: shared time domain ───────────────────────────────────────────
+
+describe('buildChartModel — shared domain', () => {
+  it('same-date points align at the same x across charts with different series', () => {
+    const domain = [D('2026-01-01T10:00:00Z'), D('2026-04-01T10:00:00Z')];
+    const weekly = model(
+      Array.from({ length: 13 }, (_, i) => pt(new Date(Date.UTC(2026, 0, 1, 10) + i * 7 * 24 * 3600 * 1000).toISOString(), i)),
+      { domain },
+    );
+    const monthly = model(
+      [pt('2026-01-01T10:00:00Z', 30), pt('2026-01-29T10:00:00Z', 20), pt('2026-02-26T10:00:00Z', 10)],
+      { domain },
+    );
+    // 2026-01-29 is weekly point index 4 and monthly point index 1.
+    expect(monthly.markers[1].x).toBeCloseTo(weekly.markers[4].x, 5);
+    expect(monthly.markers[0].x).toBeCloseTo(weekly.markers[0].x, 5);
+  });
+
+  it('a single point lands at its true date within the shared domain, not at the left edge', () => {
+    const domain = [D('2026-01-01T10:00:00Z'), D('2026-03-01T10:00:00Z')];
+    const m = model([pt('2026-01-30T10:00:00Z', 38)], { domain });
+    const innerW = m.plot.w - 2 * X_INSET;
+    const frac = (m.markers[0].x - (m.plot.x + X_INSET)) / innerW;
+    expect(frac).toBeCloseTo(29 / 59, 2);   // ~mid-domain, where the date actually is
+  });
+
+  it('without a domain the chart derives its own (standalone use)', () => {
+    const m = model([pt('2026-01-01T10:00:00Z', 5)]);
+    expect(m.markers[0].x).toBe(m.plot.x + X_INSET);
+  });
+});

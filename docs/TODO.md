@@ -255,6 +255,13 @@ Append-only. Date format: YYYY-MM-DD.
 
 ---
 
+### D-14 — All charts share one x-domain
+**Date:** 2026-07-05
+**Context:** AGG-3 review with mixed-cadence fixtures (weekly PHQ-9, monthly WSAS, one-off ASI-3). Per-chart domains put the same date at different x positions, defeating cross-instrument comparison.
+**Decision:** The composition root computes one `paddedTimeDomain` over all visible (pid-filtered) sessions and passes it to every `<trajectory-chart>`; same-date points align vertically across charts. A chart without a provided domain derives its own (standalone use, tests). AGGREGATE_SPEC §5.1 updated.
+
+---
+
 ## 5. Task Archive
 
 ### A-6 — AGG-1 Interpretations `type`/`cutoffs` + `psychometrics` schema

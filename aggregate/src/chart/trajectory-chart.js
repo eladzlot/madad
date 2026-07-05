@@ -22,6 +22,7 @@ export class TrajectoryChart extends LitElement {
   static properties = {
     series:        { type: Object },   // { questionnaireId, title, points } from store.series()
     questionnaire: { type: Object },   // config questionnaire (interpretations, subscaleLabels) or undefined
+    domain:        { type: Array },    // shared [start, end] x-domain across all charts (optional)
     _tooltip:      { state: true },    // { marker, x, y } in host px, or null
     _showTable:    { state: true },
     _showHeatmap:  { state: true },
@@ -195,6 +196,7 @@ export class TrajectoryChart extends LitElement {
     super();
     this.series = null;
     this.questionnaire = undefined;
+    this.domain = undefined;
     this._tooltip = null;
     this._showTable = false;
     this._showHeatmap = false;
@@ -273,6 +275,7 @@ export class TrajectoryChart extends LitElement {
     const m = buildChartModel({
       points: this.series.points,
       interpretations: this.questionnaire?.interpretations,
+      domain: this.domain,
     });
 
     return html`

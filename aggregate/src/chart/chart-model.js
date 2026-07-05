@@ -45,6 +45,10 @@ function defaultFormatDate(date, { withYear = false } = {}) {
  * @param {object}   args
  * @param {Array}    args.points           — [{date, total, category, alerts, ...}] sorted ascending
  * @param {object}   [args.interpretations] — the instrument's interpretations block (or undefined)
+ * @param {[Date,Date]} [args.domain]      — shared x-domain across charts. All instruments render
+ *                                           on the same time scale so same-date points align
+ *                                           vertically between charts; when absent the chart
+ *                                           derives its own domain from its points.
  * @param {object}   [args.dims]
  * @param {Function} [args.formatDate]
  * @returns {object} render model
@@ -52,6 +56,7 @@ function defaultFormatDate(date, { withYear = false } = {}) {
 export function buildChartModel({
   points,
   interpretations,
+  domain,
   dims = DIMS,
   formatDate = defaultFormatDate,
 }) {
@@ -86,8 +91,8 @@ export function buildChartModel({
   );
   const yMax = niceMax(rawMax);
   const y = linearScale(yMax, plot.y + plot.h, plot.y);
-  const domain = paddedTimeDomain(visible.map(p => p.date), MIN_TIME_SLOTS);
-  const x = timeScale(domain, plot.x + X_INSET, plot.x + plot.w - X_INSET);
+  const xDomain = domain ?? paddedTimeDomain(visible.map(p => p.date), MIN_TIME_SLOTS);
+  const x = timeScale(xDomain, plot.x + X_INSET, plot.x + plot.w - X_INSET);
 
   // ── Overlays ──────────────────────────────────────────────────────────────
   // Band labels sit inside the right edge of the plot, cutoff labels inside

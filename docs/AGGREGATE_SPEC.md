@@ -193,6 +193,12 @@ one chart:
   this spec's original right-to-left axis: dates and numbers are LTR even
   inside Hebrew documents, and clinicians read trajectory charts with the
   universal charting convention. The surrounding page remains RTL.
+- **All instruments share one time scale** (decided 2026-07-05): the
+  x-domain is computed once from every visible session and passed to
+  every chart, so the same date lands at the same horizontal position
+  in all of them — weekly and monthly instruments compare vertically,
+  and a one-off assessment sits at its true date rather than its own
+  chart's left edge.
 - Y-axis: total score, scaled 0 to instrument max.
 - Severity bands as horizontal background fills (when applicable).
 - A single line connecting session points, with markers at each session.

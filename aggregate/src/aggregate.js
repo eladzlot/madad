@@ -13,6 +13,7 @@ import { render, html } from 'lit';
 import { loadConfig } from '../../shared/config/loader.js';
 import { parsePdfFile } from './parse-pdf.js';
 import { createStore } from './store.js';
+import { paddedTimeDomain } from './chart/scales.js';
 import './chart/trajectory-chart.js';
 import './components/upload-list.js';
 import './components/pid-filter.js';
@@ -62,6 +63,12 @@ function template() {
   const pids = store.pids();
   const showFilter = store.sessionCount > 0 && (pids.length > 1 || (pids.length > 0 && store.hasUnidentified()));
 
+  // One shared x-domain across every chart: the same date lands at the same
+  // horizontal position in all instruments, so trajectories compare
+  // vertically (weekly PHQ-9 above monthly WSAS reads as one story).
+  const allDates = series.flatMap(s => s.points.map(p => p.date)).sort((a, b) => a - b);
+  const domain = allDates.length ? paddedTimeDomain(allDates) : undefined;
+
   return html`
     <div class="a-header-wrap">
       <header class="a-header">
@@ -92,6 +99,7 @@ function template() {
         <trajectory-chart
           .series=${s}
           .questionnaire=${questionnairesById.get(s.questionnaireId)}
+          .domain=${domain}
           @point-selected=${(e) => selectPoint(e.detail)}
         ></trajectory-chart>
       `)}
