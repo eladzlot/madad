@@ -77,8 +77,8 @@ test.describe('aggregate round-trip', () => {
     await expect(page.locator('upload-list')).toBeVisible();
     await uploadInput(page).setInputFiles(pdfFile);
 
-    // Per-file status row flips to "received".
-    await expect(page.locator('upload-list li.ok')).toContainText('נקלט');
+    // Successes collapse into a one-line summary (failures would get rows).
+    await expect(page.locator('upload-list details.ok-summary summary')).toContainText('דוח אחד נקלט');
 
     // The chart renders: instrument title + one marker, no connecting line.
     const chart = page.locator('trajectory-chart');
@@ -94,7 +94,7 @@ test.describe('aggregate round-trip', () => {
     await page.goto('/aggregate/');
     await uploadInput(page).setInputFiles([pdfFile, pdfFile]);
 
-    await expect(page.locator('upload-list li.ok')).toHaveCount(2);
+    await expect(page.locator('upload-list details.ok-summary summary')).toContainText('נקלטו 2 דוחות');
     const chart = page.locator('trajectory-chart');
     // optionIndex 1 → PHQ-9 item 9 = 1 → suicidality alert → each marker
     // carries an alert ring: 2 markers + 2 rings.

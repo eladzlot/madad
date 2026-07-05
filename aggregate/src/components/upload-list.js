@@ -107,6 +107,21 @@ export class UploadList extends LitElement {
     li.ok .status { color: var(--color-yes, #276749); }
     li.failed { background: var(--color-no-bg, #FDF3F3); }
     li.failed .status { color: var(--color-no, #8B3A3A); }
+
+    /* Successes collapse to a one-line summary — only failures earn rows. */
+    details.ok-summary {
+      margin-block-start: var(--space-sm, .5rem);
+      font-size: var(--font-size-sm, .875rem);
+      color: var(--color-text-muted, #5E7080);
+    }
+
+    details.ok-summary summary {
+      cursor: pointer;
+      padding: .2rem 0;
+      list-style-position: inside;
+    }
+
+    details.ok-summary .count { color: var(--color-yes, #276749); }
   `;
 
   constructor() {
@@ -133,6 +148,11 @@ export class UploadList extends LitElement {
   }
 
   render() {
+    // Success is the expected case and earns one summary line; failures are
+    // the exceptional 2% the list exists for and always render as rows.
+    const ok = this.files.filter(f => f.status === 'ok');
+    const failed = this.files.filter(f => f.status !== 'ok');
+
     return html`
       <div
         class="zone ${this._dragOver ? 'over' : ''}"
@@ -152,10 +172,10 @@ export class UploadList extends LitElement {
         <p>או גררו לכאן דוחות מדד של המטופל</p>
       </div>
 
-      ${this.files.length ? html`
+      ${failed.length ? html`
         <ul>
-          ${this.files.map(f => html`
-            <li class=${f.status === 'ok' ? 'ok' : 'failed'}>
+          ${failed.map(f => html`
+            <li class="failed">
               <span class="name">${f.name}</span>
               <span class="status" title=${f.detail ?? ''}>
                 ${STATUS_LABELS[f.status] ?? f.status}
@@ -163,6 +183,22 @@ export class UploadList extends LitElement {
             </li>
           `)}
         </ul>
+      ` : ''}
+
+      ${ok.length ? html`
+        <details class="ok-summary">
+          <summary>
+            <span class="count">${ok.length === 1 ? 'דוח אחד נקלט' : `נקלטו ${ok.length} דוחות`}</span>
+          </summary>
+          <ul>
+            ${ok.map(f => html`
+              <li class="ok">
+                <span class="name">${f.name}</span>
+                <span class="status">${STATUS_LABELS.ok}</span>
+              </li>
+            `)}
+          </ul>
+        </details>
       ` : ''}
     `;
   }
