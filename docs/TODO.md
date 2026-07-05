@@ -53,9 +53,9 @@ The phrase **"Continue with TODO"** means: do the above, then pick up the curren
 
 ## 1. Status
 
-**Currently working on:** AGG stream — slice 1 (AGG-2) complete; next: AGG-3 (interaction & a11y) or deploy.
-**Last session ended:** 2026-07-04 — Aggregate slice 1 built and green: /aggregate/ surface, zero-dep PDF parser, store, SVG trajectory charts, pid filter, raw-data list, e2e round-trip (patient PDF → chart) + dist-smoke. 1081 unit tests, 92 e2e.
-**Blocked on:** nothing. **Still not deployed** — envelope data only accrues once pushed; deploy withheld by user. (P0-1/P0-2/P0-7 validation cluster deprioritized by user 2026-07-03.)
+**Currently working on:** AGG stream — slices 1+2 (AGG-2, AGG-3) complete; next: AGG-4 (RCI — blocked on AGG-P) or AGG-5 (export) or aggregate deploy decision.
+**Last session ended:** 2026-07-04 — Slice 2 shipped: tooltips, keyboard-operable markers, session detail panel with in-memory PDF re-download, view-as-table, chart label placement fixes. 1096 unit tests, 96 e2e. Envelope (c92da8c) **deployed to production** 2026-07-04; aggregate surface itself still local by user choice.
+**Blocked on:** AGG-4 needs AGG-P (user's psychometrics literature pass). (P0-1/P0-2/P0-7 validation cluster deprioritized by user 2026-07-03.)
 
 ---
 
@@ -85,7 +85,7 @@ Build slices per D-11. Slice 1 goes to pilot therapists before later slices are 
 | AGG-0 | Envelope in PDFs (`shared/pdf/envelope-schema.js` + report.js attachment) | done | Commit c92da8c. Awaiting deploy. |
 | AGG-1 | Schema: interpretations `type` + `cutoffs[]`; optional `psychometrics` block | done | See archive A-6. D-12 applied. |
 | AGG-2 | Slice 1 — usable core: surface scaffold, upload + per-file status, parse-pdf, chart (total line, bands, time axis, 5-session window), pid filter, raw-data list | done | See archive A-7. D-9/D-10 applied. |
-| AGG-3 | Slice 2 — interaction & a11y: tooltips, keyboard nav, detail panel, view-as-table | todo | |
+| AGG-3 | Slice 2 — interaction & a11y: tooltips, keyboard nav, detail panel, view-as-table | done | See archive A-8. |
 | AGG-4 | Slice 3 — RCI line + subscale toggles | todo | Blocked on AGG-P content |
 | AGG-5 | Slice 4 — PNG/SVG export | todo | |
 | AGG-P | Psychometrics content: reliability/SD/source per instrument | todo | **User-owned clinical workstream** — can start now; long pole for AGG-4 |
@@ -261,6 +261,13 @@ Append-only. Date format: YYYY-MM-DD.
 **Files:** `aggregate/` (index.html, src/{aggregate.js,css, parse-pdf, store, chart/{scales,chart-model,trajectory-chart}, components/{upload-list,pid-filter,raw-data-list}} + tests), `tests/e2e/aggregate.e2e.test.js`, dist-smoke aggregate test, vite/vitest/eslint/lint/check-size wiring.
 **Decisions referenced:** D-9, D-10, D-11, D-12.
 **Test delta:** 1023 → 1081 unit; e2e 85 → 92 (round-trip: real patient PDF → chart, incl. no-dedup and bad-file paths).
+
+### A-8 — AGG-3 Aggregate slice 2: interaction & a11y
+**Completed:** 2026-07-04
+**Summary:** Spec §5.6 interaction layer. Custom tooltips on hover/focus (date, total, category, subscales with Hebrew labels, alerts); markers focusable (tabindex/role/aria) with arrow-key movement and Enter/click dispatching `point-selected`; `<session-detail>` slide-in panel showing the full session breakdown (all instruments that day) with the original PDF re-downloadable from the in-memory File the store now retains; view-as-table toggle rendering the full series (screen-reader primary). Chart label fixes: band labels inside-left, cutoff labels inside-right, explicit `direction:rtl` with rtl-relative anchors (SVG text-anchor is direction-relative — the source of the earlier clipping).
+**Files:** store.js (file retention, sessionId, getSession), chart-model.js (marker payload, label geometry), trajectory-chart.js (tooltip/keyboard/table; `interpretations` prop → `questionnaire`), components/session-detail.js (new), aggregate.js wiring, tests throughout, aggregate e2e interaction tests.
+**Decisions referenced:** D-10.
+**Test delta:** 1081 → 1096 unit; e2e 92 → 96.
 
 ### A-1 — P0-0 Cross-questionnaire back navigation
 **Completed:** 2026-04-17

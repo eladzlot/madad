@@ -3,7 +3,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { linearScale, timeScale, yTickValues, niceMax } from './scales.js';
-import { buildChartModel, DIMS } from './chart-model.js';
+import { buildChartModel, DIMS, X_INSET } from './chart-model.js';
 
 // UTC formatter so tests are timezone-independent.
 const utcFormat = (d, { withYear = false } = {}) => {
@@ -78,7 +78,8 @@ describe('buildChartModel — basics', () => {
     const m = model([pt('2026-07-01T10:00:00Z', 12)]);
     expect(m.empty).toBe(false);
     expect(m.markers).toHaveLength(1);
-    expect(m.markers[0].x).toBe(m.plot.x);           // anchored left
+    // Anchored left, inset so the marker clears the y-axis labels.
+    expect(m.markers[0].x).toBe(m.plot.x + X_INSET);
     expect(m.markers[0].baseline).toBe(true);
     expect(m.linePath).toBeNull();
     expect(m.xTicks).toHaveLength(1);
@@ -131,13 +132,17 @@ const PHQ9_INTERP = {
 };
 
 describe('buildChartModel — overlays', () => {
-  it('severity interpretations render one band per range, spanning the y scale', () => {
+  it('severity bands tile the entire plot — the top band extends to the axis top', () => {
     const m = model([pt('2026-07-01T10:00:00Z', 12)], { interpretations: PHQ9_INTERP });
     expect(m.bands).toHaveLength(5);
     expect(m.bands[0].label).toBe('מינימלי');
-    // Bands tile the plot: total band height ≈ plot height (yMax = niceMax(27) = 30 > 27, so not full)
+    // The topmost band reaches the top of the plot even when the axis is
+    // nice-rounded above the instrument max (yMax 30 > PHQ-9 max 27).
+    const top = m.bands.find(b => b.label === 'חמור');
+    expect(top.y).toBeCloseTo(m.plot.y, 5);
+    // And the bands jointly cover the full plot height.
     const totalH = m.bands.reduce((s, b) => s + b.h, 0);
-    expect(totalH).toBeLessThanOrEqual(m.plot.h + 0.001);
+    expect(totalH).toBeCloseTo(m.plot.h, 5);
     // Highest band gets the warmest fill, lowest the coolest.
     expect(m.bands[0].fill).not.toBe(m.bands[4].fill);
   });
@@ -173,6 +178,35 @@ describe('buildChartModel — overlays', () => {
     const m = model([pt('2026-07-01T10:00:00Z', 12)]);
     expect(m.bands).toEqual([]);
     expect(m.cutoffs).toEqual([]);
+  });
+
+  it('band labels anchor inside-right, cutoff labels inside-left', () => {
+    const m = model([pt('2026-07-01T10:00:00Z', 12)], {
+      interpretations: {
+        type: 'severity',
+        ranges: [{ min: 0, max: 20, label: 'a' }],
+        cutoffs: [{ value: 10, label: 'סף' }],
+      },
+    });
+    // Anchors are rtl-relative: 'end' extends rightward from x, 'start'
+    // extends leftward (the labels render with direction:rtl).
+    expect(m.bands[0].labelX).toBe(m.plot.x + m.plot.w - 6);
+    expect(m.bands[0].labelAnchor).toBe('start');
+    expect(m.cutoffs[0].labelX).toBe(m.plot.x + 6);
+    expect(m.cutoffs[0].labelAnchor).toBe('end');
+  });
+
+  it('markers carry the point payload the tooltip and detail panel need', () => {
+    const m = model([pt('2026-07-01T10:00:00Z', 12, {
+      subscales: { washing: 2.5 },
+      sessionId: 3,
+      fileName: 'report.pdf',
+      category: 'בינוני',
+    })]);
+    expect(m.markers[0].subscales).toEqual({ washing: 2.5 });
+    expect(m.markers[0].sessionId).toBe(3);
+    expect(m.markers[0].fileName).toBe('report.pdf');
+    expect(m.markers[0].category).toBe('בינוני');
   });
 });
 

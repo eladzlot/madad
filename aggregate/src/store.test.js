@@ -64,6 +64,18 @@ describe('addFiles / files', () => {
     expect(store.series()[0].points).toHaveLength(2);
   });
 
+  it('retains the uploaded File and exposes sessions by id', () => {
+    const store = createStore();
+    const file = { name: 'a.pdf', size: 123 };
+    store.addFiles([{ file, result: { ok: true, envelope: makeEnvelope() } }]);
+    const point = store.series()[0].points[0];
+    expect(point.sessionId).toBe(0);
+    const session = store.getSession(point.sessionId);
+    expect(session.file).toBe(file);
+    expect(session.fileName).toBe('a.pdf');
+    expect(store.getSession(99)).toBeNull();
+  });
+
   it('notifies subscribers on add and on filter change', () => {
     const store = createStore();
     const spy = vi.fn();

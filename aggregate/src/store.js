@@ -28,12 +28,20 @@ export function createStore() {
       for (const { file, result } of parsed) {
         if (result.ok) {
           files.push({ name: file.name, status: 'ok' });
-          sessions.push({ envelope: result.envelope, fileName: file.name });
+          // The File itself is retained so the detail panel can offer the
+          // underlying PDF back as a download (AGGREGATE_SPEC §5.6) — in
+          // memory only, discarded with the tab like everything else.
+          sessions.push({ id: sessions.length, envelope: result.envelope, fileName: file.name, file });
         } else {
           files.push({ name: file.name, status: result.reason, detail: result.detail });
         }
       }
       notify();
+    },
+
+    /** Session lookup for the detail panel. */
+    getSession(id) {
+      return sessions[id] ?? null;
     },
 
     get files() { return files.slice(); },
@@ -65,7 +73,7 @@ export function createStore() {
      */
     series() {
       const byInstrument = new Map();
-      for (const { envelope, fileName } of filtered()) {
+      for (const { id, envelope, fileName } of filtered()) {
         for (const { sessionKey, qId, score } of sessionEntries(envelope)) {
           if (score?.total == null) continue;
           if (!byInstrument.has(qId)) {
@@ -76,6 +84,8 @@ export function createStore() {
             });
           }
           byInstrument.get(qId).points.push({
+            sessionId: id,
+            sessionKey,
             date: new Date(envelope.generatedAt),
             total: score.total,
             subscales: score.subscales ?? {},

@@ -15,8 +15,12 @@ export const DEFAULT_WINDOW_SIZE = 5;   // AGGREGATE_SPEC §5.4
 export const DIMS = {
   width: 800,
   height: 300,
-  margin: { top: 18, right: 18, bottom: 30, left: 42 },
+  margin: { top: 18, right: 18, bottom: 30, left: 48 },
 };
+
+// Horizontal inset for data points inside the plot: keeps the first marker
+// clear of the y-axis labels and the last marker clear of the right edge.
+export const X_INSET = 16;
 
 // Warm severity ramp, lowest → highest band (lifted from the PDF's palette
 // family). Bands sample this ramp evenly by index.
@@ -85,23 +89,45 @@ export function buildChartModel({
   );
   const yMax = niceMax(rawMax);
   const y = linearScale(yMax, plot.y + plot.h, plot.y);
-  const x = timeScale(visible.map(p => p.date), plot.x, plot.x + plot.w);
+  const x = timeScale(visible.map(p => p.date), plot.x + X_INSET, plot.x + plot.w - X_INSET);
 
   // ── Overlays ──────────────────────────────────────────────────────────────
-  const bands = bandRanges.map((r, i) => {
-    const topValue = Math.min(r.max, yMax);
-    const bottomValue = Math.max(r.min, 0);
-    const rampIdx = bandRanges.length === 1 ? 0
-      : Math.round((i / (bandRanges.length - 1)) * (SEVERITY_RAMP.length - 1));
+  // Band labels sit inside the right edge of the plot, cutoff labels inside
+  // the left edge — opposite corners so they cannot collide with each other
+  // or with the y-axis ticks (left, outside the plot).
+  //
+  // Anchor semantics: these are Hebrew labels rendered with an explicit
+  // direction:rtl (see trajectory-chart), where SVG text-anchor is
+  // direction-relative — 'end' puts the text's LEFT edge at x (extends
+  // rightward), 'start' puts its RIGHT edge at x (extends leftward).
+  // Ranges are integer-inclusive (0–4, 5–9, …), so naive rendering leaves
+  // 1-unit gaps between bands in continuous space. Bands tile instead:
+  // each band's bottom chains to the previous band's top, the first starts
+  // at 0, and the topmost extends to the axis top (scores above the
+  // instrument max are impossible; a bare strip up there reads as an
+  // unlabelled zone).
+  const sortedRanges = [...bandRanges].sort((a, b) => a.min - b.min);
+  const bands = sortedRanges.map((r, i) => {
+    const topValue = i === sortedRanges.length - 1 ? yMax : Math.min(r.max, yMax);
+    const bottomValue = i === 0 ? 0 : Math.min(sortedRanges[i - 1].max, yMax);
+    const rampIdx = sortedRanges.length === 1 ? 0
+      : Math.round((i / (sortedRanges.length - 1)) * (SEVERITY_RAMP.length - 1));
     return {
       y: y(topValue),
       h: y(bottomValue) - y(topValue),
       label: r.label,
+      labelX: plot.x + plot.w - 6,
+      labelAnchor: 'start',    // rtl: extends leftward into the plot
       fill: SEVERITY_RAMP[rampIdx],
     };
   });
 
-  const cutoffs = cutoffDefs.map(c => ({ y: y(c.value), label: c.label ?? null }));
+  const cutoffs = cutoffDefs.map(c => ({
+    y: y(c.value),
+    label: c.label ?? null,
+    labelX: plot.x + 6,
+    labelAnchor: 'end',      // rtl: extends rightward into the plot
+  }));
 
   // ── Points ────────────────────────────────────────────────────────────────
   const withYear = new Set(visible.map(p => p.date.getFullYear())).size > 1;
@@ -112,7 +138,11 @@ export function buildChartModel({
     label: formatDate(p.date, { withYear }),
     total: p.total,
     category: p.category ?? null,
+    subscales: p.subscales ?? {},
     alerts: p.alerts ?? [],
+    sessionId: p.sessionId ?? null,
+    sessionKey: p.sessionKey ?? null,
+    fileName: p.fileName ?? null,
     // Baseline = first session of the uploaded set (§5.3), marked only
     // when it is actually visible in the current window.
     baseline: start === 0 && i === 0,

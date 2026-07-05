@@ -23,7 +23,10 @@ export class UploadList extends LitElement {
   };
 
   static styles = css`
-    :host { display: block; }
+    :host {
+      display: block;
+      font-family: var(--font-family, system-ui, sans-serif);
+    }
 
     .zone {
       display: flex;
@@ -31,32 +34,37 @@ export class UploadList extends LitElement {
       align-items: center;
       gap: var(--space-sm, .5rem);
       padding: var(--space-lg, 1.5rem);
-      border: 2px dashed var(--color-border, #d6d3d1);
-      border-radius: 10px;
-      background: var(--color-surface, #fff);
+      border: 2px dashed var(--color-border, #D5DAE2);
+      border-radius: var(--radius-md, 12px);
+      background: var(--a-card-bg, #fff);
       text-align: center;
-      transition: border-color .15s, background .15s;
+      transition: border-color var(--transition-fast, .15s), background var(--transition-fast, .15s);
     }
 
     .zone.over {
-      border-color: var(--color-accent, #0d9488);
-      background: #0d948810;
+      border-color: var(--color-selected-border, #2BB3C0);
+      background: var(--color-selected-bg, #E4F6F8);
     }
 
     .zone p {
       margin: 0;
-      color: var(--color-text-muted, #78716c);
+      color: var(--color-text-muted, #5E7080);
       font-size: var(--font-size-sm, .875rem);
     }
 
     label {
       display: inline-block;
       padding: .5rem 1.25rem;
-      border-radius: 8px;
-      background: var(--color-accent, #0d9488);
-      color: #fff;
-      font-weight: 600;
+      border-radius: var(--radius-sm, 6px);
+      background: var(--color-primary, #1A9FAD);
+      color: var(--color-primary-text, #fff);
+      font-weight: var(--font-weight-bold, 600);
       cursor: pointer;
+      transition: background var(--transition-fast, .15s);
+    }
+
+    label:hover {
+      background: var(--color-primary-hover, #148090);
     }
 
     input[type='file'] {
@@ -81,9 +89,10 @@ export class UploadList extends LitElement {
       justify-content: space-between;
       gap: var(--space-sm, .5rem);
       padding: .35rem .6rem;
-      border-radius: 6px;
+      border-radius: var(--radius-sm, 6px);
       font-size: var(--font-size-sm, .875rem);
-      background: var(--color-surface, #fff);
+      background: var(--a-card-bg, #fff);
+      border: 1px solid var(--color-border, #D5DAE2);
     }
 
     li .name {
@@ -95,9 +104,9 @@ export class UploadList extends LitElement {
     }
 
     li .status { flex-shrink: 0; }
-    li.ok .status { color: var(--color-accent, #0d9488); }
-    li.failed { background: #fef2f2; }
-    li.failed .status { color: #b91c1c; }
+    li.ok .status { color: var(--color-yes, #276749); }
+    li.failed { background: var(--color-no-bg, #FDF3F3); }
+    li.failed .status { color: var(--color-no, #8B3A3A); }
   `;
 
   constructor() {

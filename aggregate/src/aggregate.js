@@ -17,15 +17,21 @@ import './chart/trajectory-chart.js';
 import './components/upload-list.js';
 import './components/pid-filter.js';
 import './components/raw-data-list.js';
+import './components/session-detail.js';
 
 const root = document.getElementById('aggregate-app');
 const store = createStore();
 
-// qId → questionnaire config (for interpretations overlays). Loaded lazily
-// from the configs the uploaded envelopes reference; a load failure only
-// costs the overlays, never the charts.
+// qId → questionnaire config (for interpretations overlays and subscale
+// labels). Loaded lazily from the configs the uploaded envelopes reference;
+// a load failure only costs the overlays, never the charts.
 let questionnairesById = new Map();
 let loadedConfigKey = '';
+
+// The point open in the detail panel: { session, sessionKey, questionnaireId },
+// or null. Scoped to a single questionnaire — the panel opens from a chart
+// point, and a point belongs to one instrument.
+let selected = null;
 
 async function handleFiles(files) {
   const parsed = await Promise.all(
@@ -57,12 +63,17 @@ function template() {
   const showFilter = store.sessionCount > 0 && (pids.length > 1 || (pids.length > 0 && store.hasUnidentified()));
 
   return html`
-    <div class="a-container">
+    <div class="a-header-wrap">
       <header class="a-header">
-        <h1>מדד — סיכום מטופל</h1>
-        <p class="a-privacy">הקבצים נטענים בדפדפן שלך בלבד. סגירת הכרטיסייה מוחקת אותם.</p>
+        <div class="a-brand">
+          <span class="a-brand-name">מדד</span>
+          <span class="a-brand-sep">|</span>
+          <span class="a-brand-page">סיכום מטופל</span>
+        </div>
+        <div class="a-subtitle">הקבצים נטענים בדפדפן שלך בלבד. סגירת הכרטיסייה מוחקת אותם.</div>
       </header>
-
+    </div>
+    <div class="a-container">
       <upload-list
         .files=${store.files}
         @files-selected=${(e) => handleFiles(e.detail.files)}
@@ -80,7 +91,8 @@ function template() {
       ${series.map(s => html`
         <trajectory-chart
           .series=${s}
-          .interpretations=${questionnairesById.get(s.questionnaireId)?.interpretations}
+          .questionnaire=${questionnairesById.get(s.questionnaireId)}
+          @point-selected=${(e) => selectPoint(e.detail)}
         ></trajectory-chart>
       `)}
 
@@ -89,8 +101,28 @@ function template() {
       ` : ''}
 
       <raw-data-list .instruments=${raw}></raw-data-list>
+
+      ${selected ? html`
+        <session-detail
+          .session=${selected.session}
+          .sessionKey=${selected.sessionKey}
+          .questionnaireId=${selected.questionnaireId}
+          .questionnaires=${questionnairesById}
+          @panel-closed=${() => selectPoint(null)}
+        ></session-detail>
+      ` : ''}
     </div>
   `;
+}
+
+function selectPoint(detail) {
+  selected = detail == null ? null : {
+    session: store.getSession(detail.sessionId),
+    sessionKey: detail.sessionKey,
+    questionnaireId: detail.questionnaireId,
+  };
+  if (selected && !selected.session) selected = null;
+  update();
 }
 
 function update() {

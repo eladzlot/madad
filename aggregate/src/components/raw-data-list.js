@@ -12,18 +12,22 @@ export class RawDataList extends LitElement {
   };
 
   static styles = css`
-    :host { display: block; }
+    :host {
+      display: block;
+      font-family: var(--font-family, system-ui, sans-serif);
+    }
 
     h2 {
       font-size: var(--font-size-md, 1rem);
-      color: var(--color-text-muted, #78716c);
+      color: var(--color-text-muted, #5E7080);
       margin: 0 0 var(--space-sm, .5rem);
     }
 
     .card {
-      background: var(--color-surface, #fff);
-      border: 1px solid var(--color-border, #e7e5e4);
-      border-radius: 8px;
+      background: var(--a-card-bg, #fff);
+      border: 1px solid var(--color-border, #D5DAE2);
+      border-radius: var(--radius-md, 12px);
+      box-shadow: var(--shadow-sm, none);
       padding: var(--space-md, 1rem);
       margin-block-end: var(--space-sm, .5rem);
     }

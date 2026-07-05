@@ -20,24 +20,28 @@ export class PidFilter extends LitElement {
       align-items: center;
       gap: var(--space-sm, .5rem);
       flex-wrap: wrap;
+      font-family: var(--font-family, system-ui, sans-serif);
     }
 
-    span { color: var(--color-text-muted, #78716c); font-size: var(--font-size-sm, .875rem); }
+    span { color: var(--color-text-muted, #5E7080); font-size: var(--font-size-sm, .875rem); }
 
     button {
-      border: 1px solid var(--color-border, #d6d3d1);
-      background: var(--color-surface, #fff);
-      border-radius: 999px;
+      border: 1px solid var(--color-border, #D5DAE2);
+      background: var(--a-card-bg, #fff);
+      border-radius: var(--radius-pill, 999px);
       padding: .25rem .8rem;
       font-size: var(--font-size-sm, .875rem);
+      font-family: inherit;
       cursor: pointer;
-      color: var(--color-text, #1c1917);
+      color: var(--color-text, #162232);
+      transition: border-color var(--transition-fast, .15s), background var(--transition-fast, .15s);
     }
 
     button[aria-pressed='true'] {
-      background: var(--color-accent, #0d9488);
-      border-color: var(--color-accent, #0d9488);
-      color: #fff;
+      background: var(--color-selected-bg, #E4F6F8);
+      border-color: var(--color-selected-border, #2BB3C0);
+      color: var(--color-text, #162232);
+      font-weight: var(--font-weight-bold, 600);
     }
 
     .pid { direction: ltr; unicode-bidi: plaintext; }
