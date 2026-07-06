@@ -8,13 +8,18 @@
 //   hover/focus a point → tooltip (date, total, subscales, alerts)
 //   click/Enter a point → 'point-selected' event (opens the detail panel)
 //   arrow keys          → move focus across points within the chart
-//   "view as table"     → tabular rendering of the full series (the
-//                         primary screen-reader experience)
+//   view switcher       → segmented control in the card header (D-16):
+//                         גרף | מפת פריטים | טבלה — one view at a time;
+//                         the table remains the primary screen-reader
+//                         experience
+//   export cluster      → העתקה button (primary, spec §6) + ייצוא menu
+//                         holding PNG / SVG / the pid opt-in
 //
 // The SVG uses an explicit LTR coordinate system (time flows left-to-right)
 // inside the RTL page; dir="ltr" isolates it from the page direction.
 
-import { LitElement, html, svg, css } from 'lit';
+import { LitElement, html, svg, css, unsafeCSS } from 'lit';
+import { clinicianCss } from '../../../clinician/styles/clinician-styles.js';
 import { buildChartModel } from './chart-model.js';
 import { buildHeatmapModel } from './heatmap-model.js';
 import { buildExportSvg, exportFilename, uniquePid } from './export-svg.js';
@@ -26,28 +31,99 @@ export class TrajectoryChart extends LitElement {
     questionnaire: { type: Object },   // config questionnaire (interpretations, subscaleLabels) or undefined
     domain:        { type: Array },    // shared [start, end] x-domain across all charts (optional)
     _tooltip:      { state: true },    // { marker, x, y } in host px, or null
-    _showTable:    { state: true },
-    _showHeatmap:  { state: true },
+    _view:         { state: true },    // 'chart' | 'heatmap' | 'table' — one at a time (D-16)
     _exportPid:    { state: true },    // include pid on exported images (§6: opt-in, default off)
     _copied:       { state: true },    // transient "copied ✓" feedback on the copy button
   };
 
-  static styles = css`
+  static styles = [unsafeCSS(clinicianCss), css`
     :host {
       display: block;
       position: relative;
       font-family: var(--font-family, system-ui, sans-serif);
-      background: var(--a-card-bg, #fff);
+      background: var(--clin-card-bg, #fff);
       border: 1px solid var(--color-border, #e7e5e4);
       border-radius: var(--radius-md, 12px);
       box-shadow: var(--shadow-sm, none);
       padding: var(--space-md, 1rem);
     }
 
+    /* ── Card header: title + view switcher + export cluster (D-16) ──────── */
+
+    .head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-sm, .5rem);
+      flex-wrap: wrap;
+      margin-block-end: var(--space-sm, .5rem);
+    }
+
     h3 {
-      margin: 0 0 var(--space-sm, .5rem);
+      margin: 0;
       font-size: var(--font-size-md, 1rem);
       color: var(--color-text, #1c1917);
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm, .5rem);
+    }
+
+    .export-cluster {
+      display: flex;
+      align-items: center;
+      gap: var(--space-xs, .25rem);
+    }
+
+    /* The ייצוא dropdown — a native <details> so it needs no JS to open,
+       stays keyboard-accessible, and closes itself via _closeExportMenu(). */
+    details.export-menu { position: relative; }
+
+    details.export-menu summary { list-style: none; }
+    details.export-menu summary::-webkit-details-marker { display: none; }
+
+    details.export-menu .menu {
+      position: absolute;
+      inset-inline-end: 0;
+      top: calc(100% + 4px);
+      background: var(--clin-card-bg, #fff);
+      border: 1px solid var(--color-border, #D5DAE2);
+      border-radius: var(--radius-sm, 6px);
+      box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.07));
+      padding: var(--space-xs, 4px);
+      display: flex;
+      flex-direction: column;
+      min-inline-size: 150px;
+      z-index: 3;
+    }
+
+    .menu button,
+    .menu label.export-pid {
+      display: flex;
+      align-items: center;
+      gap: .35rem;
+      text-align: right;
+      padding: .4rem .6rem;
+      border: none;
+      background: none;
+      font-family: inherit;
+      font-size: var(--font-size-sm, .875rem);
+      color: var(--color-text, #162232);
+      cursor: pointer;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+
+    .menu button:hover,
+    .menu label.export-pid:hover { background: var(--color-selected-bg, #E4F6F8); }
+
+    .menu label.export-pid {
+      border-block-start: 1px solid var(--color-border, #D5DAE2);
+      border-radius: 0 0 4px 4px;
+      margin-block-start: 2px;
+      color: var(--color-text-muted, #5E7080);
     }
 
     /* Pastel severity fills glare on a dark surface — keep the hue as a
@@ -91,47 +167,6 @@ export class TrajectoryChart extends LitElement {
     .tooltip .tip-total { font-weight: 700; }
     .tooltip .tip-alert { color: #fca5a5; }
     .tooltip .tip-sub   { color: #d6d3d1; }
-
-    .footer-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-block-start: var(--space-xs, .25rem);
-    }
-
-    .toggles {
-      display: flex;
-      gap: var(--space-sm, .5rem);
-    }
-
-    .table-toggle,
-    .heatmap-toggle,
-    .export-btn {
-      border: none;
-      background: none;
-      font-family: inherit;
-      color: var(--color-text-muted, #78716c);
-      font-size: var(--font-size-sm, .8rem);
-      cursor: pointer;
-      text-decoration: underline;
-      padding: .25rem;
-    }
-
-    .export {
-      display: flex;
-      align-items: center;
-      gap: var(--space-xs, .25rem);
-      color: var(--color-text-muted, #78716c);
-      font-size: var(--font-size-sm, .8rem);
-    }
-
-    .export-pid {
-      display: flex;
-      align-items: center;
-      gap: .25rem;
-      cursor: pointer;
-      margin-inline-end: var(--space-xs, .25rem);
-    }
 
     .heatmap-scroll {
       overflow-x: auto;
@@ -180,7 +215,7 @@ export class TrajectoryChart extends LitElement {
       text-align: center;
       padding: .25rem .5rem;
       min-inline-size: 34px;
-      border: 2px solid var(--a-card-bg, #fff);
+      border: 2px solid var(--clin-card-bg, #fff);
       border-radius: 4px;
       font-variant-numeric: tabular-nums;
       /* Fixed dark ink: cell fills are light pastels in both color schemes. */
@@ -224,7 +259,7 @@ export class TrajectoryChart extends LitElement {
     }
 
     td.num { font-variant-numeric: tabular-nums; }
-  `;
+  `];
 
   constructor() {
     super();
@@ -232,8 +267,7 @@ export class TrajectoryChart extends LitElement {
     this.questionnaire = undefined;
     this.domain = undefined;
     this._tooltip = null;
-    this._showTable = false;
-    this._showHeatmap = false;
+    this._view = 'chart';
     this._exportPid = false;
     this._copied = false;
   }
@@ -301,6 +335,7 @@ export class TrajectoryChart extends LitElement {
   }
 
   async _export(format) {
+    this._closeExportMenu();
     const now = new Date();
     const { svg: doc, width, height } = this._buildExport(now);
     try {
@@ -311,6 +346,11 @@ export class TrajectoryChart extends LitElement {
     } catch (err) {
       console.error('[aggregate] image export failed:', err);
     }
+  }
+
+  _closeExportMenu() {
+    const menu = this.shadowRoot.querySelector('details.export-menu');
+    if (menu) menu.open = false;
   }
 
   async _copy() {
@@ -346,8 +386,89 @@ export class TrajectoryChart extends LitElement {
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
+  // The heatmap needs the config questionnaire; if it vanished (e.g. config
+  // reload failed) fall back to the chart rather than an empty card.
+  get _effectiveView() {
+    if (this._view === 'heatmap' && !this.questionnaire) return 'chart';
+    return this._view;
+  }
+
+  _renderViewSwitcher() {
+    const views = [
+      { id: 'chart', label: 'גרף' },
+      ...(this.questionnaire ? [{ id: 'heatmap', label: 'מפת פריטים' }] : []),
+      { id: 'table', label: 'טבלה' },
+    ];
+    return html`
+      <div class="c-seg" role="group" aria-label="תצוגה">
+        ${views.map(v => html`
+          <button
+            data-view=${v.id}
+            aria-pressed=${this._effectiveView === v.id ? 'true' : 'false'}
+            @click=${() => { this._view = v.id; this._closeExportMenu(); }}
+          >${v.label}</button>
+        `)}
+      </div>
+    `;
+  }
+
+  _renderExportCluster() {
+    return html`
+      <div class="export-cluster">
+        ${canCopyImage() ? html`
+          <button
+            class="c-btn c-btn--sm ${this._copied ? 'c-btn--copied' : 'c-btn--secondary'} export-copy"
+            @click=${() => this._copy()}
+          >${this._copied ? 'הועתק ✓' : 'העתקה'}</button>
+        ` : ''}
+        <details
+          class="export-menu"
+          @keydown=${(e) => { if (e.key === 'Escape') this._closeExportMenu(); }}
+          @focusout=${(e) => {
+            // Close when focus leaves the menu entirely (tab-out or click elsewhere).
+            if (!e.currentTarget.contains(e.relatedTarget)) this._closeExportMenu();
+          }}
+        >
+          <summary class="c-btn c-btn--sm c-btn--secondary">ייצוא ▾</summary>
+          <div class="menu">
+            <button class="export-png" @click=${() => this._export('png')}>הורדת PNG</button>
+            <button class="export-svg" @click=${() => this._export('svg')}>הורדת SVG</button>
+            ${uniquePid(this.series.points) != null ? html`
+              <label class="export-pid">
+                <input
+                  type="checkbox"
+                  .checked=${this._exportPid}
+                  @change=${(e) => { this._exportPid = e.target.checked; }}
+                >
+                כולל מזהה מטופל
+              </label>
+            ` : ''}
+          </div>
+        </details>
+      </div>
+    `;
+  }
+
   render() {
     if (!this.series) return html``;
+    const view = this._effectiveView;
+
+    return html`
+      <div class="head">
+        <h3>${this.series.title}</h3>
+        <div class="controls">
+          ${this._renderViewSwitcher()}
+          ${this._renderExportCluster()}
+        </div>
+      </div>
+
+      ${view === 'chart' ? this._renderChart() : ''}
+      ${view === 'heatmap' ? this._renderHeatmap() : ''}
+      ${view === 'table' ? this._renderTable() : ''}
+    `;
+  }
+
+  _renderChart() {
     const m = buildChartModel({
       points: this.series.points,
       interpretations: this.questionnaire?.interpretations,
@@ -355,8 +476,6 @@ export class TrajectoryChart extends LitElement {
     });
 
     return html`
-      <h3>${this.series.title}</h3>
-
       <svg
         dir="ltr"
         viewBox="0 0 ${m.width} ${m.height}"
@@ -371,17 +490,17 @@ export class TrajectoryChart extends LitElement {
 
         ${m.yTicks.map(t => svg`
           <line x1=${m.plot.x} y1=${t.y} x2=${m.plot.x + m.plot.w} y2=${t.y}
-                stroke="var(--a-grid, #00000014)" stroke-width="1"></line>
+                stroke="var(--clin-grid, #00000014)" stroke-width="1"></line>
           <text x=${m.plot.x - 10} y=${t.y + 3} text-anchor="end"
                 font-size="10" fill="var(--color-text-muted, #78716c)">${t.label}</text>
         `)}
 
         ${m.cutoffs.map(c => svg`
           <line x1=${m.plot.x} y1=${c.y} x2=${m.plot.x + m.plot.w} y2=${c.y}
-                stroke="var(--a-cutoff, #b45309)" stroke-width="1.5"></line>
+                stroke="var(--clin-cutoff, #b45309)" stroke-width="1.5"></line>
           ${c.label ? svg`
             <text x=${c.labelX} y=${c.y - 4} text-anchor=${c.labelAnchor}
-                  direction="rtl" font-size="9" fill="var(--a-cutoff, #b45309)">${c.label}</text>
+                  direction="rtl" font-size="9" fill="var(--clin-cutoff, #b45309)">${c.label}</text>
           ` : ''}
         `)}
 
@@ -395,7 +514,7 @@ export class TrajectoryChart extends LitElement {
             <circle cx=${k.x} cy=${k.y} r="8.5" fill="none" stroke="var(--color-no, #b91c1c)" stroke-width="1.5"></circle>
           ` : ''}
           <circle class="marker" cx=${k.x} cy=${k.y} r=${k.baseline ? 6 : 4.5}
-                  fill=${k.baseline ? 'var(--a-card-bg, #ffffff)' : 'var(--color-primary, #1A9FAD)'}
+                  fill=${k.baseline ? 'var(--clin-card-bg, #ffffff)' : 'var(--color-primary, #1A9FAD)'}
                   stroke="var(--color-primary, #1A9FAD)" stroke-width=${k.baseline ? 2.5 : 0}
                   tabindex="0" role="button"
                   aria-label=${this._markerAria(k)}
@@ -415,46 +534,6 @@ export class TrajectoryChart extends LitElement {
       </svg>
 
       ${this._tooltip ? this._renderTooltip() : ''}
-
-      <div class="footer-row">
-        <span class="toggles">
-          <button
-            class="table-toggle"
-            aria-pressed=${this._showTable ? 'true' : 'false'}
-            @click=${() => { this._showTable = !this._showTable; }}
-          >${this._showTable ? 'הסתרת טבלה' : 'תצוגת טבלה'}</button>
-          ${this.questionnaire ? html`
-            <button
-              class="heatmap-toggle"
-              aria-pressed=${this._showHeatmap ? 'true' : 'false'}
-              @click=${() => { this._showHeatmap = !this._showHeatmap; }}
-            >${this._showHeatmap ? 'הסתרת מפת פריטים' : 'מפת פריטים'}</button>
-          ` : ''}
-        </span>
-        <span class="export">
-          ${uniquePid(this.series.points) != null ? html`
-            <label class="export-pid">
-              <input
-                type="checkbox"
-                .checked=${this._exportPid}
-                @change=${(e) => { this._exportPid = e.target.checked; }}
-              >
-              כולל מזהה
-            </label>
-          ` : ''}
-          <span>ייצוא תמונה:</span>
-          ${canCopyImage() ? html`
-            <button class="export-btn export-copy" @click=${() => this._copy()}>
-              ${this._copied ? 'הועתק ✓' : 'העתקה'}
-            </button>
-          ` : ''}
-          <button class="export-btn export-png" @click=${() => this._export('png')}>PNG</button>
-          <button class="export-btn export-svg" @click=${() => this._export('svg')}>SVG</button>
-        </span>
-      </div>
-
-      ${this._showHeatmap && this.questionnaire ? this._renderHeatmap() : ''}
-      ${this._showTable ? this._renderTable() : ''}
     `;
   }
 

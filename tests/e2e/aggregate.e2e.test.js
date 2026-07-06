@@ -137,11 +137,12 @@ test.describe('aggregate interaction', () => {
     await page.keyboard.press('Escape');
     await expect(panel).toHaveCount(0);
 
-    // View-as-table toggles the numeric reference.
-    await chart.locator('.table-toggle').click();
+    // The segmented view switcher (D-16) swaps the chart for the numeric table.
+    await chart.locator('[data-view="table"]').click();
     const table = chart.locator('table');
     await expect(table).toBeVisible();
     await expect(table.locator('tbody tr')).toHaveCount(1);
+    await expect(chart.locator('svg')).toHaveCount(0);   // views are exclusive
   });
 
   test('markers are keyboard-operable: arrows move focus, Enter opens the panel', async ({ page }) => {
@@ -172,7 +173,14 @@ test.describe('aggregate image export', () => {
     const chart = page.locator('trajectory-chart');
     await expect(chart).toBeVisible();
 
+    // PNG/SVG/pid live in the ייצוא dropdown (D-16); open it if closed.
+    const openExportMenu = async () => {
+      const menu = chart.locator('details.export-menu');
+      if (!(await menu.evaluate((d) => d.open))) await menu.locator('summary').click();
+    };
+
     const downloadSvg = async () => {
+      await openExportMenu();
       const [download] = await Promise.all([
         page.waitForEvent('download', { timeout: 10_000 }),
         chart.locator('.export-svg').click(),
@@ -190,6 +198,7 @@ test.describe('aggregate image export', () => {
     expect(plain).not.toContain('E2E-001');
 
     // Opt in → pid stamped.
+    await openExportMenu();
     await chart.locator('.export-pid input').check();
     const withPid = await downloadSvg();
     expect(withPid).toContain('מזהה: E2E-001');
@@ -223,6 +232,7 @@ test.describe('aggregate image export', () => {
     const chart = page.locator('trajectory-chart');
     await expect(chart).toBeVisible();
 
+    await chart.locator('details.export-menu summary').click();
     const [download] = await Promise.all([
       page.waitForEvent('download', { timeout: 10_000 }),
       chart.locator('.export-png').click(),

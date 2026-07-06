@@ -157,18 +157,20 @@ describe('trajectory-chart — item heatmap', () => {
     ],
   };
 
-  it('toggles a heatmap grid with one row per answered item', async () => {
+  it('switches to a heatmap grid with one row per answered item', async () => {
     const el = await makeEl({
       series: series(pts(2, { answers: { q1: 3, q2: 0 } })),
       questionnaire: QUESTIONNAIRE,
     });
     expect(el.shadowRoot.querySelector('table.heatmap')).toBeNull();
 
-    el.shadowRoot.querySelector('.heatmap-toggle').click();
+    el.shadowRoot.querySelector('[data-view="heatmap"]').click();
     await el.updateComplete;
 
     const heatmap = el.shadowRoot.querySelector('table.heatmap');
     expect(heatmap).not.toBeNull();
+    // Views are mutually exclusive (D-16): the chart SVG is gone.
+    expect(el.shadowRoot.querySelector('svg')).toBeNull();
     expect(heatmap.querySelectorAll('tbody tr')).toHaveLength(2);
     expect(heatmap.querySelectorAll('tbody td.cell')).toHaveLength(4);   // 2 items × 2 sessions
     // Hot and cold cells get different fills.
@@ -177,9 +179,9 @@ describe('trajectory-chart — item heatmap', () => {
     expect(hot).not.toBe(cold);
   });
 
-  it('offers no heatmap toggle without a config questionnaire', async () => {
+  it('offers no heatmap view without a config questionnaire', async () => {
     const el = await makeEl({ series: series(pts(2)) });
-    expect(el.shadowRoot.querySelector('.heatmap-toggle')).toBeNull();
+    expect(el.shadowRoot.querySelector('[data-view="heatmap"]')).toBeNull();
   });
 
   it('renders compact color chips (no in-cell numbers, tooltips instead) past the threshold', async () => {
@@ -193,7 +195,7 @@ describe('trajectory-chart — item heatmap', () => {
       answers: { q1: 3 },
     }));
     const el = await makeEl({ series: series(points), questionnaire: QUESTIONNAIRE });
-    el.shadowRoot.querySelector('.heatmap-toggle').click();
+    el.shadowRoot.querySelector('[data-view="heatmap"]').click();
     await el.updateComplete;
 
     const heatmap = el.shadowRoot.querySelector('table.heatmap');
@@ -268,25 +270,28 @@ describe('trajectory-chart — copy to clipboard (§6)', () => {
 });
 
 describe('trajectory-chart — view as table', () => {
-  it('toggles a table of the full series with subscale columns', async () => {
+  it('switches to a table of the full series with subscale columns and back', async () => {
     const el = await makeEl({
       series: series(pts(7, { subscales: { washing: 2 }, category: 'קל' })),
       questionnaire: { subscaleLabels: { washing: 'שטיפה' } },
     });
     expect(el.shadowRoot.querySelector('table')).toBeNull();
 
-    el.shadowRoot.querySelector('.table-toggle').click();
+    el.shadowRoot.querySelector('[data-view="table"]').click();
     await el.updateComplete;
 
     const table = el.shadowRoot.querySelector('table');
     expect(table).not.toBeNull();
+    // Views are mutually exclusive (D-16): the chart SVG is gone.
+    expect(el.shadowRoot.querySelector('svg')).toBeNull();
     // Full series, not just the 5-session window.
     expect(table.querySelectorAll('tbody tr')).toHaveLength(7);
     const headers = [...table.querySelectorAll('th')].map(t => t.textContent);
     expect(headers).toContain('שטיפה');
 
-    el.shadowRoot.querySelector('.table-toggle').click();
+    el.shadowRoot.querySelector('[data-view="chart"]').click();
     await el.updateComplete;
     expect(el.shadowRoot.querySelector('table')).toBeNull();
+    expect(el.shadowRoot.querySelector('svg')).not.toBeNull();
   });
 });

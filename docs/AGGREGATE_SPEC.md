@@ -318,9 +318,12 @@ migration.
   session breakdown, all instruments completed that day, and a download
   link for the underlying PDF (which Aggregate kept in memory as a Blob).
 - Arrow keys move focus across points within a chart.
-- A "view as table" button below each chart toggles a tabular rendering
-  of the same data — primary screen-reader experience and useful as a
-  numeric reference.
+- A segmented control in the card header switches between mutually
+  exclusive views (revised 2026-07-06, D-16 — previously independent
+  toggle links below the chart): **גרף | מפת פריטים | טבלה**. The
+  heatmap segment appears only when the config questionnaire is
+  available. The table renders the full series and remains the primary
+  screen-reader experience and numeric reference.
 
 ### 5.7 Bad-PDF handling
 
@@ -345,10 +348,16 @@ Three actions, in order of prominence (revised 2026-07-05: copy added
 as the primary action — the dominant real flow is pasting into an email
 or chat, not managing files):
 
-1. **Copy to clipboard** (PNG) — hidden when the browser lacks the
-   async Clipboard API.
+1. **Copy to clipboard** (PNG) — a directly visible button in the card
+   header; hidden when the browser lacks the async Clipboard API.
 2. **PNG download** (primary download form)
 3. **SVG download** (secondary)
+
+Layout (revised 2026-07-06, D-16): copy is a standalone button; PNG,
+SVG, and the pid opt-in checkbox live in a compact "ייצוא" dropdown
+beside it. Copy stays outside the menu both for prominence and because
+WebKit's user-gesture rule for `ClipboardItem` forbids burying it
+behind async indirection.
 
 **Always on the image:** instrument title, the chart itself, date range,
 generation timestamp, "מדד" footer.
