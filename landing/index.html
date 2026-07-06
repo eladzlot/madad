@@ -32,13 +32,17 @@
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    /* Aligned with the app tokens (shared/styles/tokens.css + clinician
+       header navy) so the landing and the tools read as one product (D-15):
+       teal = --color-primary, navy = --clin-header-bg, text = --color-text,
+       muted = --color-text-muted. */
     :root {
-      --teal:       #1E9BAA;
-      --teal-dark:  #186E78;
-      --navy:       #1A2E35;
+      --teal:       #1A9FAD;
+      --teal-dark:  #148090;
+      --navy:       #1B3148;
       --navy-deep:  #101C22;
-      --text:       #1A2E35;
-      --muted:      #5A7078;
+      --text:       #162232;
+      --muted:      #5E7080;
       --faint:      #9BB0B8;
       --border:     #E8EEF0;
       --surface:    #F8FAF8;
@@ -610,6 +614,7 @@
     <a href="./" class="nav-logo">מדד</a>
     <div class="nav-links">
       <a href="../?configs=configs/prod/standard.json&items=phq9&ref=demo" class="nav-link">נסו שאלון לדוגמה</a>
+      <a href="../aggregate/" class="nav-link">סיכום מטופל</a>
       <a href="../composer/" class="nav-cta">צור קישור למטופל</a>
     </div>
   </div>
@@ -890,6 +895,7 @@
       </div>
       <div class="footer-links">
         <a href="../composer/">מחולל קישורים</a>
+        <a href="../aggregate/">סיכום מטופל</a>
         <a href="https://ctr.huji.ac.il" target="_blank" rel="noopener">המרכז</a>
         <a href="https://github.com/eladzlot/madad" target="_blank" rel="noopener">GitHub</a>
       </div>
