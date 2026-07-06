@@ -113,11 +113,15 @@ export class SessionDetail extends LitElement {
       padding: .3rem .5rem;
     }
 
+    /* Section header — the answers list must read as a distinct section,
+       not a continuation of the subscale rows above it. */
     h4 {
-      margin: var(--space-md, 1rem) 0 .25rem;
+      margin: var(--space-md, 1rem) 0 .35rem;
+      padding-block-start: var(--space-sm, .75rem);
+      border-block-start: 1px solid var(--color-border, #e7e5e4);
       font-size: var(--font-size-sm, .875rem);
-      color: var(--color-text-muted, #78716c);
-      font-weight: var(--font-weight-medium, 500);
+      color: var(--color-text, #1c1917);
+      font-weight: var(--font-weight-bold, 600);
     }
 
     ol.items {
@@ -126,9 +130,10 @@ export class SessionDetail extends LitElement {
       padding: 0;
     }
 
+    /* No per-item rules — the question/answer pairs group by whitespace;
+       the only divider in the panel is the one above the תשובות header. */
     ol.items li {
       padding: .45rem 0;
-      border-block-end: 1px solid var(--color-border, #e7e5e4);
       font-size: var(--font-size-sm, .875rem);
     }
 
