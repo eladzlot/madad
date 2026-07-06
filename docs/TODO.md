@@ -53,8 +53,8 @@ The phrase **"Continue with TODO"** means: do the above, then pick up the curren
 
 ## 1. Status
 
-**Currently working on:** AGG stream — slices 1, 2, 4 (AGG-2, AGG-3, AGG-5) complete; next: AGG-4 (RCI — blocked on AGG-P) or aggregate deploy decision.
-**Last session ended:** 2026-07-05 — Slice 4 shipped: image export per spec §6 — copy-to-clipboard (primary), PNG/SVG download (standalone SVG with title/date-range/timestamp/footer, pid opt-in, in-browser 2× rasterization). 1144 unit tests, 110 e2e. Envelope (c92da8c) **deployed to production** 2026-07-04; aggregate surface itself still local by user choice.
+**Currently working on:** idle — AGG-6 complete (see archive A-11), awaiting commit approval. Next: AGG-4 (RCI — blocked on AGG-P).
+**Last session ended:** 2026-07-06 — AGG-6 shipped in working tree: shared clinician-nav + styles module (D-15), chart-card segmented control + export menu (D-16), landing links = aggregate unveiling (D-17). 1148 unit, 101 e2e passed / 9 skipped, budgets green. **Not yet committed.**
 **Blocked on:** AGG-4 needs AGG-P (user's psychometrics literature pass). (P0-1/P0-2/P0-7 validation cluster deprioritized by user 2026-07-03.)
 
 ---
@@ -88,7 +88,7 @@ Build slices per D-11. Slice 1 goes to pilot therapists before later slices are 
 | AGG-3 | Slice 2 — interaction & a11y: tooltips, keyboard nav, detail panel, view-as-table | done | See archive A-8. |
 | AGG-4 | Slice 3 — RCI line + subscale toggles | todo | Blocked on AGG-P content |
 | AGG-5 | Slice 4 — PNG/SVG export | done | See archive A-10. |
-| AGG-6 | Design dive: aggregate visual refresh | todo | User-flagged 2026-07-05: the chart-card footer has accumulated too many plain underlined-link actions (table, heatmap, copy, PNG, SVG) and reads old-fashioned — wants a deeper design pass, not a spot fix |
+| AGG-6 | Design dive: aggregate visual refresh + clinician shell integration | done | See archive A-11. D-15/D-16/D-17 applied. |
 | AGG-P | Psychometrics content: reliability/SD/source per instrument | todo | **User-owned clinical workstream** — can start now; long pole for AGG-4 |
 
 ### P1 — API stability, author experience
@@ -263,7 +263,46 @@ Append-only. Date format: YYYY-MM-DD.
 
 ---
 
+### D-15 — Clinician shell: shared navbar + shared styles as a CSS-string module
+**Date:** 2026-07-06
+**Context:** AGG-6 expanded scope. Composer and aggregate had near-identical copy-pasted navy headers with no navigation between surfaces; control vocabularies had fully diverged (composer: `.c-btn` system; aggregate: underlined text links). Aggregate components are shadow-DOM Lit, so a plain shared stylesheet cannot reach them.
+**Decision:**
+1. One shared header component (`shared/ui/`) used by composer + aggregate: navy bar, brand, nav links (מחולל קישורים / סיכום מטופל) with the active page marked, built to absorb future עזרה/אודות pages. Landing keeps its own marketing nav (different job) but aligns palette and links.
+2. Shared clinician styles live as a **plain CSS string in a JS module**: light-DOM surfaces adopt via `document.adoptedStyleSheets`; Lit components via `unsafeCSS` in `static styles`. Single source of truth, no bundler magic, works under vitest, CSP-safe.
+3. Class names keep the existing `c-` prefix (now reading "clinician-"), so the composer migrates with zero churn; the shared sheet contains component classes only (header/nav, buttons, segmented control, card) — `@font-face`, resets, and page layout stay in each surface's own CSS (constructed stylesheets ignore `@font-face` in Chromium).
+4. Composer stops importing the patient app's `main.css`; the few rules it used (font-face, reset, base) move into its own CSS. Tokens for the header navy (previously `#1B3148` hardcoded twice) and card/chart colors (previously aggregate-local `--a-*`) move into `shared/styles/tokens.css`.
+**Rejected alternative:** converting aggregate components to light DOM so one stylesheet styles everything — bigger refactor, breaks component encapsulation and existing shadow-root tests, buys nothing the CSS-string module doesn't.
+**Same-day amendment:** the shared code lives in `clinician/` — not `shared/ui/` — and clinician tokens live in the clinician styles module, not `tokens.css`. Discovered post-decision: `CODE_ORGANIZATION.md` §3.2 already reserves `clinician/` for exactly this ("cross-surface but clinician-only", sketching `clinician-nav.js`), and the eslint boundary rules + vitest include patterns already cover it. `shared/` stays patient+clinician only. The nav is a Lit component per the §3.2 sketch (Lit reaches the composer bundle as a Rollup-shared chunk; no budget pattern matches composer and total has headroom).
+
+---
+
+### D-16 — Chart-card controls: segmented view switcher + export cluster in the card header
+**Date:** 2026-07-06
+**Context:** AGG-6 original trigger. The card footer had five underlined text-links (table toggle, heatmap toggle, copy, PNG, SVG) plus a pid checkbox.
+**Decision:**
+1. Card header row: title (start) + segmented control **[גרף | מפת פריטים | טבלה]** + export cluster (end). Footer row deleted.
+2. **Views are mutually exclusive** (user-approved behavior change — previously table and heatmap could be open simultaneously). מפת פריטים segment appears only when the config questionnaire is available (same rule as the old toggle).
+3. Export cluster: העתקה stays a directly visible button (it is the primary action per spec §6 — the Safari gesture constraint also forbids burying it behind an async menu); PNG / SVG / the pid opt-in checkbox collapse into a compact "ייצוא ▾" menu.
+4. Card recipe: content panels keep the aggregate's 12px radius + border; controls use 6px — "easy to change later" per user.
+**Scope impact:** trajectory-chart internal state (`_showTable`/`_showHeatmap` → one `_view`), e2e selector updates, AGGREGATE_SPEC §5.6/§6 control-layout wording.
+
+---
+
+### D-17 — Aggregate goes public by linking, not by deploying
+**Date:** 2026-07-06
+**Context:** TODO §1 said the aggregate surface was "local by user choice." Inspection showed it has been live at `/madad/aggregate/` since AGG-2 merged — the Pages workflow ships all of `dist/` and aggregate is a build input. It was unlisted, not undeployed.
+**Decision:** The public unveiling = adding navigation links (shared navbar cross-links + landing nav/footer). No deploy-pipeline change. User approved 2026-07-06.
+
+---
+
 ## 5. Task Archive
+
+### A-11 — AGG-6 Clinician shell integration + chart-card control redesign
+**Completed:** 2026-07-06
+**Summary:** One design language across clinician surfaces. New `clinician/` layer (the reserved CODE_ORGANIZATION §3.2 slot): `<clinician-nav>` Lit navbar (brand → landing, מחולל קישורים / סיכום מטופל links, active page marked, subtitle slot) replacing the copy-pasted composer/aggregate navy headers, and `clinician-styles.js` — the shared vocabulary (clin tokens, `.c-btn` family promoted from composer.css, new `.c-seg` segmented control, `.c-card`) as a CSS-string module adopted via `document.adoptedStyleSheets` (light DOM) / `unsafeCSS` (shadow DOM) per D-15. Chart card per D-16: header row = title + segmented [גרף | מפת פריטים | טבלה] (mutually exclusive views; heatmap segment only with config questionnaire) + export cluster (העתקה button + native-`<details>` ייצוא menu holding PNG/SVG/pid; closes on view switch/Escape/focus-out); underlined-link footer deleted. Composer no longer imports patient `main.css` (own font-face/reset/base). Aggregate container widened 880 → 1024 to align with the nav/composer. Landing palette aligned to app tokens (teal `#1A9FAD`, navy `#1B3148`, text/muted from tokens) and its nav + footer link the aggregate — the de-facto public unveiling per D-17 (surface was already deployed, just unlisted). Lint script now covers `clinician/`.
+**Files:** clinician/{components/clinician-nav.js + test, styles/clinician-styles.js} (new), composer/{index.html, src/composer.{js,css}, src/composer-render.js}, aggregate/src/{aggregate.{js,css}, chart/trajectory-chart.js + test, components/* (--a-* → --clin-* tokens)}, landing/index.html, tests/e2e/{composer,aggregate,dist-smoke} selector updates, docs/AGGREGATE_SPEC.md §5.6/§6, package.json (lint).
+**Decisions referenced:** D-15, D-16, D-17.
+**Test delta:** 1144 → 1148 unit; e2e 110 total (101 passed / 9 capability-skips). Size budgets green (Lit split into a shared chunk; composer +Lit stays within total).
 
 ### A-6 — AGG-1 Interpretations `type`/`cutoffs` + `psychometrics` schema
 **Completed:** 2026-07-03
