@@ -120,11 +120,11 @@ test.describe('dist smoke — production bundle at production base', () => {
     // here independently of the one that produced "לא ניתן לטעון" in the
     // patient app, so this test must do more than the patient test does.
     //
-    // .c-brand-name renders only after the manifest fetch resolves and
-    // composer-render.js runs. If it appears, JS executed without erroring out
-    // and the DOM was populated — that's a real bootstrap signal, not just
-    // "the HTML loaded".
-    await expect(page.locator('.c-brand-name')).toContainText('מדד', { timeout: 10_000 });
+    // <clinician-nav> renders only after the manifest fetch resolves and
+    // composer-render.js runs. If its brand appears, JS executed without
+    // erroring out and the DOM was populated — that's a real bootstrap
+    // signal, not just "the HTML loaded".
+    await expect(page.locator('clinician-nav .brand')).toContainText('מדד', { timeout: 10_000 });
 
     // The error path: composer.js writes a .c-error block into #composer-app
     // when manifest/config loading throws (see composer.js line 25). Assert

@@ -33,7 +33,7 @@ export class SessionDetail extends LitElement {
       inset-inline-end: 0;
       inline-size: min(420px, 92vw);
       font-family: var(--font-family, system-ui, sans-serif);
-      background: var(--a-card-bg, #fff);
+      background: var(--clin-card-bg, #fff);
       border-inline-start: 1px solid var(--color-border, #e7e5e4);
       box-shadow: 0 0 24px #00000022;
       padding: var(--space-md, 1rem);

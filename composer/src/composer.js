@@ -5,9 +5,13 @@
 // and the build injects a <link> tag into composer/index.html automatically.
 import './composer.css';
 
+import '../../clinician/components/clinician-nav.js';
+import { adoptClinicianStyles } from '../../clinician/styles/clinician-styles.js';
 import { loadManifest, loadAllConfigs } from './composer-loader.js';
 import { render, injectStyles, initRoot, escapeHtml } from './composer-render.js';
 import { initHandlers } from './composer-handlers.js';
+
+adoptClinicianStyles();
 
 const root = document.getElementById('composer-app');
 

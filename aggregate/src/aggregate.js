@@ -10,6 +10,8 @@
 
 import './aggregate.css';
 import { render, html } from 'lit';
+import '../../clinician/components/clinician-nav.js';
+import { adoptClinicianStyles } from '../../clinician/styles/clinician-styles.js';
 import { loadConfig } from '../../shared/config/loader.js';
 import { parsePdfFile } from './parse-pdf.js';
 import { createStore } from './store.js';
@@ -19,6 +21,8 @@ import './components/upload-list.js';
 import './components/pid-filter.js';
 import './components/raw-data-list.js';
 import './components/session-detail.js';
+
+adoptClinicianStyles();
 
 const root = document.getElementById('aggregate-app');
 const store = createStore();
@@ -70,16 +74,10 @@ function template() {
   const domain = allDates.length ? paddedTimeDomain(allDates) : undefined;
 
   return html`
-    <div class="a-header-wrap">
-      <header class="a-header">
-        <div class="a-brand">
-          <span class="a-brand-name">מדד</span>
-          <span class="a-brand-sep">|</span>
-          <span class="a-brand-page">סיכום מטופל</span>
-        </div>
-        <div class="a-subtitle">הקבצים נטענים בדפדפן שלך בלבד. סגירת הכרטיסייה מוחקת אותם.</div>
-      </header>
-    </div>
+    <clinician-nav
+      page="aggregate"
+      subtitle="הקבצים נטענים בדפדפן שלך בלבד. סגירת הכרטיסייה מוחקת אותם."
+    ></clinician-nav>
     <div class="a-container">
       <upload-list
         .files=${store.files}

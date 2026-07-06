@@ -36,7 +36,7 @@ export class UploadList extends LitElement {
       padding: var(--space-lg, 1.5rem);
       border: 2px dashed var(--color-border, #D5DAE2);
       border-radius: var(--radius-md, 12px);
-      background: var(--a-card-bg, #fff);
+      background: var(--clin-card-bg, #fff);
       text-align: center;
       transition: border-color var(--transition-fast, .15s), background var(--transition-fast, .15s);
     }
@@ -91,7 +91,7 @@ export class UploadList extends LitElement {
       padding: .35rem .6rem;
       border-radius: var(--radius-sm, 6px);
       font-size: var(--font-size-sm, .875rem);
-      background: var(--a-card-bg, #fff);
+      background: var(--clin-card-bg, #fff);
       border: 1px solid var(--color-border, #D5DAE2);
     }
 

@@ -24,7 +24,7 @@ export class RawDataList extends LitElement {
     }
 
     .card {
-      background: var(--a-card-bg, #fff);
+      background: var(--clin-card-bg, #fff);
       border: 1px solid var(--color-border, #D5DAE2);
       border-radius: var(--radius-md, 12px);
       box-shadow: var(--shadow-sm, none);

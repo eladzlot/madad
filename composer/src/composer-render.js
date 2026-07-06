@@ -166,7 +166,7 @@ export function renderPartial() {
   if (warnings.length) {
     const w = renderWarnings(warnings);
     if (existingWarn) existingWarn.replaceWith(w);
-    else _root.querySelector('.c-header')?.insertAdjacentElement('afterend', w);
+    else _root.querySelector('clinician-nav')?.insertAdjacentElement('afterend', w);
   } else if (existingWarn) {
     existingWarn.remove();
   }
@@ -193,17 +193,10 @@ function renderHeader(warnings) {
   const wrap = document.createElement('div');
   wrap.className = 'c-header-wrap';
 
-  const header = document.createElement('header');
-  header.className = 'c-header';
-  header.innerHTML = `
-    <div class="c-brand">
-      <span class="c-brand-name">מדד</span>
-      <span class="c-brand-sep">|</span>
-      <span class="c-brand-page">מחולל קישורים</span>
-    </div>
-    <p class="c-subtitle">בחר שאלונים, הוסף מזהה מטופל, העתק קישור.</p>
-  `;
-  wrap.appendChild(header);
+  const nav = document.createElement('clinician-nav');
+  nav.page = 'composer';
+  nav.subtitle = 'בחר שאלונים, הוסף מזהה מטופל, העתק קישור.';
+  wrap.appendChild(nav);
 
   if (warnings.length) wrap.appendChild(renderWarnings(warnings));
   return wrap;

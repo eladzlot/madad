@@ -23,7 +23,9 @@ const COMPOSER_URL = '/composer/';
 
 async function gotoComposer(page) {
   await page.goto(COMPOSER_URL);
-  await expect(page.locator('.c-brand-name')).toBeVisible({ timeout: 10_000 });
+  // The shared <clinician-nav> renders only after configs load (render()),
+  // so its brand doubles as the bootstrap-finished signal.
+  await expect(page.locator('clinician-nav .brand')).toBeVisible({ timeout: 10_000 });
 }
 
 async function getPreviewUrl(page) {
@@ -45,8 +47,10 @@ async function uncheckItem(page, id) {
 test.describe('page load', () => {
   test('loads and shows branding and selection UI', async ({ page }) => {
     await gotoComposer(page);
-    await expect(page.locator('.c-brand-name')).toBeVisible();
-    await expect(page.locator('.c-brand-page')).toBeVisible();
+    await expect(page.locator('clinician-nav .brand')).toBeVisible();
+    // The shared navbar marks this page active and cross-links the aggregate.
+    await expect(page.locator('clinician-nav .link[aria-current="page"]')).toHaveText('מחולל קישורים');
+    await expect(page.locator('clinician-nav .link[href="../aggregate/"]')).toHaveCount(1);
     await expect(page.locator('.c-search-input')).toBeVisible();
     await expect(page.locator('.c-item-list').first()).toBeVisible();
   });

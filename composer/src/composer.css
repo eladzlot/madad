@@ -1,3 +1,46 @@
+/* ── Base — the composer is standalone; it does not use the patient app's
+      main.css (D-15). Font, reset, and page frame live here. ──────────────── */
+
+@font-face {
+  font-family: 'Noto Sans Hebrew';
+  src: url('/fonts/NotoSansHebrew-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Noto Sans Hebrew';
+  src: url('/fonts/NotoSansHebrew-Bold.ttf') format('truetype');
+  font-weight: 500 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  overflow-wrap: anywhere;
+}
+
+html {
+  font-family: var(--font-family);
+  font-size: var(--font-size-md);
+  line-height: var(--line-height);
+  color: var(--color-text);
+  background: var(--color-bg);
+  -webkit-text-size-adjust: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  block-size: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 #composer-app {
   flex: 1;
   min-block-size: 0;
@@ -6,56 +49,8 @@
   background: var(--color-bg);
 }
 
-/* ── Full-width header ───────────────────────────────────────────────────── */
-
-.c-header-wrap {
-  background: #1B3148;
-}
-
-.c-header {
-  max-width: 1024px;
-  margin-inline: auto;
-  padding: var(--space-md) var(--space-xl);
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--space-lg);
-}
-
-.c-brand {
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-sm);
-}
-
-.c-brand-name {
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-bold);
-  color: #ffffff;
-  letter-spacing: -0.02em;
-  line-height: var(--line-height-tight);
-}
-
-.c-brand-sep {
-  color: rgba(255,255,255,0.35);
-  font-weight: var(--font-weight-normal);
-}
-
-.c-brand-page {
-  font-size: var(--font-size-md);
-  font-weight: var(--font-weight-medium);
-  color: rgba(255,255,255,0.85);
-}
-
-.c-subtitle {
-  color: rgba(255,255,255,0.6);
-  font-size: var(--font-size-sm);
-  display: none;
-}
-
-@media (min-width: 768px) {
-  .c-subtitle { display: block; }
-}
+/* Header bar is <clinician-nav> (clinician/components/clinician-nav.js);
+   buttons/segmented/card classes come from clinician-styles.js (D-15). */
 
 /* ── Warnings ────────────────────────────────────────────────────────────── */
 
@@ -422,60 +417,7 @@
   min-width: 0;
 }
 
-.c-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-block-size: var(--item-min-touch);
-  padding-inline: var(--space-md);
-  border-radius: var(--radius-sm);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  font-family: inherit;
-  cursor: pointer;
-  border: var(--border-width) solid transparent;
-  transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
-  white-space: nowrap;
-}
-
-.c-btn:disabled { opacity: 0.45; cursor: not-allowed; }
-
-.c-btn--primary {
-  background: var(--color-primary);
-  color: var(--color-primary-text);
-}
-.c-btn--primary:not(:disabled):hover { background: var(--color-primary-hover); }
-
-.c-btn--secondary {
-  background: var(--color-bg);
-  color: var(--color-text);
-  border-color: var(--color-border);
-}
-.c-btn--secondary:not(:disabled):hover {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
-}
-
-.c-btn--ghost {
-  background: transparent;
-  color: var(--color-text-muted);
-}
-.c-btn--ghost:hover { color: var(--color-no); }
-
-.c-btn--active {
-  background: var(--color-selected-bg);
-  border-color: var(--color-selected-border);
-  color: var(--color-accent);
-}
-
-.c-btn--copied { background: var(--color-yes); color: #fff; }
-
-/* Small button (secondary actions, search row) */
-.c-btn--sm {
-  min-block-size: 36px;
-  padding-inline: var(--space-sm);
-  font-size: var(--font-size-sm);
-}
+/* .c-btn family lives in clinician/styles/clinician-styles.js (D-15). */
 
 /* ── Order list ──────────────────────────────────────────────────────────── */
 

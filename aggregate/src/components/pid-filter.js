@@ -27,7 +27,7 @@ export class PidFilter extends LitElement {
 
     button {
       border: 1px solid var(--color-border, #D5DAE2);
-      background: var(--a-card-bg, #fff);
+      background: var(--clin-card-bg, #fff);
       border-radius: var(--radius-pill, 999px);
       padding: .25rem .8rem;
       font-size: var(--font-size-sm, .875rem);
