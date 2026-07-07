@@ -118,7 +118,7 @@ export function buildExportSvg({ series, questionnaire, domain, pid = null, now 
     ].join('')),
     ...m.yTicks.map(t => [
       `<line x1="${m.plot.x}" y1="${t.y}" x2="${m.plot.x + m.plot.w}" y2="${t.y}" stroke="${C.grid}" stroke-width="1"></line>`,
-      `<text x="${m.plot.x - 10}" y="${t.y + 3}" text-anchor="end" font-size="10" fill="${C.muted}">${esc(t.label)}</text>`,
+      `<text x="${m.plot.x - 16}" y="${t.y + 3}" text-anchor="end" font-size="10" fill="${C.muted}">${esc(t.label)}</text>`,
     ].join('')),
     ...m.cutoffs.map(c => [
       `<line x1="${m.plot.x}" y1="${c.y}" x2="${m.plot.x + m.plot.w}" y2="${c.y}" stroke="${C.cutoff}" stroke-width="1.5"></line>`,

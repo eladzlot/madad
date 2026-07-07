@@ -514,7 +514,7 @@ export class TrajectoryChart extends LitElement {
         ${m.yTicks.map(t => svg`
           <line x1=${m.plot.x} y1=${t.y} x2=${m.plot.x + m.plot.w} y2=${t.y}
                 stroke="var(--clin-grid, #00000014)" stroke-width="1"></line>
-          <text x=${m.plot.x - 10} y=${t.y + 3} text-anchor="end"
+          <text x=${m.plot.x - 16} y=${t.y + 3} text-anchor="end"
                 font-size="10" fill="var(--color-text-muted, #78716c)">${t.label}</text>
         `)}
 
