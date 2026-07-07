@@ -317,6 +317,8 @@ migration.
 - Click or Enter on a point → a slide-in detail panel with the full
   session breakdown, all instruments completed that day, and a download
   link for the underlying PDF (which Aggregate kept in memory as a Blob).
+  Table rows (click/Enter — the keyboard path) and heatmap columns
+  (click on a header or cell) open the same panel (added 2026-07-07).
 - Arrow keys move focus across points within a chart.
 - A segmented control in the card header switches between mutually
   exclusive views (revised 2026-07-06, D-16 — previously independent

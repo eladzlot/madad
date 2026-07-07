@@ -60,11 +60,12 @@ function itemMax(item, questionnaire) {
  * @param {object} args.questionnaire — config questionnaire (required)
  * @param {Function} [args.formatDate]
  * @returns {{ compact: boolean,
- *             columns: [{label, displayLabel}],
+ *             columns: [{label, displayLabel, sessionId, sessionKey}],
  *             rows: [{itemId, text, cells: [{value, fill}|null]}] }}
  *   `label` is always the full date (cell tooltips); `displayLabel` is what
  *   the header shows — thinned to every Nth in compact mode, anchored so
- *   the newest column always keeps its label.
+ *   the newest column always keeps its label. `sessionId`/`sessionKey`
+ *   identify the column's session so clicking it can open the detail panel.
  */
 export function buildHeatmapModel({ points, questionnaire, formatDate = defaultFormatDate }) {
   const count = points?.length ?? 0;
@@ -74,7 +75,12 @@ export function buildHeatmapModel({ points, questionnaire, formatDate = defaultF
   const columns = (points ?? []).map((p, i) => {
     const label = formatDate(p.date, { withYear });
     const show = (count - 1 - i) % step === 0;
-    return { label, displayLabel: show ? label : '' };
+    return {
+      label,
+      displayLabel: show ? label : '',
+      sessionId: p.sessionId,
+      sessionKey: p.sessionKey,
+    };
   });
 
   const rows = [];

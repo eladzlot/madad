@@ -259,6 +259,29 @@ export class TrajectoryChart extends LitElement {
     }
 
     td.num { font-variant-numeric: tabular-nums; }
+
+    /* Table rows and heatmap columns open the same session-detail panel as
+       chart markers. The table row is the keyboard path (the heatmap is a
+       visual scanning view — its sessions stay reachable via markers/table). */
+    tr.session-row { cursor: pointer; }
+
+    tr.session-row:hover td,
+    tr.session-row:focus-visible td { background: var(--color-selected-bg, #E4F6F8); }
+
+    tr.session-row:focus-visible {
+      outline: 2px solid var(--color-border-focus, #2BB3C0);
+      outline-offset: -2px;
+    }
+
+    table.heatmap th.col-head,
+    table.heatmap td.cell { cursor: pointer; }
+
+    table.heatmap th.col-head:hover { color: var(--color-text, #162232); }
+
+    table.heatmap td.cell:hover {
+      outline: 2px solid var(--color-accent, #2BB3C0);
+      outline-offset: -2px;
+    }
   `];
 
   constructor() {
@@ -558,7 +581,9 @@ export class TrajectoryChart extends LitElement {
           <thead>
             <tr>
               <th scope="col"></th>
-              ${columns.map(c => html`<th scope="col">${c.displayLabel}</th>`)}
+              ${columns.map(c => html`
+                <th scope="col" class="col-head" title=${c.label} @click=${() => this._select(c)}>${c.displayLabel}</th>
+              `)}
             </tr>
           </thead>
           <tbody>
@@ -567,8 +592,10 @@ export class TrajectoryChart extends LitElement {
                 <th scope="row" title=${r.text}>${r.text}</th>
                 ${cells(r).map((c, i) => c
                   ? html`<td class="cell" style="background:${c.fill}"
-                         title="${columns[i].label} · ${c.value}">${m.compact ? '' : c.value}</td>`
-                  : html`<td class="cell empty" title="${columns[i].label} · —">${m.compact ? '' : '—'}</td>`)}
+                         title="${columns[i].label} · ${c.value}"
+                         @click=${() => this._select(columns[i])}>${m.compact ? '' : c.value}</td>`
+                  : html`<td class="cell empty" title="${columns[i].label} · —"
+                         @click=${() => this._select(columns[i])}>${m.compact ? '' : '—'}</td>`)}
               </tr>
             `)}
           </tbody>
@@ -611,7 +638,15 @@ export class TrajectoryChart extends LitElement {
         </thead>
         <tbody>
           ${points.map(p => html`
-            <tr>
+            <tr
+              class="session-row"
+              tabindex="0"
+              aria-label="פתיחת פירוט המפגש ${fmt.format(p.date)}"
+              @click=${() => this._select(p)}
+              @keydown=${(e) => {
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this._select(p); }
+              }}
+            >
               <td>${fmt.format(p.date)}</td>
               <td class="num">${this._formatValue(p.total)}</td>
               <td>${p.category ?? '—'}</td>

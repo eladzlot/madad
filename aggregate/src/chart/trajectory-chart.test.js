@@ -179,6 +179,27 @@ describe('trajectory-chart — item heatmap', () => {
     expect(hot).not.toBe(cold);
   });
 
+  it('clicking a heatmap cell or column header dispatches point-selected for that column', async () => {
+    const el = await makeEl({
+      series: series(pts(2, { answers: { q1: 3, q2: 0 } })),
+      questionnaire: QUESTIONNAIRE,
+    });
+    const events = [];
+    el.addEventListener('point-selected', (e) => events.push(e.detail));
+
+    el.shadowRoot.querySelector('[data-view="heatmap"]').click();
+    await el.updateComplete;
+
+    // Columns render reversed in the RTL table: DOM-first = newest session.
+    el.shadowRoot.querySelector('table.heatmap th.col-head')
+      .dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(events).toEqual([{ sessionId: 1, sessionKey: 'phq9', questionnaireId: 'phq9' }]);
+
+    const lastCell = [...el.shadowRoot.querySelectorAll('table.heatmap tbody tr:first-child td.cell')].at(-1);
+    lastCell.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(events[1]).toEqual({ sessionId: 0, sessionKey: 'phq9', questionnaireId: 'phq9' });
+  });
+
   it('offers no heatmap view without a config questionnaire', async () => {
     const el = await makeEl({ series: series(pts(2)) });
     expect(el.shadowRoot.querySelector('[data-view="heatmap"]')).toBeNull();
@@ -293,5 +314,21 @@ describe('trajectory-chart — view as table', () => {
     await el.updateComplete;
     expect(el.shadowRoot.querySelector('table')).toBeNull();
     expect(el.shadowRoot.querySelector('svg')).not.toBeNull();
+  });
+
+  it('click or Enter on a table row dispatches point-selected for that session', async () => {
+    const el = await makeEl({ series: series(pts(2)) });
+    const events = [];
+    el.addEventListener('point-selected', (e) => events.push(e.detail));
+
+    el.shadowRoot.querySelector('[data-view="table"]').click();
+    await el.updateComplete;
+
+    const rows = [...el.shadowRoot.querySelectorAll('tr.session-row')];
+    rows[1].dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(events).toEqual([{ sessionId: 1, sessionKey: 'phq9', questionnaireId: 'phq9' }]);
+
+    rows[0].dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    expect(events[1]).toEqual({ sessionId: 0, sessionKey: 'phq9', questionnaireId: 'phq9' });
   });
 });

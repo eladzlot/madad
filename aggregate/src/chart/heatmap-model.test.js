@@ -77,6 +77,15 @@ describe('buildHeatmapModel', () => {
     expect(m.rows.map(r => r.itemId)).toEqual(['1']);
   });
 
+  it('columns carry the session identity so clicking one can open the detail panel', () => {
+    const m = model([
+      { ...pt('2026-07-01T10:00:00Z', { 1: 1 }), sessionId: 7, sessionKey: 'phq9' },
+      { ...pt('2026-07-08T10:00:00Z', { 1: 2 }), sessionId: 8, sessionKey: 'phq9#1' },
+    ]);
+    expect(m.columns.map(c => c.sessionId)).toEqual([7, 8]);
+    expect(m.columns.map(c => c.sessionKey)).toEqual(['phq9', 'phq9#1']);
+  });
+
   it('empty input yields an empty model', () => {
     expect(model([])).toEqual({ compact: false, columns: [], rows: [] });
   });
