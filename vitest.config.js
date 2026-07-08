@@ -4,7 +4,10 @@ import { readFileSync } from 'fs';
 const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8'));
 
 export default defineConfig({
-  define: { __APP_VERSION__: JSON.stringify(pkg.version) },
+  define: {
+    __APP_VERSION__: JSON.stringify(pkg.version),
+    __LANDING_ORIGIN__: JSON.stringify(process.env.LANDING_ORIGIN || ''),
+  },
   test: {
     environment: 'node',
     globals: true,

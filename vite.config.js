@@ -29,19 +29,43 @@ function cspPlugin() {
   };
 }
 
+// Rewrites the landing page's app-bound links — marked with the `__APP_ORIGIN__`
+// token in landing/index.html — to the app's origin when APP_ORIGIN is set (used
+// once landing and the app live on separate domains). Empty ⇒ '..', which
+// reproduces the original relative links: base-path-agnostic and correct on any
+// single-origin deploy (dev, GitHub Pages at /madad/). Unlike cspPlugin this
+// runs in every mode, so the dev server never serves the raw token.
+function crossOriginLinksPlugin() {
+  const appRef = process.env.APP_ORIGIN || '..';
+  return {
+    name: 'cross-origin-links',
+    transformIndexHtml(html) {
+      return html.replaceAll('__APP_ORIGIN__', appRef);
+    },
+  };
+}
+
 export default defineConfig(({ mode }) => ({
   // Base path for all built assets and runtime URLs.
   //   • dev:        '/'         — Vite dev server always serves at root
-  //   • prod:       '/madad/'   — GitHub Pages deploys to /madad/
+  //   • prod:       '/'         — Cloudflare Pages serves at the domain root
+  //                              (ezmadad.com / app.ezmadad.com). Was '/madad/'
+  //                              under GitHub Pages; flipped in migration Stage 2.
   //   • CI matrix:  process.env.MADAD_BASE — lets the dist-smoke job rebuild
   //                 under '/', '/some/deep/path/', etc., to verify nothing in
   //                 the bundle has hardcoded a base assumption. Must start and
   //                 end with '/'.
   base: mode === 'development'
     ? '/'
-    : (process.env.MADAD_BASE || '/madad/'),
-  // Recorded in the PDF's embedded data.json envelope (forensic only).
-  define: { __APP_VERSION__: JSON.stringify(pkg.version) },
+    : (process.env.MADAD_BASE || '/'),
+  define: {
+    // Recorded in the PDF's embedded data.json envelope (forensic only).
+    __APP_VERSION__: JSON.stringify(pkg.version),
+    // Landing origin for the clinician-nav brand link. Empty ⇒ the relative
+    // '../landing/' fallback (single-origin / GitHub Pages behaviour). Set to
+    // e.g. 'https://ezmadad.com' once landing lives on its own domain.
+    __LANDING_ORIGIN__: JSON.stringify(process.env.LANDING_ORIGIN || ''),
+  },
   build: {
     chunkSizeWarningLimit: 1100, // pdf-vendor (pdfmake) is lazy-loaded; real budget enforced by scripts/check-size.mjs
     rollupOptions: {
@@ -59,5 +83,8 @@ export default defineConfig(({ mode }) => ({
     },
   },
   assetsInclude: ['**/*.ttf'],
-  plugins: mode !== 'development' ? [cspPlugin()] : [],
+  plugins: [
+    crossOriginLinksPlugin(),
+    ...(mode !== 'development' ? [cspPlugin()] : []),
+  ],
 }));

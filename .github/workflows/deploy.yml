@@ -1,8 +1,11 @@
 name: Deploy
 
+# ── FROZEN for the Cloudflare migration (docs/CLOUDFLARE_MIGRATION.md, Stage 2) ──
+# GitHub Pages is no longer auto-deployed. The last-built artifact keeps serving
+# users at eladzlot.github.io/madad/ until Stage 8 repoints this workflow to a
+# redirect. To un-freeze (rollback), restore `push: branches: [main]` below.
 on:
-  push:
-    branches: [main]
+  workflow_dispatch:
 
 concurrency:
   group: pages

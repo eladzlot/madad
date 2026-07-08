@@ -1,10 +1,11 @@
 import { defineConfig, devices } from '@playwright/test';
 
 // The base path the dist-smoke project tests against. Defaults to the
-// production base (/madad/) and overridable via env var to support the CI
-// multi-base matrix. Must match the base the dist/ was built with — vite.config.js
-// reads the same env var so a single MADAD_BASE controls build + serve + test.
-const DIST_BASE = process.env.MADAD_BASE || '/madad/';
+// production base (/, Cloudflare Pages at the domain root) and overridable via
+// env var to support the CI multi-base matrix. Must match the base the dist/ was
+// built with — vite.config.js reads the same env var so a single MADAD_BASE
+// controls build + serve + test.
+const DIST_BASE = process.env.MADAD_BASE || '/';
 const DIST_BASE_URL = `http://localhost:4173${DIST_BASE}`;
 
 export default defineConfig({
