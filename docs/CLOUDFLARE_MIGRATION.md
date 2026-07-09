@@ -140,20 +140,32 @@ push, or inspect the trigger).
 
 ---
 
-## Stage 3 — Landing-at-root asset paths
+## Stage 3 — Landing-at-root asset paths — ✅ DONE
 
-Landing today lives at `/landing/` and reaches assets with `../` (`../fonts/`,
-`../public/favicon.svg`, OG images). On its own domain it becomes the **root**,
-so `../` points above the site root and breaks.
+Landing lives at `/landing/` and reached assets with `../`. At a domain root
+`../` points above root and breaks. Audit result — only one ref actually needed
+fixing:
 
-1. Change landing's asset references to resolve from root (`/fonts/…`,
-   favicon, OG) — or make them Vite-managed imports so hashing/rewrite handles
-   them. Includes the `@font-face url('../fonts/…')` inside the inline `<style>`.
-2. Ensure the landing artifact will actually contain those assets at its root
-   (fonts, favicon, OG images) — see Stage 4 for how they get there.
+- **Favicon** (`../public/favicon.svg`): Vite already rewrites it to the
+  base-absolute, hashed `${base}assets/favicon-*.svg`. Depth-independent —
+  nothing to do.
+- **OG image** (absolute github.io URL): deferred to Stage 7's URL sweep.
+- **Fonts** (`@font-face url('../fonts/…')` in an inline `<style>`): Vite does
+  **not** rewrite url() inside inline styles, so it stayed relative. Fixed by
+  extending `crossOriginLinksPlugin` to capture the resolved `base`
+  (`configResolved`) and rewrite `../fonts/` → `${base}fonts/`. Base-absolute ⇒
+  depth-independent: resolves at `/landing/` under every base and at a domain
+  root. Fonts ship unhashed at `${base}fonts/` via `public/fonts/` (publicDir).
 
-**Verify:** build a landing artifact rooted at `/` and preview it; fonts,
-favicon, and OG images all load from root.
+**Verified:** built landing font URL is `/fonts/…` at base `/`,
+`/some/deep/path/fonts/…` under the matrix base, and stays `/fonts/…` in the
+split (`APP_ORIGIN`) build. Lint clean; `npm run e2e` 101 passed (default base) —
+incl. the landing dist-smoke test, which fails on any 404, confirming the font
+path resolves. `dist/fonts/*.ttf` present.
+
+Only `vite.config.js` changed (plugin extended). No source-HTML change was
+needed for fonts — the token stays `../fonts/` in `landing/index.html`, rewritten
+at build.
 
 ---
 

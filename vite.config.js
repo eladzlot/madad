@@ -29,18 +29,31 @@ function cspPlugin() {
   };
 }
 
-// Rewrites the landing page's app-bound links — marked with the `__APP_ORIGIN__`
-// token in landing/index.html — to the app's origin when APP_ORIGIN is set (used
-// once landing and the app live on separate domains). Empty ⇒ '..', which
-// reproduces the original relative links: base-path-agnostic and correct on any
-// single-origin deploy (dev, GitHub Pages at /madad/). Unlike cspPlugin this
-// runs in every mode, so the dev server never serves the raw token.
+// Landing-page URL rewrites, applied in every mode (unlike cspPlugin), so the
+// dev server never serves a raw token. Two rewrites, both in landing/index.html:
+//
+//  1. App-bound links carry an `__APP_ORIGIN__` token. Set to the app's origin
+//     when APP_ORIGIN is defined (landing and the app on separate domains);
+//     empty ⇒ '..', which reproduces the original relative links —
+//     base-path-agnostic and correct on any single-origin deploy.
+//
+//  2. The @font-face `url('../fonts/…')` lives in an inline <style>, which Vite
+//     does NOT rewrite. The relative `../fonts/` only resolves while landing
+//     sits one level below root (/landing/); it breaks once landing becomes a
+//     domain root. Rewriting to the base-absolute `${base}fonts/` is
+//     depth-independent: correct at /landing/ under any base (dev, dist-smoke,
+//     the deep-path matrix) AND at a domain root. The fonts ship unhashed at
+//     `${base}fonts/` via public/fonts/ (Vite's publicDir).
 function crossOriginLinksPlugin() {
   const appRef = process.env.APP_ORIGIN || '..';
+  let base = '/';
   return {
     name: 'cross-origin-links',
+    configResolved(config) { base = config.base; }, // always ends with '/'
     transformIndexHtml(html) {
-      return html.replaceAll('__APP_ORIGIN__', appRef);
+      return html
+        .replaceAll('__APP_ORIGIN__', appRef)
+        .replaceAll('../fonts/', `${base}fonts/`);
     },
   };
 }
