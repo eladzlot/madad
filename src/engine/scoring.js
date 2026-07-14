@@ -43,15 +43,36 @@ function isAnswerable(item) {
 }
 
 /**
- * Applies reverse scoring and weight to a single raw response value.
- * reversedValue = maxPerItem - rawValue
+ * Resolves the [min, max] response range an item can produce.
+ * select/binary: min and max of the option values (inline options, the item's
+ * optionSetId, or the questionnaire's defaultOptionSetId — same resolution
+ * order as the renderer). slider: the item's min/max bounds.
+ * Returns null when no range can be determined.
  */
-function adjustValue(rawValue, item, maxPerItem) {
+function responseRange(item, questionnaire) {
+  if (item.type === 'slider') {
+    if (typeof item.min !== 'number' || typeof item.max !== 'number') return null;
+    return [item.min, item.max];
+  }
+  const options = item.options
+    ?? questionnaire.optionSets?.[item.optionSetId ?? questionnaire.defaultOptionSetId];
+  if (!Array.isArray(options) || options.length === 0) return null;
+  const values = options.map(o => o.value);
+  return [Math.min(...values), Math.max(...values)];
+}
+
+/**
+ * Applies reverse scoring and weight to a single raw response value.
+ * reversedValue = minValue + maxValue - rawValue, so the published reversal
+ * holds for any scale regardless of where it starts (0–3, 1–5, 1–7, …).
+ */
+function adjustValue(rawValue, item, questionnaire) {
   let value = rawValue;
   if (item.reverse) {
-    if (maxPerItem == null)
-      throw new Error(`Reverse scoring for item "${item.id}" requires maxPerItem on the scoring spec`);
-    value = maxPerItem - value;
+    const range = responseRange(item, questionnaire);
+    if (range == null)
+      throw new Error(`Reverse scoring for item "${item.id}" requires resolvable options or slider bounds`);
+    value = range[0] + range[1] - value;
   }
   return value * (item.weight ?? 1);
 }
@@ -93,7 +114,7 @@ export function score(questionnaire, answers) {
   // All branches are included — the answer map determines which have values.
   const items = flattenItems(rawItems ?? []);
   const answerableItems = items.filter(isAnswerable);
-  const { method, maxPerItem, subscaleMethod = 'sum', totalMethod, subscales: subscaleDefs, customFormula, exclude = [] } = scoring;
+  const { method, subscaleMethod = 'sum', totalMethod, subscales: subscaleDefs, customFormula, exclude = [] } = scoring;
 
   // excluded is a Set of item IDs that should not contribute to sum/average totals.
   // Excluded items still appear in the PDF response table; they are simply not scored.
@@ -109,7 +130,7 @@ export function score(questionnaire, answers) {
         const raw = answers[id];
         if (typeof raw !== 'number') return acc;
         const item = items.find(i => i.id === id);
-        acc.push(adjustValue(raw, item ?? {}, maxPerItem));
+        acc.push(adjustValue(raw, item ?? {}, questionnaire));
         return acc;
       }, []);
       const subscaleSum = values.reduce((a, b) => a + b, 0);
@@ -135,7 +156,7 @@ export function score(questionnaire, answers) {
       // Compute total from raw item values, independent of subscale aggregation method
       const values = answerableItems
         .filter(item => !excludedIds.has(item.id) && typeof answers[item.id] === 'number')
-        .map(item => adjustValue(answers[item.id], item, maxPerItem));
+        .map(item => adjustValue(answers[item.id], item, questionnaire));
       total = values.reduce((a, b) => a + b, 0);
     } else {
       // Default: sum of subscale scores
@@ -146,7 +167,7 @@ export function score(questionnaire, answers) {
     // sum or average — only include items with a numeric response that are not excluded
     const values = answerableItems
       .filter(item => !excludedIds.has(item.id) && typeof answers[item.id] === 'number')
-      .map(item => adjustValue(answers[item.id], item, maxPerItem));
+      .map(item => adjustValue(answers[item.id], item, questionnaire));
 
     total = values.reduce((a, b) => a + b, 0);
     if (method === 'average') total = values.length > 0 ? total / values.length : 0;

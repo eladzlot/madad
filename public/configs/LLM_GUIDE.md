@@ -112,7 +112,7 @@ Every item requires `id`, `type`, and `text`. The `id` is local to the questionn
 The canonical type for single-choice questions. Renders as a vertical list of tappable cards.
 Uses `defaultOptionSetId` by default. Override with `"optionSetId": "other_scale"` or inline `"options": [...]`.
 
-Add `"reverse": true` to reverse-score an item. If any item uses `reverse`, you must set `maxPerItem` in the scoring spec.
+Add `"reverse": true` to reverse-score an item. The reversal is derived from the item's own response scale: `reversed = minValue + maxValue - answer` (so 1 ↔ 5 on a 1–5 scale, 0 ↔ 3 on a 0–3 scale). The item must have resolvable options (inline, via `optionSetId`, or via `defaultOptionSetId`).
 
 Add `"required": false` to make an item skippable. Default is required.
 
@@ -136,7 +136,7 @@ The typical pattern is to define a `yesno` option set once and reference it as `
 }
 ```
 
-Binary items score: כן = 1, לא = 0 by default (based on option values). With `"reverse": true`: values are inverted relative to `maxPerItem`.
+Binary items score: כן = 1, לא = 0 by default (based on option values). With `"reverse": true`: the two option values swap.
 
 Add `"required": false` to make a binary item skippable. Default is required.
 
@@ -166,7 +166,7 @@ Renders a draggable range slider. The answer is a number in `[min, max]`. **Scor
 Optional properties:
 - `"step"`: granularity (default 1)
 - `"labels"`: `{ "min": "ללא כאב", "max": "כאב קשה" }` — endpoint labels shown below the track
-- `"reverse"`: reverse-score (requires `maxPerItem` in scoring)
+- `"reverse"`: reverse-score (`reversed = min + max - answer`, using the slider bounds)
 - `"weight"`: item weight multiplier
 
 ### Multiselect item (multiple choice)
@@ -293,17 +293,15 @@ Shuffles a set of items into a random order. The shuffled order is stable for th
 ### Sum scoring (most common)
 ```json
 "scoring": {
-  "method": "sum",
-  "maxPerItem": 3
+  "method": "sum"
 }
 ```
-`maxPerItem` is required only when any item uses `"reverse": true`. Set it to the maximum option value on the scale.
+`maxPerItem` (optional) documents the maximum option value on the scale. It is not used in score computation — reverse-scored items derive their reversal from the item's own option values.
 
 ### Average scoring
 ```json
 "scoring": {
-  "method": "average",
-  "maxPerItem": 4
+  "method": "average"
 }
 ```
 
@@ -313,7 +311,6 @@ Use when the instrument produces both a total score and domain subscores.
 ```json
 "scoring": {
   "method": "subscales",
-  "maxPerItem": 3,
   "subscales": {
     "intrusion":    ["i1", "i2", "i3", "i4", "i5"],
     "avoidance":    ["a1", "a2"],
@@ -578,8 +575,7 @@ The `else` array must be present even if empty. DSL expressions in battery condi
     { "id": "7", "type": "select", "text": "פחד שמשהו נורא עלול לקרות" }
   ],
   "scoring": {
-    "method": "sum",
-    "maxPerItem": 3
+    "method": "sum"
   },
   "interpretations": {
     "target": "total",
@@ -603,7 +599,7 @@ The `else` array must be present even if empty. DSL expressions in battery condi
 - [ ] No item has both `options` and `optionSetId`
 - [ ] Every `optionSetId` on an item matches a key in `optionSets`
 - [ ] `defaultOptionSetId` matches a key in `optionSets` if set
-- [ ] If any item has `"reverse": true`, `scoring.maxPerItem` is set
+- [ ] Every item with `"reverse": true` has resolvable options (inline, `optionSetId`, or `defaultOptionSetId`) or slider bounds
 - [ ] Every item ID in `scoring.subscales` arrays exists in `items`
 - [ ] `subscaleLabels` has a key for every subscale in `scoring.subscales`
 - [ ] `interpretations.ranges` cover the full possible score range
@@ -639,11 +635,11 @@ The `else` array must be present even if empty. DSL expressions in battery condi
 ```
 without a corresponding `"scoring": { "method": "subscales", "subscales": { "intrusion": [...] } }`
 
-**Wrong — `maxPerItem` missing when reverse scoring used:**
+**Wrong — `"reverse": true` on an item with no resolvable options:**
 ```json
-"scoring": { "method": "sum" }
+{ "id": "1", "type": "select", "text": "...", "reverse": true }
 ```
-with any item having `"reverse": true`
+without inline `options`, an `optionSetId`, or a questionnaire `defaultOptionSetId` — the engine cannot derive the reversal (`min + max - answer`) without the item's response scale
 
 **Wrong — item referenced in subscale but not in items array:**
 ```json

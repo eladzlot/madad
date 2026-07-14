@@ -272,28 +272,58 @@ describe('method: custom', () => {
 });
 
 describe('reverse scoring', () => {
-  it('reverses item value: reversed = maxPerItem - raw', () => {
+  it('reverses item value on a 0-based scale: reversed = min + max - raw', () => {
+    const opts = [0, 1, 2, 3, 4].map(v => ({ label: String(v), value: v }));
     const q = baseQ({
-      scoring: {
-        method: 'sum',
-        maxPerItem: 4,
-      },
+      scoring: { method: 'sum' },
       items: [
-        { id: '1', type: 'select', text: 'q1', reverse: true },
-        { id: '2', type: 'select', text: 'q2' },
-        { id: '3', type: 'select', text: 'q3' },
+        { id: '1', type: 'select', text: 'q1', reverse: true, options: opts },
+        { id: '2', type: 'select', text: 'q2', options: opts },
+        { id: '3', type: 'select', text: 'q3', options: opts },
       ],
     });
-    // item 1 raw=1 → reversed=4-1=3; item 2=2; item 3=0 → total=5
+    // item 1 raw=1 → reversed=0+4-1=3; item 2=2; item 3=0 → total=5
     expect(score(q, { '1': 1, '2': 2, '3': 0 }).total).toBe(5);
   });
 
-  it('throws when reverse=true but maxPerItem is missing', () => {
+  it('reverses item value on a 1-based scale (e.g. 1-5 Likert)', () => {
+    const q = baseQ({
+      defaultOptionSetId: 'likert5',
+      optionSets: {
+        likert5: [1, 2, 3, 4, 5].map(v => ({ label: String(v), value: v })),
+      },
+      scoring: { method: 'sum' },
+      items: [
+        { id: '1', type: 'select', text: 'q1', reverse: true },
+        { id: '2', type: 'select', text: 'q2' },
+      ],
+    });
+    // item 1 raw=1 → reversed=1+5-1=5; item 2=2 → total=7
+    expect(score(q, { '1': 1, '2': 2 }).total).toBe(7);
+  });
+
+  it('resolves the range from the item optionSetId over the default set', () => {
+    const q = baseQ({
+      defaultOptionSetId: 'likert5',
+      optionSets: {
+        likert5: [1, 2, 3, 4, 5].map(v => ({ label: String(v), value: v })),
+        agree4: [0, 1, 2, 3].map(v => ({ label: String(v), value: v })),
+      },
+      scoring: { method: 'sum' },
+      items: [
+        { id: '1', type: 'select', text: 'q1', reverse: true, optionSetId: 'agree4' },
+      ],
+    });
+    // item 1 raw=1 → reversed=0+3-1=2
+    expect(score(q, { '1': 1 }).total).toBe(2);
+  });
+
+  it('throws when reverse=true but no options can be resolved', () => {
     const q = baseQ({
       scoring: { method: 'sum' },
       items: [{ id: '1', type: 'select', text: 'q1', reverse: true }],
     });
-    expect(() => score(q, { '1': 1 })).toThrow(/maxPerItem/);
+    expect(() => score(q, { '1': 1 })).toThrow(/options or slider bounds/);
   });
 });
 
@@ -312,15 +342,16 @@ describe('item weight', () => {
   });
 
   it('combines reverse and weight correctly', () => {
+    const opts = [0, 1, 2, 3, 4].map(v => ({ label: String(v), value: v }));
     const q = baseQ({
-      scoring: { method: 'sum', maxPerItem: 4 },
+      scoring: { method: 'sum' },
       items: [
-        { id: '1', type: 'select', text: 'q1', reverse: true, weight: 2 },
+        { id: '1', type: 'select', text: 'q1', reverse: true, weight: 2, options: opts },
         { id: '2', type: 'select', text: 'q2' },
         { id: '3', type: 'select', text: 'q3' },
       ],
     });
-    // item 1: raw=1 → reversed=3 → ×2=6; item 2=1; item 3=0 → total=7
+    // item 1: raw=1 → reversed=0+4-1=3 → ×2=6; item 2=1; item 3=0 → total=7
     expect(score(q, { '1': 1, '2': 1, '3': 0 }).total).toBe(7);
   });
 });
@@ -423,10 +454,20 @@ describe('slider items contribute to scoring like select', () => {
     const q = {
       ...sliderQ,
       items: [{ id: 'pain', type: 'slider', text: 'כאב', min: 0, max: 10, reverse: true }],
-      scoring: { method: 'sum', maxPerItem: 10 },
+      scoring: { method: 'sum' },
     };
-    // reverse: 10 - 3 = 7
+    // reverse: 0+10-3 = 7
     expect(score(q, { pain: 3 }).total).toBe(7);
+  });
+
+  it('slider with reverse scoring and a non-zero min', () => {
+    const q = {
+      ...sliderQ,
+      items: [{ id: 'pain', type: 'slider', text: 'כאב', min: 1, max: 10, reverse: true }],
+      scoring: { method: 'sum' },
+    };
+    // reverse: 1+10-3 = 8
+    expect(score(q, { pain: 3 }).total).toBe(8);
   });
 
   it('mixed slider and select items are both summed', () => {
@@ -572,10 +613,10 @@ describe('randomize node scoring', () => {
           ],
         },
       ],
-      scoring: { method: 'sum', maxPerItem: 3 },
+      scoring: { method: 'sum' },
       alerts: [],
     };
-    // answer=1, reversed = 3 - 1 = 2
+    // answer=1, reversed = 0+3-1 = 2
     expect(score(q, { q1: 1 }).total).toBe(2);
   });
 
