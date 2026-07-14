@@ -126,7 +126,6 @@
     ],
     "scoring": {
       "method": "subscales",
-      "maxPerItem": 4,
       "subscales": {
         "hoarding": ["1", "7", "13"],
         "checking": ["2", "8", "14"],

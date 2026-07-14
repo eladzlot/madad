@@ -480,10 +480,6 @@
             "custom"
           ]
         },
-        "maxPerItem": {
-          "type": "number",
-          "description": "Documentation only: the maximum option value on the scale. Not used in score computation — reverse-scored items derive their reversal from the item's own option values (or slider bounds)."
-        },
         "subscaleMethod": {
           "enum": [
             "sum",

@@ -296,7 +296,7 @@ Shuffles a set of items into a random order. The shuffled order is stable for th
   "method": "sum"
 }
 ```
-`maxPerItem` (optional) documents the maximum option value on the scale. It is not used in score computation — reverse-scored items derive their reversal from the item's own option values.
+Reverse-scored items derive their reversal from the item's own option values — there is nothing to configure on the scoring spec.
 
 ### Average scoring
 ```json

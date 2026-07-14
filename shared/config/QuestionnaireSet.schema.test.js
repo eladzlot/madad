@@ -496,6 +496,13 @@ describe('scoring', () => {
   it('accepts sum scoring', () => expect(valid({
     ...minimalConfig,
     questionnaires: [makeQuestionnaire({
+      scoring: { method: 'sum' },
+    })],
+  })).toBe(true));
+
+  it('rejects the removed maxPerItem field', () => expect(invalid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire({
       scoring: { method: 'sum', maxPerItem: 3 },
     })],
   })).toBe(true));
@@ -788,7 +795,7 @@ describe('full example', () => {
           { id: '1', type: 'select', text: 'חוסר עניין' },
           { id: '9', type: 'select', text: 'מחשבות אובדניות' },
         ],
-        scoring: { method: 'sum', maxPerItem: 3 },
+        scoring: { method: 'sum' },
         interpretations: {
           target: 'total',
           ranges: [

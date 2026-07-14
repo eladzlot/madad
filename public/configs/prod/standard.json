@@ -138,8 +138,7 @@
         }
       ],
       "scoring": {
-        "method": "sum",
-        "maxPerItem": 4
+        "method": "sum"
       },
       "alerts": []
     },
@@ -281,7 +280,6 @@
       ],
       "scoring": {
         "method": "subscales",
-        "maxPerItem": 4,
         "subscales": {
           "washing": ["5", "11", "17"],
           "obsessing": ["6", "12", "18"],
@@ -392,8 +390,7 @@
         }
       ],
       "scoring": {
-        "method": "sum",
-        "maxPerItem": 3
+        "method": "sum"
       },
       "interpretations": {
         "target": "total",
@@ -658,8 +655,7 @@
         }
       ],
       "scoring": {
-        "method": "sum",
-        "maxPerItem": 4
+        "method": "sum"
       },
       "interpretations": {
         "target": "total",
@@ -764,8 +760,7 @@
         }
       ],
       "scoring": {
-        "method": "sum",
-        "maxPerItem": 3
+        "method": "sum"
       },
       "interpretations": {
         "target": "total",
@@ -1260,8 +1255,7 @@
         }
       ],
       "scoring": {
-        "method": "sum",
-        "maxPerItem": 3
+        "method": "sum"
       },
       "alerts": []
     },
@@ -1492,8 +1486,7 @@
         }
       ],
       "scoring": {
-        "method": "sum",
-        "maxPerItem": 4
+        "method": "sum"
       },
       "alerts": []
     },
@@ -1628,7 +1621,6 @@
       ],
       "scoring": {
         "method": "subscales",
-        "maxPerItem": 4,
         "subscales": {
           "fear": ["1", "2", "5", "10", "12", "14", "15"],
           "avoidance": ["4", "6", "8", "9", "11", "16"],
@@ -1866,8 +1858,7 @@
         }
       ],
       "scoring": {
-        "method": "sum",
-        "maxPerItem": 4
+        "method": "sum"
       },
       "interpretations": {
         "target": "total",
@@ -2044,8 +2035,7 @@
         }
       ],
       "scoring": {
-        "method": "sum",
-        "maxPerItem": 4
+        "method": "sum"
       },
       "interpretations": {
         "target": "total",
@@ -2151,8 +2141,7 @@
         }
       ],
       "scoring": {
-        "method": "sum",
-        "maxPerItem": 8
+        "method": "sum"
       },
       "interpretations": {
         "target": "total",
@@ -2248,8 +2237,7 @@
         }
       ],
       "scoring": {
-        "method": "sum",
-        "maxPerItem": 5
+        "method": "sum"
       }
     },
     {
@@ -2359,8 +2347,7 @@
         }
       ],
       "scoring": {
-        "method": "average",
-        "maxPerItem": 12
+        "method": "average"
       }
     },
     {
@@ -2405,7 +2392,6 @@
       ],
       "scoring": {
         "method": "subscales",
-        "maxPerItem": 7,
         "subscales": {
           "anxiety": ["2", "4", "6", "8", "10", "12"],
           "avoidance": ["1", "3", "5", "7", "9", "11"]
@@ -2726,7 +2712,6 @@
       ],
       "scoring": {
         "method": "subscales",
-        "maxPerItem": 5,
         "subscales": {
           "nonacceptance": ["11", "12", "21", "23", "25", "29"],
           "goals": ["13", "18", "20", "26", "33"],

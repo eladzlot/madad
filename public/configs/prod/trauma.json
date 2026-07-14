@@ -248,7 +248,6 @@
       ],
       "scoring": {
         "method": "subscales",
-        "maxPerItem": 4,
         "subscaleMethod": "mean",
         "subscales": {
           "intrusion": [
@@ -535,7 +534,6 @@
       ],
       "scoring": {
         "method": "subscales",
-        "maxPerItem": 7,
         "subscaleMethod": "mean",
         "subscales": {
           "self": [

@@ -349,8 +349,7 @@ All item types support an optional `required` boolean that overrides the type's 
         }
       ],
       "scoring": {
-        "method": "sum",
-        "maxPerItem": 3
+        "method": "sum"
       },
       "interpretations": {
         "target": "total",
@@ -385,7 +384,7 @@ Supported methods:
 - `subscales` — each subscale is scored independently (same skip-non-numeric rule applies); an overall total may also be defined.
 
 Additional fields:
-- `maxPerItem` — used for reverse scoring calculation: `reversedValue = maxPerItem - rawValue`
+- Reverse scoring (`reverse: true` on an item) computes `reversedValue = minValue + maxValue - rawValue`, where the range is derived from the item's own option values (inline `options`, the item's `optionSetId`, or the questionnaire's `defaultOptionSetId`) or, for sliders, the item's `min`/`max` bounds.
 - `subscales` — a map of subscale identifiers to arrays of item IDs
 - `subscaleMethod` — how each individual subscale score is computed. One of `"sum"` (default) or `"mean"`. When `"mean"`, unanswered items are excluded from both numerator and denominator. The overall total is always the sum of the subscale scores regardless of `subscaleMethod`. Use `"mean"` for instruments whose published norms report subscale means (e.g. PCL-5, PTCI).
 - `customFormula` — a string expression evaluated by the DSL interpreter (see section 12)

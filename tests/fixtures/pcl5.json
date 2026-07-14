@@ -136,7 +136,6 @@
     ],
     "scoring": {
       "method": "subscales",
-      "maxPerItem": 4,
       "subscales": {
         "intrusion": ["1", "2", "3", "4", "5"],
         "avoidance": ["6", "7"],

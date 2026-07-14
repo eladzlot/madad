@@ -100,7 +100,7 @@ Every entry in the `items` array is a node. Nodes have a `type` field that deter
 | `text` | string | yes | Question text shown to patient |
 | `options` | array | yes* | Array of option objects. Required unless `optionSetId` is set. |
 | `optionSetId` | string (ID) | no | References a shared option set. Mutually exclusive with `options`. |
-| `reverse` | boolean | no | If true, apply reverse scoring. Requires `maxPerItem` on scoring spec. |
+| `reverse` | boolean | no | If true, apply reverse scoring: `reversed = minValue + maxValue - answer`, derived from the item's own option values. |
 | `weight` | number | no | Multiplier applied after reverse scoring. Default 1. |
 | `required` | boolean | no | If `false`, item is skippable. Default: required. |
 
@@ -122,7 +122,7 @@ A two-button yes/no item. Stores the chosen option's numeric `value`. The two op
 | `text` | string | yes | |
 | `options` | array | yes* | Exactly two option objects (`{label, value}`). Required unless `optionSetId` is set, or the questionnaire defines `defaultOptionSetId`. |
 | `optionSetId` | string (ID) | no | References a shared option set on the questionnaire. Mutually exclusive with `options`. |
-| `reverse` | boolean | no | If true, apply reverse scoring. Requires `maxPerItem` on scoring spec. |
+| `reverse` | boolean | no | If true, apply reverse scoring: the two option values swap. |
 | `weight` | number | no | Default 1. |
 | `required` | boolean | no | If `false`, item is skippable. Default: required. |
 
@@ -206,7 +206,6 @@ Not scored. Answer stored as `number[]` of 1-based indices. Available in DSL via
 | Field | Type | Required | Description |
 |---|---|---|---|
 | `method` | string | yes | One of: `none`, `sum`, `average`, `subscales`, `custom` |
-| `maxPerItem` | number | no | Required when any item uses reverse scoring |
 | `subscaleMethod` | string | no | How each subscale score is computed. One of: `sum` (default), `mean`. Applies only when `subscales` is defined. Use `mean` for instruments like PCL-5 and PTCI whose published norms report subscale means. The total score is always the sum of the subscale scores (whether those are sums or means). |
 | `subscales` | object | no | Map of subscale ID → array of item IDs. Required when method is `subscales`. |
 | `customFormula` | string | no | DSL expression returning a number. Required when method is `custom`. |
@@ -395,7 +394,7 @@ DSL expressions (`condition`, `customFormula`) are validated lazily — they are
         { "id": "2", "type": "select", "text": "תחושת עצבות, דיכאון או ייאוש" },
         { "id": "9", "type": "select", "text": "מחשבות שעדיף לך למות או לפגוע בעצמך" }
       ],
-      "scoring": { "method": "sum", "maxPerItem": 3 },
+      "scoring": { "method": "sum" },
       "interpretations": {
         "target": "total",
         "ranges": [

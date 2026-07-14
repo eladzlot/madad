@@ -76,8 +76,7 @@
       }
     ],
     "scoring": {
-      "method": "sum",
-      "maxPerItem": 3
+      "method": "sum"
     },
     "interpretations": {
       "target": "total",

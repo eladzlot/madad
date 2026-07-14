@@ -72,8 +72,7 @@
         }
       ],
       "scoring": {
-        "method": "sum",
-        "maxPerItem": 5
+        "method": "sum"
       },
       "interpretations": {
         "target": "total",
@@ -267,8 +266,7 @@
         }
       ],
       "scoring": {
-        "method": "sum",
-        "maxPerItem": 4
+        "method": "sum"
       }
     },
     {
