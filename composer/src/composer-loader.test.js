@@ -58,6 +58,12 @@ describe('loadManifest', () => {
     expect(result).toEqual(manifest);
   });
 
+  it('revalidates the manifest with cache: no-cache (mutable, unhashed file)', async () => {
+    mockFetch.mockResolvedValueOnce({ ok: true, status: 200, json: async () => ({ configs: [] }) });
+    await loadManifest();
+    expect(mockFetch.mock.calls[0][1]).toMatchObject({ cache: 'no-cache' });
+  });
+
   it('throws on HTTP error', async () => {
     mockFetch.mockResolvedValueOnce({ ok: false, status: 404 });
     await expect(loadManifest()).rejects.toThrow();

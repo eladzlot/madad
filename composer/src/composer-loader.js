@@ -22,7 +22,10 @@ function toShortName(sourceUrl) {
 }
 
 export async function loadManifest() {
-  const res = await fetch(MANIFEST_URL);
+  // cache: 'no-cache' — the manifest is a mutable, unhashed file; revalidate
+  // with the server so a fresh bundle never pairs with a stale manifest.
+  // Same reasoning as the config fetch in shared/config/loader.js.
+  const res = await fetch(MANIFEST_URL, { cache: 'no-cache' });
   if (!res.ok) throw new Error(`שגיאה בטעינת המניפסט: HTTP ${res.status}`);
   return res.json();
 }

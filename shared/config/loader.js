@@ -45,7 +45,8 @@
 //
 // Errors thrown:
 //   ConfigFetchError      — HTTP failure, network error, or timeout (timedOut: true)
-//   ConfigValidationError — AJV schema violation
+//   ConfigValidationError — AJV schema violation. Unknown-property violations
+//                           (additionalProperties) only warn — see fetchAndValidate.
 //   ConfigError           — semantic violation (duplicate ID, missing option set, etc.)
 
 import validate from './validate-schema.js';
@@ -173,7 +174,12 @@ async function fetchAndValidate(source, fetchFn, allowedOrigins, fetchTimeoutMs,
 
   let data;
   try {
-    const fetchOptions = controller ? { signal: controller.signal } : undefined;
+    // cache: 'no-cache' — always revalidate with the server (ETag → 304 when
+    // unchanged). Configs are mutable, unhashed files; if the browser serves
+    // them from cache for the full max-age (10 min on GitHub Pages), a freshly
+    // deployed bundle can end up validating configs from the previous deploy.
+    // See public/configs/CONTRIBUTING.md § Schema changes and deploy skew.
+    const fetchOptions = { cache: 'no-cache', ...(controller && { signal: controller.signal }) };
     const res = await fetchFn(url, fetchOptions);
     if (!res.ok) {
       const httpErr = new ConfigFetchError(url, `HTTP ${res.status} ${res.statusText}`);
@@ -197,7 +203,20 @@ async function fetchAndValidate(source, fetchFn, allowedOrigins, fetchTimeoutMs,
     if (timeoutId !== undefined) clearTimeout(timeoutId);
   }
 
-  if (!validate(data)) throw new ConfigValidationError(url, validate.errors);
+  if (!validate(data)) {
+    // Unknown properties warn instead of failing. The schema ships inside the
+    // hashed JS bundle while configs are fetched at runtime, so the two can be
+    // one deploy apart (HTTP caches) — a field one side doesn't know about must
+    // not take the app down. Every other violation is still fatal. Authored
+    // configs are checked with full strictness in CI (scripts/validate-configs.mjs).
+    const hardErrors = validate.errors.filter(e => e.keyword !== 'additionalProperties');
+    if (hardErrors.length > 0) throw new ConfigValidationError(url, hardErrors);
+    for (const e of validate.errors) {
+      console.warn(
+        `[config] ${url}: ignoring unknown property "${e.params?.additionalProperty}" at ${e.instancePath || '/'}`
+      );
+    }
+  }
 
   validateConfigData(data, url);
 

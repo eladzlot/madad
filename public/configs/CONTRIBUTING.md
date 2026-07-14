@@ -82,6 +82,28 @@ If no existing file fits your instrument:
 
 ---
 
+## Schema changes and deploy skew
+
+The config schema ships **inside the app's JS bundle**, while the config JSONs are
+**fetched at runtime** — so after a deploy, a user's browser can hold one from the new
+deploy and one from the old (HTTP caches, open tabs). The runtime defends itself two
+ways: config fetches use `cache: 'no-cache'` (revalidate via ETag), and the browser-side
+validator treats *unknown properties* as warnings, not errors (CI stays strict — see
+`scripts/validate-configs.mjs`).
+
+That tolerance only covers **adding or removing optional fields**. Changes it can't
+absorb — renaming a field, changing an enum's values, making a field required — need
+**two deploys**:
+
+1. First ship configs that are valid under *both* the old and new schema.
+2. After the cache window has passed (~10 minutes on GitHub Pages), ship the schema change.
+
+Shipping both at once caused a production outage on 2026-07-14: `maxPerItem` was removed
+from configs and rejected by the schema in the same deploy, and for the cache window every
+composer load validated stale cached configs against the new strict schema and failed.
+
+---
+
 ## Questions
 
 Contact [elad.zlotnick@mail.huji.ac.il](mailto:elad.zlotnick@mail.huji.ac.il).

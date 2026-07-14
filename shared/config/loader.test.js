@@ -152,6 +152,46 @@ describe('validation errors', () => {
     expect(Array.isArray(err.validationErrors)).toBe(true);
     expect(err.validationErrors.length).toBeGreaterThan(0);
   });
+
+  // Deploy-skew tolerance: the schema ships inside the hashed bundle while
+  // configs are fetched at runtime, so the two can be one deploy apart. A
+  // property the schema doesn't know about must warn, not fail — otherwise
+  // removing a field from the schema breaks cached configs for the cache
+  // window (production incident, 2026-07-14: maxPerItem removal).
+  it('tolerates unknown properties with a warning instead of failing', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const q = minimalQ();
+    q.scoring = { method: 'sum', maxPerItem: 3 }; // field the schema no longer knows
+    const fetch = makeFetch({ '/configs/prod/skewed.json': { body: minimalConfig([q]) } });
+    const result = await loadConfig(['skewed'], { fetch });
+    expect(result.questionnaires).toHaveLength(1);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('maxPerItem'));
+    warn.mockRestore();
+  });
+
+  it('still throws when a real violation accompanies an unknown property', async () => {
+    const q = minimalQ();
+    q.scoring = { method: 'not_a_method', maxPerItem: 3 };
+    const fetch = makeFetch({ '/configs/prod/bad.json': { body: minimalConfig([q]) } });
+    const err = await loadConfig(['bad'], { fetch }).catch(e => e);
+    expect(err).toBeInstanceOf(ConfigValidationError);
+    // The unknown-property noise is filtered out; only real violations remain.
+    expect(err.validationErrors.every(e => e.keyword !== 'additionalProperties')).toBe(true);
+    expect(err.validationErrors.length).toBeGreaterThan(0);
+  });
+});
+
+// ─── Fetch cache mode ─────────────────────────────────────────────────────────
+
+describe('fetch cache mode', () => {
+  // Configs are mutable, unhashed files. Without revalidation the browser can
+  // pair a freshly deployed bundle with configs cached from the previous
+  // deploy for the full max-age (10 min on GitHub Pages).
+  it('fetches configs with cache: no-cache so the browser revalidates', async () => {
+    const fetch = makeFetch({ '/configs/prod/standard.json': { body: minimalConfig() } });
+    await loadConfig(['standard'], { fetch, fetchTimeoutMs: 0 });
+    expect(fetch.mock.calls[0][1]).toMatchObject({ cache: 'no-cache' });
+  });
 });
 
 // ─── Return shape ─────────────────────────────────────────────────────────────
@@ -613,8 +653,10 @@ describe('fetch timeout', () => {
 
   it('disabling timeout (fetchTimeoutMs: 0) passes no signal to fetch', async () => {
     const fetch = vi.fn(async (url, options) => {
-      // When timeout is disabled, fetchAndValidate must not pass an options object.
-      expect(options).toBeUndefined();
+      // When timeout is disabled, no AbortSignal is attached — but the cache
+      // mode is always set (see 'fetch cache mode' describe block).
+      expect(options.signal).toBeUndefined();
+      expect(options.cache).toBe('no-cache');
       return { ok: true, status: 200, statusText: 'OK', json: async () => minimalConfig([minimalQ()]) };
     });
     await loadConfig(['a'], { fetch, fetchTimeoutMs: 0 });
