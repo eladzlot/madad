@@ -6,8 +6,9 @@
   "scripts": {
     "dev": "vite --host --mode development",
     "build:validator": "node scripts/build-validator.mjs",
-    "build": "npm run build:validator && vite build",
+    "build": "npm run build:validator && vite build && vite build --config vite.landing.config.js",
     "preview": "vite preview",
+    "preview:landing": "vite preview --outDir dist-landing --port 4174 --strictPort --base=/",
     "test": "npm run build:validator && vitest run",
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",

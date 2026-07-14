@@ -169,27 +169,42 @@ at build.
 
 ---
 
-## Stage 4 — Two build artifacts from one source
+## Stage 4 — Two build artifacts from one source — ✅ DONE
 
-Produce two deployable directories:
+**Shipped shape:**
+- App build (`vite.config.js`): landing dropped from `input`; still emits
+  `dist/` (patient + composer + aggregate). Keeps `crossOriginLinksPlugin` so
+  `npm run dev` still serves a working `/landing/`.
+- Landing build (`vite.landing.config.js`, new): `root: 'landing'`, `base: '/'`,
+  `publicDir: false`, `outDir: dist-landing/`. Emits `index.html` at the artifact
+  root. A `landingAssetsPlugin` copies only `public/fonts/` and
+  `public/og-image.png` into it — the app-only `public/` payload (configs,
+  composer, og-image-app) stays out. Favicon resolves cross-root and hashes into
+  `dist-landing/assets/`.
+- Shared plugins extracted to `vite.shared.js` (`cspPlugin`,
+  `crossOriginLinksPlugin`) — one source of truth, esp. for CSP.
+- `__APP_ORIGIN__` empty-fallback changed `'..'` → `''` (root-absolute): landing
+  now lives at a domain root, so the relative `..` would point above root.
+- `package.json` build runs both (`vite build && vite build --config
+  vite.landing.config.js`); `.gitignore` adds `dist-landing/`.
 
-- **App artifact:** current `dist/` (patient + composer + aggregate). Landing
-  is dropped from the app build's Vite `input`.
-- **Landing artifact:** landing `index.html` at the directory **root**, plus
-  its fonts / favicon / OG images.
+**E2E restructure** (landing is a separate origin now):
+- Shared watchers extracted to `tests/e2e/dist-helpers.js`.
+- New `landing-smoke` Playwright project + preview server (`dist-landing/` at
+  `:4174`, base `/`); `tests/e2e/landing-smoke.dist.test.js` asserts landing
+  renders + fonts/favicon load (no 404) + CSP clean + CTA link well-formed. No
+  cross-origin click-through (that link now points at another origin).
+- `dist-smoke` matcher narrowed to `dist-smoke.dist.test.js` so the deep-path
+  matrix job (`--project=dist-smoke`) never pulls in landing.
+- The landing test's old legacy-`configs=`-branch coverage moved to a new patient
+  test in `dist-smoke.dist.test.js` (the branch runs in the app, so it belongs
+  there).
 
-Recommended shape: a dedicated landing build (separate Vite input set or a
-second config/mode) emitting `dist-landing/` with `index.html` at the root,
-rather than a post-build shuffle of `dist/landing/`. Keeps each artifact's base
-resolution clean.
-
-Update `scripts/check-size.mjs` if the app bundle's chunk set changes now that
-landing is no longer a shared input (it shouldn't — landing has no JS — but
-confirm the budgets still describe reality).
-
-**Verify:** `npm run build` (app) + the landing build both succeed; app `dist/`
-no longer contains a `landing/` dir; `dist-landing/index.html` sits at root and
-previews correctly at base `/`.
+**Verified:** lint clean; size budget OK (landing gone from `dist/`); `npm run
+e2e` 102 passed (dev + app dist-smoke + landing-smoke). `dist-landing/` contains
+only `index.html`, `fonts/`, `og-image.png`, `assets/favicon-*.svg`; `dist/` has
+no `landing/`. Production split build embeds `https://app.ezmadad.com/*` in
+landing and `https://ezmadad.com/` in the app nav.
 
 ---
 

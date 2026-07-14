@@ -8,6 +8,11 @@ import { defineConfig, devices } from '@playwright/test';
 const DIST_BASE = process.env.MADAD_BASE || '/';
 const DIST_BASE_URL = `http://localhost:4173${DIST_BASE}`;
 
+// The landing surface builds separately (dist-landing/) and deploys to its own
+// domain root, so it gets its own preview + smoke project. It is always at base
+// '/' — the deep-path matrix that exercises the app never applies to landing.
+const LANDING_BASE_URL = 'http://localhost:4174/';
+
 export default defineConfig({
   testDir: 'tests/e2e',
   timeout: 30_000,
@@ -47,10 +52,22 @@ export default defineConfig({
     // that unit tests and the dev e2e suite cannot see.
     {
       name: 'dist-smoke',
-      testMatch: /\.dist\.test\.js$/,
+      testMatch: /dist-smoke\.dist\.test\.js$/,
       use: {
         ...devices['Desktop Chrome'],
         baseURL: DIST_BASE_URL,
+      },
+    },
+
+    // Landing artifact smoke — served at its own origin (dist-landing/ at :4174,
+    // base /). Separate from dist-smoke so the app's deep-path matrix job
+    // (--project=dist-smoke) does not pull it in.
+    {
+      name: 'landing-smoke',
+      testMatch: /landing-smoke\.dist\.test\.js$/,
+      use: {
+        ...devices['Desktop Chrome'],
+        baseURL: LANDING_BASE_URL,
       },
     },
   ],
@@ -68,6 +85,13 @@ export default defineConfig({
       // the CI matrix rebuilds at a non-default base.
       command: `npx vite preview --port 4173 --strictPort --base=${DIST_BASE}`,
       url: DIST_BASE_URL,
+      reuseExistingServer: !process.env.CI,
+      timeout: 30_000,
+    },
+    {
+      // Landing artifact preview — serves dist-landing/ at the domain root.
+      command: `npx vite preview --outDir dist-landing --port 4174 --strictPort --base=/`,
+      url: LANDING_BASE_URL,
       reuseExistingServer: !process.env.CI,
       timeout: 30_000,
     },
