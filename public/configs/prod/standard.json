@@ -283,36 +283,12 @@
         "method": "subscales",
         "maxPerItem": 4,
         "subscales": {
-          "washing": [
-            "5",
-            "11",
-            "17"
-          ],
-          "obsessing": [
-            "6",
-            "12",
-            "18"
-          ],
-          "hoarding": [
-            "1",
-            "7",
-            "13"
-          ],
-          "ordering": [
-            "3",
-            "9",
-            "15"
-          ],
-          "checking": [
-            "2",
-            "8",
-            "14"
-          ],
-          "neutralising": [
-            "4",
-            "10",
-            "16"
-          ]
+          "washing": ["5", "11", "17"],
+          "obsessing": ["6", "12", "18"],
+          "hoarding": ["1", "7", "13"],
+          "ordering": ["3", "9", "15"],
+          "checking": ["2", "8", "14"],
+          "neutralising": ["4", "10", "16"]
         }
       },
       "interpretations": {
@@ -351,14 +327,7 @@
       "id": "gad7",
       "title": "שאלון חרדה מוכללת (GAD-7)",
       "description": "הערכת תסמיני חרדה כללית במהלך השבועיים האחרונים (Generalized Anxiety Disorder, GAD-7)",
-      "keywords": [
-        "anxiety",
-        "GAD",
-        "GAD-7",
-        "generalized anxiety",
-        "worry",
-        "screening"
-      ],
+      "keywords": ["anxiety", "GAD", "GAD-7", "generalized anxiety", "worry", "screening"],
       "defaultOptionSetId": "frequency_4",
       "optionSets": {
         "frequency_4": [
@@ -458,14 +427,7 @@
       "id": "pdss_sr",
       "title": "שאלון חומרת הפרעת פאניקה (PDSS-SR)",
       "description": "הערכת חומרת תסמיני פאניקה במהלך השבוע האחרון (Panic Disorder Severity Scale – Self Report)",
-      "keywords": [
-        "panic",
-        "panic disorder",
-        "PDSS",
-        "agoraphobia",
-        "anxiety",
-        "avoidance"
-      ],
+      "keywords": ["panic", "panic disorder", "PDSS", "agoraphobia", "anxiety", "avoidance"],
       "defaultOptionSetId": "severity_5",
       "optionSets": {
         "severity_5": [
@@ -727,15 +689,7 @@
       "id": "phq9",
       "title": "שאלון דיכאון (PHQ-9)",
       "description": "הערכת תסמיני דיכאון במהלך השבוע האחרון (Depression, MDD, PHQ-9)",
-      "keywords": [
-        "depression",
-        "mood",
-        "PHQ",
-        "PHQ-9",
-        "MDD",
-        "screening",
-        "anhedonia"
-      ],
+      "keywords": ["depression", "mood", "PHQ", "PHQ-9", "MDD", "screening", "anhedonia"],
       "defaultOptionSetId": "frequency_4",
       "optionSets": {
         "frequency_4": [
@@ -857,13 +811,7 @@
       "id": "hai",
       "title": "שאלון חרדת בריאות (HAI)",
       "description": "הערכת חרדת בריאות — 18 פריטים המודדים עסוק בבריאות, פחד ממחלה, ותפיסת סכנה ונכות אפשרית (Health Anxiety Inventory).",
-      "keywords": [
-        "health anxiety",
-        "hypochondria",
-        "HAI",
-        "illness",
-        "somatic"
-      ],
+      "keywords": ["health anxiety", "hypochondria", "HAI", "illness", "somatic"],
       "defaultOptionSetId": "hai_4",
       "optionSets": {
         "hai_4": [
@@ -1321,13 +1269,7 @@
       "id": "mgh_hps",
       "title": "סולם תלישת שיער (MGH-HPS)",
       "description": "הערכת חומרת תלישת שיער במהלך השבוע האחרון — 7 פריטים (Massachusetts General Hospital Hairpulling Scale).",
-      "keywords": [
-        "trichotillomania",
-        "hair pulling",
-        "MGH",
-        "HPS",
-        "OCD spectrum"
-      ],
+      "keywords": ["trichotillomania", "hair pulling", "MGH", "HPS", "OCD spectrum"],
       "defaultOptionSetId": "hps_5",
       "optionSets": {
         "hps_5": [
@@ -1688,29 +1630,9 @@
         "method": "subscales",
         "maxPerItem": 4,
         "subscales": {
-          "fear": [
-            "1",
-            "2",
-            "5",
-            "10",
-            "12",
-            "14",
-            "15"
-          ],
-          "avoidance": [
-            "4",
-            "6",
-            "8",
-            "9",
-            "11",
-            "16"
-          ],
-          "physiological": [
-            "3",
-            "7",
-            "13",
-            "17"
-          ]
+          "fear": ["1", "2", "5", "10", "12", "14", "15"],
+          "avoidance": ["4", "6", "8", "9", "11", "16"],
+          "physiological": ["3", "7", "13", "17"]
         }
       },
       "subscaleLabels": {
@@ -1746,14 +1668,7 @@
       "id": "isi",
       "title": "מדד חומרת נדודי שינה (ISI)",
       "description": "7-item insomnia severity scale assessing sleep difficulty, satisfaction, and daytime impact over the past 2 weeks. (Insomnia Severity Index)",
-      "keywords": [
-        "insomnia",
-        "sleep",
-        "ISI",
-        "נדודי שינה",
-        "שינה",
-        "screening"
-      ],
+      "keywords": ["insomnia", "sleep", "ISI", "נדודי שינה", "שינה", "screening"],
       "items": [
         {
           "id": "intro",
@@ -1985,14 +1900,7 @@
       "id": "oasis",
       "title": "שאלון חומרת חרדה ופגיעה תפקודית (OASIS)",
       "description": "5-item transdiagnostic scale assessing anxiety severity and functional impairment over the past week. Applicable across anxiety disorders.",
-      "keywords": [
-        "anxiety",
-        "OASIS",
-        "impairment",
-        "transdiagnostic",
-        "חרדה",
-        "תפקוד"
-      ],
+      "keywords": ["anxiety", "OASIS", "impairment", "transdiagnostic", "חרדה", "תפקוד"],
       "items": [
         {
           "id": "intro",
@@ -2167,14 +2075,7 @@
       "id": "wsas",
       "title": "סולם עבודה והתאמה חברתית (WSAS)",
       "description": "5-item scale measuring functional impairment in work, home management, social leisure, private leisure, and relationships. Scores 0-40; higher is worse.",
-      "keywords": [
-        "functioning",
-        "impairment",
-        "disability",
-        "WSAS",
-        "תפקוד",
-        "פגיעה"
-      ],
+      "keywords": ["functioning", "impairment", "disability", "WSAS", "תפקוד", "פגיעה"],
       "defaultOptionSetId": "wsas_scale",
       "optionSets": {
         "wsas_scale": [
@@ -2279,14 +2180,7 @@
       "id": "wai6",
       "title": "שאלון ברית טיפולית (WAI-6)",
       "description": "6-item working alliance measure assessing bond and goal/task agreement between patient and therapist. Administered after therapy sessions.",
-      "keywords": [
-        "alliance",
-        "therapeutic",
-        "bond",
-        "WAI",
-        "ברית טיפולית",
-        "קשר"
-      ],
+      "keywords": ["alliance", "therapeutic", "bond", "WAI", "ברית טיפולית", "קשר"],
       "defaultOptionSetId": "wai_scale",
       "optionSets": {
         "wai_scale": [
@@ -2362,14 +2256,7 @@
       "id": "top3",
       "title": "שלושת הבעיות המרכזיות",
       "description": "Idiographic 3-problem questionnaire. Patient names up to three main problems and rates the severity of each on a 1–12 scale, with an optional coping description per problem.",
-      "keywords": [
-        "problems",
-        "idiographic",
-        "severity",
-        "coping",
-        "בעיות",
-        "התמודדות"
-      ],
+      "keywords": ["problems", "idiographic", "severity", "coping", "בעיות", "התמודדות"],
       "items": [
         {
           "id": "intro",
@@ -2494,10 +2381,19 @@
         ]
       },
       "items": [
-        { "id": "1", "type": "select", "text": "זה עוזר לפנות לאנשים אחרים ברגעים של צורך", "reverse": true },
+        {
+          "id": "1",
+          "type": "select",
+          "text": "זה עוזר לפנות לאנשים אחרים ברגעים של צורך",
+          "reverse": true
+        },
         { "id": "2", "type": "select", "text": "אני נזקקת להרבה אישורים לכך שאני אהובה" },
         { "id": "3", "type": "select", "text": "אני רוצה להתקרב לאנשים אבל נסוגה מהם" },
-        { "id": "4", "type": "select", "text": "אני מרגישה שאנשים לא רוצים להיות קרובים כפי שאני רוצה" },
+        {
+          "id": "4",
+          "type": "select",
+          "text": "אני מרגישה שאנשים לא רוצים להיות קרובים כפי שאני רוצה"
+        },
         { "id": "5", "type": "select", "text": "אני פונה לאנשים אחרים לנחמה", "reverse": true },
         { "id": "6", "type": "select", "text": "הרצון שלי לקרבה מרחיק אנשים" },
         { "id": "7", "type": "select", "text": "אני מנסה להימנע מקרבה" },
@@ -2509,10 +2405,10 @@
       ],
       "scoring": {
         "method": "subscales",
-        "maxPerItem": 7,
+        "maxPerItem": 8,
         "subscales": {
-          "anxiety": ["2","4","6","8","10","12"],
-          "avoidance": ["1","3","5","7","9","11"]
+          "anxiety": ["2", "4", "6", "8", "10", "12"],
+          "avoidance": ["1", "3", "5", "7", "9", "11"]
         }
       },
       "subscaleLabels": {
@@ -2548,7 +2444,11 @@
         { "id": "6", "type": "select", "text": "נטיתי להגזים בתגובותיי למצבים מסוימים" },
         { "id": "7", "type": "select", "text": "חשתי רעד" },
         { "id": "8", "type": "select", "text": "הרגשתי שאני מתעצבן יותר מדי" },
-        { "id": "9", "type": "select", "text": "חששתי ממצבים בהם אולי אכנס לחרדה ואעשה צחוק מעצמי" },
+        {
+          "id": "9",
+          "type": "select",
+          "text": "חששתי ממצבים בהם אולי אכנס לחרדה ואעשה צחוק מעצמי"
+        },
         { "id": "10", "type": "select", "text": "הרגשתי שאין לי למה לצפות בחיים" },
         { "id": "11", "type": "select", "text": "הרגשתי שאני קצר רוח" },
         { "id": "12", "type": "select", "text": "התקשיתי להירגע" },
@@ -2595,6 +2495,260 @@
           "severity": "warning"
         }
       ]
+    },
+    {
+      "id": "ders",
+      "title": "שאלון קשיים בוויסות רגשי (DERS)",
+      "description": "שאלון בן 36 פריטים להערכת קשיים בוויסות רגשי בשישה ממדים (Gratz & Roemer, 2004).",
+      "keywords": ["DERS", "emotion regulation", "emotion dysregulation", "ויסות רגשי", "ויסות"],
+      "defaultOptionSetId": "freq5",
+      "optionSets": {
+        "freq5": [
+          {
+            "label": "כמעט אף פעם לא (0-10%)",
+            "value": 1
+          },
+          {
+            "label": "לפעמים (11-35%)",
+            "value": 2
+          },
+          {
+            "label": "כמחצית מהזמן (36-65%)",
+            "value": 3
+          },
+          {
+            "label": "רוב הזמן (66-90%)",
+            "value": 4
+          },
+          {
+            "label": "כמעט תמיד (91-100%)",
+            "value": 5
+          }
+        ]
+      },
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "אנא ענה/י עד כמה המשפטים הבאים מתארים אותך בצורה הטובה ביותר, על פי השכיחות שבה את/ה חווה את התחושות או ההתנהגויות המתוארות."
+        },
+        {
+          "id": "1",
+          "type": "select",
+          "text": "אני מודע לרגשות שלי",
+          "reverse": true
+        },
+        {
+          "id": "2",
+          "type": "select",
+          "text": "אני שם לב לרגשותיי",
+          "reverse": true
+        },
+        {
+          "id": "3",
+          "type": "select",
+          "text": "אני חווה את רגשותיי כמסעירים ובלתי נשלטים"
+        },
+        {
+          "id": "4",
+          "type": "select",
+          "text": "איני יודע כיצד אני מרגיש"
+        },
+        {
+          "id": "5",
+          "type": "select",
+          "text": "אני מתקשה למצוא היגיון ברגשותיי"
+        },
+        {
+          "id": "6",
+          "type": "select",
+          "text": "אני קשוב לרגשותיי",
+          "reverse": true
+        },
+        {
+          "id": "7",
+          "type": "select",
+          "text": "אני יודע בדיוק כיצד אני מרגיש",
+          "reverse": true
+        },
+        {
+          "id": "8",
+          "type": "select",
+          "text": "אכפת לי מה אני מרגיש",
+          "reverse": true
+        },
+        {
+          "id": "9",
+          "type": "select",
+          "text": "אני מבולבל ממה שאני מרגיש"
+        },
+        {
+          "id": "10",
+          "type": "select",
+          "text": "כשאני נסער, אני מכיר ברגשותיי",
+          "reverse": true
+        },
+        {
+          "id": "11",
+          "type": "select",
+          "text": "כשאני נסער, אני כועס על עצמי שאני מרגיש כך"
+        },
+        {
+          "id": "12",
+          "type": "select",
+          "text": "כשאני נסער, אני נהיה נבוך שאני מרגיש כך"
+        },
+        {
+          "id": "13",
+          "type": "select",
+          "text": "כשאני נסער, אני מתקשה לסיים דברים"
+        },
+        {
+          "id": "14",
+          "type": "select",
+          "text": "כשאני נסער, אני מאבד שליטה"
+        },
+        {
+          "id": "15",
+          "type": "select",
+          "text": "כשאני נסער, אני מאמין שאשאר במצב זה כך לאורך זמן"
+        },
+        {
+          "id": "16",
+          "type": "select",
+          "text": "כשאני נסער, אני מאמין שבסוף ארגיש מאוד מדוכא"
+        },
+        {
+          "id": "17",
+          "type": "select",
+          "text": "כשאני נסער, אני מאמין שרגשותיי תקפים ובעלי משמעות",
+          "reverse": true
+        },
+        {
+          "id": "18",
+          "type": "select",
+          "text": "כשאני נסער, אני מתקשה להתרכז בדברים נוספים"
+        },
+        {
+          "id": "19",
+          "type": "select",
+          "text": "כשאני נסער, אני מרגיש שאני מאבד שליטה"
+        },
+        {
+          "id": "20",
+          "type": "select",
+          "text": "כשאני נסער, אני בכל זאת מצליח לסיים דברים",
+          "reverse": true
+        },
+        {
+          "id": "21",
+          "type": "select",
+          "text": "כשאני נסער, אני מרגיש בושה כלפי עצמי שאני מרגיש כך"
+        },
+        {
+          "id": "22",
+          "type": "select",
+          "text": "כשאני נסער, אני יודע שאני יכול למצוא דרך להרגיש טוב בסופו של דבר",
+          "reverse": true
+        },
+        {
+          "id": "23",
+          "type": "select",
+          "text": "כשאני נסער, אני מרגיש שאני חלש"
+        },
+        {
+          "id": "24",
+          "type": "select",
+          "text": "כשאני נסער, אני מרגיש שאני עדיין יכול לשלוט על התנהגותי",
+          "reverse": true
+        },
+        {
+          "id": "25",
+          "type": "select",
+          "text": "כשאני נסער, אני מרגיש אשמה על שאני מרגיש כך"
+        },
+        {
+          "id": "26",
+          "type": "select",
+          "text": "כשאני נסער, אני מתקשה להתרכז"
+        },
+        {
+          "id": "27",
+          "type": "select",
+          "text": "כשאני נסער, אני מתקשה לשלוט בהתנהגותי"
+        },
+        {
+          "id": "28",
+          "type": "select",
+          "text": "כשאני נסער, אני מאמין שאין משהו שביכולתי לעשות על מנת להרגיש טוב יותר"
+        },
+        {
+          "id": "29",
+          "type": "select",
+          "text": "כשאני נסער, אני נהיה עצבני על עצמי שאני מרגיש כך"
+        },
+        {
+          "id": "30",
+          "type": "select",
+          "text": "כשאני נסער, אני מתחיל להרגיש רע מאוד לגבי עצמי"
+        },
+        {
+          "id": "31",
+          "type": "select",
+          "text": "כשאני נסער, אני מאמין שלשקוע בזה, זה כל מה שאני יכול לעשות"
+        },
+        {
+          "id": "32",
+          "type": "select",
+          "text": "כשאני נסער, אני מאבד שליטה בהתנהגותי"
+        },
+        {
+          "id": "33",
+          "type": "select",
+          "text": "כשאני נסער, אני מתקשה לחשוב על משהו אחר"
+        },
+        {
+          "id": "34",
+          "type": "select",
+          "text": "כשאני נסער, אני לוקח זמן להבין מה אני באמת מרגיש",
+          "reverse": true
+        },
+        {
+          "id": "35",
+          "type": "select",
+          "text": "כשאני נסער, לוקח לי הרבה זמן להרגיש טוב יותר"
+        },
+        {
+          "id": "36",
+          "type": "select",
+          "text": "כשאני נסער, הרגשות שלי מסעירים ומזעזעים"
+        }
+      ],
+      "scoring": {
+        "method": "subscales",
+        "maxPerItem": 6,
+        "subscales": {
+          "nonacceptance": ["11", "12", "21", "23", "25", "29"],
+          "goals": ["13", "18", "20", "26", "33"],
+          "impulse": ["3", "14", "19", "24", "27", "32"],
+          "awareness": ["2", "6", "8", "10", "17", "34"],
+          "strategies": ["15", "16", "22", "28", "30", "31", "35", "36"],
+          "clarity": ["1", "4", "5", "7", "9"]
+        }
+      },
+      "subscaleLabels": {
+        "nonacceptance": "חוסר קבלה של תגובות רגשיות (Nonacceptance)",
+        "goals": "קושי בהתנהגות מכוונת מטרה (Goals)",
+        "impulse": "קושי בשליטה בדחפים (Impulse)",
+        "awareness": "קושי במודעות רגשית (Awareness)",
+        "strategies": "זמינות מוגבלת של אסטרטגיות ויסות (Strategies)",
+        "clarity": "חוסר בהירות רגשית (Clarity)"
+      },
+      "psychometrics": {
+        "reliability": 0.93,
+        "sd": 20.72,
+        "source": "Gratz & Roemer (2004)"
+      }
     }
   ]
 }
