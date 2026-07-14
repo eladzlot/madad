@@ -253,7 +253,23 @@ build (cross-links point at `*.ezmadad.com` — may 404 until Stage 6).
 
 ---
 
-## Stage 7 — URL sweep (OG / canonical / PDF fallback)
+## Stage 7 — URL sweep (OG / canonical / PDF fallback) — ✅ DONE
+
+**Done ahead of Stage 6** (reorder from the original sequence): getting these URLs
+correct *before* the domains go public means share-previews and the PDF's embedded
+origin are never briefly served pointing at the old github.io host. Stage 7 is
+independent of the deploy, so moving it earlier is safe.
+
+App surfaces → `https://app.ezmadad.com`, landing → apex `https://ezmadad.com`:
+- `index.html` og:image `…/og-image-app.png`, og:url `…/`.
+- `aggregate/index.html` og:image `…/og-image.png`, og:url `…/aggregate/`.
+- `composer/index.html` og:image `…/og-image.png`, og:url `…/composer/`.
+- `landing/index.html` og:image `https://ezmadad.com/og-image.png`, og:url `https://ezmadad.com/`.
+- `src/pdf/report.js` server-side fallback origin → `https://app.ezmadad.com/`.
+- `composer/src/composer-state.js` comment example origins → app domain.
+
+**Verified:** no `eladzlot.github.io` refs remain in source; lint clean; 1159 unit
+tests pass. Post-deploy view-source verification (below) still pending Stage 6.
 
 Split the hardcoded `eladzlot.github.io/madad` references per project:
 

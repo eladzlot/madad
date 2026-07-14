@@ -35,7 +35,7 @@ const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '
 
 // ── Branding ──────────────────────────────────────────────────────────────────
 const getAppUrl = () => {
-  if (typeof window === 'undefined') return 'https://eladzlot.github.io/madad/';
+  if (typeof window === 'undefined') return 'https://app.ezmadad.com/';
   const { origin, pathname } = window.location;
   // Resolve the landing page URL relative to wherever the app is deployed.
   // pathname is e.g. /madad/ or /madad/index.html — strip to the base path.

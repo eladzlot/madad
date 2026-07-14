@@ -53,7 +53,7 @@ export function buildUrl(base = getAppRoot()) {
 // Returns the app root URL (the page serving index.html).
 // Derived from the composer's own URL by stripping /composer/...
 // e.g. http://localhost:5173/composer/ → http://localhost:5173/
-//      https://eladzlot.github.io/madad/composer/ → https://eladzlot.github.io/madad/
+//      https://app.ezmadad.com/composer/ → https://app.ezmadad.com/
 export function getAppRoot() {
   if (typeof window === 'undefined') return '/';
   return window.location.href.replace(/\/composer(\/.*)?$/, '/');
