@@ -208,22 +208,36 @@ landing and `https://ezmadad.com/` in the app nav.
 
 ---
 
-## Stage 5 — Wrangler deploy to Cloudflare (the sole production deploy)
+## Stage 5 — Wrangler deploy to Cloudflare (the sole production deploy) — 🟡 CODE READY
 
-Pages is frozen (Stage 2), so this is the only live deploy — no parallel-run
-bookkeeping. After the shared gate (lint/test/validate/build/size/e2e) passes,
-build and deploy both artifacts with production env via `cloudflare/wrangler-action`:
+Pages is frozen (Stage 2), so this is the only live deploy. New workflow
+`.github/workflows/deploy-cloudflare.yml` (separate from the frozen `deploy.yml`,
+which becomes the redirect in Stage 8):
 
-- App:     `MADAD_BASE=/ LANDING_ORIGIN=https://ezmadad.com npm run build`
-           → `wrangler pages deploy dist/ --project-name madad-app`
-- Landing: `MADAD_BASE=/ APP_ORIGIN=https://app.ezmadad.com <landing build>`
-           → `wrangler pages deploy dist-landing/ --project-name madad-landing`
-- Path-filter: landing redeploys only on `landing/**` changes; app on everything
-  else.
+- Trigger: `push: [main]` + `workflow_dispatch`. Won't fire until the migration
+  branch merges (or is manually dispatched).
+- Self-contained gate (lint/test/validate/build/size/e2e) — dist-smoke is the
+  deploy gate, mirroring the old `deploy.yml`.
+- One production build with both origins baked in:
+  `MADAD_BASE=/ APP_ORIGIN=https://app.ezmadad.com LANDING_ORIGIN=https://ezmadad.com npm run build`
+  → emits `dist/` (nav brand → ezmadad.com) and `dist-landing/` (links →
+  app.ezmadad.com).
+- Two `cloudflare/wrangler-action@v3` steps: `pages deploy dist
+  --project-name=madad-app` and `pages deploy dist-landing
+  --project-name=madad-landing`, both `--branch=main`.
+- Deploys both every push (path-filtering deferred — deploying the unchanged app
+  on a landing-only change is harmless; add later if desired).
 
-**Verify:** `*.pages.dev` preview URLs for both projects smoke clean; the
-cross-origin links point at the real domains (may 404 until Stage 6 attaches
-them — confirm the URLs are correct regardless).
+**Manual first deploy already done** (local `wrangler login`, `.pages.dev`
+origins) — both surfaces render and cross-link on `madad-{app,landing}.pages.dev`.
+
+**Blocked on:** two repo secrets — `CLOUDFLARE_API_TOKEN` (scoped Pages:Edit) and
+`CLOUDFLARE_ACCOUNT_ID`. Projects confirmed created (Direct Upload, Git=No):
+`madad-app`, `madad-landing`.
+
+**Verify (once secrets set):** `workflow_dispatch` the workflow from the branch;
+both deploys succeed; `madad-{app,landing}.pages.dev` serve the real-origin
+build (cross-links point at `*.ezmadad.com` — may 404 until Stage 6).
 
 ---
 

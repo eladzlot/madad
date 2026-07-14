@@ -1,0 +1,95 @@
+name: Deploy to Cloudflare
+
+# Production deploy for the Cloudflare migration (docs/CLOUDFLARE_MIGRATION.md
+# Stage 5). Two Direct-Upload Pages projects, one per surface:
+#   dist/          → madad-app     → app.ezmadad.com
+#   dist-landing/  → madad-landing → ezmadad.com
+#
+# Self-contained gate: it re-runs lint/test/validate/build/size/e2e before
+# deploying, so a broken bundle never reaches Cloudflare — the dist-smoke e2e is
+# the deploy gate. GitHub Pages (deploy.yml) stays frozen until Stage 8.
+#
+# Requires two repo secrets: CLOUDFLARE_API_TOKEN (scoped Pages:Edit) and
+# CLOUDFLARE_ACCOUNT_ID.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: cloudflare-deploy
+  cancel-in-progress: false # two sequential deploys — don't cancel mid-flight
+
+jobs:
+  deploy:
+    name: Gate, build, deploy (app + landing)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # ── Gate — same checks as ci.yml, re-run here so a bad bundle never ships ──
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Validate configs
+        run: npm run validate:configs
+
+      - name: Build (gate)
+        run: npm run build
+
+      - name: Check bundle size
+        run: npm run size
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E tests (dev + dist-smoke + landing-smoke)
+        run: npm run e2e
+
+      - name: Upload E2E report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+      # ── Production build with the real origins, then deploy each artifact ──────
+      # One `npm run build` emits both dist/ and dist-landing/; the two origins
+      # are baked in per surface (nav brand → ezmadad.com, landing links →
+      # app.ezmadad.com). This overwrites the gate build above.
+      - name: Production build (real origins)
+        env:
+          MADAD_BASE: /
+          APP_ORIGIN: https://app.ezmadad.com
+          LANDING_ORIGIN: https://ezmadad.com
+        run: npm run build
+
+      - name: Deploy app → madad-app
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name=madad-app --branch=main
+
+      - name: Deploy landing → madad-landing
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist-landing --project-name=madad-landing --branch=main
