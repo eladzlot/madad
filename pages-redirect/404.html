@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>Madad has moved</title>
+  <!-- ── Redirect shim (docs/CLOUDFLARE_MIGRATION.md, Stage 8) ──────────────────
+       GitHub Pages serves this file (HTTP 404) for any /madad/ path that has no
+       backing file — i.e. every deep link: /madad/composer/, /madad/aggregate/,
+       /madad/landing/, etc. The shim is identical to index.html's: it maps the
+       sub-path onto the new origin and preserves query + hash. -->
+  <script>
+    (function () {
+      var APP = 'https://app.ezmadad.com';
+      var LANDING = 'https://ezmadad.com';
+      var BASE = '/madad/';
+      var path = location.pathname;
+      var rest = path.indexOf(BASE) === 0 ? path.slice(BASE.length) : path.replace(/^\//, '');
+      rest = rest.replace(/(^|\/)index\.html$/, '$1'); // drop a trailing index.html
+      var target = /^landing(\/|$)/.test(rest) ? LANDING + '/' : APP + '/' + rest;
+      target += location.search + location.hash;
+      location.replace(target);
+    })();
+  </script>
+  <meta http-equiv="refresh" content="3;url=https://app.ezmadad.com/" />
+  <style>
+    body { font: 16px/1.5 system-ui, sans-serif; max-width: 32rem; margin: 4rem auto; padding: 0 1rem; }
+    a { color: #2563eb; }
+  </style>
+</head>
+<body>
+  <h1>Madad has moved</h1>
+  <p>This page now lives at a new address. Redirecting you&hellip;</p>
+  <p>If you are not redirected, open
+    <a href="https://app.ezmadad.com/">app.ezmadad.com</a>.</p>
+</body>
+</html>

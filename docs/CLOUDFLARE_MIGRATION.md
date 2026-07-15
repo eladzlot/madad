@@ -208,7 +208,15 @@ landing and `https://ezmadad.com/` in the app nav.
 
 ---
 
-## Stage 5 — Wrangler deploy to Cloudflare (the sole production deploy) — 🟡 CODE READY
+## Stage 5 — Wrangler deploy to Cloudflare (the sole production deploy) — ✅ DONE
+
+**Verified in production** (2026-07-14): repo secrets uploaded; the branch merged
+to `main` (fast-forward) fired `deploy-cloudflare.yml` run `29363242654` — full
+gate green, both `wrangler pages deploy` steps succeeded. `madad-app.pages.dev`
+and `madad-landing.pages.dev` both serve HTTP 200 with the real origins baked in
+(app og:url `https://app.ezmadad.com/`; landing og:url `https://ezmadad.com/` and
+cross-links → `app.ezmadad.com`).
+
 
 Pages is frozen (Stage 2), so this is the only live deploy. New workflow
 `.github/workflows/deploy-cloudflare.yml` (separate from the frozen `deploy.yml`,
@@ -241,12 +249,19 @@ build (cross-links point at `*.ezmadad.com` — may 404 until Stage 6).
 
 ---
 
-## Stage 6 — Attach custom domains (Cloudflare dashboard, no repo changes)
+## Stage 6 — Attach custom domains (Cloudflare dashboard, no repo changes) — ✅ DONE
 
 1. Attach the apex `ezmadad.com` to `madad-landing`, `app.ezmadad.com` to
    `madad-app`.
 2. Configure DNS (Cloudflare-proxied) per the dashboard's instructions.
 3. Wait for certificates to issue.
+
+**Verified** (2026-07-14): both domains serve HTTP 200 over HTTPS with valid
+edge certs (CN=ezmadad.com / CN=app.ezmadad.com, issued 2026-07-14). Cross-links
+resolve end-to-end: landing → `app.ezmadad.com/{composer,aggregate,?configs…}`
+(all 200); app-nav brand → `https://ezmadad.com/` (baked into the clinician JS
+bundle). PDF branding origin derives from `window.location` in-browser, so it is
+`app.ezmadad.com` by construction on the app domain (manual spot-check optional).
 
 **Verify:** both domains serve over HTTPS; cross-links resolve end-to-end
 (landing → app and app-nav → landing); PDF generation works on the app domain.
@@ -285,7 +300,23 @@ origin is the app domain.
 
 ---
 
-## Stage 8 — Replace the frozen Pages site with a redirect
+## Stage 8 — Replace the frozen Pages site with a redirect — ✅ CODE READY
+
+**Shipped shape:** new `pages-redirect/` artifact (`index.html` + `404.html`),
+`deploy.yml` repointed to publish it (build/test/Node steps dropped —
+checkout → `upload-pages-artifact` `pages-redirect/` → `deploy-pages`). Trigger
+narrowed to `push:[main]` on `pages-redirect/**` + `deploy.yml` (plus
+`workflow_dispatch`). Both HTML files carry an identical client-side shim:
+strip the `/madad/` base, map the sub-path onto the new origin
+(`landing*` → `ezmadad.com`, else → `app.ezmadad.com`), preserve `search`+`hash`,
+`location.replace()`. `index.html` covers `/madad/` (incl. patient `?configs=…`);
+`404.html` covers every deep path (`/composer/`, `/aggregate/`, `/landing/`) that
+has no backing file. No-JS best-effort: `<meta refresh>` to the app root.
+
+Mapping verified locally (node sim): `/madad/` → app root; `index.html` stripped;
+patient `?configs=…&items=…` preserved; `/composer/`,`/aggregate/` → app;
+`/landing/` → apex; query+hash preserved. **Live deploy pending push** (it
+replaces the frozen app at `/madad/` with the redirect — the URL cutover).
 
 Cloudflare is now verified in production. Turn the frozen Pages site into a
 redirect so old `eladzlot.github.io/madad/…` links reach the new domains.

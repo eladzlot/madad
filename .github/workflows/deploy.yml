@@ -1,10 +1,22 @@
-name: Deploy
+name: Deploy redirect
 
-# ── FROZEN for the Cloudflare migration (docs/CLOUDFLARE_MIGRATION.md, Stage 2) ──
-# GitHub Pages is no longer auto-deployed. The last-built artifact keeps serving
-# users at eladzlot.github.io/madad/ until Stage 8 repoints this workflow to a
-# redirect. To un-freeze (rollback), restore `push: branches: [main]` below.
+# ── Redirect shim for the old GitHub Pages URL (docs/CLOUDFLARE_MIGRATION.md,
+#    Stage 8) ─────────────────────────────────────────────────────────────────
+# Madad moved to Cloudflare (app.ezmadad.com + ezmadad.com). This workflow no
+# longer builds or deploys the app — it publishes the tiny redirect artifact in
+# pages-redirect/ so old eladzlot.github.io/madad/… links forward to the new
+# domains (path + query preserved client-side). The Cloudflare deploy lives in
+# deploy-cloudflare.yml. Stage 9 removes this workflow and disables Pages once
+# the redirect grace period ends.
+#
+# Rollback (restore the old app at /madad/): revert this commit — the previous
+# revision built dist/ at base /madad/ and deployed it here.
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'pages-redirect/**'
+      - '.github/workflows/deploy.yml'
   workflow_dispatch:
 
 concurrency:
@@ -12,8 +24,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  ci-and-deploy:
-    name: Lint, test, validate, build, E2E, deploy
+  deploy-redirect:
+    name: Publish redirect to GitHub Pages
     runs-on: ubuntu-latest
 
     permissions:
@@ -28,59 +40,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      # ── Lint ────────────────────────────────────────────────────────────────
-      - name: Lint
-        run: npm run lint
-
-      # ── Unit tests ──────────────────────────────────────────────────────────
-      - name: Unit tests
-        run: npm test
-
-      # ── Config validation ───────────────────────────────────────────────────
-      - name: Validate configs
-        run: npm run validate:configs
-
-      # ── Production build ────────────────────────────────────────────────────
-      - name: Build
-        run: npm run build
-
-      # ── Bundle size budgets ─────────────────────────────────────────────────
-      - name: Check bundle size
-        run: npm run size
-
-      # ── E2E tests ───────────────────────────────────────────────────────────
-      # Runs both projects. The dist-smoke project is the deploy gate: if the
-      # built bundle is broken at the production base (/madad/), this fails
-      # and Pages does not get the bad artifact. This is the line of defense
-      # that did not exist when the "לא ניתן לטעון את השאלון" bug shipped.
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
-
-      - name: E2E tests (dev + dist-smoke)
-        run: npm run e2e
-
-      - name: Upload E2E report
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-report
-          path: playwright-report/
-          retention-days: 7
-
-      # ── Deploy to GitHub Pages ───────────────────────────────────────────────
-      - name: Upload Pages artifact
+      - name: Upload redirect artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: dist/
+          path: pages-redirect/
 
       - name: Deploy to GitHub Pages
         id: deploy

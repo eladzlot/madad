@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>Madad has moved</title>
+  <!-- ── Redirect shim (docs/CLOUDFLARE_MIGRATION.md, Stage 8) ──────────────────
+       Madad moved off GitHub Pages to Cloudflare. This tiny artifact replaces the
+       old app at eladzlot.github.io/madad/ and forwards old links to the new
+       domains, preserving path + query + hash:
+         /madad/            → https://app.ezmadad.com/           (patient app)
+         /madad/composer/   → https://app.ezmadad.com/composer/
+         /madad/aggregate/  → https://app.ezmadad.com/aggregate/
+         /madad/landing/    → https://ezmadad.com/               (marketing)
+       Patient links carry ?configs=…&items=…; GitHub Pages can't rewrite
+       server-side, so this JS shim reconstructs the target client-side.
+       404.html carries an identical shim for deep paths that have no file. -->
+  <script>
+    (function () {
+      var APP = 'https://app.ezmadad.com';
+      var LANDING = 'https://ezmadad.com';
+      var BASE = '/madad/';
+      var path = location.pathname;
+      var rest = path.indexOf(BASE) === 0 ? path.slice(BASE.length) : path.replace(/^\//, '');
+      rest = rest.replace(/(^|\/)index\.html$/, '$1'); // drop a trailing index.html
+      var target = /^landing(\/|$)/.test(rest) ? LANDING + '/' : APP + '/' + rest;
+      target += location.search + location.hash;
+      location.replace(target);
+    })();
+  </script>
+  <!-- No-JS best-effort fallback: forward to the app root after a short delay. -->
+  <meta http-equiv="refresh" content="3;url=https://app.ezmadad.com/" />
+  <style>
+    body { font: 16px/1.5 system-ui, sans-serif; max-width: 32rem; margin: 4rem auto; padding: 0 1rem; }
+    a { color: #2563eb; }
+  </style>
+</head>
+<body>
+  <h1>Madad has moved</h1>
+  <p>This page now lives at a new address. Redirecting you&hellip;</p>
+  <p>If you are not redirected, open
+    <a href="https://app.ezmadad.com/">app.ezmadad.com</a>.</p>
+</body>
+</html>
