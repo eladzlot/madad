@@ -300,7 +300,7 @@ origin is the app domain.
 
 ---
 
-## Stage 8 — Replace the frozen Pages site with a redirect — ✅ CODE READY
+## Stage 8 — Replace the frozen Pages site with a redirect — ✅ DONE (live 2026-07-18)
 
 **Shipped shape:** new `pages-redirect/` artifact (`index.html` + `404.html`),
 `deploy.yml` repointed to publish it (build/test/Node steps dropped —
@@ -315,8 +315,16 @@ has no backing file. No-JS best-effort: `<meta refresh>` to the app root.
 
 Mapping verified locally (node sim): `/madad/` → app root; `index.html` stripped;
 patient `?configs=…&items=…` preserved; `/composer/`,`/aggregate/` → app;
-`/landing/` → apex; query+hash preserved. **Live deploy pending push** (it
-replaces the frozen app at `/madad/` with the redirect — the URL cutover).
+`/landing/` → apex; query+hash preserved.
+
+**Live-verified** (2026-07-18, push `1830f94`, run `29659791658`):
+`eladzlot.github.io/madad/` serves the shim; deep paths (`/composer/`,
+`/aggregate/`, `/landing/`) serve the `404.html` shim (404 status is expected —
+Pages serves `404.html` that way; the JS runs in-browser). The *deployed* shim
+re-run in a node sim maps all sample URLs correctly, incl. patient
+`?configs=…&items=…#…` preserved and `/landing/` → apex. All five redirect
+targets return HTTP 200. Same push: `Deploy to Cloudflare` and full CI green.
+Only Stage 9 (cleanup, after the redirect grace period) remains.
 
 Cloudflare is now verified in production. Turn the frozen Pages site into a
 redirect so old `eladzlot.github.io/madad/…` links reach the new domains.
