@@ -7,7 +7,8 @@ name: Deploy to Cloudflare
 #
 # Self-contained gate: it re-runs lint/test/validate/build/size/e2e before
 # deploying, so a broken bundle never reaches Cloudflare — the dist-smoke e2e is
-# the deploy gate. GitHub Pages (deploy.yml) stays frozen until Stage 8.
+# the deploy gate. GitHub Pages (deploy.yml) now only publishes the github.io
+# redirect shim (Stage 8 shipped; Stage 9 removes it entirely).
 #
 # Requires two repo secrets: CLOUDFLARE_API_TOKEN (scoped Pages:Edit) and
 # CLOUDFLARE_ACCOUNT_ID.

@@ -96,7 +96,9 @@ absorb — renaming a field, changing an enum's values, making a field required 
 **two deploys**:
 
 1. First ship configs that are valid under *both* the old and new schema.
-2. After the cache window has passed (~10 minutes on GitHub Pages), ship the schema change.
+2. After deploy 1 is live and the skew window has passed, ship the schema change.
+   Cloudflare Pages deploys are atomic at the edge, but browsers hold the old bundle
+   (HTTP cache, open tabs) until reload — allow several minutes and prefer quiet hours.
 
 Shipping both at once caused a production outage on 2026-07-14: `maxPerItem` was removed
 from configs and rejected by the schema in the same deploy, and for the cache window every

@@ -1059,7 +1059,7 @@ pdfmake must be pinned to a separate named chunk (`pdf-vendor`) in the Vite conf
 - **URL parameter validation.** `pid` is validated against `PID_PATTERN` in `src/pid.js` (ASCII + Hebrew letters, digits, `-`, `_`, length 1-64) and silently dropped if invalid. `configs` and `items` are parsed as comma-separated lists and each token is validated by `loadConfig`/`resolveItems`. Invalid tokens produce an error screen; they are never reflected back into the UI.
 - **Same-origin config loading** is the default. External config URLs require an explicit `allowedOrigins` set at the call site (see §9.1).
 - **No secrets, tokens, or credentials** exist anywhere in this system. No backend, no telemetry, no third-party analytics.
-- **Deployment is a static site.** GitHub Pages cannot serve custom HTTP headers, so CSP is injected via `<meta>` instead. Teams deploying to infrastructure that can serve real headers should also set CSP as a response header for defense-in-depth.
+- **Deployment is a static site.** CSP is injected via `<meta>` (a carry-over from GitHub Pages, the original host, which could not serve custom HTTP headers). Cloudflare Pages *can* serve real headers via a `_headers` file — adding CSP as a response header there would provide defense-in-depth on top of the `<meta>` tag.
 
 ---
 
@@ -1101,7 +1101,7 @@ Mirrors the GitHub Actions workflow exactly: `lint → test → validate:configs
 
 ## 24. Deployment
 
-- Static hosting: GitHub Pages at `https://eladzlot.github.io/madad/` (primary), compatible with Netlify or Cloudflare Pages
+- Static hosting: Cloudflare Pages — app at `https://app.ezmadad.com/` (project `madad-app`), landing at `https://ezmadad.com/` (project `madad-landing`). Legacy `https://eladzlot.github.io/madad/` serves a redirect shim.
 - HTTPS required
 - Cache strategy: immutable long-cache headers for hashed app assets; short TTL for config JSON files
 - Config namespaces: `public/configs/prod/` for production, `public/configs/test/` for staging
@@ -1109,9 +1109,9 @@ Mirrors the GitHub Actions workflow exactly: `lint → test → validate:configs
 
 ### Base path strategy
 
-The app is deployed at `/madad/` on GitHub Pages but served at `/` in development. Vite's `base` config handles asset paths at build time (`mode === 'development'` → `'/'`, otherwise → `'/madad/'`). Runtime config fetches use **relative paths** so they resolve correctly at any base path without code changes:
+The app is served at the domain root (`/`) in both production (Cloudflare Pages) and development, so Vite's `base` defaults to `'/'` everywhere; the CI dist-smoke matrix overrides it via `MADAD_BASE` (e.g. `/some/deep/path/`) to prove nothing in the bundle assumes a fixed base. Runtime config fetches use **relative paths** so they resolve correctly at any base path without code changes:
 
-- `configs/prod/standard.json` from `https://eladzlot.github.io/madad/` → `https://eladzlot.github.io/madad/configs/prod/standard.json` ✓
+- `configs/prod/standard.json` from `https://app.ezmadad.com/` → `https://app.ezmadad.com/configs/prod/standard.json` ✓
 - `configs/prod/standard.json` from `http://localhost:5173/` → `http://localhost:5173/configs/prod/standard.json` ✓
 
 The Composer manifest (`public/composer/configs.json`) stores root-relative paths (`/configs/...`). The Composer loader resolves these against the app root URL at runtime before fetching and stores them as relative paths (`configs/...`) in generated patient URLs.

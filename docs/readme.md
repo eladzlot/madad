@@ -4,13 +4,13 @@
 
 Madad is a free, open-source tool for mental health clinicians. The clinician selects questionnaires, sends a link to the patient via WhatsApp or email, and receives a completed PDF report — no registration, no apps, no data stored anywhere.
 
-**[Live tool](https://eladzlot.github.io/madad/) · [Composer](https://eladzlot.github.io/madad/composer/) · [Landing page](https://eladzlot.github.io/madad/landing/)**
+**[Live tool](https://app.ezmadad.com/) · [Composer](https://app.ezmadad.com/composer/) · [Landing page](https://ezmadad.com/)**
 
 ---
 
 ## How it works
 
-**Clinician** → opens the [Composer](https://eladzlot.github.io/madad/composer/), selects questionnaires or a pre-built battery, copies the generated link, sends it to the patient.
+**Clinician** → opens the [Composer](https://app.ezmadad.com/composer/), selects questionnaires or a pre-built battery, copies the generated link, sends it to the patient.
 
 **Patient** → opens the link, completes the questionnaires on their phone, downloads a PDF report with scores and clinical alerts.
 

@@ -16,9 +16,10 @@ A static web application for clinical psychological assessment. No backend, no d
 
 **What never happens:** No patient data is stored anywhere. Nothing is transmitted. The PDF is the entire output.
 
-**Deployed at:** `https://eladzlot.github.io/madad/`
-**Landing page:** `https://eladzlot.github.io/madad/landing/`
-**Composer:** `https://eladzlot.github.io/madad/composer/`
+**Deployed at:** `https://app.ezmadad.com/` (Cloudflare Pages, project `madad-app`)
+**Landing page:** `https://ezmadad.com/` (Cloudflare Pages, project `madad-landing`)
+**Composer:** `https://app.ezmadad.com/composer/`
+**Legacy:** `https://eladzlot.github.io/madad/` serves a redirect shim to the new domains (removal pending — migration Stage 9)
 **Contact:** Dr. Elad Zlotnick, Hebrew University / CTR — elad.zlotnick@mail.huji.ac.il
 
 ---
@@ -80,11 +81,11 @@ src/pdf/report.js              ← PDF generation (pdfmake, lazy-loaded)
 - Hebrew `<title>` on all pages
 - Config manifest `dev: true` flag: configs marked `dev:true` are skipped in production builds, loaded in dev and test
 - CI workflow: `.github/workflows/ci.yml` — lint → unit tests → validate configs → build → size → E2E
-- Deploy workflow: `.github/workflows/deploy.yml` — same + GitHub Pages deployment
+- Deploy workflow: `.github/workflows/deploy-cloudflare.yml` — same gate + Wrangler deploy of `dist/` (app) and `dist-landing/` (landing) to Cloudflare Pages; legacy `deploy.yml` now only publishes the github.io redirect shim
 - **1081 unit tests passing across 37 test files**
 - E2E tests passing (Chromium; mobile-safari locally only)
 - Aggregate surface at `/aggregate/` (סיכום מטופל) — slice 1: clinicians drop Madad PDFs in, get per-instrument trajectory charts (severity bands, cutoff lines, 5-session window, pid filter). Stateless, in-browser only. See `docs/AGGREGATE_SPEC.md`; envelope contract in `shared/pdf/envelope-schema.js`
-- Dist-smoke E2E project (`tests/e2e/*.dist.test.js`) — runs Playwright against the *built* bundle served at the production base (`/madad/`) via `vite preview`. Catches the class of "works on dev, broken on dist" bugs that unit tests and the dev e2e suite cannot see (absolute-path fetches that bypass Vite's base, missing chunks, CSP violations). CI runs it at `/madad/` plus a multi-base matrix (`/`, `/some/deep/path/`).
+- Dist-smoke E2E project (`tests/e2e/*.dist.test.js`) — runs Playwright against the *built* bundle served at the production base (`/`) via `vite preview`. Catches the class of "works on dev, broken on dist" bugs that unit tests and the dev e2e suite cannot see (absolute-path fetches that bypass Vite's base, missing chunks, CSP violations). CI runs it at `/` plus a multi-base matrix (`/`, `/some/deep/path/`).
 - MIT license (`LICENSE`) + instrument notice (`CONTENT_LICENSE.md`)
 
 ### Instrument library
@@ -228,7 +229,8 @@ The e2e config has `"dev": true` in the manifest — it is skipped entirely in p
 │   └── check-size.mjs
 ├── .github/workflows/
 │   ├── ci.yml                    # push + PRs
-│   └── deploy.yml                # push to main → GitHub Pages
+│   ├── deploy-cloudflare.yml     # push to main → Cloudflare Pages (app + landing)
+│   └── deploy.yml                # github.io redirect shim only (migration Stage 9 removes)
 ├── docs/                         # Developer specs (see README §Documentation)
 ├── LICENSE                       # MIT
 └── CONTENT_LICENSE.md            # Instrument notice (no ownership claimed)
@@ -347,7 +349,7 @@ npm ci
 npm run dev              # localhost:5173 (base /)
 npm test                 # 932 unit tests
 npm run validate:configs
-npm run build && npm run preview  # localhost:4173/madad/ (base /madad/)
+npm run build && npm run preview  # localhost:4173/ (base /)
 ```
 
 To add a new instrument: `public/configs/CONTRIBUTING.md`.
@@ -362,9 +364,9 @@ To add a new instrument: `public/configs/CONTRIBUTING.md`.
 - **`QuestionnaireSet.schema.json`** — changing without running `npm run build:validator` and updating `config-validation.js` and existing configs will break validation. Always run `build:validator` after schema changes.
 - **`src/pdf/report.js` — RTL rendering** — pdfmake has incomplete bidi support. bidi-js (UAX-9 conformant) is used for mixed Hebrew/Latin text via `bidiNodes()`. Numbers go in `direction:'ltr'` nodes, category on its own line, never `rtl:true`. See `IMPLEMENTATION_SPEC.md §19.3`.
 - **`src/pdf/report.js` — pdfmake API** — use `getBuffer()` (Promise-based). `getBlob(callback)` silently hangs in pdfmake 0.3.x.
-- **`vite.config.js`** — `base` is `'/'` in development mode and `'/madad/'` in all other modes (overridable via `MADAD_BASE` env var for the CI multi-base matrix). `pdfmake` is pinned to a named chunk via `manualChunks` to keep it lazy-loaded and out of the entry bundle.
+- **`vite.config.js`** — `base` defaults to `'/'` in all modes (Cloudflare Pages serves at the domain root; was `'/madad/'` under GitHub Pages, flipped in migration Stage 2). Overridable via `MADAD_BASE` env var for the CI multi-base matrix. `pdfmake` is pinned to a named chunk via `manualChunks` to keep it lazy-loaded and out of the entry bundle.
 - **Config URL format** — `configs=` params must use relative paths (no leading slash). See §5 above.
-- **`loadConfig` `baseUrl` default** — defaults to `import.meta.env.BASE_URL`, which Vite inlines to `'/madad/'` at build time. Removing this re-introduces the production-only "לא ניתן לטעון את השאלון" bug: short config names would expand to root-relative paths (`/configs/prod/...`) that bypass Vite's `base` and 404 on every non-root deployment. The dist-smoke Playwright project (`tests/e2e/*.dist.test.js`, run by `npm run e2e:dist`) is the regression gate — it loads the built bundle at the production base and asserts no same-origin 4xx responses.
+- **`loadConfig` `baseUrl` default** — defaults to `import.meta.env.BASE_URL`, which Vite inlines to the build's `base` (`'/'` in production; `MADAD_BASE` in the CI matrix) at build time. Removing this re-introduces the production-only "לא ניתן לטעון את השאלון" bug: short config names would expand to root-relative paths (`/configs/prod/...`) that bypass Vite's `base` and 404 on every non-root deployment. The dist-smoke Playwright project (`tests/e2e/*.dist.test.js`, run by `npm run e2e:dist`) is the regression gate — it loads the built bundle at the production base and asserts no same-origin 4xx responses.
 - **`composer-state.js` `getAppRoot()`** — derives app root by stripping `/composer/...` from `window.location.href`. Any change to Composer URL structure requires updating this.
 - **Security controls in §6a** — specifically: do not revert error rendering to `innerHTML`, do not remove PID/name validation, do not remove the `allowedOrigins` check from `loadConfig`. Each of these was introduced to fix a concrete vulnerability.
 - **`allowedOrigins` default in `loadConfig`** — defaults to `location.origin` (same-origin only). If you change this default to be permissive, you re-open the external config injection vulnerability. The correct pattern for future external-config support is to pass an explicit `allowedOrigins` set at the call site in `src/app.js`.

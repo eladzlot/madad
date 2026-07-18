@@ -69,13 +69,15 @@ jobs:
 
   # ── Dist-smoke matrix: rebuild and re-test under additional base paths ─────
   # The main `ci` job above already runs dist-smoke at the default production
-  # base (/madad/). This matrix job runs the same smoke test under additional
-  # base paths to catch the broader class of "something assumes a specific base"
-  # bugs — e.g. a future hosting migration to root, or a path-prefix change.
+  # base (/, Cloudflare Pages serves at the domain root). This matrix job runs
+  # the same smoke test under additional base paths to catch the broader class
+  # of "something assumes a specific base" bugs — e.g. a future path-prefix
+  # deployment.
   #
   # Each entry rebuilds dist/ with MADAD_BASE injected into vite.config.js,
   # then runs only the dist-smoke project against that bundle. Production
-  # deployment is unaffected — deploy.yml always builds with the default base.
+  # deployment is unaffected — deploy-cloudflare.yml always builds with the
+  # default base.
   dist-smoke-matrix:
     name: Dist smoke @ ${{ matrix.base }}
     runs-on: ubuntu-latest
