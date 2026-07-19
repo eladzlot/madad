@@ -125,12 +125,13 @@ Note: `pcl5` and `ptci` were moved from `standard.json` to `trauma.json` at v1.6
 | `ptci` | questionnaire | שאלון קוגניציות פוסט-טראומטיות (PTCI) | 3 subscales (mean) |
 | `trauma_eval` | battery | הערכת טראומה ראשונית | PC-PTSD-5 → if score ≥ 4: PCL-5 + PTCI |
 
-**`intake.json` v1.2.1** — initial assessment:
+**`intake.json` v1.3.0** — initial assessment:
 
 | ID | Type | Name | Notes |
 |---|---|---|---|
 | `demographics` | questionnaire | פרטים אישיים | — |
 | `diamond_sr` | questionnaire | DIAMOND Self Report Screener | Alerts: psychotic ideation, mania, trauma, substance use |
+| `pqb` | questionnaire | סולם מקוצר לבדיקת פרודרום (PQ-B) | 21 yes/no gates + conditional distress ratings; total = yes-count, distress subscale 0–105; critical alert at total ≥ 7 or distress ≥ 24 |
 | `clinical_intake` | battery | הערכה ראשונית | DIAMOND → conditional questionnaires per domain |
 
 `intake.json` declares `"dependencies": ["configs/prod/trauma.json"]` so the composer includes trauma.json automatically when clinical_intake is selected (needed because the DIAMOND trauma item conditionally adds pcl5 which now lives in trauma.json).
