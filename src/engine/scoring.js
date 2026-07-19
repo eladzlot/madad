@@ -114,7 +114,7 @@ export function score(questionnaire, answers) {
   // All branches are included — the answer map determines which have values.
   const items = flattenItems(rawItems ?? []);
   const answerableItems = items.filter(isAnswerable);
-  const { method, subscaleMethod = 'sum', totalMethod, subscales: subscaleDefs, customFormula, exclude = [] } = scoring;
+  const { method, subscaleMethod = 'sum', totalMethod, subscales: subscaleDefs, subscaleFormulas, customFormula, exclude = [] } = scoring;
 
   // excluded is a Set of item IDs that should not contribute to sum/average totals.
   // Excluded items still appear in the PDF response table; they are simply not scored.
@@ -137,6 +137,15 @@ export function score(questionnaire, answers) {
       subscales[subscaleId] = subscaleMethod === 'mean'
         ? (values.length > 0 ? subscaleSum / values.length : 0)
         : subscaleSum;
+    }
+  }
+
+  // Formula-defined subscales — for scores that are not a plain sum of item
+  // values (e.g. AQ's binary rescoring of a 4-point scale). Evaluated before
+  // the total so a custom total formula can reference them via subscale.<id>.
+  if (subscaleFormulas) {
+    for (const [subscaleId, formula] of Object.entries(subscaleFormulas)) {
+      subscales[subscaleId] = evaluate(formula, { item: answers }, 'number');
     }
   }
 

@@ -369,6 +369,39 @@ Some instruments have a gating item that should appear in the PDF and be availab
 ```
 See DSL expressions section below.
 
+### Formula-defined subscales (advanced)
+
+When a subscale is not a plain sum/mean of item values — e.g. the AQ, where each
+4-point response is rescored to 0/1 before summing — define it as a DSL formula
+instead of an item list:
+
+```json
+"scoring": {
+  "method": "custom",
+  "customFormula": "sum(if(item.1 <= 1, 1, 0), if(item.2 >= 2, 1, 0))",
+  "subscaleFormulas": {
+    "social_skill": "sum(if(item.1 <= 1, 1, 0), if(item.2 >= 2, 1, 0))"
+  }
+},
+"subscaleLabels": {
+  "social_skill": "מיומנויות חברתיות (Social Skill)"
+}
+```
+
+- Each formula is evaluated with the item answers in scope (`item.ID`), after the
+  item-list `subscales` (if any) are computed.
+- `subscaleFormulas` may coexist with `subscales`, but a subscale ID must appear in
+  only one of the two — the validator rejects duplicates.
+- A custom `customFormula` can reference formula subscales via `subscale.ID`.
+  **Prefer restating the items in the total formula instead** (as above): a total that
+  only references `subscale.ID` breaks for users holding a pre-deploy bundle from
+  before `subscaleFormulas` existed, whereas an item-based total degrades gracefully
+  (subscales missing, total still correct).
+- Under `"method": "subscales"`, formula subscales are included in the
+  sum-of-subscales total.
+- Works with any method; use for descriptive subscale profiles alongside a custom
+  total.
+
 ### No scoring
 Omit the `scoring` field entirely, or use `"method": "none"`. The questionnaire will not show a score on the results screen.
 

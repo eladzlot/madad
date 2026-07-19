@@ -209,6 +209,7 @@ Not scored. Answer stored as `number[]` of 1-based indices. Available in DSL via
 | `subscaleMethod` | string | no | How each subscale score is computed. One of: `sum` (default), `mean`. Applies only when `subscales` is defined. Use `mean` for instruments like PCL-5 and PTCI whose published norms report subscale means. The total score is always the sum of the subscale scores (whether those are sums or means). |
 | `subscales` | object | no | Map of subscale ID → array of item IDs. Required when method is `subscales`. |
 | `customFormula` | string | no | DSL expression returning a number. Required when method is `custom`. |
+| `subscaleFormulas` | object | no | Map of subscale ID → DSL expression returning a number, evaluated with the item answers in scope. For subscales that are not a plain sum/mean of item values (e.g. AQ's binary rescoring of a 4-point scale). May coexist with `subscales`, but each subscale ID must be defined in only one of the two (validation-enforced). Formula subscales are included in the sum-of-subscales total under method `subscales`, and are referenceable as `subscale.ID` from `customFormula` and alert conditions. |
 | `exclude` | array of strings | no | Item IDs to exclude from scoring entirely. Excluded items still appear in the PDF response table but do not contribute to the total or any subscale. Useful for gating items (e.g. a trauma exposure question that gates scored symptoms). |
 
 ---
@@ -358,10 +359,11 @@ The config loader enforces (post-AJV):
 - All `optionSetId` and `defaultOptionSetId` references resolve to a defined option set on the same questionnaire
 - Every select item has a resolvable option set (inline, explicit reference, or default)
 - All item ID references in `subscales`, `if.then`, `if.else` resolve to defined items; `randomize.ids` contains inline item objects (not references)
+- No subscale ID is defined in both `subscales` and `subscaleFormulas`
 - All questionnaire ID references in battery sequence nodes resolve to defined questionnaires
 - `slider` items: `min` must be less than `max`
 
-DSL expressions (`condition`, `customFormula`) are validated lazily — they are parsed and type-checked at the point they are first evaluated, not at load time.
+DSL expressions (`condition`, `customFormula`, `subscaleFormulas` values) are validated lazily — they are parsed and type-checked at the point they are first evaluated, not at load time.
 
 ---
 

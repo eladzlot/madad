@@ -256,6 +256,37 @@ describe('scoring subscale item references', () => {
     };
     expect(collectConfigErrors(minimalConfig([q]))).toEqual([]);
   });
+
+  it('no error when subscaleFormulas keys are distinct from subscales keys', () => {
+    const q = {
+      id: 'q', title: 'Q',
+      items: [{ id: '1', type: 'select', text: 'Q1', options: [{ label: 'A', value: 0 }] }],
+      scoring: {
+        method: 'custom',
+        customFormula: 'item.1',
+        subscales: { raw: ['1'] },
+        subscaleFormulas: { dichotomised: 'if(item.1 >= 2, 1, 0)' },
+      },
+      alerts: [],
+    };
+    expect(collectConfigErrors(minimalConfig([q]))).toEqual([]);
+  });
+
+  it('error when a subscale is defined in both subscales and subscaleFormulas', () => {
+    const q = {
+      id: 'q', title: 'Q',
+      items: [{ id: '1', type: 'select', text: 'Q1', options: [{ label: 'A', value: 0 }] }],
+      scoring: {
+        method: 'custom',
+        customFormula: 'item.1',
+        subscales: { a: ['1'] },
+        subscaleFormulas: { a: 'if(item.1 >= 2, 1, 0)' },
+      },
+      alerts: [],
+    };
+    const errors = collectConfigErrors(minimalConfig([q]));
+    expect(errors.some(e => e.includes('subscaleFormulas') && e.includes('"a"'))).toBe(true);
+  });
 });
 
 // ─── checkSliderItems ─────────────────────────────────────────────────────────

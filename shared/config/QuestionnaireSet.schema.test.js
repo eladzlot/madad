@@ -547,6 +547,52 @@ describe('scoring', () => {
       },
     })],
   })).toBe(true));
+
+  it('accepts subscaleFormulas alongside a custom formula', () => expect(valid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire({
+      scoring: {
+        method: 'custom',
+        customFormula: 'sum(item.1, item.2)',
+        subscaleFormulas: {
+          social: 'sum(if(item.1 >= 2, 1, 0), if(item.2 <= 1, 1, 0))',
+        },
+      },
+    })],
+  })).toBe(true));
+
+  it('rejects subscaleFormulas key with invalid id format', () => expect(invalid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire({
+      scoring: {
+        method: 'custom',
+        customFormula: 'sum(item.1)',
+        subscaleFormulas: { 'bad-key': 'item.1' },
+      },
+    })],
+  })).toBe(true));
+
+  it('rejects empty subscaleFormulas formula string', () => expect(invalid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire({
+      scoring: {
+        method: 'custom',
+        customFormula: 'sum(item.1)',
+        subscaleFormulas: { social: '' },
+      },
+    })],
+  })).toBe(true));
+
+  it('rejects non-string subscaleFormulas value', () => expect(invalid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire({
+      scoring: {
+        method: 'custom',
+        customFormula: 'sum(item.1)',
+        subscaleFormulas: { social: ['1', '2'] },
+      },
+    })],
+  })).toBe(true));
 });
 
 // ─── Interpretations ─────────────────────────────────────────────────────────

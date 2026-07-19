@@ -271,6 +271,63 @@ describe('method: custom', () => {
   });
 });
 
+describe('subscaleFormulas', () => {
+  it('computes formula-defined subscales via DSL', () => {
+    const q = baseQ({
+      scoring: {
+        method: 'custom',
+        customFormula: 'sum(item.1, item.2, item.3)',
+        subscaleFormulas: {
+          binary: 'sum(if(item.1 >= 2, 1, 0), if(item.2 >= 2, 1, 0))',
+        },
+      },
+    });
+    const result = score(q, { '1': 3, '2': 1, '3': 2 });
+    expect(result.subscales).toEqual({ binary: 1 });
+    expect(result.total).toBe(6);
+  });
+
+  it('custom total formula can reference formula-defined subscales', () => {
+    const q = baseQ({
+      scoring: {
+        method: 'custom',
+        subscaleFormulas: {
+          a: 'if(item.1 >= 2, 1, 0)',
+          b: 'if(item.2 >= 2, 1, 0)',
+        },
+        customFormula: 'subscale.a + subscale.b',
+      },
+    });
+    expect(score(q, { '1': 3, '2': 2, '3': 0 }).total).toBe(2);
+  });
+
+  it('merges with item-list subscales', () => {
+    const q = baseQ({
+      scoring: {
+        method: 'custom',
+        subscales: { raw: ['1', '2'] },
+        subscaleFormulas: { dichotomised: 'if(item.3 >= 2, 1, 0)' },
+        customFormula: 'subscale.raw',
+      },
+    });
+    const result = score(q, { '1': 2, '2': 3, '3': 2 });
+    expect(result.subscales).toEqual({ raw: 5, dichotomised: 1 });
+  });
+
+  it('formula subscales join the sum-of-subscales total under method: subscales', () => {
+    const q = baseQ({
+      scoring: {
+        method: 'subscales',
+        subscales: { a: ['1', '2'] },
+        subscaleFormulas: { b: 'if(item.3 >= 2, 1, 0)' },
+      },
+    });
+    const result = score(q, { '1': 2, '2': 3, '3': 2 });
+    expect(result.subscales).toEqual({ a: 5, b: 1 });
+    expect(result.total).toBe(6);
+  });
+});
+
 describe('reverse scoring', () => {
   it('reverses item value on a 0-based scale: reversed = min + max - raw', () => {
     const opts = [0, 1, 2, 3, 4].map(v => ({ label: String(v), value: v }));

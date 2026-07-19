@@ -180,16 +180,30 @@ function collectLeafItemIds(items, ids = new Set()) {
 
 function checkScoringRefs(data, errors) {
   for (const q of data.questionnaires ?? []) {
-    if (q.scoring?.method !== 'subscales') continue;
-    const itemIds = collectLeafItemIds(q.items);
-    for (const [name, ids] of Object.entries(q.scoring.subscales ?? {})) {
-      for (const id of ids) {
-        if (!itemIds.has(id)) {
-          errors.push(
-            `Questionnaire "${q.id}" › scoring.subscales["${name}"]: ` +
-            `references item "${id}" which does not exist.`
-          );
+    if (q.scoring?.method === 'subscales') {
+      const itemIds = collectLeafItemIds(q.items);
+      for (const [name, ids] of Object.entries(q.scoring.subscales ?? {})) {
+        for (const id of ids) {
+          if (!itemIds.has(id)) {
+            errors.push(
+              `Questionnaire "${q.id}" › scoring.subscales["${name}"]: ` +
+              `references item "${id}" which does not exist.`
+            );
+          }
         }
+      }
+    }
+
+    // A subscale ID must be defined either by an item list or by a formula,
+    // never both — the engine would silently overwrite the item-list score
+    // with the formula result.
+    const listIds = new Set(Object.keys(q.scoring?.subscales ?? {}));
+    for (const name of Object.keys(q.scoring?.subscaleFormulas ?? {})) {
+      if (listIds.has(name)) {
+        errors.push(
+          `Questionnaire "${q.id}": subscale "${name}" is defined in both ` +
+          `scoring.subscales and scoring.subscaleFormulas. Define each subscale in only one of the two.`
+        );
       }
     }
   }

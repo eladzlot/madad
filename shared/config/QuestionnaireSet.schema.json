@@ -510,6 +510,18 @@
           "type": "string",
           "minLength": 1
         },
+        "subscaleFormulas": {
+          "type": "object",
+          "description": "Subscale scores computed by DSL formula instead of an item list. Each key is a subscale ID, each value a DSL expression evaluated with the item answers in scope. Use when a subscale is not a plain sum of item values (e.g. binary rescoring).",
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_]*$"
+          },
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
         "exclude": {
           "type": "array",
           "items": {
