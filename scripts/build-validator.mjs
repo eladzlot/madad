@@ -47,9 +47,45 @@ const ucs2length = `function ucs2length(str) {
 }`;
 
 code = code.replace(
-  /const func\d+ = require\("ajv\/dist\/runtime\/ucs2length"\)\.default;/,
-  ucs2length + '\nconst func1 = ucs2length;'
+  /const (func\d+) = require\("ajv\/dist\/runtime\/ucs2length"\)\.default;/,
+  ucs2length + '\nconst $1 = ucs2length;'
 );
+
+// Same for the deep-equal helper Ajv emits for uniqueItems / const / enum on
+// non-scalar values (fast-deep-equal via ajv/dist/runtime/equal).
+const deepEqual = `function deepEqual(a, b) {
+  if (a === b) return true;
+  if (a && b && typeof a === 'object' && typeof b === 'object') {
+    if (a.constructor !== b.constructor) return false;
+    if (Array.isArray(a)) {
+      if (a.length !== b.length) return false;
+      for (let i = a.length; i-- !== 0;) if (!deepEqual(a[i], b[i])) return false;
+      return true;
+    }
+    const keys = Object.keys(a);
+    if (keys.length !== Object.keys(b).length) return false;
+    for (const key of keys) if (!Object.prototype.hasOwnProperty.call(b, key)) return false;
+    for (const key of keys) if (!deepEqual(a[key], b[key])) return false;
+    return true;
+  }
+  return a !== a && b !== b; // NaN === NaN
+}`;
+
+code = code.replace(
+  /const (func\d+) = require\("ajv\/dist\/runtime\/equal"\)\.default;/,
+  deepEqual + '\nconst $1 = deepEqual;'
+);
+
+// Guard: the output ships to the browser as pure ESM. Any require() that
+// survives the replacements above would throw "require is not defined" in
+// production (caught by dist-smoke, but fail fast here instead).
+if (/\brequire\(/.test(code)) {
+  const helper = code.match(/require\("[^"]*"\)/)?.[0] ?? 'unknown';
+  throw new Error(
+    `Generated validator still contains a CommonJS ${helper} call. ` +
+    'Add an inline replacement for this Ajv runtime helper in build-validator.mjs.'
+  );
+}
 
 const outPath = resolve(__dirname, '../shared/config/validate-schema.js');
 writeFileSync(outPath, `/* eslint-disable */\n${code}`);

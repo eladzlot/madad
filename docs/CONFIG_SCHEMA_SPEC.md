@@ -84,6 +84,37 @@ A config file is a single JSON object with the following fields:
 | `subscaleLabels` | object | no | Display labels for subscale IDs. Keys must match subscale IDs defined in `scoring.subscales`. Values are free-form strings (e.g. `"שטיפה (Washing)"`) shown in the PDF. If absent, subscale IDs are used as-is. |
 | `interpretations` | object | no | Score-to-label mapping |
 | `alerts` | array | no | Clinical alert definitions |
+| `meta` | object | no | Catalog metadata for the Composer (browsing, filtering, curated view). See §4a. |
+
+---
+
+## 4a. Catalog Metadata (`meta`)
+
+Optional on questionnaires and batteries. Consumed only by the Composer's catalog —
+never shown to patients and never affects scoring or the PDF.
+
+```json
+"meta": {
+  "domains": ["depression"],
+  "type": "severity",
+  "populations": ["adult"],
+  "tags": ["CBT"],
+  "featured": true,
+  "durationMinutes": 3
+}
+```
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `domains` | array of enum | yes (within `meta`) | Clinical domains, ≥1, unique. Allowed values: `depression`, `anxiety`, `ocd`, `trauma`, `psychosis`, `sleep`, `anger`, `social`, `attachment`, `emotion_regulation`, `functioning`, `alliance`, `neurodevelopmental`, `intake`, `general`. |
+| `type` | enum | questionnaires: yes · batteries: no | Primary clinical use: `screener` (case-finding), `severity` (symptom severity), `process` (mechanism/process measures, incl. alliance and attachment), `worksheet` (intervention material — logs, exercises), `other` (administrative, e.g. demographics). Batteries omit it — a battery mixes types. |
+| `populations` | array of enum | no | `adult`, `adolescent`, `child`, `parent`. ≥1, unique. Absent means `adult`. |
+| `tags` | array of strings | no | Free-form intervention/protocol tags (e.g. `"CBT"`, `"exposure"`). Not schema-validated beyond shape — keep spelling consistent across configs. |
+| `featured` | boolean | no | Shown in the Composer's curated default view. Reserve for common workhorse instruments. Default false. |
+| `durationMinutes` | number > 0 | no | Estimated completion time; overrides the catalog's computed estimate. |
+
+Adding a value to the `domains`/`type`/`populations` enums is a schema change — follow
+the schema-change process (regenerate the validator, update this spec and LLM_GUIDE).
 
 ---
 
@@ -278,6 +309,7 @@ Each alert:
 | `description` | string | no | Short description of the battery shown in the Composer. Plain text, any language. |
 | `keywords` | array of strings | no | Free-form terms used for search and filtering in the Composer. Any language. |
 | `sequence` | array | yes | Array of sequence nodes. Min 1. |
+| `meta` | object | no | Catalog metadata — same shape as §4a, except `type` is optional (a battery mixes types). |
 
 ### 9.1 Battery Sequence Nodes
 

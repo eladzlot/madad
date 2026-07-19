@@ -20,6 +20,11 @@ The output is **pure JSON** — no comments, no trailing commas, no JavaScript.
   "title": "Display title shown to clinician",
   "description": "One sentence shown in the Composer search UI.",
   "keywords": ["keyword1", "keyword2"],
+  "meta": {
+    "domains": ["anxiety"],
+    "type": "severity",
+    "populations": ["adult"]
+  },
   "defaultOptionSetId": "my_scale",
   "optionSets": {
     "my_scale": [
@@ -37,7 +42,31 @@ The output is **pure JSON** — no comments, no trailing commas, no JavaScript.
 }
 ```
 
-Only `id`, `title`, `items` are strictly required. All other fields are optional but you should include `description`, `keywords`, `scoring`, and `interpretations` for any real clinical instrument.
+Only `id`, `title`, `items` are strictly required. All other fields are optional but you should include `description`, `keywords`, `meta`, `scoring`, and `interpretations` for any real clinical instrument.
+
+---
+
+## Catalog metadata (`meta`)
+
+`meta` drives the Composer's browsing and filtering. It is never shown to patients and never affects scoring. Always include it on real instruments.
+
+```json
+"meta": {
+  "domains": ["depression"],
+  "type": "severity",
+  "populations": ["adult"],
+  "tags": ["CBT"],
+  "featured": true,
+  "durationMinutes": 3
+}
+```
+
+- `domains` (required, ≥1): closed enum — `depression`, `anxiety`, `ocd`, `trauma`, `psychosis`, `sleep`, `anger`, `social`, `attachment`, `emotion_regulation`, `functioning`, `alliance`, `neurodevelopmental`, `intake`, `general`. Do not invent new values — the validator rejects them; propose an enum addition instead.
+- `type` (required on questionnaires): `screener` (case-finding), `severity` (symptom severity), `process` (mechanism/process measure, incl. alliance and attachment), `worksheet` (intervention material — logs, exercises), `other` (administrative, e.g. demographics). Pick the primary clinical use. Batteries may omit `type`.
+- `populations` (optional): `adult`, `adolescent`, `child`, `parent`. Absent means adult.
+- `tags` (optional): free-form intervention/protocol tags (e.g. `"CBT"`, `"exposure"`). Reuse existing spellings from other configs.
+- `featured` (optional): only for common workhorse instruments — do not set it by default.
+- `durationMinutes` (optional): only when the computed estimate would be misleading.
 
 ---
 
@@ -554,12 +583,18 @@ A battery is an ordered sequence of questionnaires presented as a single session
   "title": "הערכה ראשונית",
   "description": "Screens for depression and anxiety. Adds PTSD screening if PHQ-9 is elevated.",
   "keywords": ["intake", "screening"],
+  "meta": {
+    "domains": ["intake"],
+    "populations": ["adult"]
+  },
   "sequence": [
     { "questionnaireId": "phq9" },
     { "questionnaireId": "gad7" }
   ]
 }
 ```
+
+Batteries take the same `meta` block as questionnaires, except `type` is omitted (a battery mixes types).
 
 ### Conditional branching in batteries
 
@@ -638,6 +673,7 @@ The `else` array must be present even if empty. DSL expressions in battery condi
 - [ ] `interpretations.ranges` cover the full possible score range
 - [ ] Alert `condition` expressions reference valid item IDs and questionnaire IDs
 - [ ] Alert IDs are unique within the questionnaire
+- [ ] `meta` present with valid `domains` enum values and a `type` (questionnaires)
 - [ ] JSON is valid — no trailing commas, no comments
 
 ---

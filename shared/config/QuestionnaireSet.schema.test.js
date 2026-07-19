@@ -875,3 +875,108 @@ describe('full example', () => {
     }],
   })).toBe(true));
 });
+
+// ─── meta (catalog metadata) ─────────────────────────────────────────────────
+
+describe('meta', () => {
+  const fullMeta = {
+    domains: ['depression'],
+    type: 'severity',
+    populations: ['adult'],
+    tags: ['CBT'],
+    featured: true,
+    durationMinutes: 3,
+  };
+
+  it('accepts full meta on questionnaire', () => expect(valid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire({ meta: fullMeta })],
+  })).toBe(true));
+
+  it('accepts minimal meta (domains + type) on questionnaire', () => expect(valid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire({ meta: { domains: ['anxiety'], type: 'screener' } })],
+  })).toBe(true));
+
+  it('accepts multiple domains and populations', () => expect(valid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire({
+      meta: { domains: ['depression', 'anxiety'], type: 'severity', populations: ['child', 'adolescent'] },
+    })],
+  })).toBe(true));
+
+  it('rejects meta without domains', () => expect(invalid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire({ meta: { type: 'severity' } })],
+  })).toBe(true));
+
+  it('rejects questionnaire meta without type', () => expect(invalid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire({ meta: { domains: ['depression'] } })],
+  })).toBe(true));
+
+  it('rejects empty domains array', () => expect(invalid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire({ meta: { domains: [], type: 'severity' } })],
+  })).toBe(true));
+
+  it('rejects unknown domain value', () => expect(invalid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire({ meta: { domains: ['sadness'], type: 'severity' } })],
+  })).toBe(true));
+
+  it('rejects unknown type value', () => expect(invalid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire({ meta: { domains: ['depression'], type: 'diagnostic' } })],
+  })).toBe(true));
+
+  it('rejects unknown population value', () => expect(invalid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire({
+      meta: { domains: ['depression'], type: 'severity', populations: ['infant'] },
+    })],
+  })).toBe(true));
+
+  it('rejects duplicate domains', () => expect(invalid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire({
+      meta: { domains: ['depression', 'depression'], type: 'severity' },
+    })],
+  })).toBe(true));
+
+  it('rejects unknown key inside meta', () => expect(invalid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire({
+      meta: { domains: ['depression'], type: 'severity', color: 'blue' },
+    })],
+  })).toBe(true));
+
+  it('rejects non-positive durationMinutes', () => expect(invalid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire({
+      meta: { domains: ['depression'], type: 'severity', durationMinutes: 0 },
+    })],
+  })).toBe(true));
+
+  it('accepts battery meta without type', () => expect(valid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire()],
+    batteries: [{
+      id: 'b1',
+      title: 'סוללה',
+      sequence: [{ questionnaireId: 'q1' }],
+      meta: { domains: ['trauma'], featured: true },
+    }],
+  })).toBe(true));
+
+  it('accepts battery meta with type', () => expect(valid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire()],
+    batteries: [{
+      id: 'b1',
+      title: 'סוללה',
+      sequence: [{ questionnaireId: 'q1' }],
+      meta: { domains: ['intake'], type: 'other' },
+    }],
+  })).toBe(true));
+});
