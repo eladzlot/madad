@@ -6,7 +6,6 @@ beforeEach(() => {
   state.batteries             = [];
   state.questionnaires        = [];
   state.sourceByItem          = new Map();
-  state.dependenciesBySource  = new Map();
   state.selected              = [];
   state.pid                   = '';
   state.query                 = '';
@@ -91,14 +90,14 @@ describe('buildUrl', () => {
     expect(configs).toContain('/configs/b.json');
   });
 
-  it('includes transitive questionnaire sources when a battery references another config', () => {
-    // battery lives in intake but references questionnaires from standard
+  it('emits only the selected item\'s source for cross-config batteries (deps auto-fetched by the patient app)', () => {
+    // clinical_intake lives in intake, which declares standard as a config
+    // dependency. The URL names only intake — the patient app's loadConfig
+    // fetches standard itself via the declared-dependencies BFS walk.
     state.selected = ['clinical_intake'];
     state.sourceByItem.set('clinical_intake', 'intake');
-    state.dependenciesBySource.set('intake', ['standard']);
     const configs = new URL(buildUrl(ORIGIN)).searchParams.get('configs').split(',');
-    expect(configs).toContain('intake');
-    expect(configs).toContain('standard');
+    expect(configs).toEqual(['intake']);
   });
 });
 

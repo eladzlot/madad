@@ -36,7 +36,7 @@ Rules:
 - `items` order defines session order
 - Each token resolves to a battery (expanded) or questionnaire
 - Mixing batteries and questionnaires is supported
-- Only required configs are included (dependency auto-include, see below)
+- Only the selected items' source configs are included (declared cross-config dependencies are auto-fetched by the patient app, see below)
 - `pid` is optional
 
 ### Short names as a stable URL contract
@@ -59,32 +59,60 @@ This is enforced at load time: `loadConfig` throws `ConfigError: Duplicate quest
 
 ## Config Discovery
 
-Configs are defined by a manifest at `public/composer/configs.json`.
+The composer never downloads config files. It fetches a single generated
+index — the **catalog** at `public/composer/catalog.json` — produced from the
+manifest and the config files by `scripts/build-catalog.mjs`.
 
-Each manifest entry:
+### Manifest (build-time input)
+
+`public/composer/configs.json` lists which configs enter the catalog and in
+what order. It is read only by the catalog build script — nothing fetches it
+at runtime.
 
 | Field | Type | Description |
 |---|---|---|
 | `name` | string | Display name (internal) |
 | `url` | string | Root-relative path to config JSON |
-| `hidden` | boolean | Loaded but not shown in UI. Default: `false` |
-| `dev` | boolean | Only loaded when `import.meta.env.DEV === true`. Skipped in production builds. Default: `false` |
+| `hidden` | boolean | Config contributes no picker entries (its questionnaires still count toward battery sizes; the patient app still loads it via dependency auto-fetch). Default: `false` |
+| `dev` | boolean | Entries from this source are only shown when `import.meta.env.DEV === true`; skipped in production builds. Default: `false` |
 
-Example:
+### Catalog (runtime data source)
+
 ```json
 {
-  "configs": [
-    { "name": "ספריית שאלונים סטנדרטית", "url": "/configs/prod/standard.json" },
-    { "name": "שאלוני טראומה",             "url": "/configs/prod/trauma.json" },
-    { "name": "שאלוני הערכה ראשונית",       "url": "/configs/prod/intake.json" },
-    { "name": "שאלונים לבדיקה",            "url": "/configs/test/e2e.json", "dev": true }
+  "catalogVersion": 1,
+  "entries": [
+    {
+      "id": "phq9", "kind": "questionnaire",
+      "title": "שאלון דיכאון (PHQ-9)", "description": "…", "keywords": ["PHQ"],
+      "source": "standard", "itemCount": 9, "estMinutes": 1, "hasConditional": false,
+      "domains": ["depression"], "type": "severity", "populations": ["adult"],
+      "tags": [], "featured": true
+    }
   ]
 }
 ```
 
-`dev: true` is used for E2E test fixtures. These configs are **completely absent** from production builds. In dev and Playwright they load normally, allowing E2E tests to select items by ID.
+- `source` is a **token**: exactly what goes into the `configs=` parameter of
+  generated URLs (short name for `configs/prod/*` files, relative path for
+  anything else).
+- `entries` carry everything the picker shows: catalog-truncated description
+  (~140 chars; full text lives in the config), taxonomy meta (`domains`,
+  `type`, `populations`, `tags`, `featured` — see CONFIG_SCHEMA_SPEC §4a),
+  `itemCount`/`estMinutes` (unconditional path; `hasConditional: true` means
+  "may be longer"), `kind` (`questionnaire` | `battery`), and `dev: true` on
+  entries from dev sources (shown only when `import.meta.env.DEV`).
+- `catalogVersion` mismatches produce a non-blocking warning banner.
 
-`hidden: true` loads the config (registering IDs, enabling dependency resolution) but hides its items from the picker UI.
+### Keeping the catalog in sync
+
+The catalog is **generated and committed**. Three mechanisms keep it honest:
+
+1. `npm run build` regenerates it before `vite build` — dist/ is always fresh.
+2. CI runs `npm run validate:catalog` (regenerate + byte-compare, fails on drift).
+3. After editing any config: `npm run build:catalog`, commit the result.
+
+The dev server serves the committed file from `public/composer/` directly.
 
 ---
 
@@ -153,28 +181,35 @@ The URL rebuilds automatically on every:
 - Order change (drag or keyboard)
 - PID input change
 
-### Dependency auto-include
+### Cross-config dependencies
 
-When a config declares `"dependencies": [...]`, the Composer automatically adds those paths to `configs=` whenever any item from that config is selected.
+The Composer does **not** track dependencies. When a config declares
+`"dependencies": [...]`, the patient app's `loadConfig` auto-fetches them at
+runtime (BFS walk over declared dependencies — `shared/config/loader.js`,
+`loadDependencies: true` by default).
 
-Example: selecting `clinical_intake` (from `intake.json`) adds `configs/prod/standard.json` and `configs/prod/trauma.json` to the URL automatically, because `intake.json` declares them as dependencies.
+Example: selecting `clinical_intake` (from `intake.json`) generates
+`configs=intake`. The patient app fetches `intake.json`, sees its declared
+dependencies (`standard`, `trauma`), and fetches those too. Older URLs that
+list dependency configs explicitly keep working — the loader's visited-set
+dedupes either way.
 
 ---
 
 ## Startup Behaviour
 
-1. Fetch `configs.json` manifest
-2. Filter out `dev: true` entries when not in dev mode
-3. Load all remaining configs in parallel, resolving URLs against app root
-4. On partial failure: continue with successful configs, show a warning naming the failed URL
-5. Render picker with all loaded items
+1. Fetch `catalog.json` (relative URL, `cache: 'no-cache'`)
+2. On fetch/parse failure: show the boot error block (`.c-error`) — the composer cannot run without the catalog
+3. Filter out entries whose source is `dev: true` when not in dev mode
+4. Populate picker state from catalog entries; warn (non-blocking) on `catalogVersion` mismatch
+5. Render picker with all active entries
 
 ---
 
 ## Warning Banner
 
 Shown at the top of the Composer. Examples:
-- Config failed to load (names the URL and surfaces validation detail if available)
+- Catalog version mismatch (stale cached catalog against a newer bundle)
 - Invalid patient identifier characters
 
 Warnings do **not block link generation**.

@@ -1,18 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { state } from './composer-state.js';
+import { state, CATALOG_URL } from './composer-state.js';
 
 // Reset state before each test
 beforeEach(() => {
-  state.batteries             = [];
-  state.questionnaires        = [];
-  state.sourceByItem          = new Map();
-  state.dependenciesBySource  = new Map();
-  state.selected              = [];
-  state.warnings              = [];
-  // Reset the shared mockFetch so queued .mockResolvedValueOnce() responses
-  // from a previous test don't leak forward. Without this, a test that queues
-  // two responses but only consumes one leaves the second in the queue, where
-  // it gets picked up as the first response of the next test.
+  state.batteries       = [];
+  state.questionnaires  = [];
+  state.sourceByItem    = new Map();
+  state.selected        = [];
+  state.warnings        = [];
   mockFetch.mockReset();
 });
 
@@ -20,327 +15,132 @@ beforeEach(() => {
 const mockFetch = vi.fn();
 vi.stubGlobal('fetch', mockFetch);
 
-const { loadManifest, loadAllConfigs } = await import('./composer-loader.js');
+const { loadCatalog, applyCatalog, CATALOG_VERSION } = await import('./composer-loader.js');
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-const minimalQ = (id, title = id, description = '') => ({
-  id, title, description,
-  items: [{ id: 'q1', type: 'select', text: 'Q', options: [{ label: 'No', value: 0 }, { label: 'Yes', value: 1 }] }],
-  scoring: { method: 'none' }, alerts: [],
-});
-
-const minimalBattery = (id, title = id, qId = 'phq9') => ({
-  id, title, sequence: [{ questionnaireId: qId }],
-});
-
-function makeConfigResponse(questionnaires = [], batteries = []) {
+function entry(id, overrides = {}) {
   return {
-    ok: true, status: 200,
-    json: async () => ({ id: 'test', version: '1.0', questionnaires, batteries }),
+    id,
+    kind: 'questionnaire',
+    title: `שאלון ${id}`,
+    description: '',
+    keywords: [],
+    source: 'standard',
+    itemCount: 9,
+    estMinutes: 1,
+    hasConditional: false,
+    domains: ['depression'],
+    type: 'severity',
+    populations: ['adult'],
+    tags: [],
+    featured: false,
+    ...overrides,
   };
 }
 
-function makeConfigResponseWithDeps(questionnaires = [], batteries = [], dependencies = []) {
-  return {
-    ok: true, status: 200,
-    json: async () => ({ id: 'test', version: '1.0', questionnaires, batteries, dependencies }),
-  };
+function catalog(entries = []) {
+  return { catalogVersion: CATALOG_VERSION, entries };
 }
 
-// ── loadManifest ──────────────────────────────────────────────────────────────
+// ── loadCatalog ───────────────────────────────────────────────────────────────
 
-describe('loadManifest', () => {
-  it('fetches MANIFEST_URL and returns parsed JSON', async () => {
-    const manifest = { configs: [{ name: 'Test', url: '/configs/test.json' }] };
-    mockFetch.mockResolvedValueOnce({ ok: true, status: 200, json: async () => manifest });
-    const result = await loadManifest();
-    expect(result).toEqual(manifest);
+describe('loadCatalog', () => {
+  it('fetches CATALOG_URL and returns parsed JSON', async () => {
+    const cat = catalog([entry('phq9')]);
+    mockFetch.mockResolvedValueOnce({ ok: true, status: 200, json: async () => cat });
+    const result = await loadCatalog();
+    expect(mockFetch.mock.calls[0][0]).toBe(CATALOG_URL);
+    expect(result).toEqual(cat);
   });
 
-  it('revalidates the manifest with cache: no-cache (mutable, unhashed file)', async () => {
-    mockFetch.mockResolvedValueOnce({ ok: true, status: 200, json: async () => ({ configs: [] }) });
-    await loadManifest();
+  it('revalidates the catalog with cache: no-cache (mutable, unhashed file)', async () => {
+    mockFetch.mockResolvedValueOnce({ ok: true, status: 200, json: async () => catalog() });
+    await loadCatalog();
     expect(mockFetch.mock.calls[0][1]).toMatchObject({ cache: 'no-cache' });
   });
 
   it('throws on HTTP error', async () => {
     mockFetch.mockResolvedValueOnce({ ok: false, status: 404 });
-    await expect(loadManifest()).rejects.toThrow();
+    await expect(loadCatalog()).rejects.toThrow('404');
   });
 });
 
-// ── loadAllConfigs ────────────────────────────────────────────────────────────
+// ── applyCatalog ──────────────────────────────────────────────────────────────
 
-describe('loadAllConfigs', () => {
-  it('populates state.questionnaires from loaded configs', async () => {
-    mockFetch.mockResolvedValueOnce(makeConfigResponse([minimalQ('phq9')]));
-    await loadAllConfigs({ configs: [{ name: 'Test', url: '/configs/a.json' }] });
+describe('applyCatalog', () => {
+  it('populates state.questionnaires from catalog entries', () => {
+    applyCatalog(catalog([entry('phq9')]));
     expect(state.questionnaires).toHaveLength(1);
     expect(state.questionnaires[0].id).toBe('phq9');
   });
 
-  it('populates state.batteries from loaded configs', async () => {
-    mockFetch.mockResolvedValueOnce(makeConfigResponse([minimalQ('phq9')], [minimalBattery('intake')]));
-    await loadAllConfigs({ configs: [{ name: 'Test', url: '/configs/a.json' }] });
-    expect(state.batteries).toHaveLength(1);
-    expect(state.batteries[0].id).toBe('intake');
+  it('routes battery entries to state.batteries', () => {
+    applyCatalog(catalog([entry('intake_bat', { kind: 'battery' }), entry('phq9')]));
+    expect(state.batteries.map(b => b.id)).toEqual(['intake_bat']);
+    expect(state.questionnaires.map(q => q.id)).toEqual(['phq9']);
   });
 
-  it('sets sourceUrl on questionnaires', async () => {
-    mockFetch.mockResolvedValueOnce(makeConfigResponse([minimalQ('phq9')]));
-    await loadAllConfigs({ configs: [{ name: 'Test', url: '/configs/prod/standard.json' }] });
+  it('sets sourceUrl (render contract) and sourceByItem from entry.source', () => {
+    applyCatalog(catalog([entry('phq9', { source: 'standard' })]));
     expect(state.questionnaires[0].sourceUrl).toBe('standard');
-  });
-
-  it('sets sourceUrl on batteries', async () => {
-    mockFetch.mockResolvedValueOnce(makeConfigResponse([minimalQ('phq9')], [minimalBattery('intake')]));
-    await loadAllConfigs({ configs: [{ name: 'Test', url: '/configs/prod/standard.json' }] });
-    expect(state.batteries[0].sourceUrl).toBe('standard');
-  });
-
-  it('populates sourceByItem map for questionnaires', async () => {
-    mockFetch.mockResolvedValueOnce(makeConfigResponse([minimalQ('phq9')]));
-    await loadAllConfigs({ configs: [{ name: 'Test', url: '/configs/prod/standard.json' }] });
     expect(state.sourceByItem.get('phq9')).toBe('standard');
   });
 
-  it('populates sourceByItem map for batteries', async () => {
-    mockFetch.mockResolvedValueOnce(makeConfigResponse([minimalQ('phq9')], [minimalBattery('intake')]));
-    await loadAllConfigs({ configs: [{ name: 'Test', url: '/configs/prod/standard.json' }] });
-    expect(state.sourceByItem.get('intake')).toBe('standard');
-  });
-
-  it('carries description through (empty string when absent)', async () => {
-    mockFetch.mockResolvedValueOnce(makeConfigResponse([minimalQ('phq9', 'PHQ-9', '')]));
-    await loadAllConfigs({ configs: [{ name: 'Test', url: '/configs/a.json' }] });
-    expect(state.questionnaires[0].description).toBe('');
-  });
-
-  it('carries description when present', async () => {
-    const q = { ...minimalQ('phq9'), description: 'A depression screener' };
-    mockFetch.mockResolvedValueOnce(makeConfigResponse([q]));
-    await loadAllConfigs({ configs: [{ name: 'Test', url: '/configs/a.json' }] });
-    expect(state.questionnaires[0].description).toBe('A depression screener');
-  });
-
-  it('merges items from multiple configs', async () => {
-    mockFetch
-      .mockResolvedValueOnce(makeConfigResponse([minimalQ('phq9')]))
-      .mockResolvedValueOnce(makeConfigResponse([minimalQ('gad7')]));
-    await loadAllConfigs({
-      configs: [
-        { name: 'A', url: '/configs/a.json' },
-        { name: 'B', url: '/configs/b.json' },
-      ],
-    });
-    expect(state.questionnaires.map(q => q.id)).toContain('phq9');
-    expect(state.questionnaires.map(q => q.id)).toContain('gad7');
-  });
-
-  it('continues and warns when one config fails to load', async () => {
-    mockFetch
-      .mockRejectedValueOnce(new TypeError('Failed to fetch'))
-      .mockResolvedValueOnce(makeConfigResponse([minimalQ('gad7')]));
-    await loadAllConfigs({
-      configs: [
-        { name: 'Bad', url: '/configs/bad.json' },
-        { name: 'Good', url: '/configs/good.json' },
-      ],
-    });
-    expect(state.questionnaires).toHaveLength(1);
-    expect(state.questionnaires[0].id).toBe('gad7');
-    expect(state.warnings).toHaveLength(1);
-  });
-
-  it('includes configs marked dev:true when running in dev mode (Vitest sets DEV=true)', async () => {
-    // Vitest runs with import.meta.env.DEV = true, so dev configs are included
-    mockFetch
-      .mockResolvedValueOnce(makeConfigResponse([minimalQ('phq9')]))
-      .mockResolvedValueOnce(makeConfigResponse([minimalQ('e2e_q')]));
-    await loadAllConfigs({
-      configs: [
-        { name: 'Prod', url: '/configs/prod/standard.json' },
-        { name: 'Dev only', url: '/configs/test/e2e.json', dev: true },
-      ],
-    });
-    // Both configs loaded because IS_DEV=true in test environment
-    expect(state.questionnaires.map(q => q.id)).toContain('phq9');
-    expect(state.questionnaires.map(q => q.id)).toContain('e2e_q');
-  });
-
-  it('marks questionnaires from hidden configs with hidden:true', async () => {
-    mockFetch.mockResolvedValueOnce(makeConfigResponse([minimalQ('e2e_q')]));
-    await loadAllConfigs({
-      configs: [{ name: 'E2E', url: '/configs/test/e2e.json', hidden: true }],
-    });
-    expect(state.questionnaires[0].hidden).toBe(true);
-  });
-
-  it('marks questionnaires from non-hidden configs with hidden:false', async () => {
-    mockFetch.mockResolvedValueOnce(makeConfigResponse([minimalQ('phq9')]));
-    await loadAllConfigs({
-      configs: [{ name: 'Prod', url: '/configs/prod/standard.json' }],
-    });
+  it('marks entries as not hidden (hidden configs are excluded at build time)', () => {
+    applyCatalog(catalog([entry('phq9')]));
     expect(state.questionnaires[0].hidden).toBe(false);
   });
 
-  it('adds a warning message for each failed config', async () => {
-    mockFetch.mockRejectedValue(new TypeError('Failed to fetch'));
-    await loadAllConfigs({
-      configs: [
-        { name: 'A', url: '/configs/a.json' },
-        { name: 'B', url: '/configs/b.json' },
-      ],
+  it('carries meta fields through for the browse UI', () => {
+    applyCatalog(catalog([entry('phq9', { domains: ['depression'], featured: true, estMinutes: 2 })]));
+    expect(state.questionnaires[0]).toMatchObject({
+      domains: ['depression'], featured: true, estMinutes: 2, itemCount: 9,
     });
-    expect(state.warnings).toHaveLength(2);
   });
 
-
-  it('warning includes the fetch URL when config fails', async () => {
-    mockFetch.mockRejectedValueOnce(new TypeError('Failed to fetch'));
-    await loadAllConfigs({ configs: [{ name: 'Bad', url: '/configs/bad.json' }] });
-    expect(state.warnings[0]).toContain('/configs/bad.json');
+  it('includes dev entries when running in dev mode (Vitest sets DEV=true)', () => {
+    applyCatalog(catalog([
+      entry('phq9'),
+      entry('test_q', { source: 'configs/test/e2e.json', dev: true }),
+    ]));
+    expect(state.questionnaires.map(q => q.id)).toEqual(['phq9', 'test_q']);
+    expect(state.sourceByItem.get('test_q')).toBe('configs/test/e2e.json');
   });
 
-  it('warning includes validation error detail when config fails schema validation', async () => {
-    // Serve a config that fails AJV schema validation (missing required 'id' field)
-    mockFetch.mockResolvedValueOnce({
-      ok: true, status: 200,
-      json: async () => ({ version: '1.0', questionnaires: [] }), // missing top-level 'id'
-    });
-    await loadAllConfigs({ configs: [{ name: 'Invalid', url: '/configs/invalid.json' }] });
+  it('warns on catalog version mismatch but still applies entries', () => {
+    applyCatalog({ ...catalog([entry('phq9')]), catalogVersion: CATALOG_VERSION + 1 });
     expect(state.warnings).toHaveLength(1);
-    // Warning should contain the URL
-    expect(state.warnings[0]).toContain('/configs/invalid.json');
-    // Warning should contain some validation detail, not just the URL
-    expect(state.warnings[0].length).toBeGreaterThan('/configs/invalid.json'.length + 5);
+    expect(state.questionnaires).toHaveLength(1);
   });
 
-  // ── dependency declaration ────────────────────────────────────────────────────
-
-  it('populates dependenciesBySource when config declares dependencies', async () => {
-    // The composer sets loadDependencies:false — declared deps are recorded in
-    // state.dependenciesBySource (for URL generation) but NOT auto-fetched.
-    // Each manifest entry is fetched exactly once by the composer itself.
-    mockFetch.mockResolvedValueOnce(
-      makeConfigResponseWithDeps([minimalQ('diamond_sr')], [minimalBattery('clinical_intake', 'Clinical Intake', 'diamond_sr')], ['standard'])
-    );
-    await loadAllConfigs({ configs: [{ name: 'Intake', url: '/configs/prod/intake.json' }] });
-    // Both key and value are short names
-    expect(state.dependenciesBySource.get('intake')).toEqual(['standard']);
+  it('applies cleanly with no warnings on a current-version catalog', () => {
+    applyCatalog(catalog([entry('phq9')]));
+    expect(state.warnings).toHaveLength(0);
   });
+});
 
-  it('strips leading slash from declared dependency paths', async () => {
-    mockFetch.mockResolvedValueOnce(
-      makeConfigResponseWithDeps([minimalQ('q1')], [], ['/configs/prod/standard.json'])
-    );
-    await loadAllConfigs({ configs: [{ name: 'Test', url: '/configs/prod/a.json' }] });
-    expect(state.dependenciesBySource.get('a')).toEqual(['standard']);
-  });
+// ── URL generation integration ────────────────────────────────────────────────
 
-  it('does not set dependenciesBySource entry when no dependencies declared', async () => {
-    mockFetch.mockResolvedValueOnce(makeConfigResponse([minimalQ('phq9')]));
-    await loadAllConfigs({ configs: [{ name: 'Test', url: '/configs/prod/standard.json' }] });
-    expect(state.dependenciesBySource.has('standard')).toBe(false);
-  });
-
-  // Regression test: previously the composer passed no options to loadConfig,
-  // and loadConfig's dependency auto-fetch merged dep configs into the result.
-  // The composer then also loaded the same dep via its own manifest entry,
-  // so the dep's items got registered twice — producing duplicate DOM IDs
-  // like two inputs with id="chk-phq9", which broke the Playwright e2e suite.
-  // This test locks in the contract that the composer fetches each manifest
-  // entry exactly once, regardless of what deps those configs declare.
-  it('does not double-register items when a manifest entry is also a declared dependency', async () => {
-    mockFetch
-      .mockResolvedValueOnce(
-        makeConfigResponseWithDeps(
-          [minimalQ('diamond_sr')],
-          [minimalBattery('clinical_intake', 'Clinical Intake', 'diamond_sr')],
-          ['configs/prod/standard.json']  // intake declares standard as a dep
-        )
-      )
-      .mockResolvedValueOnce(makeConfigResponse([minimalQ('phq9')]));
-
-    await loadAllConfigs({
-      configs: [
-        { name: 'Intake',   url: '/configs/prod/intake.json' },
-        { name: 'Standard', url: '/configs/prod/standard.json' },
-      ],
-    });
-
-    // Each manifest entry is fetched exactly once — the dep is NOT auto-fetched,
-    // because the composer is managing the full config set itself.
-    expect(mockFetch.mock.calls).toHaveLength(2);
-
-    // phq9 (from standard) appears exactly once in the registry, not twice.
-    const phq9Entries = state.questionnaires.filter(q => q.id === 'phq9');
-    expect(phq9Entries).toHaveLength(1);
-    // And attributed to the correct source (standard, not intake).
-    expect(phq9Entries[0].sourceUrl).toBe('standard');
-  });
-
-  it('buildUrl includes dependency source when battery config declares it', async () => {
-    // The composer loads every manifest entry directly; declared dependencies
-    // are used by buildUrl() to include them in the patient URL even when the
-    // patient selects items only from the declaring config. To set up this
-    // test we register two configs directly (intake + standard) rather than
-    // relying on dep auto-fetch.
-    mockFetch
-      .mockResolvedValueOnce(
-        makeConfigResponseWithDeps(
-          [minimalQ('diamond_sr')],
-          [minimalBattery('clinical_intake', 'Clinical Intake', 'diamond_sr')],
-          ['standard']
-        )
-      )
-      .mockResolvedValueOnce(makeConfigResponse([minimalQ('std_q')]));
-    await loadAllConfigs({
-      configs: [
-        { name: 'Intake',   url: '/configs/prod/intake.json' },
-        { name: 'Standard', url: '/configs/prod/standard.json' },
-      ],
-    });
+describe('buildUrl integration', () => {
+  it('emits only selected sources — cross-config deps are the patient loader\'s job', async () => {
+    applyCatalog(catalog([
+      entry('clinical_intake', { kind: 'battery', source: 'intake' }),
+      entry('diamond_sr', { source: 'intake' }),
+      entry('std_q', { source: 'standard' }),
+    ]));
 
     const { buildUrl } = await import('./composer-state.js');
     state.selected = ['clinical_intake'];
     const url = buildUrl('http://localhost');
-    const configs = new URL(url).searchParams.get('configs').split(',');
-    // Both emitted as short names — intake because clinical_intake lives there,
-    // standard because intake declares it as a dependency.
-    expect(configs).toContain('intake');
-    expect(configs).toContain('standard');
-  });
-});
-
-// ── toShortName ───────────────────────────────────────────────────────────────
-
-import { INTERNAL_CONFIG_PREFIX } from './composer-loader.js';
-
-describe('INTERNAL_CONFIG_PREFIX and toShortName', () => {
-  it('INTERNAL_CONFIG_PREFIX is configs/prod/', () => {
-    expect(INTERNAL_CONFIG_PREFIX).toBe('configs/prod/');
+    expect(new URL(url).searchParams.get('configs')).toBe('intake');
   });
 
-  // toShortName is not exported — we verify its effect through loadAllConfigs
-
-  it('internal path converts to short name in sourceByItem', async () => {
-    mockFetch.mockResolvedValueOnce(makeConfigResponse([minimalQ('phq9')]));
-    await loadAllConfigs({ configs: [{ name: 'Prod', url: '/configs/prod/standard.json' }] });
-    expect(state.sourceByItem.get('phq9')).toBe('standard');
+  it('emits legacy-path tokens for non-prod sources as-is', async () => {
+    applyCatalog(catalog([entry('test_q', { source: 'configs/test/e2e.json', dev: true })]));
+    const { buildUrl } = await import('./composer-state.js');
+    state.selected = ['test_q'];
+    const url = buildUrl('http://localhost');
+    expect(new URL(url).searchParams.get('configs')).toBe('configs/test/e2e.json');
   });
-
-  it('internal path with hyphens converts correctly', async () => {
-    mockFetch.mockResolvedValueOnce(makeConfigResponse([minimalQ('q1')]));
-    await loadAllConfigs({ configs: [{ name: 'Test', url: '/configs/prod/my-config_v2.json' }] });
-    expect(state.sourceByItem.get('q1')).toBe('my-config_v2');
-  });
-
-  it('non-prod path is stored as-is in sourceByItem', async () => {
-    mockFetch.mockResolvedValueOnce(makeConfigResponse([minimalQ('e2e_q')]));
-    await loadAllConfigs({ configs: [{ name: 'E2E', url: '/configs/test/e2e.json', hidden: true }] });
-    expect(state.sourceByItem.get('e2e_q')).toBe('configs/test/e2e.json');
-  });
-
 });

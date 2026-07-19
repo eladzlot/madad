@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite --host --mode development",
     "build:validator": "node scripts/build-validator.mjs",
-    "build": "npm run build:validator && vite build && vite build --config vite.landing.config.js",
+    "build:catalog": "node scripts/build-catalog.mjs",
+    "build": "npm run build:validator && npm run build:catalog && vite build && vite build --config vite.landing.config.js",
     "preview": "vite preview",
     "preview:landing": "vite preview --outDir dist-landing --port 4174 --strictPort --base=/",
     "test": "npm run build:validator && vitest run",
@@ -18,10 +19,11 @@
     "lint": "eslint src tests composer/src shared aggregate/src clinician",
     "lint:fix": "eslint src tests composer/src shared aggregate/src clinician --fix",
     "validate:configs": "node scripts/validate-configs.mjs",
+    "validate:catalog": "node scripts/build-catalog.mjs --check",
     "pdf:fixtures": "vite-node scripts/generate-test-pdfs.mjs",
     "size": "node scripts/check-size.mjs",
     "build:og": "bash scripts/build-og-image.sh",
-    "ci": "npm run lint && npm test && npm run validate:configs && npm run build && npm run size && npm run e2e"
+    "ci": "npm run lint && npm test && npm run validate:configs && npm run validate:catalog && npm run build && npm run size && npm run e2e"
   },
   "dependencies": {
     "ajv": "^8.18.0",

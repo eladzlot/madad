@@ -74,6 +74,8 @@ src/pdf/report.js              ← PDF generation (pdfmake, lazy-loaded)
 - PDF: mixed Hebrew/Latin strings via `bidiNodes()` with cross-script hyphen splitting
 - PDF: `APP_URL` resolved dynamically via `window.location.origin`
 - Composer at `/composer/` with real-time search, drag-to-reorder, keyboard navigation
+- Composer data source: generated catalog index (`public/composer/catalog.json`, built by `scripts/build-catalog.mjs` from the manifest + configs — run `npm run build:catalog` after editing configs; CI enforces freshness via `npm run validate:catalog`). The composer never downloads full configs. See `docs/COMPOSER_SPEC.md` §Config Discovery.
+- Config `meta` taxonomy block (domains/type/populations/tags/featured/durationMinutes) on all prod instruments — drives catalog filtering; see `CONFIG_SCHEMA_SPEC.md` §4a
 - Composer mobile bar: share button (HTTPS only) with copy-link fallback on HTTP
 - Composer dark mode: full dark theme via `@media (prefers-color-scheme: dark)`
 - Landing page at `/landing/` — redesigned, direction 5 (radical simplicity), RTL, Hebrew
@@ -136,7 +138,7 @@ Note: `pcl5` and `ptci` were moved from `standard.json` to `trauma.json` at v1.6
 | `cape42` | questionnaire | שאלון חוויות נפשיות בקהילה (CAPE-42) | Validated Hebrew (Fazioli et al. 2025); 42 items 1–4 + conditional distress follow-ups; positive/negative/depressive + distress subscales; critical alerts: suicidality (item 14), hallucinations (items 33/34/42 ≥ often); no validated cutoffs |
 | `clinical_intake` | battery | הערכה ראשונית | DIAMOND → conditional questionnaires per domain |
 
-`intake.json` declares `"dependencies": ["configs/prod/trauma.json"]` so the composer includes trauma.json automatically when clinical_intake is selected (needed because the DIAMOND trauma item conditionally adds pcl5 which now lives in trauma.json).
+`intake.json` declares `"dependencies": ["configs/prod/trauma.json"]` so the patient app auto-fetches trauma.json whenever intake.json loads (needed because the DIAMOND trauma item conditionally adds pcl5 which now lives in trauma.json). Generated URLs name only the selected items' configs — dependency resolution happens patient-side in `loadConfig`.
 
 **Policy:** Only open-source or public-domain instruments. Do not add proprietary instruments (e.g. BDI-II) without a verified license.
 
@@ -151,7 +153,9 @@ public/configs/
   CONTRIBUTING.md          ← How to add an instrument (human-readable)
   LLM_GUIDE.md             ← Comprehensive spec for LLM-assisted authoring
 public/composer/
-  configs.json             ← Composer manifest (lists all configs)
+  configs.json             ← Manifest: build-time input to the catalog script
+  catalog.json             ← Generated catalog index (composer's runtime data
+                             source) — regenerate with npm run build:catalog
 ```
 
 The e2e config has `"dev": true` in the manifest — it is skipped entirely in production builds (`import.meta.env.DEV === false`) but loads normally in dev and Playwright tests.
@@ -251,7 +255,7 @@ The e2e config has `"dev": true` in the manifest — it is skipped entirely in p
 ### Config files
 All standard instruments live in `public/configs/prod/`. Each file is a self-contained `QuestionnaireSet`. The Composer manifest (`public/composer/configs.json`) lists all prod configs — add a new file there to make it visible in the Composer.
 
-Multi-config dependencies: if a config references instruments from another config (e.g. `intake.json` references `pcl5` from `trauma.json`), declare the dependency in the config's `"dependencies"` array. The loader records this and the composer includes the dependency automatically in generated URLs.
+Multi-config dependencies: if a config references instruments from another config (e.g. `intake.json` references `pcl5` from `trauma.json`), declare the dependency in the config's `"dependencies"` array. The patient app's `loadConfig` auto-fetches declared dependencies at runtime (BFS walk), so generated URLs name only the selected items' configs.
 
 The `test/e2e.json` file is marked `"dev": true` in the manifest — never loads in production.
 

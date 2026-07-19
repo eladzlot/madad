@@ -1,110 +1,64 @@
 // composer-loader.js
-// Fetches the manifest and loads all listed configs.
-// Failures are partial — warns and continues rather than halting.
+// Fetches the generated catalog index and populates composer state.
+//
+// The catalog (public/composer/catalog.json, generated from the config files
+// by scripts/build-catalog.mjs) is the composer's only data source — the
+// composer never downloads full configs. Each entry carries what the picker
+// needs (id, title, description, keywords, taxonomy meta, item count, time
+// estimate) plus a `source` token: the exact value that goes into the
+// `configs=` parameter of generated patient URLs.
+//
+// Cross-config dependencies are not the composer's concern: the patient app's
+// loadConfig auto-fetches each config's declared "dependencies" at runtime
+// (BFS walk in shared/config/loader.js), so generated URLs list only the
+// selected items' sources.
+//
+// Regenerate after editing configs: `npm run build:catalog`.
 
-import { loadConfig } from '../../shared/config/loader.js';
-import { state, MANIFEST_URL, getAppRoot } from './composer-state.js';
+import { state, CATALOG_URL } from './composer-state.js';
+import { CATALOG_VERSION } from '../../shared/catalog/build-catalog.js';
 
-// The base path for internal production configs (without leading slash).
-// Short names in generated patient URLs are derived by stripping this prefix
-// and the .json suffix. External URLs are stored as-is.
-// Single source of truth — update here if the folder structure ever changes.
-export const INTERNAL_CONFIG_PREFIX = 'configs/prod/';
+export { CATALOG_VERSION };
 
-// Convert a stored sourceUrl to the token that goes in the patient URL.
-// Internal paths like 'configs/prod/standard.json' become 'standard'.
-// External URLs (https://...) and non-standard paths are returned unchanged.
-function toShortName(sourceUrl) {
-  if (sourceUrl.startsWith(INTERNAL_CONFIG_PREFIX) && sourceUrl.endsWith('.json')) {
-    return sourceUrl.slice(INTERNAL_CONFIG_PREFIX.length, -'.json'.length);
-  }
-  return sourceUrl;
-}
-
-export async function loadManifest() {
-  // cache: 'no-cache' — the manifest is a mutable, unhashed file; revalidate
-  // with the server so a fresh bundle never pairs with a stale manifest.
+export async function loadCatalog() {
+  // cache: 'no-cache' — the catalog is a mutable, unhashed file; revalidate
+  // with the server so a fresh bundle never pairs with a stale catalog.
   // Same reasoning as the config fetch in shared/config/loader.js.
-  const res = await fetch(MANIFEST_URL, { cache: 'no-cache' });
-  if (!res.ok) throw new Error(`שגיאה בטעינת המניפסט: HTTP ${res.status}`);
+  const res = await fetch(CATALOG_URL, { cache: 'no-cache' });
+  if (!res.ok) throw new Error(`שגיאה בטעינת קטלוג השאלונים: HTTP ${res.status}`);
   return res.json();
 }
 
-export async function loadAllConfigs(manifest) {
-  // The manifest uses root-relative paths like /configs/prod/standard.json.
-  // To fetch correctly at any base path (/, /madad/, etc.) we resolve them
-  // against the app root URL.
-  //
-  // For sourceUrl (used in generated patient URLs) we store the path without
-  // the leading slash — e.g. configs/prod/standard.json — so the patient app
-  // resolves it relative to its own page URL, which always works regardless
-  // of base path.
-  const appRoot = (typeof window !== 'undefined') ? getAppRoot() : '/';
-
-  // Configs marked dev:true are only loaded in development (import.meta.env.DEV).
-  // In production builds they are skipped entirely — not loaded, not shown.
+// applyCatalog populates state from a parsed catalog. Pure state population —
+// no fetching — so tests can drive it with literal catalog objects.
+export function applyCatalog(catalog) {
+  // Entries from dev sources are only shown in development (import.meta.env.DEV).
+  // In production builds they are skipped entirely — same semantics as the
+  // manifest-era dev flag.
   const IS_DEV = typeof import.meta !== 'undefined' && import.meta.env?.DEV === true;
-  const activeConfigs = manifest.configs.filter(entry => !entry.dev || IS_DEV);
 
-  const results = await Promise.allSettled(
-    activeConfigs.map(entry => {
-      // Build absolute fetch URL: appRoot (e.g. http://localhost:4173/madad/)
-      // + path without leading slash (e.g. configs/prod/standard.json)
-      const pathNoSlash = entry.url.startsWith('/') ? entry.url.slice(1) : entry.url;
-      const fetchUrl = appRoot + pathNoSlash;
-      // sourceUrl stored without leading slash — resolves correctly from any page
-      const sourceUrl = pathNoSlash;
+  if (catalog.catalogVersion !== CATALOG_VERSION) {
+    state.warnings.push(
+      `גרסת קטלוג לא תואמת (${catalog.catalogVersion ?? '?'}) — ייתכן שהתצוגה חלקית. רעננו את הדף.`
+    );
+  }
 
-      // loadDependencies: false — the manifest enumerates every config we
-      // want to load. If loadConfig also auto-fetched declared dependencies,
-      // intake.json (which depends on standard.json) would cause standard's
-      // questionnaires to be merged into intake's result here, AND the
-      // separate standard.json manifest entry would register them again,
-      // producing duplicate items in state.questionnaires.
-      return loadConfig([fetchUrl], { loadDependencies: false })
-        .then(config => ({ entry: { ...entry, url: sourceUrl }, config }))
-        .catch(err => { err.url = fetchUrl; return Promise.reject(err); });
-    })
-  );
-
-  for (const result of results) {
-    if (result.status === 'rejected') {
-      const err = result.reason;
-      const url = err?.url ?? '(לא ידוע)';
-      console.error('[composer-loader] failed to load config:', url, err);
-      // Surface validation details so the author can act on them
-      const detail = err?.validationErrors
-        ? err.validationErrors.slice(0, 2).map(e => `${e.instancePath || '/'}: ${e.message}`).join('; ')
-        : err?.message ?? '';
-      state.warnings.push(`לא ניתן לטעון: ${url}${detail ? ` — ${detail}` : ''}`);
-      continue;
+  for (const entry of catalog.entries ?? []) {
+    if (entry.dev && !IS_DEV) continue;
+    const item = {
+      ...entry,
+      description: entry.description ?? '',
+      keywords: entry.keywords ?? [],
+      // sourceUrl and hidden are the fields the current render layer reads;
+      // hidden configs are already excluded at catalog build time.
+      sourceUrl: entry.source,
+      hidden: false,
+    };
+    if (entry.kind === 'battery') {
+      state.batteries.push(item);
+    } else {
+      state.questionnaires.push(item);
     }
-
-    const { entry, config } = result.value;
-
-    // Convert the internal path to a short name for use in patient URLs.
-    // entry.url is e.g. 'configs/prod/standard.json' → shortName is 'standard'.
-    // External URLs are stored as-is.
-    const shortName = toShortName(entry.url);
-
-    for (const b of config.batteries) {
-      state.batteries.push({ id: b.id, title: b.title, description: b.description ?? '', keywords: b.keywords ?? [], sourceUrl: shortName, hidden: !!entry.hidden });
-      state.sourceByItem.set(b.id, shortName);
-    }
-    for (const q of config.questionnaires) {
-      state.questionnaires.push({ id: q.id, title: q.title, description: q.description ?? '', keywords: q.keywords ?? [], sourceUrl: shortName, hidden: !!entry.hidden });
-      state.sourceByItem.set(q.id, shortName);
-    }
-
-    // Record declared dependencies so buildUrl can include them automatically.
-    // Both the key (this config's short name) and the values (dependency short names)
-    // must be in short-name form so buildUrl's sourceByItem lookups match correctly.
-    const deps = (config.dependencies ?? []).map(dep => {
-      const noSlash = dep.startsWith('/') ? dep.slice(1) : dep;
-      return toShortName(noSlash);
-    });
-    if (deps.length) {
-      state.dependenciesBySource.set(shortName, deps);
-    }
+    state.sourceByItem.set(entry.id, entry.source);
   }
 }

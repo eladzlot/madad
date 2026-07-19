@@ -36,6 +36,13 @@ jobs:
       - name: Validate configs
         run: npm run validate:configs
 
+      # ── Catalog freshness ───────────────────────────────────────────────────
+      # public/composer/catalog.json is generated from the config files and
+      # committed. Regenerate + byte-compare so a config edit can't land
+      # without its catalog update.
+      - name: Validate catalog freshness
+        run: npm run validate:catalog
+
       # ── Production build ────────────────────────────────────────────────────
       - name: Build
         run: npm run build
