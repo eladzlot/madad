@@ -464,6 +464,57 @@ describe('buildResponseTable — if/randomize node handling', () => {
   });
 });
 
+// ── Stable row numbering with conditional follow-ups ──────────────────────────
+
+describe('buildResponseTable — stable numbering', () => {
+  const baseQ = {
+    id: 'tq', title: 'Test',
+    optionSets: { yn: [{ label: 'לא', value: 0 }, { label: 'כן', value: 1 }] },
+    defaultOptionSetId: 'yn',
+    scoring: { method: 'none' },
+  };
+
+  // PQ-B-style: gate → conditional follow-up → gate → …
+  const gateQ = {
+    ...baseQ,
+    items: [
+      { id: '1', type: 'binary', text: 'gate one' },
+      {
+        id: 'if_d1', type: 'if', condition: 'item.1 == 1',
+        then: [{ id: 'd1', type: 'select', text: 'followup one', options: [{ label: 'A', value: 1 }, { label: 'B', value: 2 }] }],
+        else: [],
+      },
+      { id: '2', type: 'binary', text: 'gate two' },
+      {
+        id: 'if_d2', type: 'if', condition: 'item.2 == 1',
+        then: [{ id: 'd2', type: 'select', text: 'followup two', options: [{ label: 'A', value: 1 }, { label: 'B', value: 2 }] }],
+        else: [],
+      },
+      { id: '3', type: 'binary', text: 'gate three' },
+    ],
+  };
+
+  const numberCells = (result) => {
+    const table = result.stack ? result.stack.find(b => b.table) : result;
+    return table.table.body.slice(1).map(row => row[3].text); // skip header
+  };
+
+  it('top-level items keep the same numbers whether or not branches were taken', () => {
+    // branch taken on gate 1: rows are 1, ·(followup), 2, 3
+    const withBranch = buildResponseTable(gateQ, { '1': 1, d1: 2, '2': 0, '3': 0 });
+    expect(numberCells(withBranch)).toEqual(['1', '·', '2', '3']);
+
+    // no branches taken: rows are 1, 2, 3 — same numbers for the same items
+    const withoutBranch = buildResponseTable(gateQ, { '1': 0, '2': 0, '3': 0 });
+    expect(numberCells(withoutBranch)).toEqual(['1', '2', '3']);
+  });
+
+  it('conditional rows render · and do not advance the counter', () => {
+    const allYes = buildResponseTable(gateQ, { '1': 1, d1: 1, '2': 1, d2: 2, '3': 1 });
+    expect(numberCells(allYes)).toEqual(['1', '·', '2', '·', '3']);
+  });
+});
+
 // ── PdfGenerationError ────────────────────────────────────────────────────────
 
 describe('PdfGenerationError', () => {

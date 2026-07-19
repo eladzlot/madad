@@ -697,10 +697,14 @@ export function buildSubscoresLine(q, sessionState, sessionKey) {
 
 // ── Response table ────────────────────────────────────────────────────────────
 
-// Recursively flatten questionnaire items into a list of leaf items for PDF
-// rendering. Items inside `if`/`randomize` control-flow nodes are only
-// included when they were actually answered — i.e. their branch was taken.
+// Recursively flatten questionnaire items into a list of leaf entries for PDF
+// rendering, each tagged with whether it came from a conditional branch.
+// Items inside `if`/`randomize` control-flow nodes are only included when they
+// were actually answered — i.e. their branch was taken.
 // Top-level items are always included (shown as '—' when unanswered).
+// The `conditional` tag drives row numbering: conditional follow-ups appear or
+// disappear per patient, so numbering them would make the same questionnaire
+// item land on a different row number for every patient.
 function flattenItems(nodes, answers, insideIf = false) {
   const result = [];
   for (const node of nodes ?? []) {
@@ -713,7 +717,7 @@ function flattenItems(nodes, answers, insideIf = false) {
       // Items inside a conditional branch: only show if the patient answered them.
       // Items at the top level: always show (even if unanswered, renders as '—').
       if (!insideIf || Object.prototype.hasOwnProperty.call(answers, node.id)) {
-        result.push(node);
+        result.push({ node, conditional: insideIf });
       }
     }
   }
@@ -752,7 +756,7 @@ export function buildResponseTable(questionnaire, answers) {
     rowNum = 0;
   };
 
-  for (const item of items) {
+  for (const { node: item, conditional } of items) {
     if (item.type === 'instructions') {
       flushTable();
       blocks.push({ text: bidiNodes(item.text), style: 'instructionText' });
@@ -763,14 +767,17 @@ export function buildResponseTable(questionnaire, answers) {
       flushTable();
       blocks.push(buildMultiselectBlock(item, answers[item.id]));
     } else {
-      rowNum++;
-      tableRows.push(buildItemRow(item, rowNum, answers[item.id], questionnaire));
+      // Only top-level items advance the row counter — conditional follow-ups
+      // render as unnumbered continuation rows so that numbering stays stable
+      // across patients regardless of which branches were taken.
+      if (!conditional) rowNum++;
+      tableRows.push(buildItemRow(item, conditional ? null : rowNum, answers[item.id], questionnaire));
     }
   }
 
   flushTable();
 
-  const hasAnyAnswerable = items.some(i => i.type !== 'instructions');
+  const hasAnyAnswerable = items.some(({ node }) => node.type !== 'instructions');
   if (!hasAnyAnswerable) return null;
 
   return blocks.length === 1 ? blocks[0] : { stack: blocks };
@@ -790,6 +797,8 @@ export function buildTableHeaderRow() {
 
 // ── Item row ──────────────────────────────────────────────────────────────────
 
+// rowNum: 1-based row number for top-level items, or null for conditional
+// follow-up rows, which render '·' in the # column instead of a number.
 export function buildItemRow(item, rowNum, rawAnswer, questionnaire) {
   const options  = resolveOptions(item, questionnaire);
   const answered = rawAnswer != null;
@@ -809,7 +818,7 @@ export function buildItemRow(item, rowNum, rawAnswer, questionnaire) {
     cell(answered ? String(rawAnswer) : '—', 'center'),
     cell(bidiNodes(label)),
     cell(bidiNodes(item.text)),
-    cell(String(rowNum), 'center'),
+    cell(rowNum == null ? '·' : String(rowNum), 'center'),
   ];
 }
 
