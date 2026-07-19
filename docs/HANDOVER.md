@@ -90,26 +90,30 @@ src/pdf/report.js              ← PDF generation (pdfmake, lazy-loaded)
 
 ### Instrument library
 
-**`standard.json` v1.6.1** — 14 standard clinical scales:
+**`standard.json` v1.8.0** — 18 standard clinical scales:
 
 | ID | Name | Notes |
 |---|---|---|
 | `phq9` | שאלון דיכאון (PHQ-9) | Alert: suicidality (item 9 ≥ 1) |
-| `gad7` | שאלון חרדה (GAD-7) | — |
+| `gad7` | שאלון חרדה מוכללת (GAD-7) | — |
 | `oci_r` | שאלון טורדנות כפייתית (OCI-R) | 6 subscales |
-| `pdss_sr` | שאלון פאניקה (PDSS-SR) | — |
+| `pdss_sr` | שאלון חומרת הפרעת פאניקה (PDSS-SR) | — |
 | `asi_3` | שאלון רגישות לחרדה (ASI-3) | — |
 | `hai` | שאלון חרדת בריאות (HAI) | — |
-| `mgh_hps` | סולם תלישת שיער MGH (MGH-HPS) | — |
+| `mgh_hps` | סולם תלישת שיער (MGH-HPS) | — |
 | `spin` | שאלון פוביה חברתית (SPIN) | — |
 | `isi` | מדד חומרת נדודי שינה (ISI) | — |
-| `dar5` | שאלון תגובות כעס (DAR-5) | — |
 | `oasis` | שאלון חומרת חרדה ופגיעה תפקודית (OASIS) | — |
 | `wsas` | סולם עבודה והתאמה חברתית (WSAS) | — |
 | `wai6` | שאלון ברית טיפולית (WAI-6) | — |
 | `top3` | שלושת הבעיות המרכזיות | if-node branching; custom DSL formula |
+| `ecrs` | שאלון התקשרות (ECR-S) | 2 subscales (anxiety/avoidance) |
+| `dass21` | שאלון דיכאון, חרדה וסטרס (DASS-21) | 3 subscales; severity alerts per subscale |
+| `ders` | שאלון קשיים בוויסות רגשי (DERS) | 6 subscales |
+| `sbq` | שאלון התנהגויות חברתיות (SBQ) | 29 items, 0–3; safety behaviours (Clark & Wells); no validated cutoffs |
+| `scq` | שאלון קוגניציות חברתיות (SCQ) | 22 items, 1–5 frequency; unvalidated Hebrew translation; no validated cutoffs |
 
-Note: `pcl5` and `ptci` were moved from `standard.json` to `trauma.json` at v1.6.1.
+Note: `pcl5` and `ptci` were moved from `standard.json` to `trauma.json` at v1.6.1; `dar5` was moved to `anger.json`.
 
 **`trauma.json` v1.0.0** — trauma assessment:
 
@@ -136,7 +140,7 @@ Note: `pcl5` and `ptci` were moved from `standard.json` to `trauma.json` at v1.6
 
 ```
 public/configs/
-  prod/standard.json       ← 14 standard clinical scales
+  prod/standard.json       ← 18 standard clinical scales
   prod/trauma.json         ← PC-PTSD-5, PCL-5, PTCI, trauma_eval battery
   prod/intake.json         ← DIAMOND, demographics, clinical_intake battery
   test/e2e.json            ← E2E test fixtures only (dev:true in manifest)
