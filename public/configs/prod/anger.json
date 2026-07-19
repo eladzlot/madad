@@ -1,9 +1,15 @@
 {
   "id": "anger",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "questionnaires": [
     {
       "id": "dar5",
+      "meta": {
+        "domains": ["anger"],
+        "type": "severity",
+        "populations": ["adult"],
+        "featured": true
+      },
       "title": "שאלון תגובות כעס (DAR-5)",
       "description": "5-item anger reactions scale assessing frequency, intensity, duration, aggression, and social interference over the past 4 weeks. (Dimensions of Anger Reactions)",
       "keywords": [
@@ -99,6 +105,11 @@
     },
     {
       "id": "novaco_anger_situations",
+      "meta": {
+        "domains": ["anger"],
+        "type": "severity",
+        "populations": ["adult"]
+      },
       "title": "שאלון מצבי כעס של נובאקו",
       "description": "שאלון לזיהוי מצבים המעוררים כעס ולמדידת עוצמת הרוגז במצבים שונים.",
       "keywords": [
@@ -271,6 +282,11 @@
     },
     {
       "id": "anger_log",
+      "meta": {
+        "domains": ["anger"],
+        "type": "worksheet",
+        "populations": ["adult"]
+      },
       "title": "דו\"ח כעס",
       "description": "דף עבודה לתיעוד אירועי כעס, תגובות, ומחשבה על דרכי התמודדות חלופיות.",
       "keywords": [

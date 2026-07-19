@@ -1,8 +1,14 @@
 {
-  "version": "1.2.0",
+  "version": "1.3.0",
   "questionnaires": [
     {
       "id": "pc_ptsd5",
+      "meta": {
+        "domains": ["trauma"],
+        "type": "screener",
+        "populations": ["adult"],
+        "featured": true
+      },
       "title": "סקר טראומה קצר (PC-PTSD-5)",
       "description": "סקר קצר לאיתור פוסט-טראומה בן 5 שאלות. ציון 4 ומעלה מצביע על סבירות גבוהה ל-PTSD.",
       "keywords": [
@@ -106,6 +112,12 @@
     },
     {
       "id": "pcl5",
+      "meta": {
+        "domains": ["trauma"],
+        "type": "severity",
+        "populations": ["adult"],
+        "featured": true
+      },
       "title": "שאלון פוסט-טראומה (PCL-5)",
       "description": "הערכת תסמיני פוסט טראומה במהלך השבוע האחרון (PTSD, Trauma, PCL-5)",
       "keywords": [
@@ -298,6 +310,11 @@
     },
     {
       "id": "ptci",
+      "meta": {
+        "domains": ["trauma"],
+        "type": "process",
+        "populations": ["adult"]
+      },
       "title": "שאלון קוגניציות פוסט-טראומטיות (PTCI)",
       "description": "33-item measure of trauma-related thoughts and beliefs across three subscales: negative cognitions about self, the world, and self-blame.",
       "keywords": [
@@ -589,6 +606,11 @@
   "batteries": [
     {
       "id": "trauma_eval",
+      "meta": {
+        "domains": ["trauma"],
+        "populations": ["adult"],
+        "featured": true
+      },
       "title": "הערכת טראומה ראשונית",
       "description": "סקר טראומה קצר (PC-PTSD-5). במקרה של ציון חיובי — הערכה מעמיקה עם PCL-5 ושאלון קוגניציות פוסט-טראומטיות (PTCI).",
       "keywords": [

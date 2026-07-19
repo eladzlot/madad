@@ -1,9 +1,14 @@
 {
   "id": "intake",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "questionnaires": [
     {
       "id": "demographics",
+      "meta": {
+        "domains": ["intake"],
+        "type": "other",
+        "populations": ["adult"]
+      },
       "title": "פרטים אישיים",
       "description": "פרטים אישיים ותיאור קצר של הפנייה.",
       "keywords": [
@@ -146,6 +151,12 @@
     },
     {
       "id": "diamond_sr",
+      "meta": {
+        "domains": ["intake"],
+        "type": "screener",
+        "populations": ["adult"],
+        "featured": true
+      },
       "title": "DIAMOND Self Report Screener",
       "description": "30-item binary screener covering anxiety, mood, OCD-spectrum, trauma, psychosis, eating, substance use, ADHD, and tic disorders.",
       "keywords": [
@@ -361,6 +372,11 @@
     },
     {
       "id": "ocsrs_m",
+      "meta": {
+        "domains": ["ocd"],
+        "type": "screener",
+        "populations": ["adult"]
+      },
       "title": "שאלון OCD ותסמינים קשורים (OCSRS)",
       "description": "שאלון סינון למחשבות טורדניות והתנהגויות כפייתיות, מאורגן לפי 22 תחומי סימפטומים עם דירוג חומרה לכל קבוצה (גרסת זכר).",
       "keywords": [
@@ -1214,6 +1230,11 @@
     },
     {
       "id": "pqb",
+      "meta": {
+        "domains": ["psychosis"],
+        "type": "screener",
+        "populations": ["adult"]
+      },
       "title": "סולם מקוצר לבדיקת פרודרום (PQ-B)",
       "description": "שאלון סינון לדיווח עצמי בן 21 פריטים לאיתור סיכון לפסיכוזה (תסמינים פרודרומליים) במהלך החודש האחרון.",
       "keywords": [
@@ -1731,6 +1752,11 @@
     },
     {
       "id": "cape42",
+      "meta": {
+        "domains": ["psychosis"],
+        "type": "severity",
+        "populations": ["adult"]
+      },
       "title": "שאלון חוויות נפשיות בקהילה (CAPE-42)",
       "description": "שאלון דיווח עצמי בן 42 פריטים להערכת חוויות דמויות-פסיכוזה בממדים חיובי, שלילי ודיכאוני, כולל דירוג מצוקה לכל חוויה שדווחה.",
       "keywords": [
@@ -2714,6 +2740,11 @@
   "batteries": [
     {
       "id": "clinical_intake",
+      "meta": {
+        "domains": ["intake"],
+        "populations": ["adult"],
+        "featured": true
+      },
       "title": "הערכה ראשונית",
       "description": "סוללת הערכה ראשונית: שאלון סינון DIAMOND ושאלונים ממוקדים בהתאם לתסמינים שדווחו.",
       "keywords": [

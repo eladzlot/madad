@@ -1,9 +1,14 @@
 {
   "id": "ocd",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "questionnaires": [
     {
       "id": "roci",
+      "meta": {
+        "domains": ["ocd"],
+        "type": "severity",
+        "populations": ["adult"]
+      },
       "title": "שאלון אובססיות וכפייתיות בקשר רומנטי (ROCI)",
       "description": "14-item scale assessing relationship-centered obsessive-compulsive symptoms in romantic relationships.",
       "keywords": [
@@ -183,6 +188,11 @@
     },
     {
       "id": "procsi",
+      "meta": {
+        "domains": ["ocd"],
+        "type": "severity",
+        "populations": ["adult"]
+      },
       "title": "שאלון אובססיות וכפייתיות ממוקדות-בן/בת-זוג (PROCSI)",
       "description": "28-item scale assessing partner-focused obsessive-compulsive symptoms in romantic relationships.",
       "keywords": [

@@ -1,9 +1,14 @@
 {
   "id": "standard",
-  "version": "1.10.0",
+  "version": "1.11.0",
   "questionnaires": [
     {
       "id": "asi_3",
+      "meta": {
+        "domains": ["anxiety"],
+        "type": "process",
+        "populations": ["adult"]
+      },
       "title": "שאלון רגישות לחרדה (ASI-3)",
       "description": "הערכת רגישות לתחושות חרדה במהלך השבוע האחרון (Anxiety Sensitivity, ASI-3)",
       "keywords": [
@@ -144,6 +149,12 @@
     },
     {
       "id": "oci_r",
+      "meta": {
+        "domains": ["ocd"],
+        "type": "severity",
+        "populations": ["adult"],
+        "featured": true
+      },
       "title": "שאלון טורדנות כפייתית (OCI-R)",
       "description": "הערכת תסמיני OCD במהלך השבוע האחרון (OCD, Obsessive-Compulsive, OCI-R)",
       "keywords": [
@@ -323,6 +334,12 @@
     },
     {
       "id": "gad7",
+      "meta": {
+        "domains": ["anxiety"],
+        "type": "severity",
+        "populations": ["adult"],
+        "featured": true
+      },
       "title": "שאלון חרדה מוכללת (GAD-7)",
       "description": "הערכת תסמיני חרדה כללית במהלך השבועיים האחרונים (Generalized Anxiety Disorder, GAD-7)",
       "keywords": ["anxiety", "GAD", "GAD-7", "generalized anxiety", "worry", "screening"],
@@ -422,6 +439,12 @@
     },
     {
       "id": "pdss_sr",
+      "meta": {
+        "domains": ["anxiety"],
+        "type": "severity",
+        "populations": ["adult"],
+        "featured": true
+      },
       "title": "שאלון חומרת הפרעת פאניקה (PDSS-SR)",
       "description": "הערכת חומרת תסמיני פאניקה במהלך השבוע האחרון (Panic Disorder Severity Scale – Self Report)",
       "keywords": ["panic", "panic disorder", "PDSS", "agoraphobia", "anxiety", "avoidance"],
@@ -683,6 +706,12 @@
     },
     {
       "id": "phq9",
+      "meta": {
+        "domains": ["depression"],
+        "type": "severity",
+        "populations": ["adult"],
+        "featured": true
+      },
       "title": "שאלון דיכאון (PHQ-9)",
       "description": "הערכת תסמיני דיכאון במהלך השבוע האחרון (Depression, MDD, PHQ-9)",
       "keywords": ["depression", "mood", "PHQ", "PHQ-9", "MDD", "screening", "anhedonia"],
@@ -804,6 +833,11 @@
     },
     {
       "id": "hai",
+      "meta": {
+        "domains": ["anxiety"],
+        "type": "severity",
+        "populations": ["adult"]
+      },
       "title": "שאלון חרדת בריאות (HAI)",
       "description": "הערכת חרדת בריאות — 18 פריטים המודדים עסוק בבריאות, פחד ממחלה, ותפיסת סכנה ונכות אפשרית (Health Anxiety Inventory).",
       "keywords": ["health anxiety", "hypochondria", "HAI", "illness", "somatic"],
@@ -1261,6 +1295,11 @@
     },
     {
       "id": "mgh_hps",
+      "meta": {
+        "domains": ["ocd"],
+        "type": "severity",
+        "populations": ["adult"]
+      },
       "title": "סולם תלישת שיער (MGH-HPS)",
       "description": "הערכת חומרת תלישת שיער במהלך השבוע האחרון — 7 פריטים (Massachusetts General Hospital Hairpulling Scale).",
       "keywords": ["trichotillomania", "hair pulling", "MGH", "HPS", "OCD spectrum"],
@@ -1492,6 +1531,12 @@
     },
     {
       "id": "spin",
+      "meta": {
+        "domains": ["social", "anxiety"],
+        "type": "severity",
+        "populations": ["adult"],
+        "featured": true
+      },
       "title": "שאלון פוביה חברתית (SPIN)",
       "description": "17-item social phobia severity scale. Screens for social anxiety disorder and measures symptom severity. (Social Phobia Inventory)",
       "keywords": [
@@ -1658,6 +1703,12 @@
     },
     {
       "id": "isi",
+      "meta": {
+        "domains": ["sleep"],
+        "type": "severity",
+        "populations": ["adult"],
+        "featured": true
+      },
       "title": "מדד חומרת נדודי שינה (ISI)",
       "description": "7-item insomnia severity scale assessing sleep difficulty, satisfaction, and daytime impact over the past 2 weeks. (Insomnia Severity Index)",
       "keywords": ["insomnia", "sleep", "ISI", "נדודי שינה", "שינה", "screening"],
@@ -1889,6 +1940,11 @@
     },
     {
       "id": "oasis",
+      "meta": {
+        "domains": ["anxiety", "functioning"],
+        "type": "severity",
+        "populations": ["adult"]
+      },
       "title": "שאלון חומרת חרדה ופגיעה תפקודית (OASIS)",
       "description": "5-item transdiagnostic scale assessing anxiety severity and functional impairment over the past week. Applicable across anxiety disorders.",
       "keywords": ["anxiety", "OASIS", "impairment", "transdiagnostic", "חרדה", "תפקוד"],
@@ -2063,6 +2119,12 @@
     },
     {
       "id": "wsas",
+      "meta": {
+        "domains": ["functioning"],
+        "type": "severity",
+        "populations": ["adult"],
+        "featured": true
+      },
       "title": "סולם עבודה והתאמה חברתית (WSAS)",
       "description": "5-item scale measuring functional impairment in work, home management, social leisure, private leisure, and relationships. Scores 0-40; higher is worse.",
       "keywords": ["functioning", "impairment", "disability", "WSAS", "תפקוד", "פגיעה"],
@@ -2167,6 +2229,12 @@
     },
     {
       "id": "wai6",
+      "meta": {
+        "domains": ["alliance"],
+        "type": "process",
+        "populations": ["adult"],
+        "featured": true
+      },
       "title": "שאלון ברית טיפולית (WAI-6)",
       "description": "6-item working alliance measure assessing bond and goal/task agreement between patient and therapist. Administered after therapy sessions.",
       "keywords": ["alliance", "therapeutic", "bond", "WAI", "ברית טיפולית", "קשר"],
@@ -2242,6 +2310,12 @@
     },
     {
       "id": "top3",
+      "meta": {
+        "domains": ["general"],
+        "type": "process",
+        "populations": ["adult"],
+        "featured": true
+      },
       "title": "שלושת הבעיות המרכזיות",
       "description": "Idiographic 3-problem questionnaire. Patient names up to three main problems and rates the severity of each on a 1–12 scale, with an optional coping description per problem.",
       "keywords": ["problems", "idiographic", "severity", "coping", "בעיות", "התמודדות"],
@@ -2352,6 +2426,11 @@
     },
     {
       "id": "ecrs",
+      "meta": {
+        "domains": ["attachment"],
+        "type": "process",
+        "populations": ["adult"]
+      },
       "title": "שאלון התקשרות (ECR-S)",
       "description": "שאלון בן 12 פריטים להערכת חרדת התקשרות והימנעות.",
       "keywords": ["attachment", "ECR", "התקשרות"],
@@ -2404,6 +2483,12 @@
     },
     {
       "id": "dass21",
+      "meta": {
+        "domains": ["depression", "anxiety"],
+        "type": "severity",
+        "populations": ["adult"],
+        "featured": true
+      },
       "title": "שאלון דיכאון, חרדה וסטרס (DASS-21)",
       "description": "שאלון בן 21 פריטים להערכת דיכאון, חרדה וסטרס במהלך השבוע האחרון.",
       "keywords": ["DASS", "DASS-21", "דיכאון", "חרדה", "סטרס"],
@@ -2484,6 +2569,12 @@
     },
     {
       "id": "ders",
+      "meta": {
+        "domains": ["emotion_regulation"],
+        "type": "process",
+        "populations": ["adult"],
+        "featured": true
+      },
       "title": "שאלון קשיים בוויסות רגשי (DERS)",
       "description": "שאלון בן 36 פריטים להערכת קשיים בוויסות רגשי בשישה ממדים (Gratz & Roemer, 2004).",
       "keywords": ["DERS", "emotion regulation", "emotion dysregulation", "ויסות רגשי", "ויסות"],
@@ -2737,6 +2828,11 @@
     },
     {
       "id": "sbq",
+      "meta": {
+        "domains": ["social"],
+        "type": "process",
+        "populations": ["adult"]
+      },
       "title": "שאלון התנהגויות חברתיות (SBQ)",
       "description": "הערכת תדירות השימוש בהתנהגויות ביטחון במצבים חברתיים, על פי המודל של קלארק ו-וֶלס.",
       "keywords": [
@@ -2926,6 +3022,11 @@
     },
     {
       "id": "scq",
+      "meta": {
+        "domains": ["social"],
+        "type": "process",
+        "populations": ["adult"]
+      },
       "title": "שאלון קוגניציות חברתיות (SCQ)",
       "description": "הערכת תדירות מחשבות שליליות אופייניות לחרדה חברתית במהלך השבוע האחרון.",
       "keywords": [
@@ -3090,6 +3191,11 @@
     },
     {
       "id": "aq",
+      "meta": {
+        "domains": ["neurodevelopmental"],
+        "type": "screener",
+        "populations": ["adult"]
+      },
       "title": "שאלון לסריקת תסמינים בספקטרום האוטיסטי (AQ)",
       "description": "שאלון סינון לדיווח עצמי בן 50 פריטים לאיתור תכונות בספקטרום האוטיסטי במבוגרים בעלי אינטליגנציה תקינה (גיל 16 ומעלה).",
       "keywords": [
@@ -3430,6 +3536,11 @@
     },
     {
       "id": "cape15",
+      "meta": {
+        "domains": ["psychosis"],
+        "type": "screener",
+        "populations": ["adult"]
+      },
       "title": "שאלון חוויות פסיכוטיות עכשוויות (CAPE-P15)",
       "description": "שאלון דיווח עצמי בן 15 פריטים לאיתור חוויות דמויות-פסיכוזה במהלך שלושת החודשים האחרונים (הגרסה העכשווית של CAPE-P15).",
       "keywords": [

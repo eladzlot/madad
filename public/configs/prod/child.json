@@ -1,9 +1,15 @@
 {
   "id": "child",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "questionnaires": [
     {
       "id": "scared_child",
+      "meta": {
+        "domains": ["anxiety"],
+        "type": "screener",
+        "populations": ["child", "adolescent"],
+        "featured": true
+      },
       "title": "שאלון חרדה לילדים — דיווח עצמי (SCARED)",
       "description": "41 items, 0–2 scale. Five subscales: panic/somatic, GAD, separation anxiety, social phobia, school avoidance.",
       "keywords": [
@@ -339,6 +345,12 @@
     },
     {
       "id": "scared_parent",
+      "meta": {
+        "domains": ["anxiety"],
+        "type": "screener",
+        "populations": ["parent"],
+        "featured": true
+      },
       "title": "שאלון חרדה לילדים — דיווח הורי (SCARED)",
       "description": "41 items, 0–2 scale. Five subscales: panic/somatic, GAD, separation anxiety, social phobia, school avoidance.",
       "keywords": [
