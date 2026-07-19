@@ -115,12 +115,12 @@ src/pdf/report.js              ← PDF generation (pdfmake, lazy-loaded)
 
 Note: `pcl5` and `ptci` were moved from `standard.json` to `trauma.json` at v1.6.1; `dar5` was moved to `anger.json`.
 
-**`trauma.json` v1.0.0** — trauma assessment:
+**`trauma.json` v1.2.0** — trauma assessment:
 
 | ID | Type | Name | Notes |
 |---|---|---|---|
 | `pc_ptsd5` | questionnaire | סקר טראומה קצר (PC-PTSD-5) | Binary screener; `exposure` item excluded from scoring via `scoring.exclude` |
-| `pcl5` | questionnaire | שאלון פוסט טראומה (PCL-5) | 4 subscales (mean); alert at score ≥ 33 |
+| `pcl5` | questionnaire | שאלון פוסט טראומה (PCL-5) | 4 subscales (sum); alert at score ≥ 33 |
 | `ptci` | questionnaire | שאלון קוגניציות פוסט-טראומטיות (PTCI) | 3 subscales (mean) |
 | `trauma_eval` | battery | הערכת טראומה ראשונית | PC-PTSD-5 → if score ≥ 4: PCL-5 + PTCI |
 
