@@ -90,7 +90,7 @@ src/pdf/report.js              ← PDF generation (pdfmake, lazy-loaded)
 
 ### Instrument library
 
-**`standard.json` v1.9.0** — 19 standard clinical scales:
+**`standard.json` v1.10.0** — 20 standard clinical scales:
 
 | ID | Name | Notes |
 |---|---|---|
@@ -113,6 +113,7 @@ src/pdf/report.js              ← PDF generation (pdfmake, lazy-loaded)
 | `sbq` | שאלון התנהגויות חברתיות (SBQ) | 29 items, 0–3; safety behaviours (Clark & Wells); no validated cutoffs |
 | `scq` | שאלון קוגניציות חברתיות (SCQ) | 22 items, 1–5 frequency; unvalidated Hebrew translation; no validated cutoffs |
 | `aq` | שאלון לסריקת תסמינים בספקטרום האוטיסטי (AQ) | 50 items, binary-rescored via custom formula; Israeli screening cutoff ≥ 22 (warning alert); 5 descriptive formula subscales |
+| `cape15` | שאלון חוויות פסיכוטיות עכשוויות (CAPE-P15) | Current (3-month) version, Capra et al. 2017; 15 items 0–3, 3 subscales (PI/BE/PA); Hebrew from validated CAPE-42 (Fazioli et al. 2025) adapted to 3-month frame; no validated cutoff; critical alert on hallucination items ≥ often |
 
 Note: `pcl5` and `ptci` were moved from `standard.json` to `trauma.json` at v1.6.1; `dar5` was moved to `anger.json`.
 
@@ -125,13 +126,14 @@ Note: `pcl5` and `ptci` were moved from `standard.json` to `trauma.json` at v1.6
 | `ptci` | questionnaire | שאלון קוגניציות פוסט-טראומטיות (PTCI) | 3 subscales (mean) |
 | `trauma_eval` | battery | הערכת טראומה ראשונית | PC-PTSD-5 → if score ≥ 4: PCL-5 + PTCI |
 
-**`intake.json` v1.3.0** — initial assessment:
+**`intake.json` v1.4.0** — initial assessment:
 
 | ID | Type | Name | Notes |
 |---|---|---|---|
 | `demographics` | questionnaire | פרטים אישיים | — |
 | `diamond_sr` | questionnaire | DIAMOND Self Report Screener | Alerts: psychotic ideation, mania, trauma, substance use |
 | `pqb` | questionnaire | סולם מקוצר לבדיקת פרודרום (PQ-B) | 21 yes/no gates + conditional distress ratings; total = yes-count, distress subscale 0–105; critical alert at total ≥ 7 or distress ≥ 24 |
+| `cape42` | questionnaire | שאלון חוויות נפשיות בקהילה (CAPE-42) | Validated Hebrew (Fazioli et al. 2025); 42 items 1–4 + conditional distress follow-ups; positive/negative/depressive + distress subscales; critical alerts: suicidality (item 14), hallucinations (items 33/34/42 ≥ often); no validated cutoffs |
 | `clinical_intake` | battery | הערכה ראשונית | DIAMOND → conditional questionnaires per domain |
 
 `intake.json` declares `"dependencies": ["configs/prod/trauma.json"]` so the composer includes trauma.json automatically when clinical_intake is selected (needed because the DIAMOND trauma item conditionally adds pcl5 which now lives in trauma.json).
