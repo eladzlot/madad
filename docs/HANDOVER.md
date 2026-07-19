@@ -90,7 +90,7 @@ src/pdf/report.js              ← PDF generation (pdfmake, lazy-loaded)
 
 ### Instrument library
 
-**`standard.json` v1.8.0** — 18 standard clinical scales:
+**`standard.json` v1.9.0** — 19 standard clinical scales:
 
 | ID | Name | Notes |
 |---|---|---|
@@ -112,6 +112,7 @@ src/pdf/report.js              ← PDF generation (pdfmake, lazy-loaded)
 | `ders` | שאלון קשיים בוויסות רגשי (DERS) | 6 subscales |
 | `sbq` | שאלון התנהגויות חברתיות (SBQ) | 29 items, 0–3; safety behaviours (Clark & Wells); no validated cutoffs |
 | `scq` | שאלון קוגניציות חברתיות (SCQ) | 22 items, 1–5 frequency; unvalidated Hebrew translation; no validated cutoffs |
+| `aq` | שאלון לסריקת תסמינים בספקטרום האוטיסטי (AQ) | 50 items, binary-rescored via custom formula; Israeli screening cutoff ≥ 22 (warning alert); 5 descriptive formula subscales |
 
 Note: `pcl5` and `ptci` were moved from `standard.json` to `trauma.json` at v1.6.1; `dar5` was moved to `anger.json`.
 
@@ -140,7 +141,7 @@ Note: `pcl5` and `ptci` were moved from `standard.json` to `trauma.json` at v1.6
 
 ```
 public/configs/
-  prod/standard.json       ← 18 standard clinical scales
+  prod/standard.json       ← 19 standard clinical scales
   prod/trauma.json         ← PC-PTSD-5, PCL-5, PTCI, trauma_eval battery
   prod/intake.json         ← DIAMOND, demographics, clinical_intake battery
   test/e2e.json            ← E2E test fixtures only (dev:true in manifest)
