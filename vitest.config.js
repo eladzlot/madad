@@ -19,7 +19,7 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       include: ['src/**/*.js', 'shared/**/*.js', 'clinician/**/*.js', 'composer/src/**/*.js', 'aggregate/src/**/*.js'],
-      exclude: ['src/app.js', 'src/router.js', 'src/**/*.test.js', 'shared/**/*.test.js', 'clinician/**/*.test.js', 'composer/src/**/*.test.js', 'aggregate/src/**/*.test.js', 'shared/config/validate-schema.js', 'composer/src/composer.js', 'composer/src/composer-render.js', 'aggregate/src/aggregate.js'],
+      exclude: ['src/app.js', 'src/router.js', 'src/**/*.test.js', 'shared/**/*.test.js', 'clinician/**/*.test.js', 'composer/src/**/*.test.js', 'aggregate/src/**/*.test.js', 'shared/config/validate-schema.js', 'composer/src/composer.js', 'aggregate/src/aggregate.js'],
       thresholds: {
         lines:     80,
         functions: 80,

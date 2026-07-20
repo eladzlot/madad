@@ -89,7 +89,7 @@ test.describe('dist smoke — production bundle at production base', () => {
     // than the patient test does.
     //
     // <clinician-nav> renders only after the catalog fetch resolves and
-    // composer-render.js runs. If its brand appears, JS executed without
+    // <composer-app> mounts. If its brand appears, JS executed without
     // erroring out and the DOM was populated — that's a real bootstrap
     // signal, not just "the HTML loaded".
     await expect(page.locator('clinician-nav .brand')).toContainText('מדד', { timeout: 10_000 });
@@ -99,9 +99,9 @@ test.describe('dist smoke — production bundle at production base', () => {
     // covers catalog 404s and malformed catalog JSON.
     await expect(page.locator('.c-error')).toHaveCount(0);
 
-    // The list only renders from catalog entries — assert at least one item
-    // checkbox exists so an empty/mis-parsed catalog can't pass silently.
-    await expect(page.locator('#chk-phq9')).toBeAttached();
+    // The browse list only renders from catalog entries — assert the featured
+    // phq9 card is present so an empty/mis-parsed catalog can't pass silently.
+    await expect(page.locator('catalog-card[data-id="phq9"]')).toBeAttached();
 
     // Wait for the catalog fetch to complete before asserting on the
     // network record.

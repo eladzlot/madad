@@ -1,18 +1,23 @@
 /**
  * tests/e2e/composer.e2e.test.js
  *
- * E2E contract tests for the Composer tool (/composer/).
- *
- * These tests verify system-level contracts only:
- *   - the composer boots and renders the selection UI
- *   - selecting/deselecting items generates or clears the URL
+ * E2E contract tests for the Composer tool (/composer/) after the Stage 3 Lit
+ * rewrite. System-level contracts only:
+ *   - the composer boots and renders the browse UI
+ *   - selecting/deselecting items generates or clears the patient URL
+ *   - selection order is preserved and reorderable
+ *   - the patient-ID field flows into the URL
  *   - reset clears state
- *   - the generated URL launches a valid patient session in the app
+ *   - the generated URL launches a valid patient session
+ *   - browse affordances: tabs, curated view → הצג הכל, search, mobile sheet
  *
- * URL structure details (configs param, items order, pid format, pid
- * validation warnings) are unit-tested in composer-state.test.js via
- * buildUrl() and pidWarning() directly. Those properties do not need
- * a browser to be verified.
+ * URL grammar details (items-only, pid format/validation) are unit-tested in
+ * composer-state.test.js / composer-store.test.js. Playwright's CSS/text engines
+ * pierce open shadow DOM, so component-internal selectors resolve directly.
+ *
+ * Runs against the dev server (npm run dev), where the dev fixtures test_q and
+ * phq9_intake are present in the catalog. phq9 is featured, so it shows in the
+ * curated default view; the non-featured fixtures are reached via search.
  */
 
 import { test, expect } from '@playwright/test';
@@ -23,92 +28,104 @@ const COMPOSER_URL = '/composer/';
 
 async function gotoComposer(page) {
   await page.goto(COMPOSER_URL);
-  // The shared <clinician-nav> renders only after configs load (render()),
-  // so its brand doubles as the bootstrap-finished signal.
+  // The shared <clinician-nav> renders only after the catalog loads and
+  // <composer-app> mounts — its brand is the bootstrap-finished signal.
   await expect(page.locator('clinician-nav .brand')).toBeVisible({ timeout: 10_000 });
 }
 
-async function getPreviewUrl(page) {
-  // On desktop the url box is in .c-panel--output.
-  // On mobile it's hidden — callers must skip or not call on mobile.
-  return page.locator('.c-url-box').first().textContent();
+const searchBox = (page) => page.locator('catalog-controls input[type="search"]');
+const cardButton = (page, id) => page.locator(`catalog-card[data-id="${id}"] button`);
+const urlBox = (page) => page.locator('selection-cart .url-box');
+
+// The category switch (tabs) and filter chips are collapsed behind the סינון
+// caret — open it before touching a tab.
+async function openFilters(page) {
+  await page.locator('catalog-controls .filter-caret').click();
+  await expect(page.locator('catalog-controls [role="tablist"]')).toBeVisible();
 }
 
-async function checkItem(page, id) {
-  await page.locator(`#chk-${id}`).check();
-}
-
-async function uncheckItem(page, id) {
-  await page.locator(`#chk-${id}`).uncheck();
+// Reach any instrument (featured or not) by searching, then toggle its card.
+async function selectItem(page, id) {
+  await searchBox(page).fill(id);
+  await cardButton(page, id).click();
+  await searchBox(page).fill('');
 }
 
 // ── Page load ─────────────────────────────────────────────────────────────────
 
 test.describe('page load', () => {
-  test('loads and shows branding and selection UI', async ({ page }) => {
+  test('loads branding, the active-page nav link, and the browse UI', async ({ page }) => {
     await gotoComposer(page);
-    await expect(page.locator('clinician-nav .brand')).toBeVisible();
-    // The shared navbar marks this page active and cross-links the aggregate.
     await expect(page.locator('clinician-nav .link[aria-current="page"]')).toHaveText('מחולל קישורים');
     await expect(page.locator('clinician-nav .link[href="../aggregate/"]')).toHaveCount(1);
-    await expect(page.locator('.c-search-input')).toBeVisible();
-    await expect(page.locator('.c-item-list').first()).toBeVisible();
-  });
-});
-
-// ── Desktop output panel ──────────────────────────────────────────────────────
-
-test.describe('desktop output panel', () => {
-  test.beforeEach(async ({ isMobile }) => {
-    test.skip(isMobile, 'output panel is hidden on mobile');
+    await expect(searchBox(page)).toBeVisible();
+    await expect(page.locator('catalog-card').first()).toBeVisible();
   });
 
-  test('order list reflects selection order', async ({ page }) => {
+  test('curated default view shows featured instruments with a הצג הכל escape', async ({ page }) => {
     await gotoComposer(page);
-    await checkItem(page, 'test_q');
-    await checkItem(page, 'phq9');
-    const items = page.locator('.c-panel--output .c-order-item');
-    const phq9Title = await page.locator('#chk-phq9').locator('..').locator('.c-item-name').textContent();
-    const secondText = await items.nth(1).textContent();
-    expect(secondText).toContain(phq9Title?.trim());
+    // phq9 is featured → visible without searching.
+    await expect(page.locator('catalog-card[data-id="phq9"]')).toBeVisible();
+    // A non-featured dev fixture is hidden until show-all / search.
+    await expect(page.locator('catalog-card[data-id="test_q"]')).toHaveCount(0);
+    await page.locator('catalog-list .curated-note .link-btn').click();
+    await expect(page.locator('catalog-card[data-id="test_q"]')).toBeVisible();
   });
 });
 
-// ── Selection ─────────────────────────────────────────────────────────────────
+// ── Selection → URL (desktop cart) ─────────────────────────────────────────────
 
 test.describe('selection', () => {
-  test('checking an item generates a URL (desktop)', async ({ page, isMobile }) => {
-    test.skip(isMobile, 'URL box is in the output panel, hidden on mobile');
-    await gotoComposer(page);
-    await checkItem(page, 'phq9');
-    await expect(page.locator('.c-url-box--empty')).not.toBeVisible();
-    const url = await getPreviewUrl(page);
-    expect(url).toContain('items=phq9');
+  test.beforeEach(async ({ isMobile }) => {
+    test.skip(isMobile, 'the URL cart is desktop-only; mobile uses the bottom sheet');
   });
 
-  test('unchecking removes item from URL (desktop)', async ({ page, isMobile }) => {
-    test.skip(isMobile, 'URL box is in the output panel, hidden on mobile');
+  test('checking an item generates an items= URL', async ({ page }) => {
     await gotoComposer(page);
-    await checkItem(page, 'phq9');
-    await uncheckItem(page, 'phq9');
-    await expect(page.locator('.c-url-box--empty')).toBeVisible();
+    await selectItem(page, 'phq9');
+    await expect(urlBox(page)).toContainText('items=phq9');
+  });
+
+  test('unchecking clears the URL', async ({ page }) => {
+    await gotoComposer(page);
+    await selectItem(page, 'phq9');
+    await cardButton(page, 'phq9').click(); // toggle off (phq9 visible in curated view)
+    await expect(urlBox(page)).toContainText('לא נבחרו');
+  });
+
+  test('the cart lists selections in order', async ({ page }) => {
+    await gotoComposer(page);
+    await selectItem(page, 'test_q');
+    await selectItem(page, 'phq9');
+    const titles = page.locator('selection-cart li.item .item-title');
+    await expect(titles).toHaveCount(2);
+    // phq9 was picked second → second row.
+    const phq9Title = await cardButton(page, 'phq9').locator('.name').textContent();
+    await expect(titles.nth(1)).toContainText((phq9Title ?? '').trim());
+  });
+
+  test('reorder (↑) swaps the last item ahead of the first', async ({ page }) => {
+    await gotoComposer(page);
+    await selectItem(page, 'test_q');
+    await selectItem(page, 'phq9');
+    // Move the 2nd row up → phq9 becomes first in the URL.
+    await page.locator('selection-cart li.item').nth(1).locator('[aria-label="הזז מעלה"]').click();
+    await expect(urlBox(page)).toContainText('items=phq9,test_q');
   });
 });
 
 // ── Patient ID ────────────────────────────────────────────────────────────────
-// PID input is inside .c-panel--output — hidden on mobile.
 
 test.describe('patient ID field', () => {
   test.beforeEach(async ({ isMobile }) => {
-    test.skip(isMobile, 'PID input is in the output panel, hidden on mobile');
+    test.skip(isMobile, 'PID field is in the desktop cart');
   });
 
   test('entering a PID adds it to the URL', async ({ page }) => {
     await gotoComposer(page);
-    await checkItem(page, 'phq9');
-    await page.locator('.c-pid-input').fill('TRC-2025-001');
-    const url = await getPreviewUrl(page);
-    expect(url).toContain('pid=TRC-2025-001');
+    await selectItem(page, 'phq9');
+    await page.locator('#cart-pid').fill('TRC-2025-001');
+    await expect(urlBox(page)).toContainText('pid=TRC-2025-001');
   });
 });
 
@@ -116,52 +133,77 @@ test.describe('patient ID field', () => {
 
 test.describe('reset', () => {
   test('reset clears selection and URL (desktop)', async ({ page, isMobile }) => {
-    test.skip(isMobile, 'URL box and PID input are in the output panel, hidden on mobile');
+    test.skip(isMobile, 'reset lives in the desktop cart');
     await gotoComposer(page);
-    await checkItem(page, 'phq9');
-    await page.locator('.c-pid-input').fill('TRC-001');
-    await page.locator('[data-action="reset"]').click();
-    await expect(page.locator('.c-url-box--empty')).toBeVisible();
-    await expect(page.locator('#chk-phq9')).not.toBeChecked();
+    await selectItem(page, 'phq9');
+    await page.locator('#cart-pid').fill('TRC-001');
+    await page.locator('catalog-controls .reset-btn').click();
+    await expect(urlBox(page)).toContainText('לא נבחרו');
+    await expect(page.locator('catalog-card[data-id="phq9"] button')).toHaveAttribute('aria-checked', 'false');
   });
+});
 
-  test('reset unchecks items (all viewports)', async ({ page }) => {
+// ── Tabs ──────────────────────────────────────────────────────────────────────
+
+test.describe('tabs', () => {
+  test('switching to the batteries tab shows batteries', async ({ page }) => {
     await gotoComposer(page);
-    await checkItem(page, 'phq9');
-    await page.locator('[data-action="reset"]').click();
-    await expect(page.locator('#chk-phq9')).not.toBeChecked();
+    await openFilters(page);
+    await page.locator('catalog-controls [role="tab"]', { hasText: 'סוללות' }).click();
+    await expect(page.locator('catalog-controls [role="tab"][aria-pressed="true"]')).toHaveText('סוללות');
+    await expect(page.locator('catalog-card').first()).toBeVisible();
+  });
+});
+
+// ── Search ────────────────────────────────────────────────────────────────────
+
+test.describe('search', () => {
+  test('typing filters the list to matching instruments', async ({ page }) => {
+    await gotoComposer(page);
+    await searchBox(page).fill('phq9');
+    await expect(page.locator('catalog-card[data-id="phq9"]')).toBeVisible();
+  });
+});
+
+// ── Mobile bottom sheet ────────────────────────────────────────────────────────
+
+test.describe('mobile bottom sheet', () => {
+  test('selecting then opening the sheet shows the link and PID', async ({ page, isMobile }) => {
+    test.skip(!isMobile, 'the bottom sheet is the mobile-only selection surface');
+    await gotoComposer(page);
+    await selectItem(page, 'phq9');
+    await expect(page.locator('mobile-bar .count')).toContainText('נבחרו 1');
+    await page.locator('mobile-bar .bar button:has-text("פרטים")').click();
+    const sheet = page.locator('mobile-bar .sheet');
+    await expect(sheet).toBeVisible();
+    await expect(sheet.locator('.url-box')).toContainText('items=phq9');
+    await expect(sheet.locator('#sheet-pid')).toBeVisible();
   });
 });
 
 // ── Generated URL launches a valid session ────────────────────────────────────
 
 test.describe('generated URL launches valid session', () => {
-  test('URL for phq9 loads the patient app and shows welcome screen (desktop)', async ({ page, isMobile }) => {
-    test.skip(isMobile, 'URL box is in the output panel, hidden on mobile');
+  test.beforeEach(async ({ isMobile }) => {
+    test.skip(isMobile, 'reads the URL from the desktop cart');
+  });
+
+  test('phq9 URL loads the patient app welcome screen', async ({ page }) => {
     await gotoComposer(page);
-    await checkItem(page, 'phq9');
-    const url = await getPreviewUrl(page);
-    await page.goto(url);
+    await selectItem(page, 'phq9');
+    const url = await urlBox(page).textContent();
+    await page.goto(url.trim());
     await expect(page.locator('welcome-screen')).toBeVisible({ timeout: 10_000 });
   });
 
-  test('URL with PID passes pid through to session (desktop)', async ({ page, isMobile }) => {
-    test.skip(isMobile, 'PID input and URL box are in the output panel, hidden on mobile');
+  test('a battery URL expands and launches the welcome screen', async ({ page }) => {
     await gotoComposer(page);
-    await checkItem(page, 'phq9');
-    await page.locator('.c-pid-input').fill('TEST-PID-001');
-    const url = await getPreviewUrl(page);
-    expect(url).toContain('pid=TEST-PID-001');
-    await page.goto(url);
-    await expect(page.locator('welcome-screen')).toBeVisible({ timeout: 10_000 });
-  });
-
-  test('URL for battery expands and launches welcome screen (desktop)', async ({ page, isMobile }) => {
-    test.skip(isMobile, 'URL box is in the output panel, hidden on mobile');
-    await gotoComposer(page);
-    await checkItem(page, 'phq9_intake');
-    const url = await getPreviewUrl(page);
-    await page.goto(url);
+    // Batteries live in their own tab; search is scoped to the active tab.
+    await openFilters(page);
+    await page.locator('catalog-controls [role="tab"]', { hasText: 'סוללות' }).click();
+    await selectItem(page, 'phq9_intake');
+    const url = await urlBox(page).textContent();
+    await page.goto(url.trim());
     await expect(page.locator('welcome-screen')).toBeVisible({ timeout: 10_000 });
   });
 });
