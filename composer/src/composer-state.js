@@ -14,9 +14,8 @@ export const CATALOG_URL = 'catalog.json';
 export { PID_PATTERN, pidWarning };
 
 export const state = {
-  batteries:             [],       // [{ id, title, description, sourceUrl, ...catalog entry }]
-  questionnaires:        [],       // [{ id, title, description, sourceUrl, ...catalog entry }]
-  sourceByItem:          new Map(),// id → sourceUrl
+  batteries:             [],       // [{ id, title, description, ...catalog entry }]
+  questionnaires:        [],       // [{ id, title, description, ...catalog entry }]
   selected:              [],       // string[] in selection order
   pid:                   '',
   query:                 '',
@@ -30,17 +29,10 @@ export const state = {
 export function buildUrl(base = getAppRoot()) {
   if (state.selected.length === 0) return null;
 
-  // Only the selected items' sources go into the URL. Cross-config
-  // dependencies declared by those configs are auto-fetched by the patient
-  // app's loadConfig (BFS walk) — the composer doesn't duplicate that logic.
-  const neededSources = new Set(
-    state.selected.map(id => state.sourceByItem.get(id)).filter(Boolean)
-  );
-
-  const parts = [
-    `configs=${[...neededSources].join(',')}`,
-    `items=${state.selected.join(',')}`,
-  ];
+  // Item IDs are addresses: the patient app derives each item's config file
+  // from the token itself (configs/prod/<id>.json) and auto-fetches battery
+  // dependencies. The URL therefore carries no config list at all.
+  const parts = [`items=${state.selected.join(',')}`];
   if (state.pid.trim()) parts.push(`pid=${encodeURIComponent(state.pid.trim())}`);
 
   return `${base}?${parts.join('&')}`;

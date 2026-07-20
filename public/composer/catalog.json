@@ -2,6 +2,102 @@
   "catalogVersion": 1,
   "entries": [
     {
+      "id": "all_types_battery",
+      "kind": "battery",
+      "title": "בדיקת כל הסוגים",
+      "description": "Battery with one item of each type.",
+      "keywords": [
+        "test",
+        "e2e",
+        "all-types"
+      ],
+      "dev": true,
+      "itemCount": 6,
+      "estMinutes": 2,
+      "hasConditional": false,
+      "domains": [],
+      "type": null,
+      "populations": [
+        "adult"
+      ],
+      "tags": [],
+      "featured": false
+    },
+    {
+      "id": "all_types_q",
+      "kind": "questionnaire",
+      "title": "שאלון כל הסוגים (E2E)",
+      "description": "Test fixture with one item of each type.",
+      "keywords": [
+        "test",
+        "e2e",
+        "all-types"
+      ],
+      "dev": true,
+      "itemCount": 6,
+      "estMinutes": 2,
+      "hasConditional": false,
+      "domains": [],
+      "type": null,
+      "populations": [
+        "adult"
+      ],
+      "tags": [],
+      "featured": false
+    },
+    {
+      "id": "anger_log",
+      "kind": "questionnaire",
+      "title": "דו\"ח כעס",
+      "description": "דף עבודה לתיעוד אירועי כעס, תגובות, ומחשבה על דרכי התמודדות חלופיות.",
+      "keywords": [
+        "כעס",
+        "anger log",
+        "worksheet",
+        "דף עבודה",
+        "דו\"ח כעס"
+      ],
+      "itemCount": 10,
+      "estMinutes": 3,
+      "hasConditional": false,
+      "domains": [
+        "anger"
+      ],
+      "type": "worksheet",
+      "populations": [
+        "adult"
+      ],
+      "tags": [],
+      "featured": false
+    },
+    {
+      "id": "aq",
+      "kind": "questionnaire",
+      "title": "שאלון לסריקת תסמינים בספקטרום האוטיסטי (AQ)",
+      "description": "שאלון סינון לדיווח עצמי בן 50 פריטים לאיתור תכונות בספקטרום האוטיסטי במבוגרים בעלי אינטליגנציה תקינה (גיל 16 ומעלה).",
+      "keywords": [
+        "autism",
+        "ASD",
+        "AQ",
+        "screening",
+        "אוטיזם",
+        "ספקטרום אוטיסטי",
+        "סינון"
+      ],
+      "itemCount": 50,
+      "estMinutes": 6,
+      "hasConditional": false,
+      "domains": [
+        "neurodevelopmental"
+      ],
+      "type": "screener",
+      "populations": [
+        "adult"
+      ],
+      "tags": [],
+      "featured": false
+    },
+    {
       "id": "asi_3",
       "kind": "questionnaire",
       "title": "שאלון רגישות לחרדה (ASI-3)",
@@ -15,7 +111,6 @@
         "cognitive",
         "social"
       ],
-      "source": "standard",
       "itemCount": 18,
       "estMinutes": 2,
       "hasConditional": false,
@@ -23,6 +118,390 @@
         "anxiety"
       ],
       "type": "process",
+      "populations": [
+        "adult"
+      ],
+      "tags": [],
+      "featured": false
+    },
+    {
+      "id": "cape15",
+      "kind": "questionnaire",
+      "title": "שאלון חוויות פסיכוטיות עכשוויות (CAPE-P15)",
+      "description": "שאלון דיווח עצמי בן 15 פריטים לאיתור חוויות דמויות-פסיכוזה במהלך שלושת החודשים האחרונים (הגרסה העכשווית של CAPE-P15).",
+      "keywords": [
+        "psychosis",
+        "PLE",
+        "CAPE",
+        "screening",
+        "פסיכוזה",
+        "חוויות פסיכוטיות",
+        "סינון"
+      ],
+      "itemCount": 15,
+      "estMinutes": 2,
+      "hasConditional": false,
+      "domains": [
+        "psychosis"
+      ],
+      "type": "screener",
+      "populations": [
+        "adult"
+      ],
+      "tags": [],
+      "featured": false
+    },
+    {
+      "id": "cape42",
+      "kind": "questionnaire",
+      "title": "שאלון חוויות נפשיות בקהילה (CAPE-42)",
+      "description": "שאלון דיווח עצמי בן 42 פריטים להערכת חוויות דמויות-פסיכוזה בממדים חיובי, שלילי ודיכאוני, כולל דירוג מצוקה לכל חוויה שדווחה.",
+      "keywords": [
+        "psychosis",
+        "PLE",
+        "CAPE",
+        "CAPE-42",
+        "פסיכוזה",
+        "חוויות פסיכוטיות",
+        "מצוקה"
+      ],
+      "itemCount": 42,
+      "estMinutes": 5,
+      "hasConditional": true,
+      "domains": [
+        "psychosis"
+      ],
+      "type": "severity",
+      "populations": [
+        "adult"
+      ],
+      "tags": [],
+      "featured": false
+    },
+    {
+      "id": "clinical_intake",
+      "kind": "battery",
+      "title": "הערכה ראשונית",
+      "description": "סוללת הערכה ראשונית: שאלון סינון DIAMOND ושאלונים ממוקדים בהתאם לתסמינים שדווחו.",
+      "keywords": [
+        "intake",
+        "screening",
+        "clinical",
+        "DIAMOND"
+      ],
+      "itemCount": 30,
+      "estMinutes": 4,
+      "hasConditional": true,
+      "domains": [
+        "intake"
+      ],
+      "type": null,
+      "populations": [
+        "adult"
+      ],
+      "tags": [],
+      "featured": true
+    },
+    {
+      "id": "dar5",
+      "kind": "questionnaire",
+      "title": "שאלון תגובות כעס (DAR-5)",
+      "description": "5-item anger reactions scale assessing frequency, intensity, duration, aggression, and social interference over the past 4 weeks.…",
+      "keywords": [
+        "anger",
+        "aggression",
+        "DAR-5",
+        "כעס",
+        "תוקפנות",
+        "screening"
+      ],
+      "itemCount": 5,
+      "estMinutes": 1,
+      "hasConditional": false,
+      "domains": [
+        "anger"
+      ],
+      "type": "severity",
+      "populations": [
+        "adult"
+      ],
+      "tags": [],
+      "featured": true
+    },
+    {
+      "id": "dass21",
+      "kind": "questionnaire",
+      "title": "שאלון דיכאון, חרדה וסטרס (DASS-21)",
+      "description": "שאלון בן 21 פריטים להערכת דיכאון, חרדה וסטרס במהלך השבוע האחרון.",
+      "keywords": [
+        "DASS",
+        "DASS-21",
+        "דיכאון",
+        "חרדה",
+        "סטרס"
+      ],
+      "itemCount": 21,
+      "estMinutes": 3,
+      "hasConditional": false,
+      "domains": [
+        "depression",
+        "anxiety"
+      ],
+      "type": "severity",
+      "populations": [
+        "adult"
+      ],
+      "tags": [],
+      "featured": true
+    },
+    {
+      "id": "demographics",
+      "kind": "questionnaire",
+      "title": "פרטים אישיים",
+      "description": "פרטים אישיים ותיאור קצר של הפנייה.",
+      "keywords": [
+        "demographics",
+        "intake",
+        "personal"
+      ],
+      "itemCount": 10,
+      "estMinutes": 3,
+      "hasConditional": false,
+      "domains": [
+        "intake"
+      ],
+      "type": "other",
+      "populations": [
+        "adult"
+      ],
+      "tags": [],
+      "featured": false
+    },
+    {
+      "id": "ders",
+      "kind": "questionnaire",
+      "title": "שאלון קשיים בוויסות רגשי (DERS)",
+      "description": "שאלון בן 36 פריטים להערכת קשיים בוויסות רגשי בשישה ממדים (Gratz & Roemer, 2004).",
+      "keywords": [
+        "DERS",
+        "emotion regulation",
+        "emotion dysregulation",
+        "ויסות רגשי",
+        "ויסות"
+      ],
+      "itemCount": 36,
+      "estMinutes": 4,
+      "hasConditional": false,
+      "domains": [
+        "emotion_regulation"
+      ],
+      "type": "process",
+      "populations": [
+        "adult"
+      ],
+      "tags": [],
+      "featured": true
+    },
+    {
+      "id": "diamond_sr",
+      "kind": "questionnaire",
+      "title": "DIAMOND Self Report Screener",
+      "description": "30-item binary screener covering anxiety, mood, OCD-spectrum, trauma, psychosis, eating, substance use, ADHD, and tic disorders.",
+      "keywords": [
+        "DIAMOND",
+        "screener",
+        "screening",
+        "intake",
+        "anxiety",
+        "depression",
+        "OCD",
+        "psychosis",
+        "PTSD"
+      ],
+      "itemCount": 30,
+      "estMinutes": 4,
+      "hasConditional": false,
+      "domains": [
+        "intake"
+      ],
+      "type": "screener",
+      "populations": [
+        "adult"
+      ],
+      "tags": [],
+      "featured": true
+    },
+    {
+      "id": "ecrs",
+      "kind": "questionnaire",
+      "title": "שאלון התקשרות (ECR-S)",
+      "description": "שאלון בן 12 פריטים להערכת חרדת התקשרות והימנעות.",
+      "keywords": [
+        "attachment",
+        "ECR",
+        "התקשרות"
+      ],
+      "itemCount": 12,
+      "estMinutes": 2,
+      "hasConditional": false,
+      "domains": [
+        "attachment"
+      ],
+      "type": "process",
+      "populations": [
+        "adult"
+      ],
+      "tags": [],
+      "featured": false
+    },
+    {
+      "id": "gad7",
+      "kind": "questionnaire",
+      "title": "שאלון חרדה מוכללת (GAD-7)",
+      "description": "הערכת תסמיני חרדה כללית במהלך השבועיים האחרונים (Generalized Anxiety Disorder, GAD-7)",
+      "keywords": [
+        "anxiety",
+        "GAD",
+        "GAD-7",
+        "generalized anxiety",
+        "worry",
+        "screening"
+      ],
+      "itemCount": 7,
+      "estMinutes": 1,
+      "hasConditional": false,
+      "domains": [
+        "anxiety"
+      ],
+      "type": "severity",
+      "populations": [
+        "adult"
+      ],
+      "tags": [],
+      "featured": true
+    },
+    {
+      "id": "hai",
+      "kind": "questionnaire",
+      "title": "שאלון חרדת בריאות (HAI)",
+      "description": "הערכת חרדת בריאות — 18 פריטים המודדים עסוק בבריאות, פחד ממחלה, ותפיסת סכנה ונכות אפשרית (Health Anxiety Inventory).",
+      "keywords": [
+        "health anxiety",
+        "hypochondria",
+        "HAI",
+        "illness",
+        "somatic"
+      ],
+      "itemCount": 18,
+      "estMinutes": 3,
+      "hasConditional": false,
+      "domains": [
+        "anxiety"
+      ],
+      "type": "severity",
+      "populations": [
+        "adult"
+      ],
+      "tags": [],
+      "featured": false
+    },
+    {
+      "id": "isi",
+      "kind": "questionnaire",
+      "title": "מדד חומרת נדודי שינה (ISI)",
+      "description": "7-item insomnia severity scale assessing sleep difficulty, satisfaction, and daytime impact over the past 2 weeks. (Insomnia Severity Index)",
+      "keywords": [
+        "insomnia",
+        "sleep",
+        "ISI",
+        "נדודי שינה",
+        "שינה",
+        "screening"
+      ],
+      "itemCount": 7,
+      "estMinutes": 1,
+      "hasConditional": false,
+      "domains": [
+        "sleep"
+      ],
+      "type": "severity",
+      "populations": [
+        "adult"
+      ],
+      "tags": [],
+      "featured": true
+    },
+    {
+      "id": "mgh_hps",
+      "kind": "questionnaire",
+      "title": "סולם תלישת שיער (MGH-HPS)",
+      "description": "הערכת חומרת תלישת שיער במהלך השבוע האחרון — 7 פריטים (Massachusetts General Hospital Hairpulling Scale).",
+      "keywords": [
+        "trichotillomania",
+        "hair pulling",
+        "MGH",
+        "HPS",
+        "OCD spectrum"
+      ],
+      "itemCount": 7,
+      "estMinutes": 1,
+      "hasConditional": false,
+      "domains": [
+        "ocd"
+      ],
+      "type": "severity",
+      "populations": [
+        "adult"
+      ],
+      "tags": [],
+      "featured": false
+    },
+    {
+      "id": "novaco_anger_situations",
+      "kind": "questionnaire",
+      "title": "שאלון מצבי כעס של נובאקו",
+      "description": "שאלון לזיהוי מצבים המעוררים כעס ולמדידת עוצמת הרוגז במצבים שונים.",
+      "keywords": [
+        "כעס",
+        "נובאקו",
+        "anger",
+        "novaco",
+        "מצבי כעס"
+      ],
+      "itemCount": 25,
+      "estMinutes": 3,
+      "hasConditional": false,
+      "domains": [
+        "anger"
+      ],
+      "type": "severity",
+      "populations": [
+        "adult"
+      ],
+      "tags": [],
+      "featured": false
+    },
+    {
+      "id": "oasis",
+      "kind": "questionnaire",
+      "title": "שאלון חומרת חרדה ופגיעה תפקודית (OASIS)",
+      "description": "5-item transdiagnostic scale assessing anxiety severity and functional impairment over the past week. Applicable across anxiety disorders.",
+      "keywords": [
+        "anxiety",
+        "OASIS",
+        "impairment",
+        "transdiagnostic",
+        "חרדה",
+        "תפקוד"
+      ],
+      "itemCount": 5,
+      "estMinutes": 1,
+      "hasConditional": false,
+      "domains": [
+        "anxiety",
+        "functioning"
+      ],
+      "type": "severity",
       "populations": [
         "adult"
       ],
@@ -44,7 +523,6 @@
         "hoarding",
         "washing"
       ],
-      "source": "standard",
       "itemCount": 18,
       "estMinutes": 2,
       "hasConditional": false,
@@ -59,24 +537,75 @@
       "featured": true
     },
     {
-      "id": "gad7",
+      "id": "ocsrs_m",
       "kind": "questionnaire",
-      "title": "שאלון חרדה מוכללת (GAD-7)",
-      "description": "הערכת תסמיני חרדה כללית במהלך השבועיים האחרונים (Generalized Anxiety Disorder, GAD-7)",
+      "title": "שאלון OCD ותסמינים קשורים (OCSRS)",
+      "description": "שאלון סינון למחשבות טורדניות והתנהגויות כפייתיות, מאורגן לפי 22 תחומי סימפטומים עם דירוג חומרה לכל קבוצה (גרסת זכר).",
       "keywords": [
-        "anxiety",
-        "GAD",
-        "GAD-7",
-        "generalized anxiety",
-        "worry",
-        "screening"
+        "OCD",
+        "obsessive",
+        "compulsive",
+        "OCSRS",
+        "obsessions",
+        "compulsions",
+        "screening",
+        "טורדני",
+        "כפייתי"
       ],
-      "source": "standard",
-      "itemCount": 7,
+      "itemCount": 22,
+      "estMinutes": 5,
+      "hasConditional": true,
+      "domains": [
+        "ocd"
+      ],
+      "type": "screener",
+      "populations": [
+        "adult"
+      ],
+      "tags": [],
+      "featured": false
+    },
+    {
+      "id": "pc_ptsd5",
+      "kind": "questionnaire",
+      "title": "סקר טראומה קצר (PC-PTSD-5)",
+      "description": "סקר קצר לאיתור פוסט-טראומה בן 5 שאלות. ציון 4 ומעלה מצביע על סבירות גבוהה ל-PTSD.",
+      "keywords": [
+        "טראומה",
+        "PTSD",
+        "סקר",
+        "screening",
+        "trauma"
+      ],
+      "itemCount": 6,
       "estMinutes": 1,
       "hasConditional": false,
       "domains": [
-        "anxiety"
+        "trauma"
+      ],
+      "type": "screener",
+      "populations": [
+        "adult"
+      ],
+      "tags": [],
+      "featured": true
+    },
+    {
+      "id": "pcl5",
+      "kind": "questionnaire",
+      "title": "שאלון פוסט-טראומה (PCL-5)",
+      "description": "הערכת תסמיני פוסט טראומה במהלך השבוע האחרון (PTSD, Trauma, PCL-5)",
+      "keywords": [
+        "PTSD",
+        "טראומה",
+        "PCL-5",
+        "trauma"
+      ],
+      "itemCount": 20,
+      "estMinutes": 3,
+      "hasConditional": false,
+      "domains": [
+        "trauma"
       ],
       "type": "severity",
       "populations": [
@@ -98,7 +627,6 @@
         "anxiety",
         "avoidance"
       ],
-      "source": "standard",
       "itemCount": 8,
       "estMinutes": 2,
       "hasConditional": false,
@@ -126,7 +654,6 @@
         "screening",
         "anhedonia"
       ],
-      "source": "standard",
       "itemCount": 9,
       "estMinutes": 2,
       "hasConditional": false,
@@ -141,680 +668,6 @@
       "featured": true
     },
     {
-      "id": "hai",
-      "kind": "questionnaire",
-      "title": "שאלון חרדת בריאות (HAI)",
-      "description": "הערכת חרדת בריאות — 18 פריטים המודדים עסוק בבריאות, פחד ממחלה, ותפיסת סכנה ונכות אפשרית (Health Anxiety Inventory).",
-      "keywords": [
-        "health anxiety",
-        "hypochondria",
-        "HAI",
-        "illness",
-        "somatic"
-      ],
-      "source": "standard",
-      "itemCount": 18,
-      "estMinutes": 3,
-      "hasConditional": false,
-      "domains": [
-        "anxiety"
-      ],
-      "type": "severity",
-      "populations": [
-        "adult"
-      ],
-      "tags": [],
-      "featured": false
-    },
-    {
-      "id": "mgh_hps",
-      "kind": "questionnaire",
-      "title": "סולם תלישת שיער (MGH-HPS)",
-      "description": "הערכת חומרת תלישת שיער במהלך השבוע האחרון — 7 פריטים (Massachusetts General Hospital Hairpulling Scale).",
-      "keywords": [
-        "trichotillomania",
-        "hair pulling",
-        "MGH",
-        "HPS",
-        "OCD spectrum"
-      ],
-      "source": "standard",
-      "itemCount": 7,
-      "estMinutes": 1,
-      "hasConditional": false,
-      "domains": [
-        "ocd"
-      ],
-      "type": "severity",
-      "populations": [
-        "adult"
-      ],
-      "tags": [],
-      "featured": false
-    },
-    {
-      "id": "spin",
-      "kind": "questionnaire",
-      "title": "שאלון פוביה חברתית (SPIN)",
-      "description": "17-item social phobia severity scale. Screens for social anxiety disorder and measures symptom severity. (Social Phobia Inventory)",
-      "keywords": [
-        "social anxiety",
-        "social phobia",
-        "SPIN",
-        "חרדה חברתית",
-        "פוביה חברתית",
-        "screening"
-      ],
-      "source": "standard",
-      "itemCount": 17,
-      "estMinutes": 2,
-      "hasConditional": false,
-      "domains": [
-        "social",
-        "anxiety"
-      ],
-      "type": "severity",
-      "populations": [
-        "adult"
-      ],
-      "tags": [],
-      "featured": true
-    },
-    {
-      "id": "isi",
-      "kind": "questionnaire",
-      "title": "מדד חומרת נדודי שינה (ISI)",
-      "description": "7-item insomnia severity scale assessing sleep difficulty, satisfaction, and daytime impact over the past 2 weeks. (Insomnia Severity Index)",
-      "keywords": [
-        "insomnia",
-        "sleep",
-        "ISI",
-        "נדודי שינה",
-        "שינה",
-        "screening"
-      ],
-      "source": "standard",
-      "itemCount": 7,
-      "estMinutes": 1,
-      "hasConditional": false,
-      "domains": [
-        "sleep"
-      ],
-      "type": "severity",
-      "populations": [
-        "adult"
-      ],
-      "tags": [],
-      "featured": true
-    },
-    {
-      "id": "oasis",
-      "kind": "questionnaire",
-      "title": "שאלון חומרת חרדה ופגיעה תפקודית (OASIS)",
-      "description": "5-item transdiagnostic scale assessing anxiety severity and functional impairment over the past week. Applicable across anxiety disorders.",
-      "keywords": [
-        "anxiety",
-        "OASIS",
-        "impairment",
-        "transdiagnostic",
-        "חרדה",
-        "תפקוד"
-      ],
-      "source": "standard",
-      "itemCount": 5,
-      "estMinutes": 1,
-      "hasConditional": false,
-      "domains": [
-        "anxiety",
-        "functioning"
-      ],
-      "type": "severity",
-      "populations": [
-        "adult"
-      ],
-      "tags": [],
-      "featured": false
-    },
-    {
-      "id": "wsas",
-      "kind": "questionnaire",
-      "title": "סולם עבודה והתאמה חברתית (WSAS)",
-      "description": "5-item scale measuring functional impairment in work, home management, social leisure, private leisure, and relationships. Scores 0-40;…",
-      "keywords": [
-        "functioning",
-        "impairment",
-        "disability",
-        "WSAS",
-        "תפקוד",
-        "פגיעה"
-      ],
-      "source": "standard",
-      "itemCount": 5,
-      "estMinutes": 1,
-      "hasConditional": false,
-      "domains": [
-        "functioning"
-      ],
-      "type": "severity",
-      "populations": [
-        "adult"
-      ],
-      "tags": [],
-      "featured": true
-    },
-    {
-      "id": "wai6",
-      "kind": "questionnaire",
-      "title": "שאלון ברית טיפולית (WAI-6)",
-      "description": "6-item working alliance measure assessing bond and goal/task agreement between patient and therapist. Administered after therapy sessions.",
-      "keywords": [
-        "alliance",
-        "therapeutic",
-        "bond",
-        "WAI",
-        "ברית טיפולית",
-        "קשר"
-      ],
-      "source": "standard",
-      "itemCount": 6,
-      "estMinutes": 1,
-      "hasConditional": false,
-      "domains": [
-        "alliance"
-      ],
-      "type": "process",
-      "populations": [
-        "adult"
-      ],
-      "tags": [],
-      "featured": true
-    },
-    {
-      "id": "top3",
-      "kind": "questionnaire",
-      "title": "שלושת הבעיות המרכזיות",
-      "description": "Idiographic 3-problem questionnaire. Patient names up to three main problems and rates the severity of each on a 1–12 scale, with an…",
-      "keywords": [
-        "problems",
-        "idiographic",
-        "severity",
-        "coping",
-        "בעיות",
-        "התמודדות"
-      ],
-      "source": "standard",
-      "itemCount": 4,
-      "estMinutes": 2,
-      "hasConditional": true,
-      "domains": [
-        "general"
-      ],
-      "type": "process",
-      "populations": [
-        "adult"
-      ],
-      "tags": [],
-      "featured": true
-    },
-    {
-      "id": "ecrs",
-      "kind": "questionnaire",
-      "title": "שאלון התקשרות (ECR-S)",
-      "description": "שאלון בן 12 פריטים להערכת חרדת התקשרות והימנעות.",
-      "keywords": [
-        "attachment",
-        "ECR",
-        "התקשרות"
-      ],
-      "source": "standard",
-      "itemCount": 12,
-      "estMinutes": 2,
-      "hasConditional": false,
-      "domains": [
-        "attachment"
-      ],
-      "type": "process",
-      "populations": [
-        "adult"
-      ],
-      "tags": [],
-      "featured": false
-    },
-    {
-      "id": "dass21",
-      "kind": "questionnaire",
-      "title": "שאלון דיכאון, חרדה וסטרס (DASS-21)",
-      "description": "שאלון בן 21 פריטים להערכת דיכאון, חרדה וסטרס במהלך השבוע האחרון.",
-      "keywords": [
-        "DASS",
-        "DASS-21",
-        "דיכאון",
-        "חרדה",
-        "סטרס"
-      ],
-      "source": "standard",
-      "itemCount": 21,
-      "estMinutes": 3,
-      "hasConditional": false,
-      "domains": [
-        "depression",
-        "anxiety"
-      ],
-      "type": "severity",
-      "populations": [
-        "adult"
-      ],
-      "tags": [],
-      "featured": true
-    },
-    {
-      "id": "ders",
-      "kind": "questionnaire",
-      "title": "שאלון קשיים בוויסות רגשי (DERS)",
-      "description": "שאלון בן 36 פריטים להערכת קשיים בוויסות רגשי בשישה ממדים (Gratz & Roemer, 2004).",
-      "keywords": [
-        "DERS",
-        "emotion regulation",
-        "emotion dysregulation",
-        "ויסות רגשי",
-        "ויסות"
-      ],
-      "source": "standard",
-      "itemCount": 36,
-      "estMinutes": 4,
-      "hasConditional": false,
-      "domains": [
-        "emotion_regulation"
-      ],
-      "type": "process",
-      "populations": [
-        "adult"
-      ],
-      "tags": [],
-      "featured": true
-    },
-    {
-      "id": "sbq",
-      "kind": "questionnaire",
-      "title": "שאלון התנהגויות חברתיות (SBQ)",
-      "description": "הערכת תדירות השימוש בהתנהגויות ביטחון במצבים חברתיים, על פי המודל של קלארק ו-וֶלס.",
-      "keywords": [
-        "social anxiety",
-        "safety behaviors",
-        "SBQ",
-        "חרדה חברתית",
-        "התנהגויות ביטחון",
-        "פוביה חברתית"
-      ],
-      "source": "standard",
-      "itemCount": 29,
-      "estMinutes": 4,
-      "hasConditional": false,
-      "domains": [
-        "social"
-      ],
-      "type": "process",
-      "populations": [
-        "adult"
-      ],
-      "tags": [],
-      "featured": false
-    },
-    {
-      "id": "scq",
-      "kind": "questionnaire",
-      "title": "שאלון קוגניציות חברתיות (SCQ)",
-      "description": "הערכת תדירות מחשבות שליליות אופייניות לחרדה חברתית במהלך השבוע האחרון.",
-      "keywords": [
-        "social anxiety",
-        "cognitions",
-        "SCQ",
-        "חרדה חברתית",
-        "מחשבות אוטומטיות",
-        "פוביה חברתית"
-      ],
-      "source": "standard",
-      "itemCount": 23,
-      "estMinutes": 3,
-      "hasConditional": false,
-      "domains": [
-        "social"
-      ],
-      "type": "process",
-      "populations": [
-        "adult"
-      ],
-      "tags": [],
-      "featured": false
-    },
-    {
-      "id": "aq",
-      "kind": "questionnaire",
-      "title": "שאלון לסריקת תסמינים בספקטרום האוטיסטי (AQ)",
-      "description": "שאלון סינון לדיווח עצמי בן 50 פריטים לאיתור תכונות בספקטרום האוטיסטי במבוגרים בעלי אינטליגנציה תקינה (גיל 16 ומעלה).",
-      "keywords": [
-        "autism",
-        "ASD",
-        "AQ",
-        "screening",
-        "אוטיזם",
-        "ספקטרום אוטיסטי",
-        "סינון"
-      ],
-      "source": "standard",
-      "itemCount": 50,
-      "estMinutes": 6,
-      "hasConditional": false,
-      "domains": [
-        "neurodevelopmental"
-      ],
-      "type": "screener",
-      "populations": [
-        "adult"
-      ],
-      "tags": [],
-      "featured": false
-    },
-    {
-      "id": "cape15",
-      "kind": "questionnaire",
-      "title": "שאלון חוויות פסיכוטיות עכשוויות (CAPE-P15)",
-      "description": "שאלון דיווח עצמי בן 15 פריטים לאיתור חוויות דמויות-פסיכוזה במהלך שלושת החודשים האחרונים (הגרסה העכשווית של CAPE-P15).",
-      "keywords": [
-        "psychosis",
-        "PLE",
-        "CAPE",
-        "screening",
-        "פסיכוזה",
-        "חוויות פסיכוטיות",
-        "סינון"
-      ],
-      "source": "standard",
-      "itemCount": 15,
-      "estMinutes": 2,
-      "hasConditional": false,
-      "domains": [
-        "psychosis"
-      ],
-      "type": "screener",
-      "populations": [
-        "adult"
-      ],
-      "tags": [],
-      "featured": false
-    },
-    {
-      "id": "trauma_eval",
-      "kind": "battery",
-      "title": "הערכת טראומה ראשונית",
-      "description": "סקר טראומה קצר (PC-PTSD-5). במקרה של ציון חיובי — הערכה מעמיקה עם PCL-5 ושאלון קוגניציות פוסט-טראומטיות (PTCI).",
-      "keywords": [
-        "טראומה",
-        "PTSD",
-        "trauma",
-        "PCL-5",
-        "PTCI",
-        "הערכה",
-        "סקר"
-      ],
-      "source": "trauma",
-      "itemCount": 6,
-      "estMinutes": 1,
-      "hasConditional": true,
-      "domains": [
-        "trauma"
-      ],
-      "type": null,
-      "populations": [
-        "adult"
-      ],
-      "tags": [],
-      "featured": true
-    },
-    {
-      "id": "pc_ptsd5",
-      "kind": "questionnaire",
-      "title": "סקר טראומה קצר (PC-PTSD-5)",
-      "description": "סקר קצר לאיתור פוסט-טראומה בן 5 שאלות. ציון 4 ומעלה מצביע על סבירות גבוהה ל-PTSD.",
-      "keywords": [
-        "טראומה",
-        "PTSD",
-        "סקר",
-        "screening",
-        "trauma"
-      ],
-      "source": "trauma",
-      "itemCount": 6,
-      "estMinutes": 1,
-      "hasConditional": false,
-      "domains": [
-        "trauma"
-      ],
-      "type": "screener",
-      "populations": [
-        "adult"
-      ],
-      "tags": [],
-      "featured": true
-    },
-    {
-      "id": "pcl5",
-      "kind": "questionnaire",
-      "title": "שאלון פוסט-טראומה (PCL-5)",
-      "description": "הערכת תסמיני פוסט טראומה במהלך השבוע האחרון (PTSD, Trauma, PCL-5)",
-      "keywords": [
-        "PTSD",
-        "טראומה",
-        "PCL-5",
-        "trauma"
-      ],
-      "source": "trauma",
-      "itemCount": 20,
-      "estMinutes": 3,
-      "hasConditional": false,
-      "domains": [
-        "trauma"
-      ],
-      "type": "severity",
-      "populations": [
-        "adult"
-      ],
-      "tags": [],
-      "featured": true
-    },
-    {
-      "id": "ptci",
-      "kind": "questionnaire",
-      "title": "שאלון קוגניציות פוסט-טראומטיות (PTCI)",
-      "description": "33-item measure of trauma-related thoughts and beliefs across three subscales: negative cognitions about self, the world, and self-blame.",
-      "keywords": [
-        "PTSD",
-        "טראומה",
-        "קוגניציות",
-        "PTCI",
-        "trauma",
-        "cognitions"
-      ],
-      "source": "trauma",
-      "itemCount": 36,
-      "estMinutes": 4,
-      "hasConditional": false,
-      "domains": [
-        "trauma"
-      ],
-      "type": "process",
-      "populations": [
-        "adult"
-      ],
-      "tags": [],
-      "featured": false
-    },
-    {
-      "id": "clinical_intake",
-      "kind": "battery",
-      "title": "הערכה ראשונית",
-      "description": "סוללת הערכה ראשונית: שאלון סינון DIAMOND ושאלונים ממוקדים בהתאם לתסמינים שדווחו.",
-      "keywords": [
-        "intake",
-        "screening",
-        "clinical",
-        "DIAMOND"
-      ],
-      "source": "intake",
-      "itemCount": 30,
-      "estMinutes": 4,
-      "hasConditional": true,
-      "domains": [
-        "intake"
-      ],
-      "type": null,
-      "populations": [
-        "adult"
-      ],
-      "tags": [],
-      "featured": true
-    },
-    {
-      "id": "demographics",
-      "kind": "questionnaire",
-      "title": "פרטים אישיים",
-      "description": "פרטים אישיים ותיאור קצר של הפנייה.",
-      "keywords": [
-        "demographics",
-        "intake",
-        "personal"
-      ],
-      "source": "intake",
-      "itemCount": 10,
-      "estMinutes": 3,
-      "hasConditional": false,
-      "domains": [
-        "intake"
-      ],
-      "type": "other",
-      "populations": [
-        "adult"
-      ],
-      "tags": [],
-      "featured": false
-    },
-    {
-      "id": "diamond_sr",
-      "kind": "questionnaire",
-      "title": "DIAMOND Self Report Screener",
-      "description": "30-item binary screener covering anxiety, mood, OCD-spectrum, trauma, psychosis, eating, substance use, ADHD, and tic disorders.",
-      "keywords": [
-        "DIAMOND",
-        "screener",
-        "screening",
-        "intake",
-        "anxiety",
-        "depression",
-        "OCD",
-        "psychosis",
-        "PTSD"
-      ],
-      "source": "intake",
-      "itemCount": 30,
-      "estMinutes": 4,
-      "hasConditional": false,
-      "domains": [
-        "intake"
-      ],
-      "type": "screener",
-      "populations": [
-        "adult"
-      ],
-      "tags": [],
-      "featured": true
-    },
-    {
-      "id": "ocsrs_m",
-      "kind": "questionnaire",
-      "title": "שאלון OCD ותסמינים קשורים (OCSRS)",
-      "description": "שאלון סינון למחשבות טורדניות והתנהגויות כפייתיות, מאורגן לפי 22 תחומי סימפטומים עם דירוג חומרה לכל קבוצה (גרסת זכר).",
-      "keywords": [
-        "OCD",
-        "obsessive",
-        "compulsive",
-        "OCSRS",
-        "obsessions",
-        "compulsions",
-        "screening",
-        "טורדני",
-        "כפייתי"
-      ],
-      "source": "intake",
-      "itemCount": 22,
-      "estMinutes": 5,
-      "hasConditional": true,
-      "domains": [
-        "ocd"
-      ],
-      "type": "screener",
-      "populations": [
-        "adult"
-      ],
-      "tags": [],
-      "featured": false
-    },
-    {
-      "id": "pqb",
-      "kind": "questionnaire",
-      "title": "סולם מקוצר לבדיקת פרודרום (PQ-B)",
-      "description": "שאלון סינון לדיווח עצמי בן 21 פריטים לאיתור סיכון לפסיכוזה (תסמינים פרודרומליים) במהלך החודש האחרון.",
-      "keywords": [
-        "psychosis",
-        "prodrome",
-        "PQ-B",
-        "screening",
-        "פסיכוזה",
-        "פרודרום",
-        "סינון"
-      ],
-      "source": "intake",
-      "itemCount": 21,
-      "estMinutes": 3,
-      "hasConditional": true,
-      "domains": [
-        "psychosis"
-      ],
-      "type": "screener",
-      "populations": [
-        "adult"
-      ],
-      "tags": [],
-      "featured": false
-    },
-    {
-      "id": "cape42",
-      "kind": "questionnaire",
-      "title": "שאלון חוויות נפשיות בקהילה (CAPE-42)",
-      "description": "שאלון דיווח עצמי בן 42 פריטים להערכת חוויות דמויות-פסיכוזה בממדים חיובי, שלילי ודיכאוני, כולל דירוג מצוקה לכל חוויה שדווחה.",
-      "keywords": [
-        "psychosis",
-        "PLE",
-        "CAPE",
-        "CAPE-42",
-        "פסיכוזה",
-        "חוויות פסיכוטיות",
-        "מצוקה"
-      ],
-      "source": "intake",
-      "itemCount": 42,
-      "estMinutes": 5,
-      "hasConditional": true,
-      "domains": [
-        "psychosis"
-      ],
-      "type": "severity",
-      "populations": [
-        "adult"
-      ],
-      "tags": [],
-      "featured": false
-    },
-    {
       "id": "phq9_intake",
       "kind": "battery",
       "title": "הערכה ראשונית — דיכאון",
@@ -823,55 +676,8 @@
         "depression",
         "intake"
       ],
-      "source": "configs/test/e2e.json",
       "dev": true,
       "itemCount": 9,
-      "estMinutes": 2,
-      "hasConditional": false,
-      "domains": [],
-      "type": null,
-      "populations": [
-        "adult"
-      ],
-      "tags": [],
-      "featured": false
-    },
-    {
-      "id": "standard_intake",
-      "kind": "battery",
-      "title": "שאלון בדיקה",
-      "description": "סוללת בדיקה עם שאלות בינאריות וליקרט.",
-      "keywords": [
-        "test",
-        "binary",
-        "select"
-      ],
-      "source": "configs/test/e2e.json",
-      "dev": true,
-      "itemCount": 4,
-      "estMinutes": 1,
-      "hasConditional": false,
-      "domains": [],
-      "type": null,
-      "populations": [
-        "adult"
-      ],
-      "tags": [],
-      "featured": false
-    },
-    {
-      "id": "all_types_battery",
-      "kind": "battery",
-      "title": "בדיקת כל הסוגים",
-      "description": "Battery with one item of each type.",
-      "keywords": [
-        "test",
-        "e2e",
-        "all-types"
-      ],
-      "source": "configs/test/e2e.json",
-      "dev": true,
-      "itemCount": 6,
       "estMinutes": 2,
       "hasConditional": false,
       "domains": [],
@@ -892,7 +698,6 @@
         "e2e",
         "depression"
       ],
-      "source": "configs/test/e2e.json",
       "dev": true,
       "itemCount": 9,
       "estMinutes": 2,
@@ -906,73 +711,26 @@
       "featured": false
     },
     {
-      "id": "test_q",
+      "id": "pqb",
       "kind": "questionnaire",
-      "title": "שאלון בדיקה",
-      "description": "שאלון בדיקה קצר לצורכי E2E.",
+      "title": "סולם מקוצר לבדיקת פרודרום (PQ-B)",
+      "description": "שאלון סינון לדיווח עצמי בן 21 פריטים לאיתור סיכון לפסיכוזה (תסמינים פרודרומליים) במהלך החודש האחרון.",
       "keywords": [
-        "test",
-        "e2e"
+        "psychosis",
+        "prodrome",
+        "PQ-B",
+        "screening",
+        "פסיכוזה",
+        "פרודרום",
+        "סינון"
       ],
-      "source": "configs/test/e2e.json",
-      "dev": true,
-      "itemCount": 4,
-      "estMinutes": 1,
-      "hasConditional": false,
-      "domains": [],
-      "type": null,
-      "populations": [
-        "adult"
-      ],
-      "tags": [],
-      "featured": false
-    },
-    {
-      "id": "all_types_q",
-      "kind": "questionnaire",
-      "title": "שאלון כל הסוגים (E2E)",
-      "description": "Test fixture with one item of each type.",
-      "keywords": [
-        "test",
-        "e2e",
-        "all-types"
-      ],
-      "source": "configs/test/e2e.json",
-      "dev": true,
-      "itemCount": 6,
-      "estMinutes": 2,
-      "hasConditional": false,
-      "domains": [],
-      "type": null,
-      "populations": [
-        "adult"
-      ],
-      "tags": [],
-      "featured": false
-    },
-    {
-      "id": "roci",
-      "kind": "questionnaire",
-      "title": "שאלון אובססיות וכפייתיות בקשר רומנטי (ROCI)",
-      "description": "14-item scale assessing relationship-centered obsessive-compulsive symptoms in romantic relationships.",
-      "keywords": [
-        "ROCI",
-        "ROCD",
-        "OCD",
-        "relationship",
-        "romantic",
-        "obsessive",
-        "compulsive",
-        "זוגיות"
-      ],
-      "source": "ocd",
-      "itemCount": 14,
-      "estMinutes": 2,
-      "hasConditional": false,
+      "itemCount": 21,
+      "estMinutes": 3,
+      "hasConditional": true,
       "domains": [
-        "ocd"
+        "psychosis"
       ],
-      "type": "severity",
+      "type": "screener",
       "populations": [
         "adult"
       ],
@@ -994,7 +752,6 @@
         "compulsive",
         "זוגיות"
       ],
-      "source": "ocd",
       "itemCount": 28,
       "estMinutes": 4,
       "hasConditional": false,
@@ -1009,50 +766,51 @@
       "featured": false
     },
     {
-      "id": "dar5",
+      "id": "ptci",
       "kind": "questionnaire",
-      "title": "שאלון תגובות כעס (DAR-5)",
-      "description": "5-item anger reactions scale assessing frequency, intensity, duration, aggression, and social interference over the past 4 weeks.…",
+      "title": "שאלון קוגניציות פוסט-טראומטיות (PTCI)",
+      "description": "33-item measure of trauma-related thoughts and beliefs across three subscales: negative cognitions about self, the world, and self-blame.",
       "keywords": [
-        "anger",
-        "aggression",
-        "DAR-5",
-        "כעס",
-        "תוקפנות",
-        "screening"
+        "PTSD",
+        "טראומה",
+        "קוגניציות",
+        "PTCI",
+        "trauma",
+        "cognitions"
       ],
-      "source": "anger",
-      "itemCount": 5,
-      "estMinutes": 1,
+      "itemCount": 36,
+      "estMinutes": 4,
       "hasConditional": false,
       "domains": [
-        "anger"
+        "trauma"
       ],
-      "type": "severity",
+      "type": "process",
       "populations": [
         "adult"
       ],
       "tags": [],
-      "featured": true
+      "featured": false
     },
     {
-      "id": "novaco_anger_situations",
+      "id": "roci",
       "kind": "questionnaire",
-      "title": "שאלון מצבי כעס של נובאקו",
-      "description": "שאלון לזיהוי מצבים המעוררים כעס ולמדידת עוצמת הרוגז במצבים שונים.",
+      "title": "שאלון אובססיות וכפייתיות בקשר רומנטי (ROCI)",
+      "description": "14-item scale assessing relationship-centered obsessive-compulsive symptoms in romantic relationships.",
       "keywords": [
-        "כעס",
-        "נובאקו",
-        "anger",
-        "novaco",
-        "מצבי כעס"
+        "ROCI",
+        "ROCD",
+        "OCD",
+        "relationship",
+        "romantic",
+        "obsessive",
+        "compulsive",
+        "זוגיות"
       ],
-      "source": "anger",
-      "itemCount": 25,
-      "estMinutes": 3,
+      "itemCount": 14,
+      "estMinutes": 2,
       "hasConditional": false,
       "domains": [
-        "anger"
+        "ocd"
       ],
       "type": "severity",
       "populations": [
@@ -1062,25 +820,25 @@
       "featured": false
     },
     {
-      "id": "anger_log",
+      "id": "sbq",
       "kind": "questionnaire",
-      "title": "דו\"ח כעס",
-      "description": "דף עבודה לתיעוד אירועי כעס, תגובות, ומחשבה על דרכי התמודדות חלופיות.",
+      "title": "שאלון התנהגויות חברתיות (SBQ)",
+      "description": "הערכת תדירות השימוש בהתנהגויות ביטחון במצבים חברתיים, על פי המודל של קלארק ו-וֶלס.",
       "keywords": [
-        "כעס",
-        "anger log",
-        "worksheet",
-        "דף עבודה",
-        "דו\"ח כעס"
+        "social anxiety",
+        "safety behaviors",
+        "SBQ",
+        "חרדה חברתית",
+        "התנהגויות ביטחון",
+        "פוביה חברתית"
       ],
-      "source": "anger",
-      "itemCount": 10,
-      "estMinutes": 3,
+      "itemCount": 29,
+      "estMinutes": 4,
       "hasConditional": false,
       "domains": [
-        "anger"
+        "social"
       ],
-      "type": "worksheet",
+      "type": "process",
       "populations": [
         "adult"
       ],
@@ -1099,7 +857,6 @@
         "anxiety",
         "children"
       ],
-      "source": "child",
       "itemCount": 41,
       "estMinutes": 5,
       "hasConditional": false,
@@ -1126,7 +883,6 @@
         "anxiety",
         "children"
       ],
-      "source": "child",
       "itemCount": 41,
       "estMinutes": 5,
       "hasConditional": false,
@@ -1136,6 +892,207 @@
       "type": "screener",
       "populations": [
         "parent"
+      ],
+      "tags": [],
+      "featured": true
+    },
+    {
+      "id": "scq",
+      "kind": "questionnaire",
+      "title": "שאלון קוגניציות חברתיות (SCQ)",
+      "description": "הערכת תדירות מחשבות שליליות אופייניות לחרדה חברתית במהלך השבוע האחרון.",
+      "keywords": [
+        "social anxiety",
+        "cognitions",
+        "SCQ",
+        "חרדה חברתית",
+        "מחשבות אוטומטיות",
+        "פוביה חברתית"
+      ],
+      "itemCount": 23,
+      "estMinutes": 3,
+      "hasConditional": false,
+      "domains": [
+        "social"
+      ],
+      "type": "process",
+      "populations": [
+        "adult"
+      ],
+      "tags": [],
+      "featured": false
+    },
+    {
+      "id": "spin",
+      "kind": "questionnaire",
+      "title": "שאלון פוביה חברתית (SPIN)",
+      "description": "17-item social phobia severity scale. Screens for social anxiety disorder and measures symptom severity. (Social Phobia Inventory)",
+      "keywords": [
+        "social anxiety",
+        "social phobia",
+        "SPIN",
+        "חרדה חברתית",
+        "פוביה חברתית",
+        "screening"
+      ],
+      "itemCount": 17,
+      "estMinutes": 2,
+      "hasConditional": false,
+      "domains": [
+        "social",
+        "anxiety"
+      ],
+      "type": "severity",
+      "populations": [
+        "adult"
+      ],
+      "tags": [],
+      "featured": true
+    },
+    {
+      "id": "standard_intake",
+      "kind": "battery",
+      "title": "שאלון בדיקה",
+      "description": "סוללת בדיקה עם שאלות בינאריות וליקרט.",
+      "keywords": [
+        "test",
+        "binary",
+        "select"
+      ],
+      "dev": true,
+      "itemCount": 4,
+      "estMinutes": 1,
+      "hasConditional": false,
+      "domains": [],
+      "type": null,
+      "populations": [
+        "adult"
+      ],
+      "tags": [],
+      "featured": false
+    },
+    {
+      "id": "test_q",
+      "kind": "questionnaire",
+      "title": "שאלון בדיקה",
+      "description": "שאלון בדיקה קצר לצורכי E2E.",
+      "keywords": [
+        "test",
+        "e2e"
+      ],
+      "dev": true,
+      "itemCount": 4,
+      "estMinutes": 1,
+      "hasConditional": false,
+      "domains": [],
+      "type": null,
+      "populations": [
+        "adult"
+      ],
+      "tags": [],
+      "featured": false
+    },
+    {
+      "id": "top3",
+      "kind": "questionnaire",
+      "title": "שלושת הבעיות המרכזיות",
+      "description": "Idiographic 3-problem questionnaire. Patient names up to three main problems and rates the severity of each on a 1–12 scale, with an…",
+      "keywords": [
+        "problems",
+        "idiographic",
+        "severity",
+        "coping",
+        "בעיות",
+        "התמודדות"
+      ],
+      "itemCount": 4,
+      "estMinutes": 2,
+      "hasConditional": true,
+      "domains": [
+        "general"
+      ],
+      "type": "process",
+      "populations": [
+        "adult"
+      ],
+      "tags": [],
+      "featured": true
+    },
+    {
+      "id": "trauma_eval",
+      "kind": "battery",
+      "title": "הערכת טראומה ראשונית",
+      "description": "סקר טראומה קצר (PC-PTSD-5). במקרה של ציון חיובי — הערכה מעמיקה עם PCL-5 ושאלון קוגניציות פוסט-טראומטיות (PTCI).",
+      "keywords": [
+        "טראומה",
+        "PTSD",
+        "trauma",
+        "PCL-5",
+        "PTCI",
+        "הערכה",
+        "סקר"
+      ],
+      "itemCount": 6,
+      "estMinutes": 1,
+      "hasConditional": true,
+      "domains": [
+        "trauma"
+      ],
+      "type": null,
+      "populations": [
+        "adult"
+      ],
+      "tags": [],
+      "featured": true
+    },
+    {
+      "id": "wai6",
+      "kind": "questionnaire",
+      "title": "שאלון ברית טיפולית (WAI-6)",
+      "description": "6-item working alliance measure assessing bond and goal/task agreement between patient and therapist. Administered after therapy sessions.",
+      "keywords": [
+        "alliance",
+        "therapeutic",
+        "bond",
+        "WAI",
+        "ברית טיפולית",
+        "קשר"
+      ],
+      "itemCount": 6,
+      "estMinutes": 1,
+      "hasConditional": false,
+      "domains": [
+        "alliance"
+      ],
+      "type": "process",
+      "populations": [
+        "adult"
+      ],
+      "tags": [],
+      "featured": true
+    },
+    {
+      "id": "wsas",
+      "kind": "questionnaire",
+      "title": "סולם עבודה והתאמה חברתית (WSAS)",
+      "description": "5-item scale measuring functional impairment in work, home management, social leisure, private leisure, and relationships. Scores 0-40;…",
+      "keywords": [
+        "functioning",
+        "impairment",
+        "disability",
+        "WSAS",
+        "תפקוד",
+        "פגיעה"
+      ],
+      "itemCount": 5,
+      "estMinutes": 1,
+      "hasConditional": false,
+      "domains": [
+        "functioning"
+      ],
+      "type": "severity",
+      "populations": [
+        "adult"
       ],
       "tags": [],
       "featured": true

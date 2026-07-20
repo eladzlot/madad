@@ -728,6 +728,6 @@ where `q99` doesn't exist in `items`
 
 ## Output format
 
-Produce the complete questionnaire JSON object. Do not wrap it in the full config file — the clinician will add it to `standard.json` manually. If a battery is also requested, produce it as a separate JSON object clearly labelled.
+Produce the complete config file JSON: `{ "id": "<instrument_id>", "version": "1.0.0", "questionnaires": [ <the questionnaire> ] }`. The file is saved as `public/configs/prod/<instrument_id>.json` — the top-level `id` and the questionnaire `id` must both equal the filename. If a battery is also requested, produce it as a separate config file object (with a `dependencies` array listing `configs/prod/<id>.json` for every questionnaire it references), clearly labelled.
 
 If information needed for a field (e.g. exact item text, scoring ranges, alert thresholds) is not provided, ask for it rather than guessing. Clinical scoring thresholds must match the validated published instrument.

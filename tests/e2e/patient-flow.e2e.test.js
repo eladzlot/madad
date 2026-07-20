@@ -18,17 +18,18 @@
 import { test, expect } from '@playwright/test';
 
 // ── URLs ──────────────────────────────────────────────────────────────────────
-
-const E2E_CONFIG = '/configs/test/e2e.json';
+// Item IDs are addresses: the app derives config files from items= tokens
+// (configs/prod/<id>.json). Dev fixture files carry dev:true — the composer
+// hides them in production, but the patient app loads them like any config.
 
 /** PHQ-9 equivalent (phq9_test) — 1 instructions + 9 select + suicidality alert */
-const PHQ9_URL = `/?configs=${E2E_CONFIG}&items=phq9_intake`;
+const PHQ9_URL = `/?items=phq9_intake`;
 
 /** test_q battery — binary + select mix */
-const TEST_URL = `/?configs=${E2E_CONFIG}&items=standard_intake`;
+const TEST_URL = `/?items=standard_intake`;
 
 /** all_types_battery — instructions + select + binary + text */
-const ALL_TYPES_URL = `/?configs=${E2E_CONFIG}&items=all_types_battery`;
+const ALL_TYPES_URL = `/?items=all_types_battery`;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -390,32 +391,37 @@ async function clickSelectOption(page, index) {
 
 test.describe('error handling', () => {
   test('missing items param shows Hebrew error', async ({ page }) => {
-    await page.goto(`/?configs=${E2E_CONFIG}`);
+    await page.goto('/');
     await expect(page.locator('#app')).toContainText('לא נבחרו שאלונים');
   });
 
-  test('unknown item token shows Hebrew error', async ({ page }) => {
-    await page.goto(`/?configs=${E2E_CONFIG}&items=nonexistent_xyz`);
-    await expect(page.locator('#app')).toContainText('הקישור שגוי או פג תוקף');
-  });
-
-  test('invalid config URL shows Hebrew error', async ({ page }) => {
-    await page.goto('/?configs=/configs/nonexistent_xyz.json&items=phq9');
+  test('unknown item token shows load-error screen', async ({ page }) => {
+    // nonexistent_xyz.json does not exist. In production this is a clean 404
+    // → "הקישור שגוי" branch; the Vite dev server instead serves the SPA
+    // fallback (200 + HTML) so the JSON parse fails → generic load-error
+    // branch. Both land on the retryable error screen — assert that state
+    // rather than environment-dependent message text.
+    await page.goto('/?items=nonexistent_xyz');
     await expect(page.locator('#app')).toContainText('לא ניתן לטעון את השאלון');
+    await expect(page.locator('[data-action="retry"]')).toBeVisible();
+    await expect(page.locator('welcome-screen')).toHaveCount(0);
   });
 
-  test('URL missing a required dep is auto-completed via the config\'s declared dependencies', async ({ page }) => {
-    // intake.json declares standard.json and trauma.json as dependencies.
-    // clinical_intake is a battery in intake.json whose sequence references
-    // questionnaires living in those dependencies (phq9 in standard, pcl5 in
-    // trauma). Even when the URL lists only intake — a hand-crafted or
-    // truncated link — the config loader auto-fetches declared deps, so the
-    // battery resolves and the welcome screen appears.
-    //
-    // The Composer still includes deps explicitly in generated URLs for
-    // clarity and traceability; this test just verifies the runtime is
-    // resilient to a URL that omits them.
-    await page.goto('/?configs=configs/prod/intake.json&items=clinical_intake');
+  test('legacy configs= parameter is ignored — bundle-era links still resolve by items', async ({ page }) => {
+    // Bundle-era URLs named config files explicitly (configs=standard, full
+    // paths, even nonexistent ones). The app ignores the parameter entirely
+    // and resolves items= tokens as addresses, so old links keep working
+    // even though the files the parameter names no longer exist.
+    await page.goto('/?configs=/configs/nonexistent_xyz.json&items=phq9_test');
+    await expect(page.locator('welcome-screen')).toBeVisible({ timeout: 8000 });
+    await expect(page.locator('#app')).not.toContainText('לא ניתן לטעון');
+  });
+
+  test('battery URL resolves cross-file references via declared dependencies', async ({ page }) => {
+    // clinical_intake.json declares dependencies on every questionnaire file
+    // its sequence references (diamond_sr, phq9, pcl5, …). The loader's BFS
+    // auto-fetch pulls them, so a bare items=clinical_intake URL resolves.
+    await page.goto('/?items=clinical_intake');
     await expect(page.locator('welcome-screen')).toBeVisible({ timeout: 8000 });
     // No error screen — neither load-error nor resolution-error should appear.
     await expect(page.locator('#app')).not.toContainText('לא ניתן לטעון');

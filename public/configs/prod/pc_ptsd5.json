@@ -1,0 +1,119 @@
+{
+  "id": "pc_ptsd5",
+  "version": "1.0.0",
+  "questionnaires": [
+    {
+      "id": "pc_ptsd5",
+      "meta": {
+        "domains": [
+          "trauma"
+        ],
+        "type": "screener",
+        "populations": [
+          "adult"
+        ],
+        "featured": true
+      },
+      "title": "סקר טראומה קצר (PC-PTSD-5)",
+      "description": "סקר קצר לאיתור פוסט-טראומה בן 5 שאלות. ציון 4 ומעלה מצביע על סבירות גבוהה ל-PTSD.",
+      "keywords": [
+        "טראומה",
+        "PTSD",
+        "סקר",
+        "screening",
+        "trauma"
+      ],
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "לעיתים קורים לאנשים דברים שהם מפחידים, נוראיים או טראומטיים באופן חריג או קיצוני. למשל: תאונה קשה או שריפה, תקיפה גופנית או מינית, רעידת אדמה או הצפה, מלחמה, לראות מישהו נהרג או נפצע קשות, שמישהו קרוב נרצח או מתאבד."
+        },
+        {
+          "id": "exposure",
+          "type": "binary",
+          "text": "האם חווית פעם חוויה כזו?"
+        },
+        {
+          "id": "intro2",
+          "type": "instructions",
+          "text": "בחודש האחרון:"
+        },
+        {
+          "id": "1",
+          "type": "binary",
+          "text": "היו לך חלומות רעים בנוגע לאירוע(ים) או מחשבות בנוגע לאירוע(ים) שלא היית מעוניין בהם?"
+        },
+        {
+          "id": "2",
+          "type": "binary",
+          "text": "התאמצת לא לחשוב על האירוע(ים) או עשית מאמץ להימנע ממצבים שהזכירו לך את האירוע(ים)?"
+        },
+        {
+          "id": "3",
+          "type": "binary",
+          "text": "היית כל הזמן ערני, דרוך, או על המשמר?"
+        },
+        {
+          "id": "4",
+          "type": "binary",
+          "text": "הרגשת אדיש או מנותק מאנשים אחרים, פעילויות או הסביבה?"
+        },
+        {
+          "id": "5",
+          "type": "binary",
+          "text": "לא הצלחת להפסיק להאשים את עצמך או אחרים עבור האירוע(ים) או הבעיות שהאירוע(ים) גרמו?"
+        }
+      ],
+      "scoring": {
+        "method": "sum",
+        "exclude": [
+          "exposure"
+        ]
+      },
+      "interpretations": {
+        "target": "total",
+        "type": "screening",
+        "ranges": [
+          {
+            "min": 0,
+            "max": 3,
+            "label": "סבירות נמוכה ל-PTSD"
+          },
+          {
+            "min": 4,
+            "max": 5,
+            "label": "סבירות גבוהה ל-PTSD — מומלץ הערכה מעמיקה"
+          }
+        ],
+        "cutoffs": [
+          {
+            "value": 4,
+            "label": "סף סינון"
+          }
+        ]
+      },
+      "alerts": [
+        {
+          "condition": "score.pc_ptsd5 >= 4",
+          "message": "PTSD סבירות גבוהה",
+          "id": "alert_1",
+          "severity": "warning"
+        }
+      ],
+      "defaultOptionSetId": "yesno",
+      "optionSets": {
+        "yesno": [
+          {
+            "label": "כן",
+            "value": 1
+          },
+          {
+            "label": "לא",
+            "value": 0
+          }
+        ]
+      }
+    }
+  ]
+}

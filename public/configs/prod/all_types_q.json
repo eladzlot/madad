@@ -1,0 +1,129 @@
+{
+  "id": "all_types_q",
+  "version": "1.0.0",
+  "dev": true,
+  "questionnaires": [
+    {
+      "id": "all_types_q",
+      "title": "שאלון כל הסוגים (E2E)",
+      "description": "Test fixture with one item of each type.",
+      "keywords": [
+        "test",
+        "e2e",
+        "all-types"
+      ],
+      "defaultOptionSetId": "agree_4",
+      "optionSets": {
+        "agree_4": [
+          {
+            "label": "כלל לא",
+            "value": 0
+          },
+          {
+            "label": "קצת",
+            "value": 1
+          },
+          {
+            "label": "במידה רבה",
+            "value": 2
+          },
+          {
+            "label": "לגמרי",
+            "value": 3
+          }
+        ],
+        "yesno": [
+          {
+            "label": "כן",
+            "value": 1
+          },
+          {
+            "label": "לא",
+            "value": 0
+          }
+        ]
+      },
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "זהו שאלון בדיקה הכולל פריט אחד מכל סוג."
+        },
+        {
+          "id": "select1",
+          "type": "select",
+          "text": "הרגשתי טוב היום"
+        },
+        {
+          "id": "binary1",
+          "type": "binary",
+          "text": "ישנתי טוב הלילה",
+          "optionSetId": "yesno"
+        },
+        {
+          "id": "select_mood",
+          "type": "select",
+          "text": "כיצד היה מצב הרוח שלך היום?",
+          "options": [
+            {
+              "label": "מצוין",
+              "value": 3
+            },
+            {
+              "label": "טוב",
+              "value": 2
+            },
+            {
+              "label": "סביר",
+              "value": 1
+            },
+            {
+              "label": "גרוע",
+              "value": 0
+            }
+          ]
+        },
+        {
+          "id": "slider1",
+          "type": "slider",
+          "text": "דרג את מצב הרוח שלך",
+          "min": 0,
+          "max": 10,
+          "step": 1,
+          "labels": {
+            "min": "גרוע מאד",
+            "max": "מצוין"
+          }
+        },
+        {
+          "id": "text1",
+          "type": "text",
+          "text": "הערות נוספות",
+          "inputType": "line"
+        },
+        {
+          "id": "multi1",
+          "type": "multiselect",
+          "text": "אילו תסמינים חווית השבוע?",
+          "options": [
+            {
+              "label": "כאבי ראש"
+            },
+            {
+              "label": "עייפות"
+            },
+            {
+              "label": "חרדה"
+            },
+            {
+              "label": "קשיי שינה"
+            }
+          ]
+        }
+      ],
+      "scoring": {
+        "method": "sum"
+      }
+    }
+  ]
+}

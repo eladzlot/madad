@@ -16,6 +16,10 @@
       "type": "string",
       "minLength": 1
     },
+    "dev": {
+      "type": "boolean",
+      "description": "Marks a dev/test fixture config. Its catalog entries are shown only when import.meta.env.DEV — never in the production composer. The file itself still ships and loads like any config."
+    },
     "questionnaires": {
       "type": "array",
       "items": {

@@ -1,0 +1,254 @@
+{
+  "id": "isi",
+  "version": "1.0.0",
+  "questionnaires": [
+    {
+      "id": "isi",
+      "meta": {
+        "domains": [
+          "sleep"
+        ],
+        "type": "severity",
+        "populations": [
+          "adult"
+        ],
+        "featured": true
+      },
+      "title": "מדד חומרת נדודי שינה (ISI)",
+      "description": "7-item insomnia severity scale assessing sleep difficulty, satisfaction, and daytime impact over the past 2 weeks. (Insomnia Severity Index)",
+      "keywords": [
+        "insomnia",
+        "sleep",
+        "ISI",
+        "נדודי שינה",
+        "שינה",
+        "screening"
+      ],
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "אנא דרג/י את חומרת הבעיות הבאות הקשורות לשינה שלך בשבועיים האחרונים."
+        },
+        {
+          "id": "1",
+          "type": "select",
+          "text": "קושי בהירדמות",
+          "options": [
+            {
+              "label": "ללא",
+              "value": 0
+            },
+            {
+              "label": "קלה",
+              "value": 1
+            },
+            {
+              "label": "בינונית",
+              "value": 2
+            },
+            {
+              "label": "חמורה",
+              "value": 3
+            },
+            {
+              "label": "חמורה מאד",
+              "value": 4
+            }
+          ]
+        },
+        {
+          "id": "2",
+          "type": "select",
+          "text": "קושי בשמירה על שינה רציפה",
+          "options": [
+            {
+              "label": "ללא",
+              "value": 0
+            },
+            {
+              "label": "קלה",
+              "value": 1
+            },
+            {
+              "label": "בינונית",
+              "value": 2
+            },
+            {
+              "label": "חמורה",
+              "value": 3
+            },
+            {
+              "label": "חמורה מאד",
+              "value": 4
+            }
+          ]
+        },
+        {
+          "id": "3",
+          "type": "select",
+          "text": "בעיית יקיצה מוקדמת מדי",
+          "options": [
+            {
+              "label": "ללא",
+              "value": 0
+            },
+            {
+              "label": "קלה",
+              "value": 1
+            },
+            {
+              "label": "בינונית",
+              "value": 2
+            },
+            {
+              "label": "חמורה",
+              "value": 3
+            },
+            {
+              "label": "חמורה מאד",
+              "value": 4
+            }
+          ]
+        },
+        {
+          "id": "4",
+          "type": "select",
+          "text": "עד כמה את/ה מרוצה/ה מדפוס השינה הנוכחי שלך?",
+          "options": [
+            {
+              "label": "מרוצה מאד",
+              "value": 0
+            },
+            {
+              "label": "מרוצה",
+              "value": 1
+            },
+            {
+              "label": "מרוצה בינוני",
+              "value": 2
+            },
+            {
+              "label": "לא מרוצה",
+              "value": 3
+            },
+            {
+              "label": "לא מרוצה כלל",
+              "value": 4
+            }
+          ]
+        },
+        {
+          "id": "5",
+          "type": "select",
+          "text": "עד כמה, לדעתך, בעיית השינה שלך ניכרת לאחרים מבחינת פגיעה באיכות חייך?",
+          "options": [
+            {
+              "label": "כלל לא",
+              "value": 0
+            },
+            {
+              "label": "מעט",
+              "value": 1
+            },
+            {
+              "label": "במידה מסוימת",
+              "value": 2
+            },
+            {
+              "label": "במידה רבה",
+              "value": 3
+            },
+            {
+              "label": "במידה רבה מאד",
+              "value": 4
+            }
+          ]
+        },
+        {
+          "id": "6",
+          "type": "select",
+          "text": "עד כמה את/ה חרד/ה או מוטרד/ת מבעיית השינה הנוכחית שלך?",
+          "options": [
+            {
+              "label": "כלל לא",
+              "value": 0
+            },
+            {
+              "label": "מעט",
+              "value": 1
+            },
+            {
+              "label": "במידה מסוימת",
+              "value": 2
+            },
+            {
+              "label": "במידה רבה",
+              "value": 3
+            },
+            {
+              "label": "במידה רבה מאד",
+              "value": 4
+            }
+          ]
+        },
+        {
+          "id": "7",
+          "type": "select",
+          "text": "עד כמה בעיית השינה שלך מפריעה לתפקוד היומיומי שלך (כגון: עייפות ביום, מצב רוח, ריכוז, עבודה)?",
+          "options": [
+            {
+              "label": "כלל לא",
+              "value": 0
+            },
+            {
+              "label": "מעט",
+              "value": 1
+            },
+            {
+              "label": "במידה מסוימת",
+              "value": 2
+            },
+            {
+              "label": "במידה רבה",
+              "value": 3
+            },
+            {
+              "label": "במידה רבה מאד",
+              "value": 4
+            }
+          ]
+        }
+      ],
+      "scoring": {
+        "method": "sum"
+      },
+      "interpretations": {
+        "target": "total",
+        "type": "severity",
+        "ranges": [
+          {
+            "min": 0,
+            "max": 7,
+            "label": "ללא נדודי שינה משמעותיים"
+          },
+          {
+            "min": 8,
+            "max": 14,
+            "label": "נדודי שינה תת-סף"
+          },
+          {
+            "min": 15,
+            "max": 21,
+            "label": "נדודי שינה קליניים (בינוניים)"
+          },
+          {
+            "min": 22,
+            "max": 28,
+            "label": "נדודי שינה קליניים (חמורים)"
+          }
+        ]
+      }
+    }
+  ]
+}

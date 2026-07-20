@@ -78,9 +78,40 @@ function validateFile(filePath) {
     for (const msg of collectConfigErrors(data)) {
       errors.push(`Semantic: ${msg}`);
     }
+    for (const msg of checkProdFileLayout(rel, data)) {
+      errors.push(`Layout: ${msg}`);
+    }
   }
 
   return { rel, errors };
+}
+
+// ── Per-instrument layout convention (public/configs/prod/) ──────────────────
+// Item IDs are addresses: the patient app expands each `items=` token to
+// configs/prod/<token>.json. Every config must therefore hold exactly one
+// questionnaire or battery, with filename = entity id = config id. Test
+// fixtures follow the same rule and are marked `dev: true` in the file.
+
+function checkProdFileLayout(rel, data) {
+  if (!rel.startsWith('public/configs/prod/')) return [];
+  const basename = rel.slice('public/configs/prod/'.length).replace(/\.json$/, '');
+  const entities = [...(data.questionnaires ?? []), ...(data.batteries ?? [])];
+
+  if (entities.length !== 1) {
+    return [
+      `"${basename}.json" defines ${entities.length} entities — configs are exactly one questionnaire/battery per file ` +
+      `(filename = entity id; patient URLs resolve items by fetching configs/prod/<id>.json).`,
+    ];
+  }
+
+  const errors = [];
+  if (entities[0].id !== basename) {
+    errors.push(`Entity id "${entities[0].id}" must equal filename "${basename}" (items= tokens in patient URLs resolve to configs/prod/<id>.json)`);
+  }
+  if (data.id !== basename) {
+    errors.push(`Config id "${data.id}" must equal filename "${basename}"`);
+  }
+  return errors;
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────

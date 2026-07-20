@@ -1,0 +1,26 @@
+{
+  "id": "standard_intake",
+  "version": "1.0.0",
+  "dev": true,
+  "questionnaires": [],
+  "batteries": [
+    {
+      "id": "standard_intake",
+      "title": "שאלון בדיקה",
+      "description": "סוללת בדיקה עם שאלות בינאריות וליקרט.",
+      "keywords": [
+        "test",
+        "binary",
+        "select"
+      ],
+      "sequence": [
+        {
+          "questionnaireId": "test_q"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    "configs/prod/test_q.json"
+  ]
+}

@@ -134,17 +134,18 @@ export function createStore() {
     },
 
     /**
-     * Union of config short names referenced by uploaded sessions — used to
-     * fetch instrument configs for chart overlays. Full-URL configFile
-     * values (external configs) are excluded in v1: same-origin loading
-     * only; their charts simply render without overlays.
+     * Union of instrument IDs across uploaded sessions — used to fetch
+     * instrument configs for chart overlays. Item IDs are addresses
+     * (configs/prod/<id>.json), so the envelope's instrument ids ARE the
+     * config sources; the legacy configFile label is ignored (old PDFs
+     * recorded bundle names like "standard" whose files no longer exist).
      */
     configFiles() {
       const set = new Set();
       for (const { envelope } of sessions) {
         for (const inst of envelope.instruments) {
-          if (inst.configFile && /^[a-zA-Z0-9_-]+$/.test(inst.configFile)) {
-            set.add(inst.configFile);
+          if (inst.questionnaireId && /^[a-zA-Z0-9_-]+$/.test(inst.questionnaireId)) {
+            set.add(inst.questionnaireId);
           }
         }
       }

@@ -1,0 +1,131 @@
+{
+  "id": "phq9_test",
+  "version": "1.0.0",
+  "dev": true,
+  "questionnaires": [
+    {
+      "id": "phq9_test",
+      "title": "PHQ-9 (E2E)",
+      "description": "PHQ-9 test fixture for E2E tests.",
+      "keywords": [
+        "test",
+        "e2e",
+        "depression"
+      ],
+      "defaultOptionSetId": "frequency_4",
+      "optionSets": {
+        "frequency_4": [
+          {
+            "label": "כלל לא",
+            "value": 0
+          },
+          {
+            "label": "מספר ימים",
+            "value": 1
+          },
+          {
+            "label": "ביותר ממחצית הימים",
+            "value": 2
+          },
+          {
+            "label": "כמעט כל יום",
+            "value": 3
+          }
+        ]
+      },
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "במהלך השבוע האחרון, באיזו תדירות היית מוטרד מכל אחת מן הבעיות הבאות?"
+        },
+        {
+          "id": "1",
+          "type": "select",
+          "text": "עניין או הנאה מועטים מעשיית דברים"
+        },
+        {
+          "id": "2",
+          "type": "select",
+          "text": "תחושת דכדוך, דיכאון, או חוסר תקווה"
+        },
+        {
+          "id": "3",
+          "type": "select",
+          "text": "קשיים בהירדמות או בשינה רציפה"
+        },
+        {
+          "id": "4",
+          "type": "select",
+          "text": "תחושה של עייפות או אנרגיה מועטה"
+        },
+        {
+          "id": "5",
+          "type": "select",
+          "text": "תיאבון מועט או אכילת יתר"
+        },
+        {
+          "id": "6",
+          "type": "select",
+          "text": "מרגיש רע לגבי עצמך"
+        },
+        {
+          "id": "7",
+          "type": "select",
+          "text": "קושי להתרכז בדברים"
+        },
+        {
+          "id": "8",
+          "type": "select",
+          "text": "היית מדבר או נע באיטיות"
+        },
+        {
+          "id": "9",
+          "type": "select",
+          "text": "מחשבות שהיה עדיף לו היית מת"
+        }
+      ],
+      "scoring": {
+        "method": "sum"
+      },
+      "interpretations": {
+        "target": "total",
+        "ranges": [
+          {
+            "min": 0,
+            "max": 4,
+            "label": "מינימלי"
+          },
+          {
+            "min": 5,
+            "max": 9,
+            "label": "קל"
+          },
+          {
+            "min": 10,
+            "max": 14,
+            "label": "בינוני"
+          },
+          {
+            "min": 15,
+            "max": 19,
+            "label": "בינוני-חמור"
+          },
+          {
+            "min": 20,
+            "max": 27,
+            "label": "חמור"
+          }
+        ]
+      },
+      "alerts": [
+        {
+          "id": "suicidality",
+          "condition": "item.9 >= 1",
+          "message": "פריט 9 — דיווח על מחשבות אובדנ",
+          "severity": "critical"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,133 @@
+{
+  "id": "top3",
+  "version": "1.0.0",
+  "questionnaires": [
+    {
+      "id": "top3",
+      "meta": {
+        "domains": [
+          "general"
+        ],
+        "type": "process",
+        "populations": [
+          "adult"
+        ],
+        "featured": true
+      },
+      "title": "שלושת הבעיות המרכזיות",
+      "description": "Idiographic 3-problem questionnaire. Patient names up to three main problems and rates the severity of each on a 1–12 scale, with an optional coping description per problem.",
+      "keywords": [
+        "problems",
+        "idiographic",
+        "severity",
+        "coping",
+        "בעיות",
+        "התמודדות"
+      ],
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "אנא ציין את שלושת הבעיות העיקריות עבורן אתה מבקש עזרה בטיפול. עבור כל אחת מהבעיות סמן על סולם מ-1 עד 12 באיזו מידה היא מטרידה אותך."
+        },
+        {
+          "id": "p1_label",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "בעיה ראשונה — תאר/י בקצרה:",
+          "required": true
+        },
+        {
+          "id": "p1_severity",
+          "type": "slider",
+          "text": "עד כמה הבעיה הראשונה מטרידה אותך?",
+          "min": 1,
+          "max": 12,
+          "labels": {
+            "min": "במידה מועטה מאד",
+            "max": "במידה רבה מאד"
+          },
+          "required": true
+        },
+        {
+          "id": "p1_coping",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "כיצד התמודדת עם בעיה זו עד כה?",
+          "required": false
+        },
+        {
+          "id": "p2_label",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "בעיה שנייה — תאר/י בקצרה (אם יש):",
+          "required": false
+        },
+        {
+          "id": "if_p2",
+          "type": "if",
+          "condition": "count(item.p2_label) >= 1",
+          "then": [
+            {
+              "id": "p2_severity",
+              "type": "slider",
+              "text": "עד כמה הבעיה השנייה מטרידה אותך?",
+              "min": 1,
+              "max": 12,
+              "labels": {
+                "min": "במידה מועטה מאד",
+                "max": "במידה רבה מאד"
+              },
+              "required": false
+            },
+            {
+              "id": "p2_coping",
+              "type": "text",
+              "inputType": "multiline",
+              "text": "כיצד התמודדת עם בעיה זו עד כה?",
+              "required": false
+            },
+            {
+              "id": "p3_label",
+              "type": "text",
+              "inputType": "multiline",
+              "text": "בעיה שלישית — תאר/י בקצרה (אם יש):",
+              "required": false
+            },
+            {
+              "id": "if_p3",
+              "type": "if",
+              "condition": "count(item.p3_label) >= 1",
+              "then": [
+                {
+                  "id": "p3_severity",
+                  "type": "slider",
+                  "text": "עד כמה הבעיה השלישית מטרידה אותך?",
+                  "min": 1,
+                  "max": 12,
+                  "labels": {
+                    "min": "במידה מועטה מאד",
+                    "max": "במידה רבה מאד"
+                  },
+                  "required": false
+                },
+                {
+                  "id": "p3_coping",
+                  "type": "text",
+                  "inputType": "multiline",
+                  "text": "כיצד התמודדת עם בעיה זו עד כה?",
+                  "required": false
+                }
+              ],
+              "else": []
+            }
+          ],
+          "else": []
+        }
+      ],
+      "scoring": {
+        "method": "average"
+      }
+    }
+  ]
+}

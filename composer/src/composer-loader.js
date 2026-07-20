@@ -4,14 +4,12 @@
 // The catalog (public/composer/catalog.json, generated from the config files
 // by scripts/build-catalog.mjs) is the composer's only data source — the
 // composer never downloads full configs. Each entry carries what the picker
-// needs (id, title, description, keywords, taxonomy meta, item count, time
-// estimate) plus a `source` token: the exact value that goes into the
-// `configs=` parameter of generated patient URLs.
+// needs: id, title, description, keywords, taxonomy meta, item count, time
+// estimate.
 //
-// Cross-config dependencies are not the composer's concern: the patient app's
-// loadConfig auto-fetches each config's declared "dependencies" at runtime
-// (BFS walk in shared/config/loader.js), so generated URLs list only the
-// selected items' sources.
+// Item IDs are addresses (configs/prod/<id>.json), so generated URLs carry
+// only `items=` — the patient app derives config files from the tokens and
+// auto-fetches battery dependencies (BFS walk in shared/config/loader.js).
 //
 // Regenerate after editing configs: `npm run build:catalog`.
 
@@ -49,9 +47,7 @@ export function applyCatalog(catalog) {
       ...entry,
       description: entry.description ?? '',
       keywords: entry.keywords ?? [],
-      // sourceUrl and hidden are the fields the current render layer reads;
-      // hidden configs are already excluded at catalog build time.
-      sourceUrl: entry.source,
+      // hidden is read by the current render layer's filters.
       hidden: false,
     };
     if (entry.kind === 'battery') {
@@ -59,6 +55,5 @@ export function applyCatalog(catalog) {
     } else {
       state.questionnaires.push(item);
     }
-    state.sourceByItem.set(entry.id, entry.source);
   }
 }

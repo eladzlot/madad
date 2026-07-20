@@ -1,0 +1,25 @@
+{
+  "id": "phq9_intake",
+  "version": "1.0.0",
+  "dev": true,
+  "questionnaires": [],
+  "batteries": [
+    {
+      "id": "phq9_intake",
+      "title": "הערכה ראשונית — דיכאון",
+      "description": "סוללת PHQ-9 בלבד.",
+      "keywords": [
+        "depression",
+        "intake"
+      ],
+      "sequence": [
+        {
+          "questionnaireId": "phq9_test"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    "configs/prod/phq9_test.json"
+  ]
+}

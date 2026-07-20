@@ -18,40 +18,45 @@ The Composer **does not create or edit configuration files**. It only constructs
 
 The Composer generates URLs with the following parameters:
 
-`configs`
-: Comma-separated list of **config short names**. Each short name resolves to `/configs/prod/<name>.json`. The short name is derived from the manifest entry's URL by stripping the `configs/prod/` prefix and `.json` suffix.
-
 `items`
-: Comma-separated ordered list of questionnaire or battery IDs. Order defines session order. Batteries are expanded by the runtime into their full sequences.
+: Comma-separated ordered list of questionnaire or battery IDs. Order defines session order. Batteries are expanded by the runtime into their full sequences. **Item IDs are addresses**: the patient app expands each token to `configs/prod/<id>.json` — there is no separate config list.
 
 `pid`
 : Optional patient identifier. Must match `^[a-zA-Z0-9\u0590-\u05FF_-]{1,64}$` (see `src/pid.js`); invalid values are silently dropped by the patient runtime.
 
 Example:
 ```
-https://app.example.com/?configs=standard,intake&items=phq9,clinical_intake&pid=ABC123
+https://app.example.com/?items=phq9,clinical_intake&pid=ABC123
 ```
 
 Rules:
 - `items` order defines session order
 - Each token resolves to a battery (expanded) or questionnaire
 - Mixing batteries and questionnaires is supported
-- Only the selected items' source configs are included (declared cross-config dependencies are auto-fetched by the patient app, see below)
+- Cross-file references (battery sequences) are covered by the config files' declared `dependencies`, auto-fetched by the patient app — the URL never lists configs
 - `pid` is optional
 
-### Short names as a stable URL contract
+### Legacy `configs=` parameter
 
-The Composer emits short names (e.g. `standard`, `intake`, `trauma`) rather than full paths. These short names are a **stable external contract** once URLs are shared — a link sent via WhatsApp or saved in a clinician's notes must continue to resolve indefinitely. This has three consequences:
+Bundle-era URLs carried a `configs=` parameter naming config files explicitly
+(`configs=standard,intake`, or full paths). The patient app **ignores it
+entirely**: the files it names no longer exist, but such URLs' `items` tokens
+resolve on their own, so old links keep working. Never emit `configs=` in new
+links.
+
+### Item IDs as a stable URL contract
+
+An `items=` token is a promise: `configs/prod/<id>.json` must keep resolving
+for as long as any shared link or saved clinician note references it.
+Consequences:
 
 1. **The `configs/prod/` prefix is frozen.** Moving production configs to a different folder would invalidate every existing link.
-2. **Short names flatten the namespace.** Two configs with the same basename (e.g. `configs/prod/standard.json` and `configs/v2/standard.json`) would collide on the short name `standard`. Adding a `v2` namespace would require versioned short names (e.g. `v2.standard`).
-3. **Never rename a prod config file.** Renaming `standard.json` to `adult.json` breaks every existing link to its questionnaires. Add a new file instead.
-
-Hand-crafted URLs may also use full paths (`configs=configs/prod/standard.json`) — `loadConfig` accepts both forms. The Composer always emits the short form for brevity.
+2. **Never rename or delete a prod config file.** The filename is the ID is the URL token. Retiring an instrument means keeping its file (or knowingly breaking its links).
+3. **Filename = entity id = config id** — enforced by `validate:configs`.
 
 ### Global ID namespace
 
-Questionnaire IDs and battery IDs share a single namespace **across every config file the patient app loads**. Once a questionnaire with ID `phq9` ships in `standard.json`, that ID is effectively reserved forever — no other config can use `phq9`, and `standard.json` cannot reuse `phq9` for a different questionnaire without breaking existing patient links that reference it.
+Questionnaire IDs and battery IDs share a single namespace **across every config file the patient app loads**. Once a questionnaire ships with ID `phq9`, that ID is effectively reserved forever — no other config can use `phq9`, and `phq9.json` cannot be reused for a different questionnaire without breaking existing patient links that reference it.
 
 This is enforced at load time: `loadConfig` throws `ConfigError: Duplicate questionnaire ID` if two loaded configs declare the same ID. The `validate:configs` CI script catches this before deployment.
 
@@ -61,20 +66,15 @@ This is enforced at load time: `loadConfig` throws `ConfigError: Duplicate quest
 
 The composer never downloads config files. It fetches a single generated
 index — the **catalog** at `public/composer/catalog.json` — produced from the
-manifest and the config files by `scripts/build-catalog.mjs`.
+config directories by `scripts/build-catalog.mjs`.
 
-### Manifest (build-time input)
+### Config file layout (build-time input)
 
-`public/composer/configs.json` lists which configs enter the catalog and in
-what order. It is read only by the catalog build script — nothing fetches it
-at runtime.
-
-| Field | Type | Description |
-|---|---|---|
-| `name` | string | Display name (internal) |
-| `url` | string | Root-relative path to config JSON |
-| `hidden` | boolean | Config contributes no picker entries (its questionnaires still count toward battery sizes; the patient app still loads it via dependency auto-fetch). Default: `false` |
-| `dev` | boolean | Entries from this source are only shown when `import.meta.env.DEV === true`; skipped in production builds. Default: `false` |
+There is no manifest. The catalog script scans `public/configs/prod/*.json`
+in sorted filename order. Every config is **exactly one questionnaire or
+battery, filename = entity id = config id** (enforced by `validate:configs`).
+Dev/test fixtures live in the same directory with `"dev": true` at the config
+top level — their entries appear only when `import.meta.env.DEV`.
 
 ### Catalog (runtime data source)
 
@@ -85,7 +85,7 @@ at runtime.
     {
       "id": "phq9", "kind": "questionnaire",
       "title": "שאלון דיכאון (PHQ-9)", "description": "…", "keywords": ["PHQ"],
-      "source": "standard", "itemCount": 9, "estMinutes": 1, "hasConditional": false,
+      "itemCount": 9, "estMinutes": 1, "hasConditional": false,
       "domains": ["depression"], "type": "severity", "populations": ["adult"],
       "tags": [], "featured": true
     }
@@ -93,15 +93,14 @@ at runtime.
 }
 ```
 
-- `source` is a **token**: exactly what goes into the `configs=` parameter of
-  generated URLs (short name for `configs/prod/*` files, relative path for
-  anything else).
+- The entry `id` doubles as the URL token (`items=phq9`) — no source mapping
+  exists or is needed.
 - `entries` carry everything the picker shows: catalog-truncated description
   (~140 chars; full text lives in the config), taxonomy meta (`domains`,
   `type`, `populations`, `tags`, `featured` — see CONFIG_SCHEMA_SPEC §4a),
   `itemCount`/`estMinutes` (unconditional path; `hasConditional: true` means
   "may be longer"), `kind` (`questionnaire` | `battery`), and `dev: true` on
-  entries from dev sources (shown only when `import.meta.env.DEV`).
+  fixture entries (shown only when `import.meta.env.DEV`).
 - `catalogVersion` mismatches produce a non-blocking warning banner.
 
 ### Keeping the catalog in sync
@@ -188,11 +187,9 @@ The Composer does **not** track dependencies. When a config declares
 runtime (BFS walk over declared dependencies — `shared/config/loader.js`,
 `loadDependencies: true` by default).
 
-Example: selecting `clinical_intake` (from `intake.json`) generates
-`configs=intake`. The patient app fetches `intake.json`, sees its declared
-dependencies (`standard`, `trauma`), and fetches those too. Older URLs that
-list dependency configs explicitly keep working — the loader's visited-set
-dedupes either way.
+Example: selecting `clinical_intake` generates `items=clinical_intake`. The
+patient app fetches `configs/prod/clinical_intake.json`, sees its declared
+dependencies (`diamond_sr`, `phq9`, `pcl5`, …), and fetches those too.
 
 ---
 
@@ -225,7 +222,7 @@ Clears selection, PID, and search query immediately. No confirmation.
 ## Runtime Requirements
 
 The patient app:
-- Parses `configs`, `items`, `pid` from the URL
-- Loads all configs in parallel via `loadConfig()`
+- Parses `items` and `pid` from the URL (a legacy `configs` param is ignored)
+- Expands each unique `items` token to `configs/prod/<id>.json` and loads them in parallel via `loadConfig()` (declared dependencies auto-fetched)
 - Resolves each `items` token as battery or questionnaire via `resolveItems()`
 - Shows a pre-welcome error screen if `items` is absent, empty, or unresolvable

@@ -5,7 +5,6 @@ import { state, buildUrl, pidWarning, matchesQuery } from './composer-state.js';
 beforeEach(() => {
   state.batteries             = [];
   state.questionnaires        = [];
-  state.sourceByItem          = new Map();
   state.selected              = [];
   state.pid                   = '';
   state.query                 = '';
@@ -29,75 +28,38 @@ describe('buildUrl', () => {
 
   it('includes items param with selected IDs', () => {
     state.selected = ['phq9'];
-    state.sourceByItem.set('phq9', '/configs/a.json');
     expect(buildUrl(ORIGIN)).toContain('items=phq9');
   });
 
-  it('includes configs param with required source URLs', () => {
-    state.selected = ['phq9'];
-    state.sourceByItem.set('phq9', '/configs/a.json');
-    const url = buildUrl(ORIGIN);
-    expect(url).toContain('configs=');
-    expect(url).toContain('/configs/a.json');
+  it('emits no configs param — item ids are addresses, the patient app derives config files from tokens', () => {
+    state.selected = ['phq9', 'clinical_intake'];
+    const params = new URL(buildUrl(ORIGIN)).searchParams;
+    expect(params.has('configs')).toBe(false);
+    expect(params.get('items')).toBe('phq9,clinical_intake');
   });
 
   it('includes pid param when pid is set', () => {
     state.selected = ['phq9'];
-    state.sourceByItem.set('phq9', '/configs/a.json');
     state.pid = 'TRC-001';
     expect(buildUrl(ORIGIN)).toContain('pid=TRC-001');
   });
 
   it('omits pid param when pid is empty', () => {
     state.selected = ['phq9'];
-    state.sourceByItem.set('phq9', '/configs/a.json');
     state.pid = '';
     expect(buildUrl(ORIGIN)).not.toContain('pid=');
   });
 
   it('omits pid param when pid is whitespace only', () => {
     state.selected = ['phq9'];
-    state.sourceByItem.set('phq9', '/configs/a.json');
     state.pid = '   ';
     expect(buildUrl(ORIGIN)).not.toContain('pid=');
   });
 
   it('preserves selection order in items param', () => {
     state.selected = ['gad7', 'phq9', 'pcl5'];
-    state.sourceByItem.set('gad7',  '/configs/a.json');
-    state.sourceByItem.set('phq9',  '/configs/a.json');
-    state.sourceByItem.set('pcl5',  '/configs/a.json');
     const params = new URL(buildUrl(ORIGIN)).searchParams;
     expect(params.get('items')).toBe('gad7,phq9,pcl5');
-  });
-
-  it('deduplicates configs param when multiple items share a source', () => {
-    state.selected = ['phq9', 'gad7'];
-    state.sourceByItem.set('phq9', '/configs/a.json');
-    state.sourceByItem.set('gad7', '/configs/a.json');
-    const configs = new URL(buildUrl(ORIGIN)).searchParams.get('configs').split(',');
-    expect(configs).toHaveLength(1);
-    expect(configs[0]).toBe('/configs/a.json');
-  });
-
-  it('includes multiple config sources when items come from different files', () => {
-    state.selected = ['phq9', 'lsas'];
-    state.sourceByItem.set('phq9', '/configs/a.json');
-    state.sourceByItem.set('lsas', '/configs/b.json');
-    const configs = new URL(buildUrl(ORIGIN)).searchParams.get('configs').split(',');
-    expect(configs).toHaveLength(2);
-    expect(configs).toContain('/configs/a.json');
-    expect(configs).toContain('/configs/b.json');
-  });
-
-  it('emits only the selected item\'s source for cross-config batteries (deps auto-fetched by the patient app)', () => {
-    // clinical_intake lives in intake, which declares standard as a config
-    // dependency. The URL names only intake — the patient app's loadConfig
-    // fetches standard itself via the declared-dependencies BFS walk.
-    state.selected = ['clinical_intake'];
-    state.sourceByItem.set('clinical_intake', 'intake');
-    const configs = new URL(buildUrl(ORIGIN)).searchParams.get('configs').split(',');
-    expect(configs).toEqual(['intake']);
   });
 });
 

@@ -5,7 +5,6 @@ import { state, CATALOG_URL } from './composer-state.js';
 beforeEach(() => {
   state.batteries       = [];
   state.questionnaires  = [];
-  state.sourceByItem    = new Map();
   state.selected        = [];
   state.warnings        = [];
   mockFetch.mockReset();
@@ -26,7 +25,6 @@ function entry(id, overrides = {}) {
     title: `שאלון ${id}`,
     description: '',
     keywords: [],
-    source: 'standard',
     itemCount: 9,
     estMinutes: 1,
     hasConditional: false,
@@ -81,13 +79,7 @@ describe('applyCatalog', () => {
     expect(state.questionnaires.map(q => q.id)).toEqual(['phq9']);
   });
 
-  it('sets sourceUrl (render contract) and sourceByItem from entry.source', () => {
-    applyCatalog(catalog([entry('phq9', { source: 'standard' })]));
-    expect(state.questionnaires[0].sourceUrl).toBe('standard');
-    expect(state.sourceByItem.get('phq9')).toBe('standard');
-  });
-
-  it('marks entries as not hidden (hidden configs are excluded at build time)', () => {
+  it('marks entries as not hidden (render-layer contract)', () => {
     applyCatalog(catalog([entry('phq9')]));
     expect(state.questionnaires[0].hidden).toBe(false);
   });
@@ -100,12 +92,8 @@ describe('applyCatalog', () => {
   });
 
   it('includes dev entries when running in dev mode (Vitest sets DEV=true)', () => {
-    applyCatalog(catalog([
-      entry('phq9'),
-      entry('test_q', { source: 'configs/test/e2e.json', dev: true }),
-    ]));
-    expect(state.questionnaires.map(q => q.id)).toEqual(['phq9', 'test_q']);
-    expect(state.sourceByItem.get('test_q')).toBe('configs/test/e2e.json');
+    applyCatalog(catalog([entry('phq9'), entry('phq9_test', { dev: true })]));
+    expect(state.questionnaires.map(q => q.id)).toEqual(['phq9', 'phq9_test']);
   });
 
   it('warns on catalog version mismatch but still applies entries', () => {
@@ -123,24 +111,16 @@ describe('applyCatalog', () => {
 // ── URL generation integration ────────────────────────────────────────────────
 
 describe('buildUrl integration', () => {
-  it('emits only selected sources — cross-config deps are the patient loader\'s job', async () => {
+  it('generates an items-only URL from a selection', async () => {
     applyCatalog(catalog([
-      entry('clinical_intake', { kind: 'battery', source: 'intake' }),
-      entry('diamond_sr', { source: 'intake' }),
-      entry('std_q', { source: 'standard' }),
+      entry('clinical_intake', { kind: 'battery' }),
+      entry('phq9'),
     ]));
 
     const { buildUrl } = await import('./composer-state.js');
-    state.selected = ['clinical_intake'];
-    const url = buildUrl('http://localhost');
-    expect(new URL(url).searchParams.get('configs')).toBe('intake');
-  });
-
-  it('emits legacy-path tokens for non-prod sources as-is', async () => {
-    applyCatalog(catalog([entry('test_q', { source: 'configs/test/e2e.json', dev: true })]));
-    const { buildUrl } = await import('./composer-state.js');
-    state.selected = ['test_q'];
-    const url = buildUrl('http://localhost');
-    expect(new URL(url).searchParams.get('configs')).toBe('configs/test/e2e.json');
+    state.selected = ['clinical_intake', 'phq9'];
+    const url = new URL(buildUrl('http://localhost'));
+    expect(url.searchParams.get('items')).toBe('clinical_intake,phq9');
+    expect(url.searchParams.has('configs')).toBe(false);
   });
 });

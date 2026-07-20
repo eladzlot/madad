@@ -9,64 +9,66 @@
 
 3. **Refine with follow-ups** — add the exact Hebrew item text, adjust scoring ranges, add alerts, etc.
 
-4. **Copy the JSON output** into the appropriate config file (see "Which file?" below).
+4. **Save the JSON output** as its own file: `public/configs/prod/YOUR_ID.json` (see "One file per instrument" below).
 
-5. **Validate:**
+5. **Validate and regenerate the catalog:**
    ```bash
    npm run validate:configs
+   npm run build:catalog
    ```
-   Fix any errors reported. The messages are descriptive — share them with the LLM and ask it to fix them.
+   Fix any errors reported. The messages are descriptive — share them with the LLM and ask it to fix them. Commit the regenerated `public/composer/catalog.json` together with your config.
 
 6. **Test manually** at:
    ```
-   http://localhost:5173/?configs=standard&items=YOUR_ID
+   http://localhost:5173/?items=YOUR_ID
    ```
-   Replace `standard` with the short name of whichever file you added to (see "Adding a new config file" below for how short names are derived).
 
-7. **Open a pull request** with only the config file(s) changed.
+7. **Open a pull request** with the new config file and the regenerated catalog.
 
 For the full manual field reference, see `docs/CONFIG_SCHEMA_SPEC.md`. `LLM_GUIDE.md` and `CONFIG_SCHEMA_SPEC.md` cover the same ground — `LLM_GUIDE.md` is example-heavy and optimised for LLM use, `CONFIG_SCHEMA_SPEC.md` is the formal reference.
 
 ---
 
-## Which file?
+## One file per instrument
 
-| What you're adding | File |
-|---|---|
-| General clinical scale (depression, anxiety, OCD, etc.) | `prod/standard.json` |
-| Trauma-related instrument | `prod/trauma.json` |
-| Intake / screening instrument | `prod/intake.json` |
-| New clinical domain requiring its own config | Create a new file — see "Adding a new config file" below |
+Every questionnaire or battery is its own file in `public/configs/prod/`, and
+the **filename must equal the entity's id** (`validate:configs` enforces this):
 
----
+```json
+// public/configs/prod/bai.json
+{
+  "id": "bai",
+  "version": "1.0.0",
+  "questionnaires": [ { "id": "bai", "title": "…", "meta": { … }, "items": [ … ] } ]
+}
+```
 
-## Adding a new config file
+Item IDs are URL addresses: `?items=bai` makes the patient app fetch
+`configs/prod/bai.json`. There is no manifest to register: the catalog build
+script scans the directory.
 
-If no existing file fits your instrument:
+**Batteries** get their own file too, and must declare a dependency on every
+questionnaire file their sequence references (the patient app auto-fetches
+declared dependencies at runtime; `validate:configs` errors on undeclared
+cross-file references):
 
-1. Create `public/configs/prod/yourname.json` with the standard structure:
-   ```json
-   {
-     "id": "yourname",
-     "version": "1.0.0",
-     "questionnaires": [],
-     "batteries": []
-   }
-   ```
+```json
+// public/configs/prod/my_battery.json
+{
+  "id": "my_battery",
+  "version": "1.0.0",
+  "questionnaires": [],
+  "batteries": [ { "id": "my_battery", "title": "…", "sequence": [ … ] } ],
+  "dependencies": ["configs/prod/phq9.json", "configs/prod/gad7.json"]
+}
+```
 
-2. Add it to the Composer manifest at `public/composer/configs.json`:
-   ```json
-   { "name": "Your config display name", "url": "/configs/prod/yourname.json" }
-   ```
+**Test fixtures:** files used only by the E2E suite carry `"dev": true` at
+the config top level — they never appear in the production composer. They
+follow the same one-entity-per-file rule.
 
-   The short name is derived from this URL by stripping `configs/prod/` and `.json` — so the example above gives short name `yourname`. Short names appear in generated patient URLs and in `dependencies` arrays (see step 3).
-
-3. If this config uses instruments from another config, declare the dependency:
-   ```json
-   { "dependencies": ["standard"] }
-   ```
-
-   The Composer will include the dependency automatically in generated URLs. **Use short names in the `dependencies` array** — they match what appears in patient URLs and avoid ambiguity about path format. The legacy full-path form (`"configs/prod/standard.json"`) is also accepted by the loader, but new configs should use short names.
+**Never rename or delete a prod config file** — the filename is the
+instrument's URL address; renaming breaks every link that references it.
 
 ---
 

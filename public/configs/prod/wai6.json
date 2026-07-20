@@ -1,0 +1,98 @@
+{
+  "id": "wai6",
+  "version": "1.0.0",
+  "questionnaires": [
+    {
+      "id": "wai6",
+      "meta": {
+        "domains": [
+          "alliance"
+        ],
+        "type": "process",
+        "populations": [
+          "adult"
+        ],
+        "featured": true
+      },
+      "title": "שאלון ברית טיפולית (WAI-6)",
+      "description": "6-item working alliance measure assessing bond and goal/task agreement between patient and therapist. Administered after therapy sessions.",
+      "keywords": [
+        "alliance",
+        "therapeutic",
+        "bond",
+        "WAI",
+        "ברית טיפולית",
+        "קשר"
+      ],
+      "defaultOptionSetId": "wai_scale",
+      "optionSets": {
+        "wai_scale": [
+          {
+            "label": "לא בכלל",
+            "value": 0
+          },
+          {
+            "label": "1",
+            "value": 1
+          },
+          {
+            "label": "2",
+            "value": 2
+          },
+          {
+            "label": "3",
+            "value": 3
+          },
+          {
+            "label": "4",
+            "value": 4
+          },
+          {
+            "label": "תמיד",
+            "value": 5
+          }
+        ]
+      },
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "לפניך רשימה של משפטים המתארים רגשות ומחשבות העשויים להתעורר אצל מטופל/ת ביחס למטפל/ת שלו/ה. אם ההצהרה מתארת את איך שאת/ה מרגיש/ה או חושב/ת, סמן/י את המספר 5 ואם המשפט מתאר מחשבה או תחושה שלא התרחשה בכלל סמן/י את המספר 0. השתמש/י במספרים 1 עד 4 כדי לתאר גירסות אחרות בין הקצוות האלה. אנא קרא/י את השאלות, וענה/י עליהם במהירות. אנו מעוניינים ברושם הראשוני שעולה בדעתך."
+        },
+        {
+          "id": "1",
+          "type": "select",
+          "text": "המטפל/ת שלי ואני עובדים למען מטרות ששנינו מסכימים עליהן."
+        },
+        {
+          "id": "2",
+          "type": "select",
+          "text": "אני מרגיש/ה שהמטפל/ת שלי מעריך/ה אותי."
+        },
+        {
+          "id": "3",
+          "type": "select",
+          "text": "המטפל/ת שלי ואני מכבדים זה את זה."
+        },
+        {
+          "id": "4",
+          "type": "select",
+          "text": "יש לנו הסכמה לגבי מהם הדברים החשובים לי לעבוד עליהם."
+        },
+        {
+          "id": "5",
+          "type": "select",
+          "text": "אני מרגיש/ה שלמטפל/ת שלי אכפת ממני גם כשאני עושה דברים שהוא/היא לא מסכים/ה להם."
+        },
+        {
+          "id": "6",
+          "type": "select",
+          "text": "אני מאמין/ה שהדרך בה אנו עובדים על הבעיות שלי היא דרך נכונה."
+        }
+      ],
+      "scoring": {
+        "method": "sum"
+      }
+    }
+  ]
+}

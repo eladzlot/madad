@@ -1,0 +1,203 @@
+{
+  "id": "spin",
+  "version": "1.0.0",
+  "questionnaires": [
+    {
+      "id": "spin",
+      "meta": {
+        "domains": [
+          "social",
+          "anxiety"
+        ],
+        "type": "severity",
+        "populations": [
+          "adult"
+        ],
+        "featured": true
+      },
+      "title": "שאלון פוביה חברתית (SPIN)",
+      "description": "17-item social phobia severity scale. Screens for social anxiety disorder and measures symptom severity. (Social Phobia Inventory)",
+      "keywords": [
+        "social anxiety",
+        "social phobia",
+        "SPIN",
+        "חרדה חברתית",
+        "פוביה חברתית",
+        "screening"
+      ],
+      "defaultOptionSetId": "severity_5",
+      "optionSets": {
+        "severity_5": [
+          {
+            "label": "בכלל לא",
+            "value": 0
+          },
+          {
+            "label": "במידה מעטה",
+            "value": 1
+          },
+          {
+            "label": "במידה בינונית",
+            "value": 2
+          },
+          {
+            "label": "במידה רבה",
+            "value": 3
+          },
+          {
+            "label": "במידה רבה מאד",
+            "value": 4
+          }
+        ]
+      },
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "אנא ציינו באיזו מידה הטרידו אתכם הבעיות הבאות במהלך השבוע האחרון."
+        },
+        {
+          "id": "1",
+          "type": "select",
+          "text": "אני מפחד/ת מאנשים בעלי סמכות."
+        },
+        {
+          "id": "2",
+          "type": "select",
+          "text": "אני מוטרד/ת מהסמקה בפני אנשים."
+        },
+        {
+          "id": "3",
+          "type": "select",
+          "text": "מסיבות ואירועים חברתיים מפחידים אותי."
+        },
+        {
+          "id": "4",
+          "type": "select",
+          "text": "אני נמנע/ת מלדבר עם אנשים שאני לא מכיר/ה."
+        },
+        {
+          "id": "5",
+          "type": "select",
+          "text": "מפחיד אותי להיות תחת ביקורת."
+        },
+        {
+          "id": "6",
+          "type": "select",
+          "text": "הפחד ממבוכה גורם לי להימנע מלעשות דברים או לדבר עם אנשים."
+        },
+        {
+          "id": "7",
+          "type": "select",
+          "text": "להזיע מול אנשים גורם לי מצוקה."
+        },
+        {
+          "id": "8",
+          "type": "select",
+          "text": "אני נמנע/ת מללכת למסיבות."
+        },
+        {
+          "id": "9",
+          "type": "select",
+          "text": "אני נמנע/ת מפעילויות שבהן אני במרכז תשומת לב."
+        },
+        {
+          "id": "10",
+          "type": "select",
+          "text": "מפחיד אותי לדבר עם זרים."
+        },
+        {
+          "id": "11",
+          "type": "select",
+          "text": "אני נמנע/ת מלתת נאום."
+        },
+        {
+          "id": "12",
+          "type": "select",
+          "text": "אני מוכן/ה לעשות כל דבר כדי למנוע ביקורת."
+        },
+        {
+          "id": "13",
+          "type": "select",
+          "text": "דפיקות לב מפריעות לי כאשר אני ליד אנשים."
+        },
+        {
+          "id": "14",
+          "type": "select",
+          "text": "אני מפחד/ת לעשות דברים כאשר אנשים עלולים לראות אותי."
+        },
+        {
+          "id": "15",
+          "type": "select",
+          "text": "להיות נבוך/ה או להראות טיפשי/ת הם בין הפחדים הגרועים ביותר שלי."
+        },
+        {
+          "id": "16",
+          "type": "select",
+          "text": "אני נמנע/ת מלדבר עם כל אדם בעל סמכות."
+        },
+        {
+          "id": "17",
+          "type": "select",
+          "text": "לרעוד מול אנשים זה דבר שגורם לי מצוקה."
+        }
+      ],
+      "scoring": {
+        "method": "subscales",
+        "subscales": {
+          "fear": [
+            "1",
+            "2",
+            "5",
+            "10",
+            "12",
+            "14",
+            "15"
+          ],
+          "avoidance": [
+            "4",
+            "6",
+            "8",
+            "9",
+            "11",
+            "16"
+          ],
+          "physiological": [
+            "3",
+            "7",
+            "13",
+            "17"
+          ]
+        }
+      },
+      "subscaleLabels": {
+        "fear": "פחד (Fear)",
+        "avoidance": "הימנעות (Avoidance)",
+        "physiological": "עוררות פיזיולוגית (Physiological Arousal)"
+      },
+      "interpretations": {
+        "target": "total",
+        "type": "screening",
+        "ranges": [
+          {
+            "min": 0,
+            "max": 20,
+            "label": "מתחת לסף קליני"
+          },
+          {
+            "min": 21,
+            "max": 68,
+            "label": "חשד לפוביה חברתית (סף סינון)"
+          }
+        ],
+        "cutoffs": [
+          {
+            "value": 21,
+            "label": "סף סינון"
+          }
+        ]
+      },
+      "alerts": []
+    }
+  ]
+}

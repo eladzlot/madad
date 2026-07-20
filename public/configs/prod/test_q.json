@@ -1,0 +1,79 @@
+{
+  "id": "test_q",
+  "version": "1.0.0",
+  "dev": true,
+  "questionnaires": [
+    {
+      "id": "test_q",
+      "title": "שאלון בדיקה",
+      "description": "שאלון בדיקה קצר לצורכי E2E.",
+      "keywords": [
+        "test",
+        "e2e"
+      ],
+      "defaultOptionSetId": "agree_4",
+      "optionSets": {
+        "yesno": [
+          {
+            "label": "כן",
+            "value": 1
+          },
+          {
+            "label": "לא",
+            "value": 0
+          }
+        ],
+        "agree_4": [
+          {
+            "label": "כלל לא",
+            "value": 0
+          },
+          {
+            "label": "קצת",
+            "value": 1
+          },
+          {
+            "label": "במידה רבה",
+            "value": 2
+          },
+          {
+            "label": "לגמרי",
+            "value": 3
+          }
+        ]
+      },
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "ברוכים הבאים לשאלון הבדיקה."
+        },
+        {
+          "id": "b1",
+          "type": "binary",
+          "text": "האם ישנת טוב הלילה?",
+          "optionSetId": "yesno"
+        },
+        {
+          "id": "b2",
+          "type": "binary",
+          "text": "האם הרגשת רגוע היום?",
+          "optionSetId": "yesno"
+        },
+        {
+          "id": "l1",
+          "type": "select",
+          "text": "הרגשתי ממוקד ופרודוקטיבי במהלך היום"
+        },
+        {
+          "id": "l2",
+          "type": "select",
+          "text": "הרגשתי קשר ותמיכה מאנשים סביבי"
+        }
+      ],
+      "scoring": {
+        "method": "sum"
+      }
+    }
+  ]
+}

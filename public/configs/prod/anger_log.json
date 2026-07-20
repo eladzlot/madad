@@ -1,0 +1,148 @@
+{
+  "id": "anger_log",
+  "version": "1.0.0",
+  "questionnaires": [
+    {
+      "id": "anger_log",
+      "meta": {
+        "domains": [
+          "anger"
+        ],
+        "type": "worksheet",
+        "populations": [
+          "adult"
+        ]
+      },
+      "title": "דו\"ח כעס",
+      "description": "דף עבודה לתיעוד אירועי כעס, תגובות, ומחשבה על דרכי התמודדות חלופיות.",
+      "keywords": [
+        "כעס",
+        "anger log",
+        "worksheet",
+        "דף עבודה",
+        "דו\"ח כעס"
+      ],
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "מלאו את הדו\"ח לאחר אירוע כעס או כשאתם משחזרים אירוע כזה. מטרת הדף היא לעזור לתאר מה קרה, איך הרגשתם, איך הגבתם, ועד כמה התמודדתם היטב עם הסיטואציה. דף זה אינו מחושב לניקוד."
+        },
+        {
+          "id": "time",
+          "type": "text",
+          "text": "מתי זה קרה?",
+          "required": false
+        },
+        {
+          "id": "what_happened",
+          "type": "text",
+          "text": "תאר/י בקצרה מה קרה (מי, איפה, מה)",
+          "inputType": "multiline",
+          "required": false
+        },
+        {
+          "id": "pre_arousal",
+          "type": "slider",
+          "text": "רמת העוררות לפני אירוע הכעס",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "labels": {
+            "min": "0",
+            "max": "100"
+          }
+        },
+        {
+          "id": "anger_intensity",
+          "type": "select",
+          "text": "עד כמה כעסת?",
+          "options": [
+            {
+              "label": "0% — בכלל לא",
+              "value": 0
+            },
+            {
+              "label": "25% — קצת כועס/ת",
+              "value": 25
+            },
+            {
+              "label": "50% — די כועס/ת",
+              "value": 50
+            },
+            {
+              "label": "75% — מאד כועס/ת",
+              "value": 75
+            },
+            {
+              "label": "100% — זועמ/ת",
+              "value": 100
+            }
+          ]
+        },
+        {
+          "id": "behavior",
+          "type": "text",
+          "text": "איך הגבת? התנהגות (מה עשית?)",
+          "inputType": "multiline",
+          "required": false
+        },
+        {
+          "id": "body",
+          "type": "text",
+          "text": "איך הגבת? גוף (דפיקות לב וכד')",
+          "inputType": "multiline",
+          "required": false
+        },
+        {
+          "id": "thoughts",
+          "type": "text",
+          "text": "איך הגבת? מחשבות (מה חשבת?)",
+          "inputType": "multiline",
+          "required": false
+        },
+        {
+          "id": "emotions",
+          "type": "text",
+          "text": "איך הגבת? רגשות (פחד, כעס)",
+          "inputType": "multiline",
+          "required": false
+        },
+        {
+          "id": "coping_rating",
+          "type": "select",
+          "text": "עד כמה אתה חושב שהתמודדת היטב עם הסיטואציה?",
+          "options": [
+            {
+              "label": "1 — גרוע",
+              "value": 1
+            },
+            {
+              "label": "2 — לא משהו",
+              "value": 2
+            },
+            {
+              "label": "3 — בסדר",
+              "value": 3
+            },
+            {
+              "label": "4 — טוב",
+              "value": 4
+            },
+            {
+              "label": "5 — מצויין",
+              "value": 5
+            }
+          ]
+        },
+        {
+          "id": "what_else",
+          "type": "text",
+          "text": "מה היית יכול/ה לעשות אחרת?",
+          "inputType": "multiline",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

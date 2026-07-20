@@ -1,0 +1,53 @@
+{
+  "id": "trauma_eval",
+  "version": "1.0.0",
+  "questionnaires": [],
+  "batteries": [
+    {
+      "id": "trauma_eval",
+      "meta": {
+        "domains": [
+          "trauma"
+        ],
+        "populations": [
+          "adult"
+        ],
+        "featured": true
+      },
+      "title": "הערכת טראומה ראשונית",
+      "description": "סקר טראומה קצר (PC-PTSD-5). במקרה של ציון חיובי — הערכה מעמיקה עם PCL-5 ושאלון קוגניציות פוסט-טראומטיות (PTCI).",
+      "keywords": [
+        "טראומה",
+        "PTSD",
+        "trauma",
+        "PCL-5",
+        "PTCI",
+        "הערכה",
+        "סקר"
+      ],
+      "sequence": [
+        {
+          "questionnaireId": "pc_ptsd5"
+        },
+        {
+          "type": "if",
+          "condition": "score.pc_ptsd5 >= 4",
+          "then": [
+            {
+              "questionnaireId": "pcl5"
+            },
+            {
+              "questionnaireId": "ptci"
+            }
+          ],
+          "else": []
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    "configs/prod/pc_ptsd5.json",
+    "configs/prod/pcl5.json",
+    "configs/prod/ptci.json"
+  ]
+}

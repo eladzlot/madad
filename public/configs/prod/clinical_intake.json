@@ -1,0 +1,123 @@
+{
+  "id": "clinical_intake",
+  "version": "1.0.0",
+  "questionnaires": [],
+  "batteries": [
+    {
+      "id": "clinical_intake",
+      "meta": {
+        "domains": [
+          "intake"
+        ],
+        "populations": [
+          "adult"
+        ],
+        "featured": true
+      },
+      "title": "הערכה ראשונית",
+      "description": "סוללת הערכה ראשונית: שאלון סינון DIAMOND ושאלונים ממוקדים בהתאם לתסמינים שדווחו.",
+      "keywords": [
+        "intake",
+        "screening",
+        "clinical",
+        "DIAMOND"
+      ],
+      "sequence": [
+        {
+          "questionnaireId": "diamond_sr"
+        },
+        {
+          "type": "if",
+          "condition": "item.diamond_sr.q1 == 1",
+          "then": [
+            {
+              "questionnaireId": "spin"
+            }
+          ],
+          "else": []
+        },
+        {
+          "type": "if",
+          "condition": "item.diamond_sr.q11 == 1 || item.diamond_sr.q12 == 1",
+          "then": [
+            {
+              "questionnaireId": "oci_r"
+            }
+          ],
+          "else": []
+        },
+        {
+          "type": "if",
+          "condition": "item.diamond_sr.q19 == 1",
+          "then": [
+            {
+              "questionnaireId": "pcl5"
+            }
+          ],
+          "else": []
+        },
+        {
+          "type": "if",
+          "condition": "item.diamond_sr.q2 == 1 || item.diamond_sr.q3 == 1",
+          "then": [
+            {
+              "questionnaireId": "pdss_sr"
+            }
+          ],
+          "else": []
+        },
+        {
+          "type": "if",
+          "condition": "item.diamond_sr.q4 == 1",
+          "then": [
+            {
+              "questionnaireId": "gad7"
+            }
+          ],
+          "else": []
+        },
+        {
+          "type": "if",
+          "condition": "item.diamond_sr.q8 == 1 || item.diamond_sr.q9 == 1",
+          "then": [
+            {
+              "questionnaireId": "phq9"
+            }
+          ],
+          "else": []
+        },
+        {
+          "type": "if",
+          "condition": "item.diamond_sr.q17 == 1 || item.diamond_sr.q18 == 1",
+          "then": [
+            {
+              "questionnaireId": "hai"
+            }
+          ],
+          "else": []
+        },
+        {
+          "type": "if",
+          "condition": "item.diamond_sr.q15 == 1",
+          "then": [
+            {
+              "questionnaireId": "mgh_hps"
+            }
+          ],
+          "else": []
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    "configs/prod/diamond_sr.json",
+    "configs/prod/spin.json",
+    "configs/prod/oci_r.json",
+    "configs/prod/pcl5.json",
+    "configs/prod/pdss_sr.json",
+    "configs/prod/gad7.json",
+    "configs/prod/phq9.json",
+    "configs/prod/hai.json",
+    "configs/prod/mgh_hps.json"
+  ]
+}

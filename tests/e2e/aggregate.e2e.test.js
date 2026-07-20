@@ -15,8 +15,7 @@
 
 import { test, expect } from '@playwright/test';
 
-const E2E_CONFIG = '/configs/test/e2e.json';
-const PHQ9_URL = `/?configs=${E2E_CONFIG}&items=phq9_intake&pid=E2E-001`;
+const PHQ9_URL = `/?items=phq9_intake&pid=E2E-001`;
 
 // ── Patient-flow helpers (mirrors patient-flow.e2e.test.js) ──────────────────
 

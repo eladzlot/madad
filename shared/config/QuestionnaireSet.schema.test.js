@@ -980,3 +980,12 @@ describe('meta', () => {
     }],
   })).toBe(true));
 });
+
+// ─── dev flag (top-level) ────────────────────────────────────────────────────
+
+describe('dev flag', () => {
+  it('accepts dev: true on a config', () =>
+    expect(valid({ ...minimalConfig, dev: true })).toBe(true));
+  it('rejects non-boolean dev', () =>
+    expect(invalid({ ...minimalConfig, dev: 'yes' })).toBe(true));
+});

@@ -1,0 +1,127 @@
+{
+  "id": "wsas",
+  "version": "1.0.0",
+  "questionnaires": [
+    {
+      "id": "wsas",
+      "meta": {
+        "domains": [
+          "functioning"
+        ],
+        "type": "severity",
+        "populations": [
+          "adult"
+        ],
+        "featured": true
+      },
+      "title": "סולם עבודה והתאמה חברתית (WSAS)",
+      "description": "5-item scale measuring functional impairment in work, home management, social leisure, private leisure, and relationships. Scores 0-40; higher is worse.",
+      "keywords": [
+        "functioning",
+        "impairment",
+        "disability",
+        "WSAS",
+        "תפקוד",
+        "פגיעה"
+      ],
+      "defaultOptionSetId": "wsas_scale",
+      "optionSets": {
+        "wsas_scale": [
+          {
+            "label": "0 — ללא פגיעה",
+            "value": 0
+          },
+          {
+            "label": "1",
+            "value": 1
+          },
+          {
+            "label": "2",
+            "value": 2
+          },
+          {
+            "label": "3",
+            "value": 3
+          },
+          {
+            "label": "4 — פגיעה בינונית",
+            "value": 4
+          },
+          {
+            "label": "5",
+            "value": 5
+          },
+          {
+            "label": "6",
+            "value": 6
+          },
+          {
+            "label": "7",
+            "value": 7
+          },
+          {
+            "label": "8 — פגיעה חמורה מאוד",
+            "value": 8
+          }
+        ]
+      },
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "בעיותיו של אדם לפעמים משפיעות על יכולתו לבצע משימות יומיומיות שונות. דרג/י עד כמה הבעיה שלך פוגעת ביכולתך לבצע כל אחת מהפעילויות הבאות. 0 = ללא פגיעה כלל, 8 = פגיעה חמורה מאוד — לא יכול לבצע את הפעילות."
+        },
+        {
+          "id": "1",
+          "type": "select",
+          "text": "בשל הבעיה שלי, יכולתי לעבוד פגועה.",
+          "required": false
+        },
+        {
+          "id": "2",
+          "type": "select",
+          "text": "בשל הבעיה שלי, ניהול הבית שלי פגוע (ניקיון, סדר, קניות, בישול, טיפול בבית או בילדים, תשלום חשבונות)."
+        },
+        {
+          "id": "3",
+          "type": "select",
+          "text": "בשל הבעיה שלי, פעילויות הפנאי החברתיות שלי פגועות (עם אחרים, כגון: מסיבות, בתי קפה, טיולים, ביקורים, היכרויות, אירוח בבית)."
+        },
+        {
+          "id": "4",
+          "type": "select",
+          "text": "בשל הבעיה שלי, פעילויות הפנאי הפרטיות שלי פגועות (בעצמי, כגון: קריאה, גינון, אוספים, תפירה, הליכה לבד)."
+        },
+        {
+          "id": "5",
+          "type": "select",
+          "text": "בשל הבעיה שלי, יכולתי ליצור ולקיים קשרים קרובים עם אחרים, כולל אלה שאני חי/ה איתם, פגועה."
+        }
+      ],
+      "scoring": {
+        "method": "sum"
+      },
+      "interpretations": {
+        "target": "total",
+        "type": "severity",
+        "ranges": [
+          {
+            "min": 0,
+            "max": 9,
+            "label": "תת-קליני"
+          },
+          {
+            "min": 10,
+            "max": 20,
+            "label": "פגיעה תפקודית משמעותית"
+          },
+          {
+            "min": 21,
+            "max": 40,
+            "label": "פגיעה תפקודית חמורה"
+          }
+        ]
+      }
+    }
+  ]
+}

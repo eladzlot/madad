@@ -225,25 +225,26 @@ describe('rawInstruments', () => {
 // ── Config union ──────────────────────────────────────────────────────────────
 
 describe('configFiles', () => {
-  it('returns the sorted union of short-name configFiles', () => {
+  it('returns the sorted union of instrument ids (ids are config addresses)', () => {
     const store = createStore();
     store.addFiles([
       okFile(makeEnvelope({ instruments: [{ questionnaireId: 'phq9', title: 'x', configFile: 'standard' }] })),
       okFile(makeEnvelope({ instruments: [{ questionnaireId: 'pcl5', title: 'y', configFile: 'trauma' }] })),
       okFile(makeEnvelope({ instruments: [{ questionnaireId: 'gad7', title: 'z', configFile: 'standard' }] })),
     ]);
-    expect(store.configFiles()).toEqual(['standard', 'trauma']);
+    // The legacy configFile label (bundle era) is ignored — old PDFs recorded
+    // bundle names whose files no longer exist; ids resolve directly.
+    expect(store.configFiles()).toEqual(['gad7', 'pcl5', 'phq9']);
   });
 
-  it('excludes full-URL and null configFiles', () => {
+  it('excludes ids that fail the short-name pattern', () => {
     const store = createStore();
     store.addFiles([okFile(makeEnvelope({
       instruments: [
-        { questionnaireId: 'a', title: 'a', configFile: 'https://example.com/x.json' },
-        { questionnaireId: 'b', title: 'b', configFile: null },
-        { questionnaireId: 'c', title: 'c', configFile: 'ocd' },
+        { questionnaireId: 'bad/../id', title: 'a', configFile: null },
+        { questionnaireId: 'ocd_q', title: 'c', configFile: 'ocd' },
       ],
     }))]);
-    expect(store.configFiles()).toEqual(['ocd']);
+    expect(store.configFiles()).toEqual(['ocd_q']);
   });
 });

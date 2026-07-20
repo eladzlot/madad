@@ -3,8 +3,9 @@
  * build-catalog.mjs
  *
  * Generates public/composer/catalog.json — the composer's lightweight index
- * of every questionnaire/battery — from the manifest
- * (public/composer/configs.json) and the config files it lists.
+ * of every questionnaire/battery — by scanning public/configs/prod/*.json in
+ * sorted filename order (deterministic output). Configs marked `dev: true`
+ * (test fixtures) produce entries flagged dev, shown only in dev mode.
  *
  * Run whenever a config file changes:
  *   npm run build:catalog
@@ -17,29 +18,25 @@
  * so dist/ is always fresh even if the committed copy lags.
  */
 
-import { readFileSync, writeFileSync, existsSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync, readdirSync } from 'fs';
 import { resolve, join } from 'path';
 import { fileURLToPath } from 'url';
 import { buildCatalog, serializeCatalog } from '../shared/catalog/build-catalog.js';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const ROOT = resolve(__dirname, '..');
-const MANIFEST_PATH = join(ROOT, 'public/composer/configs.json');
 const CATALOG_PATH = join(ROOT, 'public/composer/catalog.json');
-const PUBLIC_DIR = join(ROOT, 'public');
+const PROD_DIR = join(ROOT, 'public/configs/prod');
 
 const checkMode = process.argv.includes('--check');
 
-const manifest = JSON.parse(readFileSync(MANIFEST_PATH, 'utf8'));
-
-const configsByUrl = new Map();
-for (const entry of manifest.configs) {
-  const filePath = join(PUBLIC_DIR, entry.url.replace(/^\//, ''));
-  configsByUrl.set(entry.url, JSON.parse(readFileSync(filePath, 'utf8')));
-}
+const configs = readdirSync(PROD_DIR)
+  .filter((f) => f.endsWith('.json'))
+  .sort()
+  .map((f) => JSON.parse(readFileSync(join(PROD_DIR, f), 'utf8')));
 
 let warnings = 0;
-const catalog = buildCatalog(manifest, configsByUrl, {
+const catalog = buildCatalog(configs, {
   warn: (msg) => {
     warnings++;
     console.warn(`⚠ ${msg}`);

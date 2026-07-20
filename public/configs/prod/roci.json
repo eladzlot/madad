@@ -1,0 +1,194 @@
+{
+  "id": "roci",
+  "version": "1.0.0",
+  "questionnaires": [
+    {
+      "id": "roci",
+      "meta": {
+        "domains": [
+          "ocd"
+        ],
+        "type": "severity",
+        "populations": [
+          "adult"
+        ]
+      },
+      "title": "שאלון אובססיות וכפייתיות בקשר רומנטי (ROCI)",
+      "description": "14-item scale assessing relationship-centered obsessive-compulsive symptoms in romantic relationships.",
+      "keywords": [
+        "ROCI",
+        "ROCD",
+        "OCD",
+        "relationship",
+        "romantic",
+        "obsessive",
+        "compulsive",
+        "זוגיות"
+      ],
+      "defaultOptionSetId": "agreement_5",
+      "optionSets": {
+        "agreement_5": [
+          {
+            "label": "בכלל לא",
+            "value": 0
+          },
+          {
+            "label": "במידה מועטה",
+            "value": 1
+          },
+          {
+            "label": "במידה בינונית",
+            "value": 2
+          },
+          {
+            "label": "במידה רבה",
+            "value": 3
+          },
+          {
+            "label": "במידה רבה מאוד",
+            "value": 4
+          }
+        ]
+      },
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "ההיגדים הבאים מתייחסים לחוויות שיש לאנשים רבים במערכות היחסים הרומנטיות שלהם. אנו מתעניינים בדרך שבה אתה חווה בדרך כלל מערכות יחסים. התייחס/י לכל משפט על ידי דירוג המידה שבה המשפט מתאר את התנהגותך ותחושותיך במערכות יחסים."
+        },
+        {
+          "id": "q1",
+          "type": "select",
+          "text": "המחשבה שאני לא באמת אוהב את בת זוגי רודפת אותי"
+        },
+        {
+          "id": "q2",
+          "type": "select",
+          "text": "קל לי להפטר מהספקות שלי לגבי תחושותיי לבת זוגתי"
+        },
+        {
+          "id": "q3",
+          "type": "select",
+          "text": "אני מטיל ספק בקשר בו אני נמצא ללא הפסקה"
+        },
+        {
+          "id": "q4",
+          "type": "select",
+          "text": "קשה לי להיפטר מהספק שבת זוגי לא באמת אוהבת אותי"
+        },
+        {
+          "id": "q5",
+          "type": "select",
+          "text": "אני בודק שוב ושוב האם הקשר שלי עם בת זוגי מרגיש 'נכון'"
+        },
+        {
+          "id": "q6",
+          "type": "select",
+          "text": "אני כל הזמן עסוק בלחפש עדויות לכך שבת זוגי באמת אוהבת אותי"
+        },
+        {
+          "id": "q7",
+          "type": "select",
+          "text": "אני מרגיש שאני חייב לשחזר שוב ושוב את הסיבות שבגללן אני אוהב את בת זוגי"
+        },
+        {
+          "id": "q8",
+          "type": "select",
+          "text": "אני בטוח באהבתה של בת זוגי כלפי"
+        },
+        {
+          "id": "q9",
+          "type": "select",
+          "text": "המחשבה שמשהו לא ממש 'בסדר' בקשר הזוגי שלי מציקה לי מאוד"
+        },
+        {
+          "id": "q10",
+          "type": "select",
+          "text": "אני לא מפסיק לפקפק באהבתי לבת זוגי"
+        },
+        {
+          "id": "q11",
+          "type": "select",
+          "text": "אני לא מפסיק לשאול את בת זוגי האם היא באמת מרגישה אהבה כלפי"
+        },
+        {
+          "id": "q12",
+          "type": "select",
+          "text": "אני חוזר ומחפש אישורים לכך שהקשר שלי עם בת זוגי הוא 'אמיתי'"
+        },
+        {
+          "id": "q13",
+          "type": "select",
+          "text": "המחשבה שבת זוגי לא באמת רוצה להיות איתי מטרידה אותי ביומיום"
+        },
+        {
+          "id": "q14",
+          "type": "select",
+          "text": "אני מרגיש צורך לחזור ולבדוק עד כמה אני אוהב את בת זוגי"
+        }
+      ],
+      "scoring": {
+        "method": "subscales",
+        "subscales": {
+          "partner_love_doubt": [
+            "q4",
+            "q6",
+            "q11",
+            "q13"
+          ],
+          "self_love_doubt": [
+            "q1",
+            "q7",
+            "q10",
+            "q14"
+          ],
+          "relationship_not_right": [
+            "q3",
+            "q5",
+            "q9",
+            "q12"
+          ]
+        },
+        "exclude": [
+          "q2",
+          "q8"
+        ]
+      },
+      "subscaleLabels": {
+        "partner_love_doubt": "היא לא אוהבת אותי",
+        "self_love_doubt": "אני לא אוהב/ת אותה",
+        "relationship_not_right": "מערכת יחסים לא נכונה"
+      },
+      "interpretations": {
+        "target": "total",
+        "type": "screening",
+        "ranges": [
+          {
+            "min": 0,
+            "max": 21,
+            "label": "מתחת לסף קליני"
+          },
+          {
+            "min": 22,
+            "max": 48,
+            "label": "מעל סף קליני"
+          }
+        ],
+        "cutoffs": [
+          {
+            "value": 22,
+            "label": "סף קליני"
+          }
+        ]
+      },
+      "alerts": [
+        {
+          "id": "clinical_cutoff",
+          "condition": "score.roci >= 22",
+          "message": "ROCI מעל סף קליני",
+          "severity": "warning"
+        }
+      ]
+    }
+  ]
+}

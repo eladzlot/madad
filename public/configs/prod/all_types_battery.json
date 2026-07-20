@@ -1,0 +1,26 @@
+{
+  "id": "all_types_battery",
+  "version": "1.0.0",
+  "dev": true,
+  "questionnaires": [],
+  "batteries": [
+    {
+      "id": "all_types_battery",
+      "title": "בדיקת כל הסוגים",
+      "description": "Battery with one item of each type.",
+      "keywords": [
+        "test",
+        "e2e",
+        "all-types"
+      ],
+      "sequence": [
+        {
+          "questionnaireId": "all_types_q"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    "configs/prod/all_types_q.json"
+  ]
+}

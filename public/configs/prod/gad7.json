@@ -1,0 +1,122 @@
+{
+  "id": "gad7",
+  "version": "1.0.0",
+  "questionnaires": [
+    {
+      "id": "gad7",
+      "meta": {
+        "domains": [
+          "anxiety"
+        ],
+        "type": "severity",
+        "populations": [
+          "adult"
+        ],
+        "featured": true
+      },
+      "title": "שאלון חרדה מוכללת (GAD-7)",
+      "description": "הערכת תסמיני חרדה כללית במהלך השבועיים האחרונים (Generalized Anxiety Disorder, GAD-7)",
+      "keywords": [
+        "anxiety",
+        "GAD",
+        "GAD-7",
+        "generalized anxiety",
+        "worry",
+        "screening"
+      ],
+      "defaultOptionSetId": "frequency_4",
+      "optionSets": {
+        "frequency_4": [
+          {
+            "label": "כלל לא",
+            "value": 0
+          },
+          {
+            "label": "מספר ימים",
+            "value": 1
+          },
+          {
+            "label": "ביותר ממחצית הימים",
+            "value": 2
+          },
+          {
+            "label": "כמעט כל יום",
+            "value": 3
+          }
+        ]
+      },
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "במהלך השבועיים האחרונים, באיזו תדירות היית מוטרד מכל אחת מן הבעיות הבאות?"
+        },
+        {
+          "id": "1",
+          "type": "select",
+          "text": "תחושת עצבנות, חרדה או מתח"
+        },
+        {
+          "id": "2",
+          "type": "select",
+          "text": "אי-יכולת לעצור את הדאגה או לשלוט בה"
+        },
+        {
+          "id": "3",
+          "type": "select",
+          "text": "דאגה מוגזמת לגבי דברים שונים"
+        },
+        {
+          "id": "4",
+          "type": "select",
+          "text": "קושי להירגע"
+        },
+        {
+          "id": "5",
+          "type": "select",
+          "text": "חוסר-מנוחה עד כדי קושי לשבת בשקט"
+        },
+        {
+          "id": "6",
+          "type": "select",
+          "text": "נטייה להתרגז ולהתעצבן בקלות"
+        },
+        {
+          "id": "7",
+          "type": "select",
+          "text": "פחד שמשהו נורא עלול לקרות"
+        }
+      ],
+      "scoring": {
+        "method": "sum"
+      },
+      "interpretations": {
+        "target": "total",
+        "type": "severity",
+        "ranges": [
+          {
+            "min": 0,
+            "max": 4,
+            "label": "מינימלי"
+          },
+          {
+            "min": 5,
+            "max": 9,
+            "label": "קל"
+          },
+          {
+            "min": 10,
+            "max": 14,
+            "label": "בינוני"
+          },
+          {
+            "min": 15,
+            "max": 21,
+            "label": "חמור"
+          }
+        ]
+      },
+      "alerts": []
+    }
+  ]
+}

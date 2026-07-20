@@ -36,11 +36,12 @@ test.describe('dist smoke — production bundle at production base', () => {
     const badResponses = watchForBadResponses(page, origin);
     const consoleErrors = watchForConsoleErrors(page);
 
-    // phq9 + standard.json — ships in every production build. The configs=
-    // param uses a short name, which is the exact code path that triggered
-    // the production-only "לא ניתן לטעון את השאלון" bug: the loader expanded
-    // the short name to /configs/prod/standard.json (absolute, root-relative)
-    // instead of /madad/configs/prod/standard.json.
+    // A bundle-era URL exactly as the old composer emitted it. The configs=
+    // param names standard.json, which no longer exists — the app must ignore
+    // it and resolve items=phq9 as an address (configs/prod/phq9.json). The
+    // short-name expansion is also the code path that triggered the
+    // production-only "לא ניתן לטעון את השאלון" base-path bug, so this URL
+    // gates both: legacy-link compatibility and base-aware path resolution.
     await page.goto('?items=phq9&configs=standard&pid=DISTSMOKE');
 
     // Welcome screen is the patient-visible signal that loadConfig succeeded.
@@ -146,14 +147,11 @@ test.describe('dist smoke — production bundle at production base', () => {
     const badResponses = watchForBadResponses(page, origin);
     const consoleErrors = watchForConsoleErrors(page);
 
-    // The patient test above uses the short-name form (configs=standard). This
-    // one exercises the LEGACY full-path form (configs=configs/prod/standard.json)
-    // — a separate branch in the loader's resolveSource(). The base-path bug that
-    // produced "לא ניתן לטעון" affected both branches, so both need a gate. This
-    // used to be covered by clicking the landing demo CTA; now that landing is a
-    // separate origin (its own artifact/domain), the coverage lives here on the
-    // app side where the branch actually runs. The landing artifact's own smoke
-    // test (landing-smoke.dist.test.js) verifies the CTA link is well-formed.
+    // The patient test above uses a bundle-era short-name configs=. This one
+    // exercises the other legacy form hand-crafted links used: a full path
+    // (configs=configs/prod/standard.json). Both are ignored by the app —
+    // items=phq9 resolves on its own. Kept as a distinct gate because these
+    // exact URL shapes exist in the wild.
     await page.goto('?items=phq9&configs=configs/prod/standard.json&pid=DISTSMOKE');
 
     await expect(page.locator('welcome-screen')).toBeVisible({ timeout: 10_000 });
@@ -165,17 +163,34 @@ test.describe('dist smoke — production bundle at production base', () => {
     expect(realErrors, 'No CSP violations or runtime errors on legacy-form load').toEqual([]);
   });
 
+  test('patient page loads an items-only URL (composer-emitted form)', async ({ page, baseURL }) => {
+    const origin = new URL(baseURL).origin;
+    const badResponses = watchForBadResponses(page, origin);
+    const consoleErrors = watchForConsoleErrors(page);
+
+    // The form every newly generated URL uses: items only. The app expands
+    // each token to configs/prod/<id>.json.
+    await page.goto('?items=phq9,gad7&pid=DISTSMOKE');
+
+    await expect(page.locator('welcome-screen')).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText('לא ניתן לטעון את השאלון')).toHaveCount(0);
+
+    expect(badResponses, 'Same-origin resources must all return 2xx/3xx').toEqual([]);
+
+    const realErrors = consoleErrors.filter(e => !/favicon/i.test(e));
+    expect(realErrors, 'No CSP violations or runtime errors on per-instrument load').toEqual([]);
+  });
+
   test('patient page resolves cross-config dependencies from a minimal composer URL', async ({ page, baseURL }) => {
     const origin = new URL(baseURL).origin;
     const badResponses = watchForBadResponses(page, origin);
     const consoleErrors = watchForConsoleErrors(page);
 
-    // The composer emits only the selected items' source configs — it does NOT
-    // list their declared dependencies. clinical_intake lives in intake.json,
-    // which declares standard.json + trauma.json as dependencies; resolving it
-    // therefore depends entirely on loadConfig's dependency auto-fetch (BFS
-    // walk). If that walk ever breaks (or intake's declarations go missing),
-    // every composer-generated intake URL breaks with it — this is the gate.
+    // A bundle-era intake URL. configs=intake is ignored (the file is gone);
+    // items=clinical_intake resolves to clinical_intake.json, whose declared
+    // dependencies (diamond_sr, phq9, pcl5, …) are pulled by loadConfig's BFS
+    // walk. If the dependency walk ever breaks (or a declaration goes
+    // missing), every battery URL breaks with it — this is the gate.
     await page.goto('?configs=intake&items=clinical_intake&pid=DISTSMOKE');
 
     await expect(page.locator('welcome-screen')).toBeVisible({ timeout: 10_000 });

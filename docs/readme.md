@@ -119,11 +119,11 @@ landing/                    Landing page for therapists
 
 public/
   configs/
-    prod/                   Clinical content (standard, trauma, intake)
+    prod/                   Clinical content — one instrument per file (+ alias shims)
     test/                   E2E test fixtures only
     CONTRIBUTING.md         How to add an instrument
     LLM_GUIDE.md            LLM-optimised authoring guide
-  composer/configs.json     Composer manifest
+  composer/catalog.json     Generated catalog index (composer data source)
   fonts/                    Noto Sans Hebrew
 
 tests/

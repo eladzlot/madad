@@ -92,7 +92,9 @@ src/pdf/report.js              ← PDF generation (pdfmake, lazy-loaded)
 
 ### Instrument library
 
-**`standard.json` v1.10.0** — 20 standard clinical scales:
+Every instrument lives in its own file (`configs/prod/<id>.json`); item IDs are URL addresses (`?items=phq9`). The groupings below are documentation families only — no bundle files exist.
+
+**standard family** — 20 standard clinical scales:
 
 | ID | Name | Notes |
 |---|---|---|
@@ -119,7 +121,7 @@ src/pdf/report.js              ← PDF generation (pdfmake, lazy-loaded)
 
 Note: `pcl5` and `ptci` were moved from `standard.json` to `trauma.json` at v1.6.1; `dar5` was moved to `anger.json`.
 
-**`trauma.json` v1.2.0** — trauma assessment:
+**trauma family** — trauma assessment:
 
 | ID | Type | Name | Notes |
 |---|---|---|---|
@@ -128,7 +130,7 @@ Note: `pcl5` and `ptci` were moved from `standard.json` to `trauma.json` at v1.6
 | `ptci` | questionnaire | שאלון קוגניציות פוסט-טראומטיות (PTCI) | 3 subscales (mean) |
 | `trauma_eval` | battery | הערכת טראומה ראשונית | PC-PTSD-5 → if score ≥ 4: PCL-5 + PTCI |
 
-**`intake.json` v1.4.0** — initial assessment:
+**intake family** — initial assessment:
 
 | ID | Type | Name | Notes |
 |---|---|---|---|
@@ -138,27 +140,34 @@ Note: `pcl5` and `ptci` were moved from `standard.json` to `trauma.json` at v1.6
 | `cape42` | questionnaire | שאלון חוויות נפשיות בקהילה (CAPE-42) | Validated Hebrew (Fazioli et al. 2025); 42 items 1–4 + conditional distress follow-ups; positive/negative/depressive + distress subscales; critical alerts: suicidality (item 14), hallucinations (items 33/34/42 ≥ often); no validated cutoffs |
 | `clinical_intake` | battery | הערכה ראשונית | DIAMOND → conditional questionnaires per domain |
 
-`intake.json` declares `"dependencies": ["configs/prod/trauma.json"]` so the patient app auto-fetches trauma.json whenever intake.json loads (needed because the DIAMOND trauma item conditionally adds pcl5 which now lives in trauma.json). Generated URLs name only the selected items' configs — dependency resolution happens patient-side in `loadConfig`.
+Battery files declare `dependencies` on every questionnaire file they reference (e.g. `clinical_intake.json` depends on `diamond_sr.json`, `phq9.json`, `pcl5.json`, …). Generated URLs name only the selected items' configs — dependency resolution happens patient-side in `loadConfig`'s BFS auto-fetch.
 
 **Policy:** Only open-source or public-domain instruments. Do not add proprietary instruments (e.g. BDI-II) without a verified license.
 
-### Config files and manifest
+### Config files
 
 ```
 public/configs/
-  prod/standard.json       ← 19 standard clinical scales
-  prod/trauma.json         ← PC-PTSD-5, PCL-5, PTCI, trauma_eval battery
-  prod/intake.json         ← DIAMOND, demographics, clinical_intake battery
-  test/e2e.json            ← E2E test fixtures only (dev:true in manifest)
+  prod/<id>.json           ← ONE questionnaire or battery per file,
+                             filename = entity id (37 files). Enforced by
+                             validate:configs. Short name in URLs = id.
+  prod/{standard,trauma,intake,ocd,anger,child}.json
+                           ← ALIAS SHIMS from the pre-collapse bundle era:
+                             questionnaires:[] + dependencies listing former
+                             members. Keep old URLs and old PDFs working via
+                             the loader's dependency auto-fetch. Never delete,
+                             never reuse these names.
+  test/e2e.json            ← E2E test fixtures only (dev — never in prod builds)
   CONTRIBUTING.md          ← How to add an instrument (human-readable)
   LLM_GUIDE.md             ← Comprehensive spec for LLM-assisted authoring
 public/composer/
-  configs.json             ← Manifest: build-time input to the catalog script
   catalog.json             ← Generated catalog index (composer's runtime data
-                             source) — regenerate with npm run build:catalog
+                             source) — regenerate with npm run build:catalog.
+                             Built by scanning the config directories; there
+                             is no manifest.
 ```
 
-The e2e config has `"dev": true` in the manifest — it is skipped entirely in production builds (`import.meta.env.DEV === false`) but loads normally in dev and Playwright tests.
+Configs under `test/` get `dev: true` catalog entries — skipped entirely in production builds (`import.meta.env.DEV === false`) but shown in dev and Playwright tests.
 
 ### What is stubbed / not implemented
 
@@ -228,7 +237,7 @@ The e2e config has `"dev": true` in the manifest — it is skipped entirely in p
 │   ├── configs/                  # Clinical content (see above)
 │   ├── fonts/                    # Noto Sans Hebrew TTF
 │   ├── favicon.svg               # מ on teal — favicon for all pages
-│   └── composer/configs.json     # Composer manifest
+│   └── composer/catalog.json     # Generated catalog index (composer data source)
 ├── tests/
 │   ├── fixtures/                 # phq9.json, pcl5.json, ocir.json, top3.json
 │   ├── e2e/
@@ -253,18 +262,16 @@ The e2e config has `"dev": true` in the manifest — it is skipped entirely in p
 ## 5. Config and URL strategy
 
 ### Config files
-All standard instruments live in `public/configs/prod/`. Each file is a self-contained `QuestionnaireSet`. The Composer manifest (`public/composer/configs.json`) lists all prod configs — add a new file there to make it visible in the Composer.
+All instruments live in `public/configs/prod/`, one questionnaire/battery per file, filename = entity id. Each file is a self-contained `QuestionnaireSet`. There is no manifest — the catalog build script scans the directory; after adding a file run `npm run build:catalog` and commit the regenerated `public/composer/catalog.json` to make it visible in the Composer.
 
 Multi-config dependencies: if a config references instruments from another config (e.g. `intake.json` references `pcl5` from `trauma.json`), declare the dependency in the config's `"dependencies"` array. The patient app's `loadConfig` auto-fetches declared dependencies at runtime (BFS walk), so generated URLs name only the selected items' configs.
 
 The `test/e2e.json` file is marked `"dev": true` in the manifest — never loads in production.
 
 ### URL design
-The Composer emits **short names** in `configs=` URL parameters (e.g. `?configs=standard,intake`). Short names are the manifest entry's URL with the `configs/prod/` prefix and `.json` suffix stripped. They are a stable external contract — see `docs/COMPOSER_SPEC.md` for the full rules (don't rename prod configs, don't reuse short names across namespaces, etc.).
+Patient URLs carry only `?items=<id>,<id>&pid=<pid>`. **Item IDs are addresses**: the app expands each token to `configs/prod/<id>.json` (one entity per file, filename = id — enforced by `validate:configs`). A legacy `configs=` parameter from bundle-era URLs is ignored; those URLs' items still resolve, so old links keep working. Item IDs are the stable external contract — never rename or delete a prod config file (see `docs/COMPOSER_SPEC.md`).
 
-The loader (`shared/config/loader.js`) also accepts full paths (`configs/prod/standard.json`) and root-relative paths (`/configs/prod/standard.json`) for hand-crafted URLs and legacy callers. All three forms normalise to the same canonical URL internally, so a config appearing in both `configs=` and as a declared dependency is only fetched once.
-
-**Do not use absolute paths (`/configs/...`) in generated patient URLs** — they break at non-root deployments. Use short names.
+The loader (`shared/config/loader.js`) accepts short names, full paths, and root-relative paths; all normalise to the same canonical URL internally (visited-set dedupes). Declared `dependencies` in battery files are auto-fetched (BFS walk).
 
 ### Adding an instrument
 See `public/configs/CONTRIBUTING.md` (human guide) or `public/configs/LLM_GUIDE.md` (LLM guide). The process is config-only — no application code changes required for standard Likert/binary instruments.
@@ -377,7 +384,7 @@ To add a new instrument: `public/configs/CONTRIBUTING.md`.
 - **`src/pdf/report.js` — RTL rendering** — pdfmake has incomplete bidi support. bidi-js (UAX-9 conformant) is used for mixed Hebrew/Latin text via `bidiNodes()`. Numbers go in `direction:'ltr'` nodes, category on its own line, never `rtl:true`. See `IMPLEMENTATION_SPEC.md §19.3`.
 - **`src/pdf/report.js` — pdfmake API** — use `getBuffer()` (Promise-based). `getBlob(callback)` silently hangs in pdfmake 0.3.x.
 - **`vite.config.js`** — `base` defaults to `'/'` in all modes (Cloudflare Pages serves at the domain root; was `'/madad/'` under GitHub Pages, flipped in migration Stage 2). Overridable via `MADAD_BASE` env var for the CI multi-base matrix. `pdfmake` is pinned to a named chunk via `manualChunks` to keep it lazy-loaded and out of the entry bundle.
-- **Config URL format** — `configs=` params must use relative paths (no leading slash). See §5 above.
+- **Patient URL format** — `items=` tokens are instrument/battery IDs, expanded to `configs/prod/<id>.json`. The legacy `configs=` param must stay ignored (never re-honor it — the files it names are gone). See §5 above.
 - **`loadConfig` `baseUrl` default** — defaults to `import.meta.env.BASE_URL`, which Vite inlines to the build's `base` (`'/'` in production; `MADAD_BASE` in the CI matrix) at build time. Removing this re-introduces the production-only "לא ניתן לטעון את השאלון" bug: short config names would expand to root-relative paths (`/configs/prod/...`) that bypass Vite's `base` and 404 on every non-root deployment. The dist-smoke Playwright project (`tests/e2e/*.dist.test.js`, run by `npm run e2e:dist`) is the regression gate — it loads the built bundle at the production base and asserts no same-origin 4xx responses.
 - **`composer-state.js` `getAppRoot()`** — derives app root by stripping `/composer/...` from `window.location.href`. Any change to Composer URL structure requires updating this.
 - **Security controls in §6a** — specifically: do not revert error rendering to `innerHTML`, do not remove PID/name validation, do not remove the `allowedOrigins` check from `loadConfig`. Each of these was introduced to fix a concrete vulnerability.

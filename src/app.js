@@ -1,13 +1,21 @@
 // app.js — entry point.
 //
 // URL model:
-//   ?configs=<src>,<src>&items=<id>,<id>&pid=<pid>
+//   ?items=<id>,<id>&pid=<pid>
 //
-//   configs  — comma-separated config sources (slugs or URLs).
-//              Default: 'prod/standard' when omitted.
 //   items    — comma-separated ordered list of questionnaire IDs or battery IDs.
 //              Required. Error shown if absent.
 //   pid      — optional patient identifier.
+//
+// Item IDs are addresses: every questionnaire/battery lives in its own config
+// file at configs/prod/<id>.json, so the config sources ARE the item tokens.
+// Battery files declare `dependencies` on the questionnaire files they
+// reference; loadConfig auto-fetches those (BFS walk).
+//
+// A legacy `configs=` parameter (bundle-era URLs named config files explicitly,
+// e.g. configs=standard,intake) is deliberately IGNORED: the files it named no
+// longer exist, but such URLs' item tokens resolve on their own. Do not fetch
+// what it lists.
 //
 // Resolution:
 //   Each token in `items` is resolved as:
@@ -34,8 +42,6 @@ import './components/progress-bar.js';
 import './components/welcome-screen.js';
 import './components/completion-screen.js';
 import './components/results-screen.js';
-
-const DEFAULT_CONFIG = 'standard';
 
 // ── Loading screen ────────────────────────────────────────────────────────────
 
@@ -92,16 +98,11 @@ export function showError(container, message, detail = '', { retryable = false }
 async function main() {
   const params = new URLSearchParams(location.search);
 
-  const configsParam = params.get('configs');
-  const itemsParam   = params.get('items');
+  const itemsParam = params.get('items');
   // PID validation lives in shared/pid.js — single source of truth shared with the composer.
   // Invalid PIDs are silently treated as absent rather than surfaced in error messages,
   // to avoid reflecting crafted strings back into the UI.
   const pid = sanitizePid(params.get('pid'));
-
-  const configSources = configsParam
-    ? configsParam.split(',').map(s => s.trim()).filter(Boolean)
-    : [DEFAULT_CONFIG];
 
   const container = document.getElementById('app');
 
@@ -117,6 +118,10 @@ async function main() {
     showError(container, 'לא נבחרו שאלונים.', 'יש לפתוח את הקישור שקיבלת מהמטפל.');
     return;
   }
+
+  // Item IDs are addresses: each token's config file is configs/prod/<token>.json.
+  // Deduplicate (repeated items are a URL author error, not two fetches).
+  const configSources = [...new Set(itemTokens)];
 
   showLoading(container);
 

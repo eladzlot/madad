@@ -21,8 +21,7 @@
  * points at a different origin (app.ezmadad.com in prod, or a root-absolute
  * same-origin path when APP_ORIGIN is unset in local/CI builds), so the
  * click-through is not a landing-artifact concern. The patient side of that
- * flow — the legacy full-path configs= branch — is covered in
- * dist-smoke.dist.test.js.
+ * flow — the items-only URL form — is covered in dist-smoke.dist.test.js.
  */
 
 import { test, expect } from '@playwright/test';
@@ -39,10 +38,10 @@ test.describe('landing smoke — marketing artifact at its domain root', () => {
     // Hero headline — the server-rendered signal that the page loaded.
     await expect(page.locator('.hero-headline').first()).toBeVisible({ timeout: 10_000 });
 
-    // The demo CTA points at the patient app with the legacy full-path form.
+    // The demo CTA points at the patient app with the items-only form.
     // Assert only that it exists and is well-formed — its origin varies by build
     // (absolute app origin in prod, root-absolute when APP_ORIGIN is unset).
-    const demoLink = page.locator('a[href*="configs="][href*="items="]').first();
+    const demoLink = page.locator('a[href*="items=phq9"]').first();
     await expect(demoLink).toBeVisible();
 
     // Fonts + favicon must resolve. Wait for the network to settle so a late

@@ -1,0 +1,996 @@
+{
+  "id": "cape42",
+  "version": "1.0.0",
+  "questionnaires": [
+    {
+      "id": "cape42",
+      "meta": {
+        "domains": [
+          "psychosis"
+        ],
+        "type": "severity",
+        "populations": [
+          "adult"
+        ]
+      },
+      "title": "שאלון חוויות נפשיות בקהילה (CAPE-42)",
+      "description": "שאלון דיווח עצמי בן 42 פריטים להערכת חוויות דמויות-פסיכוזה בממדים חיובי, שלילי ודיכאוני, כולל דירוג מצוקה לכל חוויה שדווחה.",
+      "keywords": [
+        "psychosis",
+        "PLE",
+        "CAPE",
+        "CAPE-42",
+        "פסיכוזה",
+        "חוויות פסיכוטיות",
+        "מצוקה"
+      ],
+      "defaultOptionSetId": "frequency_4",
+      "optionSets": {
+        "frequency_4": [
+          {
+            "label": "לעולם לא",
+            "value": 1
+          },
+          {
+            "label": "לעיתים",
+            "value": 2
+          },
+          {
+            "label": "לעיתים קרובות",
+            "value": 3
+          },
+          {
+            "label": "כמעט כל הזמן",
+            "value": 4
+          }
+        ],
+        "distress_4": [
+          {
+            "label": "ללא מצוקה",
+            "value": 1
+          },
+          {
+            "label": "מצוקה קלה",
+            "value": 2
+          },
+          {
+            "label": "מצוקה ניכרת",
+            "value": 3
+          },
+          {
+            "label": "מצוקה רבה",
+            "value": 4
+          }
+        ]
+      },
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "השאלון הבא עוסק במחשבות, ברגשות ובחוויות שיש לעיתים לאנשים. לגבי כל שאלה, סמן/י באיזו תדירות זה קורה לך. אם חווית זאת, תתבקש/י לציין גם עד כמה החוויה גורמת לך מצוקה."
+        },
+        {
+          "id": "1",
+          "type": "select",
+          "text": "האם קורה שאת/ה מרגיש/ה עצוב/ה?"
+        },
+        {
+          "id": "if_d1",
+          "type": "if",
+          "condition": "item.1 >= 2",
+          "then": [
+            {
+              "id": "d1",
+              "type": "select",
+              "optionSetId": "distress_4",
+              "text": "עד כמה חווית מצוקה בעקבות כך?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "2",
+          "type": "select",
+          "text": "האם קורה שאת/ה מרגיש/ה שאנשים רומזים לגביך או אומרים דברים בעלי משמעות כפולה?"
+        },
+        {
+          "id": "if_d2",
+          "type": "if",
+          "condition": "item.2 >= 2",
+          "then": [
+            {
+              "id": "d2",
+              "type": "select",
+              "optionSetId": "distress_4",
+              "text": "עד כמה חווית מצוקה בעקבות כך?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "3",
+          "type": "select",
+          "text": "האם קורה שאת/ה מרגיש/ה שאת/ה אדם חסר/ת חיות?"
+        },
+        {
+          "id": "if_d3",
+          "type": "if",
+          "condition": "item.3 >= 2",
+          "then": [
+            {
+              "id": "d3",
+              "type": "select",
+              "optionSetId": "distress_4",
+              "text": "עד כמה חווית מצוקה בעקבות כך?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "4",
+          "type": "select",
+          "text": "האם קורה שאת/ה מרגיש/ה שאת/ה לא מאוד דברן/ית כאשר את/ה משוחח/ת עם אנשים אחרים?"
+        },
+        {
+          "id": "if_d4",
+          "type": "if",
+          "condition": "item.4 >= 2",
+          "then": [
+            {
+              "id": "d4",
+              "type": "select",
+              "optionSetId": "distress_4",
+              "text": "עד כמה חווית מצוקה בעקבות כך?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "5",
+          "type": "select",
+          "text": "האם קורה שאת/ה מרגיש/ה שדברים בעיתון או בטלוויזיה נכתבו במיוחד עבורך?"
+        },
+        {
+          "id": "if_d5",
+          "type": "if",
+          "condition": "item.5 >= 2",
+          "then": [
+            {
+              "id": "d5",
+              "type": "select",
+              "optionSetId": "distress_4",
+              "text": "עד כמה חווית מצוקה בעקבות כך?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "6",
+          "type": "select",
+          "text": "האם קורה שאת/ה מרגיש/ה שאנשים מסוימים הם לא מה שהם נראים?"
+        },
+        {
+          "id": "if_d6",
+          "type": "if",
+          "condition": "item.6 >= 2",
+          "then": [
+            {
+              "id": "d6",
+              "type": "select",
+              "optionSetId": "distress_4",
+              "text": "עד כמה חווית מצוקה בעקבות כך?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "7",
+          "type": "select",
+          "text": "האם קורה שאת/ה מרגיש/ה נרדף/ת בדרך כלשהי?"
+        },
+        {
+          "id": "if_d7",
+          "type": "if",
+          "condition": "item.7 >= 2",
+          "then": [
+            {
+              "id": "d7",
+              "type": "select",
+              "optionSetId": "distress_4",
+              "text": "עד כמה חווית מצוקה בעקבות כך?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "8",
+          "type": "select",
+          "text": "האם קורה שאת/ה מרגיש/ה שאינך חווה או חווה מעט רגשות באירועים חשובים?"
+        },
+        {
+          "id": "if_d8",
+          "type": "if",
+          "condition": "item.8 >= 2",
+          "then": [
+            {
+              "id": "d8",
+              "type": "select",
+              "optionSetId": "distress_4",
+              "text": "עד כמה חווית מצוקה בעקבות כך?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "9",
+          "type": "select",
+          "text": "האם קורה שאת/ה מרגיש/ה פסימי/ת לגבי הכל?"
+        },
+        {
+          "id": "if_d9",
+          "type": "if",
+          "condition": "item.9 >= 2",
+          "then": [
+            {
+              "id": "d9",
+              "type": "select",
+              "optionSetId": "distress_4",
+              "text": "עד כמה חווית מצוקה בעקבות כך?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "10",
+          "type": "select",
+          "text": "האם קורה שאת/ה מרגיש/ה שישנה קנוניה נגדך?"
+        },
+        {
+          "id": "if_d10",
+          "type": "if",
+          "condition": "item.10 >= 2",
+          "then": [
+            {
+              "id": "d10",
+              "type": "select",
+              "optionSetId": "distress_4",
+              "text": "עד כמה חווית מצוקה בעקבות כך?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "11",
+          "type": "select",
+          "text": "האם קורה שאת/ה מרגיש/ה שנועדת להיות מישהו מאוד חשוב?"
+        },
+        {
+          "id": "if_d11",
+          "type": "if",
+          "condition": "item.11 >= 2",
+          "then": [
+            {
+              "id": "d11",
+              "type": "select",
+              "optionSetId": "distress_4",
+              "text": "עד כמה חווית מצוקה בעקבות כך?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "12",
+          "type": "select",
+          "text": "האם קורה שאת/ה מרגיש/ה שאין לך עתיד?"
+        },
+        {
+          "id": "if_d12",
+          "type": "if",
+          "condition": "item.12 >= 2",
+          "then": [
+            {
+              "id": "d12",
+              "type": "select",
+              "optionSetId": "distress_4",
+              "text": "עד כמה חווית מצוקה בעקבות כך?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "13",
+          "type": "select",
+          "text": "האם קורה שאת/ה מרגיש/ה שאת/ה אדם מאוד מיוחד או בלתי רגיל?"
+        },
+        {
+          "id": "if_d13",
+          "type": "if",
+          "condition": "item.13 >= 2",
+          "then": [
+            {
+              "id": "d13",
+              "type": "select",
+              "optionSetId": "distress_4",
+              "text": "עד כמה חווית מצוקה בעקבות כך?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "14",
+          "type": "select",
+          "text": "האם קורה שאת/ה מרגיש/ה שאת/ה לא רוצה לחיות יותר?"
+        },
+        {
+          "id": "if_d14",
+          "type": "if",
+          "condition": "item.14 >= 2",
+          "then": [
+            {
+              "id": "d14",
+              "type": "select",
+              "optionSetId": "distress_4",
+              "text": "עד כמה חווית מצוקה בעקבות כך?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "15",
+          "type": "select",
+          "text": "האם את/ה חושב/ת לפעמים שאנשים יכולים לתקשר באופן טלפתי?"
+        },
+        {
+          "id": "if_d15",
+          "type": "if",
+          "condition": "item.15 >= 2",
+          "then": [
+            {
+              "id": "d15",
+              "type": "select",
+              "optionSetId": "distress_4",
+              "text": "עד כמה חווית מצוקה בעקבות כך?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "16",
+          "type": "select",
+          "text": "האם את/ה מרגיש/ה לפעמים שאין לך עניין להיות עם אנשים אחרים?"
+        },
+        {
+          "id": "if_d16",
+          "type": "if",
+          "condition": "item.16 >= 2",
+          "then": [
+            {
+              "id": "d16",
+              "type": "select",
+              "optionSetId": "distress_4",
+              "text": "עד כמה חווית מצוקה בעקבות כך?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "17",
+          "type": "select",
+          "text": "האם את/ה מרגיש/ה לפעמים שמכשירים אלקטרוניים, כמו לדוגמה מחשב, יכולים להשפיע על הדרך בה את/ה חושב/ת?"
+        },
+        {
+          "id": "if_d17",
+          "type": "if",
+          "condition": "item.17 >= 2",
+          "then": [
+            {
+              "id": "d17",
+              "type": "select",
+              "optionSetId": "distress_4",
+              "text": "עד כמה חווית מצוקה בעקבות כך?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "18",
+          "type": "select",
+          "text": "האם את/ה מרגיש/ה לפעמים שחסרה לך מוטיבציה על מנת לעשות דברים?"
+        },
+        {
+          "id": "if_d18",
+          "type": "if",
+          "condition": "item.18 >= 2",
+          "then": [
+            {
+              "id": "d18",
+              "type": "select",
+              "optionSetId": "distress_4",
+              "text": "עד כמה חווית מצוקה בעקבות כך?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "19",
+          "type": "select",
+          "text": "האם קורה שאת/ה בוכה ללא סיבה?"
+        },
+        {
+          "id": "if_d19",
+          "type": "if",
+          "condition": "item.19 >= 2",
+          "then": [
+            {
+              "id": "d19",
+              "type": "select",
+              "optionSetId": "distress_4",
+              "text": "עד כמה חווית מצוקה בעקבות כך?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "20",
+          "type": "select",
+          "text": "האם את/ה מאמין/ה בכישוף, וודו או כוחות נסתרים?"
+        },
+        {
+          "id": "if_d20",
+          "type": "if",
+          "condition": "item.20 >= 2",
+          "then": [
+            {
+              "id": "d20",
+              "type": "select",
+              "optionSetId": "distress_4",
+              "text": "עד כמה חווית מצוקה בעקבות כך?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "21",
+          "type": "select",
+          "text": "האם את/ה מרגיש/ה לפעמים שחסרה לך אנרגיה?"
+        },
+        {
+          "id": "if_d21",
+          "type": "if",
+          "condition": "item.21 >= 2",
+          "then": [
+            {
+              "id": "d21",
+              "type": "select",
+              "optionSetId": "distress_4",
+              "text": "עד כמה חווית מצוקה בעקבות כך?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "22",
+          "type": "select",
+          "text": "האם את/ה מרגיש/ה לפעמים שאנשים מסתכלים עליך בצורה מוזרה בגלל המראה שלך?"
+        },
+        {
+          "id": "if_d22",
+          "type": "if",
+          "condition": "item.22 >= 2",
+          "then": [
+            {
+              "id": "d22",
+              "type": "select",
+              "optionSetId": "distress_4",
+              "text": "עד כמה חווית מצוקה בעקבות כך?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "23",
+          "type": "select",
+          "text": "האם את/ה מרגיש/ה לפעמים שהראש שלך ריק ממחשבות?"
+        },
+        {
+          "id": "if_d23",
+          "type": "if",
+          "condition": "item.23 >= 2",
+          "then": [
+            {
+              "id": "d23",
+              "type": "select",
+              "optionSetId": "distress_4",
+              "text": "עד כמה חווית מצוקה בעקבות כך?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "24",
+          "type": "select",
+          "text": "האם את/ה מרגיש/ה לפעמים שהמחשבות בראש שלך נלקחות ממך?"
+        },
+        {
+          "id": "if_d24",
+          "type": "if",
+          "condition": "item.24 >= 2",
+          "then": [
+            {
+              "id": "d24",
+              "type": "select",
+              "optionSetId": "distress_4",
+              "text": "עד כמה חווית מצוקה בעקבות כך?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "25",
+          "type": "select",
+          "text": "האם את/ה מרגיש/ה לפעמים שכל הימים שלך חולפים מבלי שעשית דבר?"
+        },
+        {
+          "id": "if_d25",
+          "type": "if",
+          "condition": "item.25 >= 2",
+          "then": [
+            {
+              "id": "d25",
+              "type": "select",
+              "optionSetId": "distress_4",
+              "text": "עד כמה חווית מצוקה בעקבות כך?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "26",
+          "type": "select",
+          "text": "האם את/ה מרגיש/ה לפעמים שהמחשבות בראש שלך הן של מישהו אחר?"
+        },
+        {
+          "id": "if_d26",
+          "type": "if",
+          "condition": "item.26 >= 2",
+          "then": [
+            {
+              "id": "d26",
+              "type": "select",
+              "optionSetId": "distress_4",
+              "text": "עד כמה חווית מצוקה בעקבות כך?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "27",
+          "type": "select",
+          "text": "האם את/ה מרגיש/ה לפעמים שהתחושות שלך חסרות עוצמה?"
+        },
+        {
+          "id": "if_d27",
+          "type": "if",
+          "condition": "item.27 >= 2",
+          "then": [
+            {
+              "id": "d27",
+              "type": "select",
+              "optionSetId": "distress_4",
+              "text": "עד כמה חווית מצוקה בעקבות כך?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "28",
+          "type": "select",
+          "text": "האם קרה לך שהמחשבות שלך היו מוחשיות עד כדי כך שדאגת שאחרים יכולים לשמוע אותן?"
+        },
+        {
+          "id": "if_d28",
+          "type": "if",
+          "condition": "item.28 >= 2",
+          "then": [
+            {
+              "id": "d28",
+              "type": "select",
+              "optionSetId": "distress_4",
+              "text": "עד כמה חווית מצוקה בעקבות כך?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "29",
+          "type": "select",
+          "text": "האם את/ה מרגיש/ה לפעמים שחסרה לך ספונטניות?"
+        },
+        {
+          "id": "if_d29",
+          "type": "if",
+          "condition": "item.29 >= 2",
+          "then": [
+            {
+              "id": "d29",
+              "type": "select",
+              "optionSetId": "distress_4",
+              "text": "עד כמה חווית מצוקה בעקבות כך?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "30",
+          "type": "select",
+          "text": "האם קורה לך שאת/ה שומע/ת את המחשבות שלך חוזרות אליך כמו הד?"
+        },
+        {
+          "id": "if_d30",
+          "type": "if",
+          "condition": "item.30 >= 2",
+          "then": [
+            {
+              "id": "d30",
+              "type": "select",
+              "optionSetId": "distress_4",
+              "text": "עד כמה חווית מצוקה בעקבות כך?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "31",
+          "type": "select",
+          "text": "האם קורה לך שאת/ה מרגיש/ה שאת/ה תחת השפעתו של כוח או שליטה של מישהו אחר?"
+        },
+        {
+          "id": "if_d31",
+          "type": "if",
+          "condition": "item.31 >= 2",
+          "then": [
+            {
+              "id": "d31",
+              "type": "select",
+              "optionSetId": "distress_4",
+              "text": "עד כמה חווית מצוקה בעקבות כך?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "32",
+          "type": "select",
+          "text": "האם את/ה מרגיש/ה לפעמים שהרגשות שלך קהים?"
+        },
+        {
+          "id": "if_d32",
+          "type": "if",
+          "condition": "item.32 >= 2",
+          "then": [
+            {
+              "id": "d32",
+              "type": "select",
+              "optionSetId": "distress_4",
+              "text": "עד כמה חווית מצוקה בעקבות כך?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "33",
+          "type": "select",
+          "text": "האם קורה שאת/ה שומע/ת קולות כשאת/ה לבד?"
+        },
+        {
+          "id": "if_d33",
+          "type": "if",
+          "condition": "item.33 >= 2",
+          "then": [
+            {
+              "id": "d33",
+              "type": "select",
+              "optionSetId": "distress_4",
+              "text": "עד כמה חווית מצוקה בעקבות כך?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "34",
+          "type": "select",
+          "text": "האם קורה שאת/ה שומע/ת קולות משוחחים ביניהם כשאת/ה לבד?"
+        },
+        {
+          "id": "if_d34",
+          "type": "if",
+          "condition": "item.34 >= 2",
+          "then": [
+            {
+              "id": "d34",
+              "type": "select",
+              "optionSetId": "distress_4",
+              "text": "עד כמה חווית מצוקה בעקבות כך?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "35",
+          "type": "select",
+          "text": "האם את/ה מרגיש/ה לפעמים שאת/ה מזניח/ה את ההופעה החיצונית או ההיגיינה שלך?"
+        },
+        {
+          "id": "if_d35",
+          "type": "if",
+          "condition": "item.35 >= 2",
+          "then": [
+            {
+              "id": "d35",
+              "type": "select",
+              "optionSetId": "distress_4",
+              "text": "עד כמה חווית מצוקה בעקבות כך?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "36",
+          "type": "select",
+          "text": "האם את/ה מרגיש/ה לפעמים שאת/ה לא מסוגל/ת להשלים דבר?"
+        },
+        {
+          "id": "if_d36",
+          "type": "if",
+          "condition": "item.36 >= 2",
+          "then": [
+            {
+              "id": "d36",
+              "type": "select",
+              "optionSetId": "distress_4",
+              "text": "עד כמה חווית מצוקה בעקבות כך?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "37",
+          "type": "select",
+          "text": "האם את/ה מרגיש/ה לפעמים שיש לך מעט מאוד תחביבים או תחומי עניין?"
+        },
+        {
+          "id": "if_d37",
+          "type": "if",
+          "condition": "item.37 >= 2",
+          "then": [
+            {
+              "id": "d37",
+              "type": "select",
+              "optionSetId": "distress_4",
+              "text": "עד כמה חווית מצוקה בעקבות כך?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "38",
+          "type": "select",
+          "text": "האם את/ה מרגיש/ה לפעמים אשם/ה?"
+        },
+        {
+          "id": "if_d38",
+          "type": "if",
+          "condition": "item.38 >= 2",
+          "then": [
+            {
+              "id": "d38",
+              "type": "select",
+              "optionSetId": "distress_4",
+              "text": "עד כמה חווית מצוקה בעקבות כך?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "39",
+          "type": "select",
+          "text": "האם את/ה מרגיש/ה לפעמים כמו כישלון?"
+        },
+        {
+          "id": "if_d39",
+          "type": "if",
+          "condition": "item.39 >= 2",
+          "then": [
+            {
+              "id": "d39",
+              "type": "select",
+              "optionSetId": "distress_4",
+              "text": "עד כמה חווית מצוקה בעקבות כך?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "40",
+          "type": "select",
+          "text": "האם את/ה מרגיש/ה לפעמים מתוח/ה?"
+        },
+        {
+          "id": "if_d40",
+          "type": "if",
+          "condition": "item.40 >= 2",
+          "then": [
+            {
+              "id": "d40",
+              "type": "select",
+              "optionSetId": "distress_4",
+              "text": "עד כמה חווית מצוקה בעקבות כך?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "41",
+          "type": "select",
+          "text": "האם את/ה מרגיש/ה לפעמים כאילו שכפיל החליף מישהו מבני משפחתך, חבריך או מכריך?"
+        },
+        {
+          "id": "if_d41",
+          "type": "if",
+          "condition": "item.41 >= 2",
+          "then": [
+            {
+              "id": "d41",
+              "type": "select",
+              "optionSetId": "distress_4",
+              "text": "עד כמה חווית מצוקה בעקבות כך?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "42",
+          "type": "select",
+          "text": "האם קורה שאת/ה רואה חפצים, אנשים או בעלי חיים, שאף אחד אחר אינו רואה?"
+        },
+        {
+          "id": "if_d42",
+          "type": "if",
+          "condition": "item.42 >= 2",
+          "then": [
+            {
+              "id": "d42",
+              "type": "select",
+              "optionSetId": "distress_4",
+              "text": "עד כמה חווית מצוקה בעקבות כך?"
+            }
+          ],
+          "else": []
+        }
+      ],
+      "scoring": {
+        "method": "custom",
+        "customFormula": "sum(item.1, item.2, item.3, item.4, item.5, item.6, item.7, item.8, item.9, item.10, item.11, item.12, item.13, item.14, item.15, item.16, item.17, item.18, item.19, item.20, item.21, item.22, item.23, item.24, item.25, item.26, item.27, item.28, item.29, item.30, item.31, item.32, item.33, item.34, item.35, item.36, item.37, item.38, item.39, item.40, item.41, item.42)",
+        "subscales": {
+          "positive": [
+            "2",
+            "5",
+            "6",
+            "7",
+            "10",
+            "11",
+            "13",
+            "15",
+            "17",
+            "20",
+            "22",
+            "24",
+            "26",
+            "28",
+            "30",
+            "31",
+            "33",
+            "34",
+            "41",
+            "42"
+          ],
+          "negative": [
+            "3",
+            "4",
+            "8",
+            "16",
+            "18",
+            "21",
+            "23",
+            "25",
+            "27",
+            "29",
+            "32",
+            "35",
+            "36",
+            "37"
+          ],
+          "depressive": [
+            "1",
+            "9",
+            "12",
+            "14",
+            "19",
+            "38",
+            "39",
+            "40"
+          ],
+          "distress": [
+            "d1",
+            "d2",
+            "d3",
+            "d4",
+            "d5",
+            "d6",
+            "d7",
+            "d8",
+            "d9",
+            "d10",
+            "d11",
+            "d12",
+            "d13",
+            "d14",
+            "d15",
+            "d16",
+            "d17",
+            "d18",
+            "d19",
+            "d20",
+            "d21",
+            "d22",
+            "d23",
+            "d24",
+            "d25",
+            "d26",
+            "d27",
+            "d28",
+            "d29",
+            "d30",
+            "d31",
+            "d32",
+            "d33",
+            "d34",
+            "d35",
+            "d36",
+            "d37",
+            "d38",
+            "d39",
+            "d40",
+            "d41",
+            "d42"
+          ]
+        }
+      },
+      "subscaleLabels": {
+        "positive": "ממד חיובי (Positive)",
+        "negative": "ממד שלילי (Negative)",
+        "depressive": "ממד דיכאוני (Depressive)",
+        "distress": "מצוקה (Distress)"
+      },
+      "psychometrics": {
+        "reliability": 0.93,
+        "sd": 15.66,
+        "source": "Fazioli et al. 2025"
+      },
+      "alerts": [
+        {
+          "id": "suicidality",
+          "condition": "item.14 >= 2",
+          "message": "דיווח על מחשבות אובדניות",
+          "severity": "critical"
+        },
+        {
+          "id": "hallucinations",
+          "condition": "item.33 >= 3 || item.34 >= 3 || item.42 >= 3",
+          "message": "דיווח על חוויות הזייתיות",
+          "severity": "critical"
+        }
+      ]
+    }
+  ]
+}

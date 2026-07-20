@@ -82,20 +82,19 @@ This document specifies how Madad is to be built. It is intended for the develop
 │   ├── index.html
 │   └── src/
 │       ├── composer.js               # Entry point — bootstraps manifest load and render
-│       ├── composer-loader.js        # Fetches manifest + all configs, populates state
+│       ├── composer-loader.js        # Fetches generated catalog index, populates state
 │       ├── composer-loader.test.js
 │       ├── composer-render.js        # Renders the full composer UI
 │       ├── composer-handlers.js      # User interaction handlers (toggle, copy, share, reset)
 │       ├── composer-state.js         # Shared mutable state + URL builder
 │       └── composer-state.test.js
 ├── public/
-│   ├── configs.json                  # Composer manifest — lists all available config files
+│   ├── composer/
+│   │   └── catalog.json              # Generated catalog index (npm run build:catalog)
 │   ├── configs/
-│   │   ├── prod/
-│   │   │   ├── standard.json         # All standard clinical instruments
-│   │   │   └── intake.json           # DIAMOND screener + demographics + clinical_intake battery
-│   │   └── test/
-│   │       └── e2e.json              # E2E test fixtures only (hidden:true in manifest)
+│   │   └── prod/
+│   │       └── <id>.json             # One questionnaire/battery per file, filename = id
+│   │                                 # (test fixtures marked "dev": true live here too)
 │   └── fonts/                        # Noto Sans Hebrew TTF
 ├── tests/
 │   ├── setup.js
@@ -408,11 +407,11 @@ Severity is not rendered in the current version but the data model should accomm
 
 ## 8. Config Strategy
 
-### 8.1 Single canonical instrument library
+### 8.1 One instrument per file
 
-All standard questionnaire instruments are defined in a single file: `public/configs/prod/standard.json`. This is the authoritative source for all clinical content used in routine sessions. The Composer's manifest (`public/composer/configs.json`) points to this file.
+Every questionnaire and battery is its own config file in `public/configs/prod/`, filename = entity id = config id (enforced by `validate:configs`). Item IDs are URL addresses: the patient app expands `items=` tokens to these files directly — no bundle or alias files exist, and the legacy `configs=` URL parameter is ignored.
 
-Adding a new instrument means adding a new questionnaire definition to `standard.json`. See `docs/INSTRUMENTS.md` for the step-by-step process.
+Adding a new instrument means adding a new `<id>.json` file and regenerating the catalog (`npm run build:catalog`). See `public/configs/CONTRIBUTING.md` for the step-by-step process.
 
 ### 8.2 Specialised config files
 
@@ -429,13 +428,13 @@ When a config file references questionnaires from another file (e.g. a battery i
 
 ```json
 {
-  "id": "intake",
-  "dependencies": ["configs/prod/standard.json"],
+  "id": "clinical_intake",
+  "dependencies": ["configs/prod/diamond_sr.json", "configs/prod/phq9.json"],
   ...
 }
 ```
 
-The Composer reads this field and automatically appends the dependency to the `configs=` URL parameter when generating patient links. Without this declaration, the Composer would generate a URL missing the required config, causing a runtime resolution error.
+The patient app's `loadConfig` auto-fetches declared dependencies at runtime (BFS walk, `loadDependencies: true` by default). Battery files must declare a dependency on every questionnaire file their sequence references — `validate:configs` errors on undeclared cross-file references. The Composer never sees this field.
 
 ### 8.3 What does not belong in a config file
 
@@ -447,11 +446,10 @@ The Composer reads this field and automatically appends the dependency to the `c
 
 | Path | Purpose |
 |---|---|
-| `public/configs/prod/standard.json` | Production instruments — all standard clinical questionnaires |
-| `public/configs/prod/intake.json` | Intake workflow — DIAMOND screener, demographics, `clinical_intake` battery |
-| `public/configs/test/` | Test fixtures — used in automated tests and staging only |
+| `public/configs/prod/<id>.json` | One questionnaire/battery per file, filename = entity id = config id |
+| `public/configs/prod/<id>.json` with `"dev": true` | Test fixtures — loadable like any config, but never shown in the production composer |
 
-Never put test fixtures in `prod/`. The `validate:configs` script runs over all files in `public/configs/` — test fixtures must still be schema-valid.
+The `validate:configs` script runs over all files in `public/configs/` — fixtures must still be schema-valid and follow the one-entity-per-file rule.
 
 ---
 
@@ -470,11 +468,9 @@ Each source passed to `loadConfig()` is one of:
 | Root-relative path | `/configs/prod/standard.json` | used as-is (absolute from origin) |
 | Full URL | `https://trusted.example.com/q.json` | allowed only if origin is in `allowedOrigins` |
 
-Both the short-name and relative-path forms are normalised to the same root-relative URL internally, so `'standard'`, `'configs/prod/standard.json'`, and `'/configs/prod/standard.json'` are all recognised as the same file (the loader's visited-set de-duplicates them). This matters when the same config appears both as an explicit `configs=` entry and as a declared dependency of another config — it must not be fetched twice.
+Both the short-name and relative-path forms are normalised to the same root-relative URL internally, so `'phq9'`, `'configs/prod/phq9.json'`, and `'/configs/prod/phq9.json'` are all recognised as the same file (the loader's visited-set de-duplicates them). This matters when the same config appears both as an `items=`-derived source and as a declared dependency of another config — it must not be fetched twice.
 
-The short-name form is what the Composer generates in patient URLs — it's the shortest stable spelling. The relative-path form is accepted for hand-crafted URLs and legacy callers.
-
-**Rule:** Prefer short names in `configs=` URL parameters. Root-relative paths (`/configs/...`) are accepted but not used by the Composer.
+The short-name form is what `app.js` derives from `items=` tokens (item IDs are addresses). The relative-path form is used in config files' `dependencies` arrays.
 
 #### External-origin config loading
 
@@ -1018,22 +1014,13 @@ Implementation: replace `bidiNodes()` in `report.js` with a function that calls 
 The Composer is a self-contained app at `/composer/`. It shares the config loader with the main app. See `docs/COMPOSER_SPEC.md` for the full UI and behaviour specification.
 
 **Architecture:**
-- `composer.js` — entry point, bootstraps manifest load then calls render
-- `composer-loader.js` — fetches the manifest at `configs.json`, loads all listed configs, populates shared state. Filters out configs marked `hidden: true` from the UI (they are still loaded for dependency resolution). Reads each config's `dependencies` field and stores it in `dependenciesBySource`.
-- `composer-state.js` — shared mutable state (`batteries`, `questionnaires`, `sourceByItem`, `dependenciesBySource`, `selected`, `pid`, `query`). Exports `buildUrl()` which constructs the patient URL and automatically includes dependency sources when a selected item's config declares them.
-- `composer-render.js` — renders the full UI. Filters hidden items from display lists. Includes a "פתח לבדיקה ↗" button that opens the generated URL in a new tab.
+- `composer.js` — entry point, bootstraps catalog load then calls render
+- `composer-loader.js` — fetches the generated catalog index (`catalog.json`), populates shared state; filters `dev: true` entries outside dev mode.
+- `composer-state.js` — shared mutable state (`batteries`, `questionnaires`, `sourceByItem`, `selected`, `pid`, `query`). Exports `buildUrl()` which lists only the selected items' source configs — cross-config dependencies are auto-fetched patient-side by `loadConfig`.
+- `composer-render.js` — renders the full UI. Includes a "פתח לבדיקה ↗" button that opens the generated URL in a new tab.
 - `composer-handlers.js` — handles toggle, copy, share, and reset interactions.
 
-**Manifest (`public/configs.json`):**
-```json
-{
-  "configs": [
-    { "name": "...", "url": "/configs/prod/standard.json" },
-    { "name": "...", "url": "/configs/prod/intake.json" },
-    { "name": "...", "url": "/configs/test/e2e.json", "hidden": true }
-  ]
-}
-```
+**Catalog (`public/composer/catalog.json`):** generated by `scripts/build-catalog.mjs` scanning the config directories (no manifest). See `docs/COMPOSER_SPEC.md` §Config Discovery for the contract.
 
 `hidden: true` — config is loaded (so IDs are registered and dependencies resolve) but its questionnaires and batteries are not shown in the Composer UI. Used for test fixtures and any config not intended for clinical use.
 
@@ -1114,4 +1101,4 @@ The app is served at the domain root (`/`) in both production (Cloudflare Pages)
 - `configs/prod/standard.json` from `https://app.ezmadad.com/` → `https://app.ezmadad.com/configs/prod/standard.json` ✓
 - `configs/prod/standard.json` from `http://localhost:5173/` → `http://localhost:5173/configs/prod/standard.json` ✓
 
-The Composer manifest (`public/composer/configs.json`) stores root-relative paths (`/configs/...`). The Composer loader resolves these against the app root URL at runtime before fetching and stores them as relative paths (`configs/...`) in generated patient URLs.
+The Composer's catalog entries carry `source` tokens already in URL form (short names, or relative paths for non-prod configs) — no runtime path resolution is needed.

@@ -1,0 +1,145 @@
+{
+  "id": "phq9",
+  "version": "1.0.0",
+  "questionnaires": [
+    {
+      "id": "phq9",
+      "meta": {
+        "domains": [
+          "depression"
+        ],
+        "type": "severity",
+        "populations": [
+          "adult"
+        ],
+        "featured": true
+      },
+      "title": "שאלון דיכאון (PHQ-9)",
+      "description": "הערכת תסמיני דיכאון במהלך השבוע האחרון (Depression, MDD, PHQ-9)",
+      "keywords": [
+        "depression",
+        "mood",
+        "PHQ",
+        "PHQ-9",
+        "MDD",
+        "screening",
+        "anhedonia"
+      ],
+      "defaultOptionSetId": "frequency_4",
+      "optionSets": {
+        "frequency_4": [
+          {
+            "label": "כלל לא",
+            "value": 0
+          },
+          {
+            "label": "מספר ימים",
+            "value": 1
+          },
+          {
+            "label": "ביותר ממחצית הימים",
+            "value": 2
+          },
+          {
+            "label": "כמעט כל יום",
+            "value": 3
+          }
+        ]
+      },
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "במהלך השבוע האחרון, באיזו תדירות היית מוטרד מכל אחת מן הבעיות הבאות?"
+        },
+        {
+          "id": "1",
+          "type": "select",
+          "text": "עניין או הנאה מועטים מעשיית דברים"
+        },
+        {
+          "id": "2",
+          "type": "select",
+          "text": "תחושת דכדוך, דיכאון, או חוסר תקווה"
+        },
+        {
+          "id": "3",
+          "type": "select",
+          "text": "קשיים בהירדמות או בשינה רציפה, או עודף שינה"
+        },
+        {
+          "id": "4",
+          "type": "select",
+          "text": "תחושה של עייפות או אנרגיה מועטה"
+        },
+        {
+          "id": "5",
+          "type": "select",
+          "text": "תיאבון מועט או אכילת יתר"
+        },
+        {
+          "id": "6",
+          "type": "select",
+          "text": "מרגיש רע לגבי עצמך — מרגיש שאתה כישלון או שאכזבת את עצמך או את משפחתך"
+        },
+        {
+          "id": "7",
+          "type": "select",
+          "text": "קושי להתרכז בדברים, כמו קריאה בעיתון או צפייה בטלוויזיה"
+        },
+        {
+          "id": "8",
+          "type": "select",
+          "text": "היית מדבר או נע באיטיות עד כי אחרים הבחינו בכך? או להיפך — היית חסר שקט ומנוחה כך שהיית צריך להסתובב יותר מהרגיל"
+        },
+        {
+          "id": "9",
+          "type": "select",
+          "text": "מחשבות שהיה עדיף לו היית מת או מחשבות על פגיעה בעצמך בדרך כלשהי"
+        }
+      ],
+      "scoring": {
+        "method": "sum"
+      },
+      "interpretations": {
+        "target": "total",
+        "type": "severity",
+        "ranges": [
+          {
+            "min": 0,
+            "max": 4,
+            "label": "מינימלי"
+          },
+          {
+            "min": 5,
+            "max": 9,
+            "label": "קל"
+          },
+          {
+            "min": 10,
+            "max": 14,
+            "label": "בינוני"
+          },
+          {
+            "min": 15,
+            "max": 19,
+            "label": "בינוני-חמור"
+          },
+          {
+            "min": 20,
+            "max": 27,
+            "label": "חמור"
+          }
+        ]
+      },
+      "alerts": [
+        {
+          "id": "suicidality",
+          "condition": "item.9 >= 1",
+          "message": "אובדנות",
+          "severity": "critical"
+        }
+      ]
+    }
+  ]
+}

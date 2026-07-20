@@ -1,17 +1,17 @@
 // build-catalog.js
-// Pure catalog builder: manifest + parsed config files → catalog object.
+// Pure catalog builder: parsed config files → catalog object.
 //
 // The catalog (public/composer/catalog.json) is the composer's only data
 // source: a lightweight index of every questionnaire/battery (title,
-// description, keywords, taxonomy meta, item count, time estimate) plus each
-// entry's source token for patient-URL generation. The composer never
-// downloads full configs — those are fetched only by the patient app (and,
-// later, the preview).
+// description, keywords, taxonomy meta, item count, time estimate). The
+// composer never downloads full configs — those are fetched only by the
+// patient app (and, later, the preview).
 //
-// Cross-config dependencies are NOT in the catalog: generated URLs list only
-// the selected items' sources, and the patient app's loadConfig auto-fetches
-// each config's declared "dependencies" at runtime (BFS walk — see
-// shared/config/loader.js). The composer needs no dependency knowledge.
+// No source/dependency information is in the catalog: item IDs are addresses
+// (configs/prod/<id>.json — filename = entity id, enforced by
+// validate:configs), so patient URLs carry only `items=` and the patient
+// app's loadConfig derives files from tokens and auto-fetches declared
+// battery dependencies (BFS walk — see shared/config/loader.js).
 //
 // This module is pure (no fs, no fetch) so it can be unit-tested directly.
 // The CLI wrapper that reads files and writes public/composer/catalog.json
@@ -22,10 +22,6 @@
 // time- or environment-dependent may enter the output.
 
 export const CATALOG_VERSION = 1;
-
-// Short-name derivation must match composer URL rules (COMPOSER_SPEC.md):
-// 'configs/prod/<name>.json' → '<name>'; anything else stays a relative path.
-const INTERNAL_CONFIG_PREFIX = 'configs/prod/';
 
 // Per-item time estimates (seconds) for the completion-time heuristic.
 // Deliberately rough — meta.durationMinutes overrides the estimate entirely.
@@ -39,16 +35,6 @@ const ITEM_SECONDS = {
 };
 
 const DESCRIPTION_MAX = 140;
-
-// toToken converts a manifest/dependency URL to the token used in generated
-// patient URLs ('configs=' values) and as the catalog sources key.
-export function toToken(url) {
-  const noSlash = url.startsWith('/') ? url.slice(1) : url;
-  if (noSlash.startsWith(INTERNAL_CONFIG_PREFIX) && noSlash.endsWith('.json')) {
-    return noSlash.slice(INTERNAL_CONFIG_PREFIX.length, -'.json'.length);
-  }
-  return noSlash;
-}
 
 // truncate shortens a description for the catalog. Full text remains in the
 // config file and is shown by the preview, which fetches the config itself.
@@ -137,63 +123,46 @@ function metaFields(meta) {
 /**
  * buildCatalog — the pure builder.
  *
- * @param {object} manifest      {configs: [{name, url, hidden?, dev?}]}
- * @param {Map|object} configsByUrl  manifest entry url → parsed config JSON
+ * @param {object[]} configs     parsed config files, in the order their
+ *                               entries should appear (CLI passes sorted
+ *                               filename order)
  * @param {object} [options]     {warn: (msg) => void}
- * @returns {object} catalog     {catalogVersion, sources, entries}
+ * @returns {object} catalog     {catalogVersion, entries}
  *
- * Semantics mirror the pre-catalog composer loader exactly:
- * - manifest order defines entry order (per config: batteries, then
- *   questionnaires — the composer splits them into two lists anyway)
- * - dev flags pass through onto entries; the composer filters at runtime by
- *   DEV mode
- * - hidden configs contribute no entries — nothing from them is selectable.
- *   (Their questionnaires still count toward battery sizes via the first
- *   pass, and the patient app still loads them via dependency auto-fetch.)
+ * - a config's `dev: true` flag passes through onto its entries; the
+ *   composer filters at runtime by DEV mode
+ * - battery item counts resolve questionnaire refs across all given configs
+ *   (batteries live in their own files and reference other files' content)
  */
-export function buildCatalog(manifest, configsByUrl, options = {}) {
+export function buildCatalog(configs, options = {}) {
   const warn = options.warn ?? (() => {});
-  const get = (url) =>
-    configsByUrl instanceof Map ? configsByUrl.get(url) : configsByUrl[url];
-
   const entries = [];
 
   // First pass: cross-config questionnaire map for battery counting.
   const questionnaireById = new Map();
-  for (const entry of manifest.configs) {
-    const config = get(entry.url);
-    if (!config) continue;
+  for (const config of configs) {
     for (const q of config.questionnaires ?? []) {
       questionnaireById.set(q.id, countItems(q.items));
     }
   }
 
-  for (const entry of manifest.configs) {
-    const config = get(entry.url);
-    if (!config) {
-      warn(`${entry.url}: config not provided — skipped`);
-      continue;
-    }
-    const token = toToken(entry.url);
-    const isDev = !!entry.dev;
-
-    if (entry.hidden) continue;
+  for (const config of configs) {
+    const isDev = !!config.dev;
 
     const missingMeta = (kind, id) => {
       // Dev/test fixtures are exempt — they never reach production.
-      if (!isDev) warn(`${token}: ${kind} "${id}" has no meta block`);
+      if (!isDev) warn(`${config.id}: ${kind} "${id}" has no meta block`);
     };
 
     for (const b of config.batteries ?? []) {
       if (!b.meta) missingMeta('battery', b.id);
-      const counts = countBattery(b.sequence, questionnaireById, warn, `${token}/${b.id}`);
+      const counts = countBattery(b.sequence, questionnaireById, warn, `${config.id}/${b.id}`);
       entries.push({
         id: b.id,
         kind: 'battery',
         title: b.title,
         description: truncate(b.description),
         keywords: b.keywords ?? [],
-        source: token,
         ...(isDev && { dev: true }),
         itemCount: counts.count,
         estMinutes: estMinutes(counts.seconds, b.meta),
@@ -210,7 +179,6 @@ export function buildCatalog(manifest, configsByUrl, options = {}) {
         title: q.title,
         description: truncate(q.description),
         keywords: q.keywords ?? [],
-        source: token,
         ...(isDev && { dev: true }),
         itemCount: counts.count,
         estMinutes: estMinutes(counts.seconds, q.meta),
