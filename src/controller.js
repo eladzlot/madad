@@ -1,5 +1,6 @@
 import { generateReport } from './pdf/report.js';
-import { tagForType, canAdvance, autoAdvances } from './item-types.js';
+import { tagForType, canAdvance, autoAdvances } from '../shared/config/item-types.js';
+import { resolveItemOptions } from '../shared/config/options.js';
 
 // Controller — wires orchestrator + engine to Lit components.
 // See RENDER_SPEC.md §2.
@@ -24,9 +25,7 @@ const ADVANCE_DELAY_MS = 150;
 function resolveOptions(item, { questionnaire }) {
   if (item.type !== 'select' && item.type !== 'binary') return item;
   if (item.options) return item;
-  const setId = item.optionSetId ?? questionnaire.defaultOptionSetId;
-  const options = questionnaire.optionSets?.[setId] ?? [];
-  return { ...item, options };
+  return { ...item, options: resolveItemOptions(item, questionnaire) };
 }
 
 function resolveItem(item, context) {

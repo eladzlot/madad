@@ -28,6 +28,7 @@
 import regularFontUrl from '../../public/fonts/NotoSansHebrew-Regular.ttf?url';
 import boldFontUrl    from '../../public/fonts/NotoSansHebrew-Bold.ttf?url';
 import { buildEnvelope } from '../../shared/pdf/envelope-schema.js';
+import { resolveItemOptions } from '../../shared/config/options.js';
 
 // App version recorded in the embedded envelope (forensic only). Vite/Vitest
 // inline __APP_VERSION__ from package.json at build time via `define`.
@@ -893,11 +894,9 @@ export function calcRiskLevel(item, value, options) {
 
 // ── Option resolution ─────────────────────────────────────────────────────────
 
-export function resolveOptions(item, questionnaire) {
-  if (item.options) return item.options;
-  const setId = item.optionSetId ?? questionnaire.defaultOptionSetId;
-  return questionnaire.optionSets?.[setId] ?? [];
-}
+// The report renders options via the shared resolver. Aliased and re-exported
+// because report.test.js and buildItemRow reference `resolveOptions` by name.
+export const resolveOptions = resolveItemOptions;
 
 // ── Footer ────────────────────────────────────────────────────────────────────
 

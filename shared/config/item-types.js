@@ -1,9 +1,25 @@
 // Item Type Registry
 // Single source of truth for all item type behaviour.
-// Adding a new type: add one entry here, then build its component and PDF renderer.
+//
+// ─── Adding a new item type — the full touch-list ───────────────────────────
+// This registry says a type EXISTS and declares its shape. A type also has
+// presentation and scoring concerns that live outside this file. When you add a
+// type, update every location below (there is no single place that covers all of
+// them — this list is the contract):
+//   1. This registry               — add one entry (shape/behaviour).
+//   2. shared/config/QuestionnaireSet.schema.json + rebuild the validator
+//                                    — the type's config shape (see schema-change skill).
+//   3. src/components/item-<type>.js — the patient-facing interactive component.
+//   4. src/pdf/report.js            — the PDF row/block renderer for the type.
+//   5. composer/src/preview/preview-model.js — the read-only DisplayNode fields
+//                                    (options vs range vs free-text branch).
+//   6. composer/src/taxonomy.js     — the Hebrew display label for the type
+//                                    (optional; used by the composer preview).
+// Scoring/DSL exposure follow from `contributesToScore` / `answerShape` here and
+// need no extra edit for a type that fits the existing shapes.
 //
 // Each entry declares:
-//   tag              — custom element tag name
+//   tag              — patient custom element tag name
 //   autoAdvance      — fires 'advance' immediately after 'answer' (select/binary pattern)
 //   skippableDefault — whether unanswered = valid to advance (overridden by item.required)
 //   contributesToScore — whether scoring engine counts this type
@@ -106,4 +122,18 @@ export function canAdvance(item, answer) {
  */
 export function tagForType(type) {
   return REGISTRY[type]?.tag ?? 'item-select';
+}
+
+/**
+ * The answer shape for this item type ('scalar' | 'array' | 'object'), or
+ * undefined for an unknown type. Used by the composer preview to decide how to
+ * render an item read-only without importing patient-app code.
+ */
+export function answerShape(type) {
+  return REGISTRY[type]?.answerShape;
+}
+
+/** Whether a type is a known, registered item type. */
+export function isKnownType(type) {
+  return Object.prototype.hasOwnProperty.call(REGISTRY, type);
 }

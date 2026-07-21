@@ -4,7 +4,8 @@
 // See Implementation Spec §5.4, §5.5
 
 import { evaluate } from './dsl.js';
-import { isScored } from '../item-types.js';
+import { isScored } from '../../shared/config/item-types.js';
+import { resolveItemOptions } from '../../shared/config/options.js';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -54,9 +55,8 @@ function responseRange(item, questionnaire) {
     if (typeof item.min !== 'number' || typeof item.max !== 'number') return null;
     return [item.min, item.max];
   }
-  const options = item.options
-    ?? questionnaire.optionSets?.[item.optionSetId ?? questionnaire.defaultOptionSetId];
-  if (!Array.isArray(options) || options.length === 0) return null;
+  const options = resolveItemOptions(item, questionnaire);
+  if (options.length === 0) return null;
   const values = options.map(o => o.value);
   return [Math.min(...values), Math.max(...values)];
 }

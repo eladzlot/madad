@@ -40,7 +40,22 @@ Every item type has four cross-cutting concerns:
 
 Currently each concern is handled by its own ad-hoc `type === 'select'` conditional. Adding a type means touching all four files independently, with no central record of what a type is supposed to do.
 
-**The registry** is a single module, `src/item-types.js`, that declares the complete contract for each type. Every concern queries this registry instead of embedding type checks. Adding a type means adding one entry to the registry.
+**The registry** is a single module, `shared/config/item-types.js`, that declares the complete contract for each type. Every concern queries this registry instead of embedding type checks. Adding a type means adding one entry to the registry.
+
+> **Registry location:** the registry lives in `shared/config/item-types.js` (the shared layer) so both the patient app and the composer preview can query a type's shape without crossing a code boundary. Option resolution (`item.options ?? optionSets[...]`) lives beside it in `shared/config/options.js` as `resolveItemOptions`.
+
+#### Adding a new item type — the full touch-list
+
+A type "exists" in the registry, but its presentation and scoring concerns are spread across several files. There is no single place that covers all of them — this is the contract (mirrored in the `shared/config/item-types.js` header):
+
+1. **`shared/config/item-types.js`** — add the registry entry (shape/behaviour).
+2. **`shared/config/QuestionnaireSet.schema.json`** — add the config shape, then rebuild the validator (`npm run build:validator`; see the schema-change skill).
+3. **`src/components/item-<type>.js`** — the patient-facing interactive component.
+4. **`src/pdf/report.js`** — the PDF row/block renderer for the type.
+5. **`composer/src/preview/preview-model.js`** — the read-only DisplayNode fields (the options-vs-range-vs-free-text branch in `buildItemEntry`).
+6. **`composer/src/taxonomy.js`** — the Hebrew display label (`ITEM_TYPE_LABELS`), used by the composer preview. Optional but keep it in step.
+
+Scoring/DSL exposure follow from `contributesToScore` / `answerShape` in the registry and need no extra edit for a type that fits an existing shape.
 
 #### 2.1 Registry entry shape
 

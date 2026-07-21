@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isScored, autoAdvances, isSkippable, canAdvance } from './item-types.js';
+import { isScored, autoAdvances, isSkippable, canAdvance, answerShape, isKnownType } from './item-types.js';
 
 // ── isScored ──────────────────────────────────────────────────────────────────
 
@@ -97,6 +97,32 @@ describe('canAdvance', () => {
     expect(canAdvance({ type: 'multiselect', required: true }, [])).toBe(false);
     expect(canAdvance({ type: 'multiselect', required: true }, [1])).toBe(true);
     expect(canAdvance({ type: 'multiselect', required: true }, null)).toBe(false);
+  });
+});
+
+// ── answerShape ───────────────────────────────────────────────────────────────
+
+describe('answerShape', () => {
+  it('returns the declared shape per type', () => {
+    expect(answerShape('select')).toBe('scalar');
+    expect(answerShape('slider')).toBe('scalar');
+    expect(answerShape('multiselect')).toBe('array');
+  });
+
+  it('returns undefined for unknown types', () => {
+    expect(answerShape('nope')).toBeUndefined();
+  });
+});
+
+// ── isKnownType ───────────────────────────────────────────────────────────────
+
+describe('isKnownType', () => {
+  it('is true for registered types, false otherwise', () => {
+    expect(isKnownType('select')).toBe(true);
+    expect(isKnownType('multiselect')).toBe(true);
+    expect(isKnownType('instructions')).toBe(true);
+    expect(isKnownType('if')).toBe(false);       // control-flow, not an item type
+    expect(isKnownType('nope')).toBe(false);
   });
 });
 
