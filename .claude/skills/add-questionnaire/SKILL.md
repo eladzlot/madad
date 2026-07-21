@@ -10,6 +10,17 @@ reference is `public/configs/LLM_GUIDE.md` and the process rules are
 `public/configs/CONTRIBUTING.md` — **read both before writing any JSON.** This skill
 defines the workflow around them. Follow the steps in order; do not skip the review gate.
 
+## The content model (read first)
+
+**An item ID is an address.** Every questionnaire OR battery is its own file at
+`public/configs/prod/<id>.json`, where **filename = entity id = config id**
+(`validate:configs` enforces this). There are no bundle files, no
+`public/composer/configs.json` manifest, and no `configs/test/` directory. Patient
+URLs are `?items=<id>,<id>&pid=<pid>` — each token resolves to `configs/prod/<id>.json`.
+A separate generated index, `public/composer/catalog.json`, powers the composer's
+browsing and **must be regenerated** whenever you add or change a config
+(`npm run build:catalog`).
+
 ## Hard rules
 
 - **Hebrew only.** All patient-facing text (titles, instructions, items, option labels,
@@ -21,6 +32,8 @@ defines the workflow around them. Follow the steps in order; do not skip the rev
 - **Validated numbers only.** Scoring method, severity ranges, cutoffs, and alert
   thresholds must match the published, validated instrument. Never invent or "round"
   them. If a value cannot be sourced, leave the field out and say so.
+- **Never rename or delete a prod config file** — the filename is the instrument's URL
+  address; renaming breaks every link that references it.
 - **Never commit or push without explicit user approval.**
 
 ## Step 1 — Gather inputs
@@ -30,8 +43,9 @@ Establish what the user has provided:
 - A source paper (PDF or citation)? If yes, read it.
 - A Hebrew version of the items? If yes, treat it as authoritative text (but still
   proofread, step 4).
-- Target config file (`prod/standard.json`, `prod/trauma.json`, `prod/intake.json`, or a
-  new file — see CONTRIBUTING.md "Which file?"). If ambiguous, ask.
+- The **id** — lowercase letters/digits/underscores, no hyphens, unique across all
+  prod configs (`grep` the other files in `public/configs/prod/` for collisions). The
+  file will be `public/configs/prod/<id>.json`. Confirm the id with the user if unclear.
 
 ## Step 2 — Psychometrics and cutoffs
 
@@ -62,7 +76,7 @@ the review step.
    - Keep clinical register — plain, respectful, second person.
    - Hebrew is gendered: ask the user which convention to use (masculine default,
      both forms with slash, or gender-neutral phrasing) unless existing questionnaires
-     in the target file already establish one — check and match.
+     already establish one — check a few `prod/` files and match.
    - Flag the translation as unvalidated in your review summary so the user knows the
      psychometrics were established on a different language version.
 
@@ -77,46 +91,67 @@ Go through **every** item and **every** option label, whether supplied or transl
 
 ## Step 5 — Build the JSON
 
-Follow `public/configs/LLM_GUIDE.md` exactly. Reminders that are frequent failure points:
+Follow `public/configs/LLM_GUIDE.md` exactly. One entity per file; the top-level config
+`id` and the questionnaire/battery `id` both equal the filename stem. Reminders that are
+frequent failure points:
+
 - IDs: letters/digits/underscores only, no hyphens, not a reserved word, unique across
-  all loaded configs (grep the other prod configs for collisions).
-- Title convention: `שם עברי (INITIALS)`.
+  all prod configs.
+- Title convention: `שם עברי (INITIALS)` (skip the initials if the instrument isn't
+  known by them).
+- **`meta` block is required on real instruments** (LLM_GUIDE §"Catalog metadata") — it
+  drives the composer's browsing/filtering and is never shown to patients:
+  - `domains` (≥1, closed enum), `type` (screener|severity|process|worksheet|other —
+    required on questionnaires, omitted on batteries), `populations` (default adult),
+    `tags` (free-form), `featured` (only for common workhorse instruments — off by
+    default), `durationMinutes` (only when the computed estimate would mislead).
+  - **Do not invent enum values.** If the instrument needs a `domain`/`type`/`population`
+    that isn't in the enum, that is a *schema change* — stop and use the `schema-change`
+    skill; do not add the value ad hoc (the validator rejects it, and the enum ships in
+    the app bundle → deploy-skew rules apply).
 - Define one `optionSets` entry + `defaultOptionSetId` rather than repeating options.
 - Binary items need explicit option labels.
 - Gating items that shouldn't score → `scoring.exclude`.
 - Interpretation ranges: inclusive, no gaps, no overlaps, cover the full score range.
-- Bump the config file's `version` (minor bump for an added instrument).
-- New config file? Add it to `public/composer/configs.json` and declare `dependencies`
-  if it references instruments from other configs.
+- **Batteries** get their own file too, `questionnaires: []` + a `batteries` entry, and
+  must declare `dependencies` on every `configs/prod/<id>.json` their sequence
+  references (`validate:configs` errors on undeclared cross-file refs; the patient app
+  auto-fetches declared dependencies).
 
-## Step 6 — Validate
+## Step 6 — Validate and regenerate the catalog
 
 ```bash
-npm run validate:configs
-npm test
+npm run validate:configs   # schema + filename=id + one-entity-per-file + cross-file refs
+npm run build:catalog      # regenerate public/composer/catalog.json (commit it too)
+npm run validate:catalog   # assert the committed catalog.json is up to date
+npm test                   # unit suite
 ```
 
-Fix any errors before proceeding.
+Fix any errors before proceeding. The regenerated `catalog.json` is part of the change —
+it must be committed alongside the config file, or `validate:catalog` fails in CI.
 
 ## Step 7 — Review gate (always, no exceptions)
 
 Before any commit — even if the user supplied a perfect Hebrew version — present the
 **entire questionnaire** for inspection in readable form (not raw JSON):
 
-1. Title, description, target config file.
-2. Full response scale(s) with values.
-3. Every item, numbered, in order, with type and any reverse/exclude/conditional flags.
-4. Scoring method, subscales, interpretation ranges, cutoffs, alerts, psychometrics —
+1. Title, description, id / filename.
+2. `meta` summary: domains, type, populations, featured?, duration.
+3. Full response scale(s) with values.
+4. Every item, numbered, in order, with type and any reverse/exclude/conditional flags.
+5. Scoring method, subscales, interpretation ranges, cutoffs, alerts, psychometrics —
    each with its literature source.
-5. Open questions: unvalidated translation, unresolved proofreading suggestions,
+6. Open questions: unvalidated translation, unresolved proofreading suggestions,
    missing psychometric values.
 
 Then **stop and wait**. Offer the manual test URL
-(`http://localhost:5173/?configs=<shortname>&items=<id>`) and invite corrections. Apply
-any fixes the user requests, re-run validation, and re-show the changed parts.
+(`http://localhost:5173/?items=<id>`) and invite corrections. Apply any fixes the user
+requests, re-run validation + `build:catalog`, and re-show the changed parts.
 
 ## Step 8 — Commit
 
-Only after the user explicitly approves. Config-only change, plain commit message
-(no AI attribution), e.g. `content: add <INSTRUMENT> to standard.json (v1.7.0)`.
-Update `docs/HANDOVER.md`'s instrument table if the instrument is prod-facing.
+Only after the user explicitly approves. Config + regenerated catalog change, plain
+commit message (no AI attribution), e.g.
+`content: add <INSTRUMENT> (configs/prod/<id>.json)`. Stage both the new
+`public/configs/prod/<id>.json` and the regenerated `public/composer/catalog.json`.
+Update `docs/HANDOVER.md`'s instrument-library table if the instrument is prod-facing.
