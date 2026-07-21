@@ -37,6 +37,7 @@ export default defineConfig(({ mode }) => ({
         main:      'index.html',
         composer:  'composer/index.html',
         aggregate: 'aggregate/index.html',
+        help:      'help/index.html',
         // landing/ builds separately → dist-landing/ (vite.landing.config.js).
       },
       output: {

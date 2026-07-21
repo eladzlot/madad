@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/svg+xml" href="../public/favicon.svg" />
+  <link rel="shortcut icon" href="../public/favicon.svg" />
+  <title>מדד — עזרה</title>
+
+  <!-- Open Graph / WhatsApp — clinician facing -->
+  <meta property="og:title" content="מדד — עזרה" />
+  <meta property="og:description" content="איך עובדים עם מדד: יצירת קישור, מילוי על ידי המטופל, וסיכום השינוי לאורך זמן." />
+  <meta property="og:image" content="https://app.ezmadad.com/og-image.png" />
+  <meta property="og:url" content="https://app.ezmadad.com/help/" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <link rel="stylesheet" href="../shared/styles/tokens.css" />
+</head>
+<body>
+  <clinician-nav page="help" subtitle="מדריך קצר לעבודה עם מדד"></clinician-nav>
+
+  <main>
+    <h1>איך עובדים עם מדד</h1>
+    <p class="lead">
+      מדד הוא כלי חינמי למדידה קלינית — בלי הרשמה ובלי חשבון. אתם בונים קישור עם
+      השאלונים שבחרתם, שולחים אותו למטופל, והוא ממלא אותם בדפדפן ומחזיר לכם דוח PDF.
+    </p>
+
+    <section aria-labelledby="workflow-title">
+      <h2 id="workflow-title">תהליך העבודה</h2>
+      <ol class="steps">
+        <li>
+          <h3>בוחרים שאלונים ויוצרים קישור</h3>
+          <p>
+            ב<a href="../composer/">מחולל הקישורים</a> בוחרים שאלון אחד או יותר, אפשר
+            להוסיף מזהה מטופל (אופציונלי), ומשתפים את הקישור שנוצר.
+          </p>
+        </li>
+        <li>
+          <h3>שולחים למטופל</h3>
+          <p>
+            מעבירים את הקישור בוואטסאפ, במייל או בכל דרך אחרת. המטופל פותח אותו בכל
+            דפדפן — בלי התקנה ובלי הרשמה.
+          </p>
+        </li>
+        <li>
+          <h3>המטופל ממלא ומקבל PDF</h3>
+          <p>
+            המטופל עונה על השאלונים ובסיום מפיק דוח PDF ומחזיר אותו אליכם. הנתונים
+            נשארים בדפדפן של המטופל — הדוח נוצר מקומית ואינו נשלח לשרת.
+          </p>
+        </li>
+        <li>
+          <h3>צופים בשינוי לאורך זמן</h3>
+          <p>
+            טוענים את דוחות ה-PDF שנאספו ל<a href="../aggregate/">סיכום המטופל</a>
+            כדי לראות את השינוי לאורך זמן בגרפים. גם כאן הקבצים נשארים בדפדפן שלכם.
+          </p>
+        </li>
+      </ol>
+    </section>
+
+    <section aria-labelledby="faq-title">
+      <h2 id="faq-title">שאלות נפוצות</h2>
+      <div class="faq">
+        <details>
+          <summary>צריך להירשם או לפתוח חשבון?</summary>
+          <p>לא. אין הרשמה, אין חשבון ואין עלות — לא עבורכם ולא עבור המטופל.</p>
+        </details>
+        <details>
+          <summary>היכן נשמרים הנתונים?</summary>
+          <p>
+            הכול פועל בדפדפן. תשובות המטופל נשארות במכשיר שלו, דוח ה-PDF נוצר מקומית,
+            והקבצים שאתם טוענים לסיכום נשארים בדפדפן שלכם. שום מידע רפואי אינו נשלח
+            לשרת של מדד.
+          </p>
+          <p>
+            שימו לב: כאשר משתפים את הקישור או את דוח ה-PDF באמצעים דיגיטליים — למשל
+            בוואטסאפ או במייל — המידע נשמר גם אצל אותו שירות (בשרתים של ווטסאפ, למשל).
+            אחריות אבטחת המידע בשיתוף היא שלכם.
+          </p>
+        </details>
+        <details>
+          <summary>מה המטופל רואה?</summary>
+          <p>
+            שאלון נקי בעברית, מותאם לנייד ולמחשב. אם בחרתם כמה שאלונים, הם מוצגים
+            ברצף אחד לפי הסדר שקבעתם.
+          </p>
+        </details>
+        <details>
+          <summary>איך משלבים כמה שאלונים בקישור אחד?</summary>
+          <p>
+            במחולל הקישורים בוחרים כמה פריטים; כולם נכנסים לאותו קישור ומוצגים למטופל
+            כרצף אחד. אפשר לשנות את סדר ההצגה לפני העתקת הקישור.
+          </p>
+        </details>
+        <details>
+          <summary>איך צופים בשינוי לאורך זמן?</summary>
+          <p>
+            אוספים את דוחות ה-PDF ממפגשים שונים וטוענים אותם יחד לסיכום המטופל. מדד
+            מזהה את השאלונים ומציג את המגמה לאורך זמן.
+          </p>
+        </details>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="./src/help.js"></script>
+</body>
+</html>

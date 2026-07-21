@@ -17,9 +17,9 @@ describe('clinician-nav', () => {
     const el = await makeEl();
     expect(el.shadowRoot.querySelector('.brand').textContent).toBe('מדד');
     const links = [...el.shadowRoot.querySelectorAll('nav .link')];
-    expect(links.map((a) => a.textContent.trim())).toEqual(['מחולל קישורים', 'סיכום מטופל']);
+    expect(links.map((a) => a.textContent.trim())).toEqual(['מחולל קישורים', 'סיכום מטופל', 'עזרה']);
     // Relative one-level-up hrefs work under any deploy base path.
-    expect(links.map((a) => a.getAttribute('href'))).toEqual(['../composer/', '../aggregate/']);
+    expect(links.map((a) => a.getAttribute('href'))).toEqual(['../composer/', '../aggregate/', '../help/']);
     expect(el.shadowRoot.querySelector('.brand').getAttribute('href')).toBe('../landing/');
   });
 
@@ -30,10 +30,17 @@ describe('clinician-nav', () => {
     expect(current[0].textContent.trim()).toBe('סיכום מטופל');
   });
 
+  it('marks the help page when active', async () => {
+    const el = await makeEl({ page: 'help' });
+    const current = el.shadowRoot.querySelectorAll('[aria-current="page"]');
+    expect(current).toHaveLength(1);
+    expect(current[0].textContent.trim()).toBe('עזרה');
+  });
+
   it('marks no link when page is unknown or unset', async () => {
     const unset = await makeEl();
     expect(unset.shadowRoot.querySelector('[aria-current]')).toBeNull();
-    const unknown = await makeEl({ page: 'help' });
+    const unknown = await makeEl({ page: 'nonesuch' });
     expect(unknown.shadowRoot.querySelector('[aria-current]')).toBeNull();
   });
 

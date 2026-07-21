@@ -160,6 +160,12 @@ export class SelectionCart extends LitElement {
       font-size: var(--font-size-sm, 14px);
       color: #7AABBD;
     }
+    .empty-cart .help-link { color: #A8CFDF; text-decoration: underline; }
+    .empty-cart .help-link:hover { color: #C0D4E4; }
+    .empty-cart .help-link:focus-visible {
+      outline: 2px solid var(--color-border-focus, #2BB3C0);
+      outline-offset: 2px;
+    }
   `];
 
   _emit(type, detail = {}) {
@@ -236,7 +242,10 @@ export class SelectionCart extends LitElement {
         ${count > 0 ? html`
           <p class="hint">גרור או השתמש ב-↑↓ לשינוי הסדר</p>
           <ol>${this.entries.map((e, i) => this._renderItem(e, i, count))}</ol>
-        ` : html`<p class="empty-cart">בחרו שאלונים כדי לבנות קישור.</p>`}
+        ` : html`
+          <p class="empty-cart">בחרו שאלונים כדי לבנות קישור.</p>
+          <p class="empty-cart"><a class="help-link" href="../help/">איך זה עובד?</a></p>
+        `}
       </div>
     `;
   }

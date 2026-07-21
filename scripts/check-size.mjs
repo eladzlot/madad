@@ -39,6 +39,7 @@ const BUDGETS = [
   { pattern: /^composer/,        limit:  30 * KB, label: 'composer    (browse UI + Lit)' },
   { pattern: /^preview-dialog/,  limit:   8 * KB, label: 'preview     (dialog + model — lazy)' },
   { pattern: /^aggregate/,       limit:  40 * KB, label: 'aggregate   (charts + parser + Lit)' },
+  { pattern: /^help/,            limit:  20 * KB, label: 'help        (static page + nav + Lit)' },
 ];
 
 const TOTAL_BUDGET = 570 * KB;

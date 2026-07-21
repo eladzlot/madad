@@ -11,10 +11,11 @@
 
 import { LitElement, html, css, nothing } from 'lit';
 
-// Future עזרה/אודות pages: add a row here and they appear on every surface.
+// Future אודות pages: add a row here and they appear on every surface.
 const PAGES = [
   { id: 'composer', label: 'מחולל קישורים', href: '../composer/' },
   { id: 'aggregate', label: 'סיכום מטופל', href: '../aggregate/' },
+  { id: 'help', label: 'עזרה', href: '../help/' },
 ];
 
 // Brand → landing. Cross-origin landing origin injected at build time; empty ⇒

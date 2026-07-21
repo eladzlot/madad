@@ -150,6 +150,29 @@ test.describe('dist smoke — production bundle at production base', () => {
     expect(realErrors, 'No CSP violations or runtime errors on aggregate load').toEqual([]);
   });
 
+  test('help page loads without 404s or errors', async ({ page, baseURL }) => {
+    const origin = new URL(baseURL).origin;
+    const badResponses = watchForBadResponses(page, origin);
+    const consoleErrors = watchForConsoleErrors(page);
+
+    await page.goto('help/');
+
+    // The help page is static content plus the shared <clinician-nav> web
+    // component. Its brand appearing means help.js executed, registered the
+    // element, and adopted the clinician styles — all chunks resolved under
+    // the deploy base with no CSP violation on the module import.
+    await expect(page.locator('clinician-nav .brand')).toContainText('מדד', { timeout: 10_000 });
+    // The active-page link proves the nav's PAGES entry + aria-current wiring.
+    await expect(page.locator('clinician-nav .link[aria-current="page"]')).toHaveText('עזרה');
+    // Static content is authored in the HTML itself — assert a workflow heading.
+    await expect(page.getByRole('heading', { name: 'תהליך העבודה' })).toBeVisible();
+
+    expect(badResponses, 'Same-origin resources must all return 2xx/3xx').toEqual([]);
+
+    const realErrors = consoleErrors.filter(e => !/favicon/i.test(e));
+    expect(realErrors, 'No CSP violations or runtime errors on help load').toEqual([]);
+  });
+
   test('patient page loads via the legacy full-path configs= form', async ({ page, baseURL }) => {
     const origin = new URL(baseURL).origin;
     const badResponses = watchForBadResponses(page, origin);

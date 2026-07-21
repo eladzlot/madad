@@ -60,6 +60,8 @@ export class CatalogList extends LitElement {
       color: var(--color-text-muted, #5E7080);
     }
     .empty p { margin-block-end: var(--space-sm, 8px); }
+    .help-hint { margin-block-start: var(--space-md, 16px); font-size: var(--font-size-sm, 14px); }
+    .help-hint a { color: var(--color-primary, #1A9FAD); }
 
     .cross-tab {
       margin-block-start: var(--space-md, 16px);
@@ -129,6 +131,9 @@ export class CatalogList extends LitElement {
         <div class="empty">
           <p>${searching ? 'אין תוצאות לחיפוש זה.' : 'אין פריטים בקטגוריה זו.'}</p>
           ${searching ? this._crossTabHints() : nothing}
+          <p class="help-hint">
+            <a href="../help/">איך עובדים עם מדד?</a>
+          </p>
         </div>
       `;
     }

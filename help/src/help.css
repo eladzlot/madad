@@ -1,0 +1,153 @@
+/* help.css — page frame + content styles for the Help surface (/help/).
+ *
+ * Like the composer, the help page is standalone static HTML: it does not use
+ * the patient app's main.css. The shared clinician vocabulary (c-card, c-btn)
+ * is adopted at the document level from help.js; what lives here is only what
+ * that vocabulary doesn't cover — @font-face, the document reset, the page
+ * frame, and the help-specific content layout (headings, steps, FAQ). */
+
+@font-face {
+  font-family: 'Noto Sans Hebrew';
+  src: url('/fonts/NotoSansHebrew-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Noto Sans Hebrew';
+  src: url('/fonts/NotoSansHebrew-Bold.ttf') format('truetype');
+  font-weight: 500 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  overflow-wrap: anywhere;
+}
+
+html {
+  font-family: var(--font-family);
+  font-size: var(--font-size-md);
+  line-height: var(--line-height);
+  color: var(--color-text);
+  background: var(--color-bg);
+  -webkit-text-size-adjust: 100%;
+  overflow-x: hidden;
+}
+
+/* ── Page frame ───────────────────────────────────────────────────────────── */
+
+main {
+  max-inline-size: 768px;
+  margin-inline: auto;
+  padding: var(--space-xl) var(--space-md) calc(var(--space-xl) * 1.5);
+}
+
+.lead {
+  font-size: var(--font-size-lg);
+  color: var(--color-text-muted);
+  margin-block-end: var(--space-lg);
+}
+
+h1 {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  letter-spacing: -0.02em;
+  margin-block-end: var(--space-sm);
+}
+
+section { margin-block-start: var(--space-xl); }
+
+h2 {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  margin-block-end: var(--space-md);
+}
+
+p { margin-block-end: var(--space-sm); }
+
+a { color: var(--color-primary); }
+a:hover { color: var(--color-primary-hover); }
+
+/* ── Workflow steps ───────────────────────────────────────────────────────── */
+
+.steps {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  counter-reset: step;
+}
+
+.steps > li {
+  position: relative;
+  padding-inline-start: calc(var(--space-xl) + var(--space-xs));
+  counter-increment: step;
+}
+
+.steps > li::before {
+  content: counter(step);
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block-start: 0;
+  inline-size: var(--space-xl);
+  block-size: var(--space-xl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-pill);
+  background: var(--color-selected-bg);
+  color: var(--color-accent);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-lg);
+}
+
+.steps h3 {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  margin-block: 6px 4px;
+}
+
+.steps p { color: var(--color-text-muted); margin: 0; }
+
+/* ── FAQ accordion ────────────────────────────────────────────────────────── */
+
+.faq { display: flex; flex-direction: column; gap: var(--space-sm); }
+
+.faq details {
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--clin-card-bg, #fff);
+  padding: 0 var(--space-md);
+}
+
+.faq summary {
+  cursor: pointer;
+  font-weight: var(--font-weight-medium);
+  padding-block: var(--space-md);
+  list-style: none;
+}
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::before {
+  content: '＋';
+  color: var(--color-primary);
+  font-weight: var(--font-weight-bold);
+  margin-inline-end: var(--space-sm);
+}
+.faq details[open] summary::before { content: '－'; }
+.faq summary:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
+.faq details[open] summary { padding-block-end: var(--space-sm); }
+.faq details > p {
+  color: var(--color-text-muted);
+  padding-block-end: var(--space-md);
+  margin: 0;
+}
