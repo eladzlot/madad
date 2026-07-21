@@ -11,7 +11,7 @@
 // (domains/type/populations/tags/featured) the browse UI filters on.
 
 import { buildUrl, pidWarning } from './composer-state.js';
-import { sortForBrowse, rankForQuery, matchesQuery } from './search.js';
+import { sortForBrowse, rankForQuery } from './search.js';
 import { TABS, ALL_TAB, tabOf } from './taxonomy.js';
 
 export function createStore() {
@@ -83,7 +83,7 @@ export function createStore() {
       .filter(t => t !== state.tab && t !== ALL_TAB)
       .map(t => ({
         tab: t,
-        count: entriesInTab(t).filter(e => passesFilters(e) && matchesQuery(e, state.query)).length,
+        count: rankForQuery(entriesInTab(t).filter(e => passesFilters(e)), state.query).length,
       }))
       .filter(x => x.count > 0);
   }
