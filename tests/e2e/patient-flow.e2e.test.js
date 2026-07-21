@@ -62,11 +62,6 @@ async function clickContinue(page) {
   await page.locator('item-instructions >> button.continue-btn').click();
 }
 
-/** Click the view-results button on the completion screen */
-async function clickViewResults(page) {
-  await page.locator('completion-screen >> button.view-btn').click();
-}
-
 /** Read the current item progress value (0–100) from the progress-bar component */
 async function progressValue(page) {
   return page.locator('progress-bar').evaluate(el => {
@@ -86,9 +81,8 @@ async function answerAllPHQ9Items(page, optionIndex = 0) {
   // not the element), so toBeVisible() cannot signal "we are on the next item".
   // Instead we wait for history.length to increase — the router's pushState is
   // the definitive signal that auto-advance completed and the next item is live.
-  // On the last item the controller uses router.replace() for the completion
-  // screen, so history.length does not increase there; the caller awaits
-  // completion-screen directly.
+  // On the last item the controller pushes the 'complete' entry and shows the
+  // results screen directly, so the caller awaits results-screen directly.
   for (let i = 0; i < 9; i++) {
     await expect(page.locator('item-select')).toBeVisible();
     const lenBefore = await page.evaluate(() => window.history.length);
@@ -186,39 +180,9 @@ test.describe('PHQ-9 questionnaire flow', () => {
     }).toPass({ timeout: 5000 });
   });
 
-  test('completing all items reaches completion screen', async ({ page }) => {
+  test('completing all items reaches results screen', async ({ page }) => {
     await answerAllPHQ9Items(page, 0);
-    await expect(page.locator('completion-screen')).toBeVisible({ timeout: 2000 });
-  });
-});
-
-// ── Completion screen ─────────────────────────────────────────────────────────
-
-test.describe('completion screen', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto(PHQ9_URL);
-    await clickBegin(page);
-    await answerAllPHQ9Items(page, 0);
-    await expect(page.locator('completion-screen')).toBeVisible({ timeout: 2000 });
-  });
-
-  test('shows confirmation and view-results button', async ({ page }) => {
-    await expect(page.locator('completion-screen >> .title')).toBeVisible();
-    await expect(page.locator('completion-screen >> button.view-btn')).toBeVisible();
-  });
-
-  test('back from completion returns to last select item', async ({ page }) => {
-    await page.goBack();
-    await expect(page.locator('item-select')).toBeVisible();
-    await expect(page.locator('completion-screen')).not.toBeVisible();
-  });
-
-  test('answer changed after going back is reflected when re-completing', async ({ page }) => {
-    await page.goBack();
-    await expect(page.locator('item-select')).toBeVisible();
-    await clickLikertOption(page, 3);
-    await expect(page.locator('completion-screen')).toBeVisible({ timeout: 2000 });
-    await expect(page.locator('completion-screen >> button.view-btn')).toBeVisible();
+    await expect(page.locator('results-screen')).toBeVisible({ timeout: 2000 });
   });
 });
 
@@ -229,9 +193,7 @@ test.describe('results screen', () => {
     await page.goto(PHQ9_URL);
     await clickBegin(page);
     await answerAllPHQ9Items(page, 0);
-    await expect(page.locator('completion-screen')).toBeVisible({ timeout: 2000 });
-    await clickViewResults(page);
-    await expect(page.locator('results-screen')).toBeVisible();
+    await expect(page.locator('results-screen')).toBeVisible({ timeout: 2000 });
   });
 
   test('shows results screen with a score row', async ({ page }) => {
@@ -251,15 +213,26 @@ test.describe('results screen', () => {
     await expect(page.locator('results-screen >> button.pdf-btn--primary')).toContainText('הורד');
   });
 
-  test('back button is hidden on results screen (session locked)', async ({ page }) => {
+  test('back button is enabled on results screen — patient can still edit', async ({ page }) => {
     const backBtn = page.locator('app-shell >> button[aria-label="חזור לשאלה הקודמת"]');
-    await expect(backBtn).toBeDisabled();
+    await expect(backBtn).toBeEnabled();
   });
 
-  test('browser back from results does not return to questionnaire', async ({ page }) => {
+  test('browser back from results returns to the last questionnaire item', async ({ page }) => {
     await page.goBack();
-    await expect(page.locator('item-select')).not.toBeVisible();
-    await expect(page.locator('item-instructions')).not.toBeVisible();
+    await expect(page.locator('item-select')).toBeVisible();
+    await expect(page.locator('results-screen')).not.toBeVisible();
+  });
+
+  test('answer changed after going back is reflected in the recomputed score', async ({ page }) => {
+    // Score starts at 0 (all first-choice answers). Go back to the last item,
+    // pick the max option, return to results, and the recomputed total must rise.
+    await page.goBack();
+    await expect(page.locator('item-select')).toBeVisible();
+    await clickLikertOption(page, 3); // value 3 on the last PHQ-9 item
+    await expect(page.locator('results-screen')).toBeVisible({ timeout: 2000 });
+    const scoreValue = page.locator('results-screen >> .score-value');
+    await expect(scoreValue).toContainText('3');
   });
 });
 
@@ -281,12 +254,10 @@ test.describe('alert — PHQ-9 item 9 (suicidality)', () => {
       await page.waitForFunction(n => window.history.length > n, lenBefore);
     }
 
-    // Item 9 (last): click then await completion-screen
+    // Item 9 (last): click then await the results screen
     await expect(page.locator('item-select')).toBeVisible();
     await clickLikertOption(page, item9OptionIndex);
-    await expect(page.locator('completion-screen')).toBeVisible({ timeout: 2000 });
-    await clickViewResults(page);
-    await expect(page.locator('results-screen')).toBeVisible();
+    await expect(page.locator('results-screen')).toBeVisible({ timeout: 2000 });
   }
 
   test('item 9 = 0 → score 0, session completes normally', async ({ page }) => {
@@ -340,9 +311,7 @@ test.describe('standard_intake battery (binary + select)', () => {
       }
     }
 
-    await expect(page.locator('completion-screen')).toBeVisible({ timeout: 2000 });
-    await clickViewResults(page);
-    await expect(page.locator('results-screen')).toBeVisible();
+    await expect(page.locator('results-screen')).toBeVisible({ timeout: 2000 });
   });
 });
 
@@ -475,9 +444,7 @@ test.describe('PDF download', () => {
     await page.goto(PHQ9_URL);
     await clickBegin(page);
     await answerAllPHQ9Items(page, 1);
-    await expect(page.locator('completion-screen')).toBeVisible({ timeout: 2000 });
-    await clickViewResults(page);
-    await expect(page.locator('results-screen')).toBeVisible();
+    await expect(page.locator('results-screen')).toBeVisible({ timeout: 2000 });
 
     // On desktop canShare is false — primary button is the download button
     const pdfBtn = page.locator('results-screen >> button.pdf-btn--primary');
@@ -511,9 +478,7 @@ test.describe('PDF error recovery', () => {
     await page.goto(PHQ9_URL);
     await clickBegin(page);
     await answerAllPHQ9Items(page, 1);
-    await expect(page.locator('completion-screen')).toBeVisible({ timeout: 2000 });
-    await clickViewResults(page);
-    await expect(page.locator('results-screen')).toBeVisible();
+    await expect(page.locator('results-screen')).toBeVisible({ timeout: 2000 });
 
     const pdfBtn = page.locator('results-screen >> button.pdf-btn--primary');
     await expect(pdfBtn).not.toHaveAttribute('disabled', { timeout: 5000 });
@@ -538,9 +503,7 @@ test.describe('PDF error recovery', () => {
     await page.goto(PHQ9_URL);
     await clickBegin(page);
     await answerAllPHQ9Items(page, 1);
-    await expect(page.locator('completion-screen')).toBeVisible({ timeout: 2000 });
-    await clickViewResults(page);
-    await expect(page.locator('results-screen')).toBeVisible();
+    await expect(page.locator('results-screen')).toBeVisible({ timeout: 2000 });
 
     // Trigger the failure.
     const pdfBtn = page.locator('results-screen >> button.pdf-btn--primary');
@@ -619,9 +582,7 @@ test.describe('all item types battery (instructions + select + binary + select +
     await toggleMultiselectOption(page, 2);
     await submitMultiselect(page);
 
-    await expect(page.locator('completion-screen')).toBeVisible({ timeout: 2000 });
-    await clickViewResults(page);
-    await expect(page.locator('results-screen')).toBeVisible();
+    await expect(page.locator('results-screen')).toBeVisible({ timeout: 2000 });
     await expect(page.locator('results-screen >> button.pdf-btn--primary')).toBeVisible();
   });
 });

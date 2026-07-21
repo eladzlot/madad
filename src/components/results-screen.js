@@ -52,6 +52,13 @@ export class ResultsScreen extends LitElement {
       line-height: var(--line-height-tight);
     }
 
+    .review-hint {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+      line-height: var(--line-height);
+      margin-block-start: var(--space-xs);
+    }
+
     /* ── Score rows ──────────────────────────────────────────────────── */
 
     .scores {
@@ -193,6 +200,7 @@ export class ResultsScreen extends LitElement {
       <div class="header">
         <p class="eyebrow">סיכום הערכה</p>
         <h1 class="title">התוצאות שלך</h1>
+        <p class="review-hint">ניתן לחזור אחורה ולשנות תשובות — התוצאות והדוח יתעדכנו בהתאם.</p>
       </div>
 
       <div class="scores">

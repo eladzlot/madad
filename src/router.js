@@ -3,8 +3,8 @@
 // Screens (in forward order):
 //   'welcome'   → replaced onto history stack before welcome screen shows
 //   'q'         → pushed on each item advance (including first item of each questionnaire)
-//   'complete'  → pushed when session completes
-//   'results'   → replaces 'complete' (one-way: patient cannot pop back to completion screen)
+//   'complete'  → pushed when session completes; hosts the results screen, which
+//                 stays back-navigable (patient may return to edit answers)
 //
 // Usage:
 //   import { createRouter } from './router.js';
@@ -12,7 +12,7 @@
 //   router.onBack(handler);                 // called with screen string on back popstate
 //   router.onForward(handler);              // called with screen string on forward popstate
 //   router.push('q');                       // pushes a history entry
-//   router.replace('results');              // replaces current entry
+//   router.replace('welcome');              // replaces current entry
 //   router.currentScreen();                 // returns current screen string
 //   router.destroy();                       // removes popstate listener
 //
@@ -28,9 +28,6 @@
 //   calls engine.back() or engine.advance() directly in response to shell nav
 //   events; it always delegates to history, which drives the actual navigation.
 //   This keeps the history stack in sync at all times.
-//
-//   The 'results' screen uses replace() so the completion screen entry is removed
-//   from history; the patient cannot pop back to it once the session is locked.
 //
 // Testability:
 //   Accepts an optional `win` parameter (default: globalThis) so tests can inject

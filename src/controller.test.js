@@ -246,14 +246,13 @@ describe('router push on advance', () => {
     expect(router.push).toHaveBeenCalledWith('complete');
   });
 
-  it('replaces with "results" on view-results — not push', () => {
+  it('mounts the results screen directly on session complete — no separate "results" entry', () => {
     const { container, orchestrator, router } = makeSetup();
     orchestrator._fireSessionComplete();
-    container.querySelector('completion-screen')
-      .dispatchEvent(new CustomEvent('view-results', { bubbles: true }));
-    expect(router.replace).toHaveBeenCalledWith('results');
-    // push should NOT have been called with 'results'
+    expect(container.querySelector('results-screen')).toBeTruthy();
+    // The results screen lives on the 'complete' entry — no 'results' push/replace.
     expect(router.push).not.toHaveBeenCalledWith('results');
+    expect(router.replace).not.toHaveBeenCalledWith('results');
   });
 });
 
@@ -320,17 +319,17 @@ describe('router back — welcome screen', () => {
   });
 });
 
-describe('router back — completion screen', () => {
-  it('removes completion-screen when popstate fires from completion screen', () => {
+describe('router back — results screen', () => {
+  it('removes results-screen when popstate fires from results screen', () => {
     const { container, orchestrator, router } = makeSetup();
     orchestrator._fireSessionComplete();
-    expect(container.querySelector('completion-screen')).toBeTruthy();
+    expect(container.querySelector('results-screen')).toBeTruthy();
 
     router._fireBack('q');
-    expect(container.querySelector('completion-screen')).toBeNull();
+    expect(container.querySelector('results-screen')).toBeNull();
   });
 
-  it('re-enables gestures when popping back from completion screen', () => {
+  it('re-enables gestures when popping back from results screen', () => {
     const { container, orchestrator, router } = makeSetup();
     orchestrator._fireSessionComplete();
     const shell = container.querySelector('app-shell');
@@ -340,18 +339,23 @@ describe('router back — completion screen', () => {
     router._fireBack('q');
     expect(shell.gesturesEnabled).toBe(true);
   });
-});
 
-describe('router back — results screen (locked)', () => {
-  it('does not call engine.back after session is locked', () => {
-    const { container, orchestrator, router, engine } = makeSetup();
+  it('allows navigating back into the questionnaire from the results screen (no lock)', () => {
+    vi.useFakeTimers();
+    const { container, engine, orchestrator, router } = makeSetup();
+    // Advance to the second item so the engine's canGoBack() is true.
+    container.querySelector('item-select')
+      .dispatchEvent(new CustomEvent('advance', { bubbles: true }));
+    vi.advanceTimersByTime(150);
+    vi.useRealTimers();
+
     orchestrator._fireSessionComplete();
-    container.querySelector('completion-screen')
-      .dispatchEvent(new CustomEvent('view-results', { bubbles: true }));
+    expect(container.querySelector('results-screen')).toBeTruthy();
 
-    // Session is now locked — popstate should be ignored
-    router._fireBack('complete');
-    expect(engine.back).not.toHaveBeenCalled();
+    engine.back.mockClear();
+    router._fireBack('q');
+    // Session is not locked — back navigation drives engine.back().
+    expect(engine.back).toHaveBeenCalledOnce();
   });
 });
 
@@ -470,14 +474,15 @@ describe('router forward — popstate forward advances to next item', () => {
   });
 });
 
-describe('router forward — completion screen', () => {
-  it('mounts completion-screen when forward popstate arrives with "complete"', () => {
+describe('router forward — results screen', () => {
+  it('remounts results-screen when forward popstate arrives with "complete"', () => {
     const { container, orchestrator, router } = makeSetup();
     orchestrator._fireSessionComplete();
-    // Simulate patient going back from completion screen then forward again
+    // Simulate patient going back from results screen then forward again
     router._fireBack('q');
+    expect(container.querySelector('results-screen')).toBeNull();
     router._fireForward('complete');
-    expect(container.querySelector('completion-screen')).toBeTruthy();
+    expect(container.querySelector('results-screen')).toBeTruthy();
   });
 
   it('does not advance engine when forward popstate is "complete"', () => {
@@ -488,23 +493,6 @@ describe('router forward — completion screen', () => {
 
     const advanceBefore = engine.advance.mock.calls.length;
     router._fireForward('complete');
-    vi.advanceTimersByTime(150);
-
-    expect(engine.advance.mock.calls.length).toBe(advanceBefore);
-    vi.useRealTimers();
-  });
-});
-
-describe('router forward — locked (results screen)', () => {
-  it('does not advance after session is locked', () => {
-    vi.useFakeTimers();
-    const { container, orchestrator, router, engine } = makeSetup();
-    orchestrator._fireSessionComplete();
-    container.querySelector('completion-screen')
-      .dispatchEvent(new CustomEvent('view-results', { bubbles: true }));
-
-    const advanceBefore = engine.advance.mock.calls.length;
-    router._fireForward('q');
     vi.advanceTimersByTime(150);
 
     expect(engine.advance.mock.calls.length).toBe(advanceBefore);
@@ -560,77 +548,42 @@ describe('session complete', () => {
     expect(findItem(container)).toBeNull();
   });
 
-  it('mounts completion-screen on session complete', () => {
+  it('mounts results-screen on session complete', () => {
     const { container, orchestrator } = makeSetup();
     orchestrator._fireSessionComplete();
-    expect(container.querySelector('completion-screen')).toBeTruthy();
+    expect(container.querySelector('results-screen')).toBeTruthy();
   });
 
-  it('keeps canGoBack true on completion screen — patient can still go back', () => {
+  it('keeps canGoBack true on results screen — patient can still go back', () => {
     const { container, orchestrator } = makeSetup();
     orchestrator._fireSessionComplete();
     const shell = container.querySelector('app-shell');
     expect(shell.canGoBack).toBe(true);
   });
 
-  it('mounts results-screen after view-results event', () => {
-    const { container, orchestrator } = makeSetup();
-    orchestrator._fireSessionComplete();
-    container.querySelector('completion-screen')
-      .dispatchEvent(new CustomEvent('view-results', { bubbles: true }));
-    expect(container.querySelector('results-screen')).toBeTruthy();
-  });
-
-  it('removes completion-screen when results-screen mounts', () => {
-    const { container, orchestrator } = makeSetup();
-    orchestrator._fireSessionComplete();
-    container.querySelector('completion-screen')
-      .dispatchEvent(new CustomEvent('view-results', { bubbles: true }));
-    expect(container.querySelector('completion-screen')).toBeNull();
-  });
-
-  it('disables canGoBack after view-results', () => {
-    const { container, orchestrator } = makeSetup();
-    orchestrator._fireSessionComplete();
-    container.querySelector('completion-screen')
-      .dispatchEvent(new CustomEvent('view-results', { bubbles: true }));
-    const shell = container.querySelector('app-shell');
-    expect(shell.canGoBack).toBe(false);
-  });
-
   it('passes results array to results-screen', () => {
     const { container, orchestrator, questionnaire } = makeSetup();
     const scores = { [questionnaire.id]: { total: 14, subscales: {}, category: null } };
     orchestrator._fireSessionComplete({ scores });
-    container.querySelector('completion-screen')
-      .dispatchEvent(new CustomEvent('view-results', { bubbles: true }));
     const resultsEl = container.querySelector('results-screen');
     expect(resultsEl.results).toHaveLength(1);
     expect(resultsEl.results[0].total).toBe(14);
   });
 });
 
-// ─── Bug C-1: view-results after back-then-forward to completion screen ────────
+// ─── Results survive back → forward re-entry ──────────────────────────────────
 
-describe('view-results via forward popstate preserves session scores (Bug C-1)', () => {
-  // Regression: when the patient backs from the completion screen and then navigates
-  // forward to it again via history, the view-results listener was previously attached
-  // as a bare function reference — so it received the DOM Event, not sessionState.
-  // Results screen showed no scores and generateReport received wrong data.
+describe('results screen preserves session scores across back→forward re-entry', () => {
+  // The results screen reads _sessionState directly (saved in onSessionComplete),
+  // so navigating back and forward again must re-show the same scores.
 
-  it('results-screen receives correct scores after back→forward→view-results', () => {
+  it('results-screen receives correct scores after back→forward', () => {
     const { container, orchestrator, questionnaire, router } = makeSetup();
     const scores = { [questionnaire.id]: { total: 21, subscales: {}, category: 'severe' } };
 
-    // Complete the session
     orchestrator._fireSessionComplete({ scores });
-    // Back from completion screen
     router._fireBack('q');
-    // Forward to completion screen again (re-mounts completion-screen)
     router._fireForward('complete');
-    // View results
-    container.querySelector('completion-screen')
-      .dispatchEvent(new CustomEvent('view-results', { bubbles: true }));
 
     const resultsEl = container.querySelector('results-screen');
     expect(resultsEl).toBeTruthy();
@@ -638,18 +591,55 @@ describe('view-results via forward popstate preserves session scores (Bug C-1)',
     expect(resultsEl.results[0].total).toBe(21);
   });
 
-  it('results-screen is not empty after back→forward→view-results', () => {
+  it('results-screen is not empty after back→forward', () => {
     const { container, orchestrator, questionnaire, router } = makeSetup();
     const scores = { [questionnaire.id]: { total: 7, subscales: {}, category: null } };
 
     orchestrator._fireSessionComplete({ scores });
     router._fireBack('q');
     router._fireForward('complete');
-    container.querySelector('completion-screen')
-      .dispatchEvent(new CustomEvent('view-results', { bubbles: true }));
 
     const resultsEl = container.querySelector('results-screen');
     expect(resultsEl.results).not.toHaveLength(0);
+  });
+});
+
+// ─── Recompute on results entry ───────────────────────────────────────────────
+
+describe('recomputes scores and alerts from current answers on results entry', () => {
+  // The lock was removed in favour of recomputing derived state whenever the
+  // results screen is (re-)entered, so displayed scores and the PDF always
+  // reflect the latest answers.
+  function scoredQuestionnaire() {
+    return {
+      id: 'phq9',
+      title: 'PHQ-9',
+      optionSets: { freq: [
+        { label: 'כלל לא', value: 0 },
+        { label: 'כמעט כל יום', value: 3 },
+      ] },
+      defaultOptionSetId: 'freq',
+      items: [
+        { id: 'q1', type: 'select', text: 'שאלה 1' },
+        { id: 'q2', type: 'select', text: 'שאלה 2' },
+      ],
+      scoring: { method: 'sum' },
+      alerts: [],
+    };
+  }
+
+  it('derives the total from answers rather than trusting a stale snapshot', () => {
+    const questionnaire = scoredQuestionnaire();
+    const { container, orchestrator } = makeSetup({ questionnaire });
+    // Session state carries fresh answers but a stale score snapshot.
+    orchestrator._fireSessionComplete({
+      answers:          { phq9: { q1: 3, q2: 3 } },
+      scores:           { phq9: { total: 0, subscales: {}, category: null } },
+      alerts:           {},
+      questionnaireIds: { phq9: 'phq9' },
+    });
+    const resultsEl = container.querySelector('results-screen');
+    expect(resultsEl.results[0].total).toBe(6); // recomputed from answers, not the stale 0
   });
 });
 

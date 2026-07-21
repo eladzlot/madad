@@ -103,17 +103,16 @@ A progress indicator is visible throughout (e.g. "5 / 23"). This count includes 
 When one questionnaire is complete, an instruction screen for the next questionnaire is shown. The patient taps to begin the next instrument. This continues until all questionnaires in the battery are complete.
 
 #### 5.2.5 Session Recovery
-If the patient closes the browser or navigates away at any point before the completion screen, the session is lost and the patient must start over from the welcome screen. This is by design.
+If the patient closes the browser or navigates away at any point before the results screen, the session is lost and the patient must start over from the welcome screen. This is by design.
 
-### 5.3 Completion Screen
-Upon answering the last item in the battery, the patient is taken to a completion screen. This screen:
-- Confirms that all questionnaires are complete
+### 5.3 Results Screen
+Upon answering the last item in the battery, the patient is taken directly to the results screen — there is no separate completion/confirmation step. The results screen:
+- Confirms that all questionnaires are complete (by presenting the summary)
 - Reminds the patient that they may still use the Back button to review or change any answer
-- Provides a button to proceed to results
+- Provides a button to generate and download (or share) the PDF
 
-Once the patient proceeds to the results screen, the session is locked. Back navigation to change answers is no longer possible.
+The session is **not** locked. The patient may navigate back to review or change any answer at any time. Whenever the results screen is re-entered, the summary scores are recomputed from the current answers, and the PDF generated from the same screen always reflects the latest answers.
 
-### 5.4 Results Screen
 The results screen displays:
 - A summary score for each questionnaire completed
 
@@ -151,7 +150,7 @@ The patient downloads the PDF from the results screen and shares it with the cli
 ## 7. Alerts
 
 ### 7.1 Purpose
-Alerts flag clinically significant responses for the clinician's attention. They are defined per instrument in the configuration. Alerts are not visible to the patient at any point — not during the questionnaire, not on the completion screen, and not on the results screen. They appear only in the PDF.
+Alerts flag clinically significant responses for the clinician's attention. They are defined per instrument in the configuration. Alerts are not visible to the patient at any point — not during the questionnaire and not on the results screen. They appear only in the PDF.
 
 ### 7.2 Trigger Conditions
 Alert conditions may be based on:
@@ -223,6 +222,5 @@ The following are explicitly excluded from the current version:
 - Severity tier rendering in the PDF (data model is ready; rendering is not implemented)
 - QR code generation in the Composer
 - Patient name in the URL
-- Back navigation from the results screen
 - Languages other than Hebrew
 - Randomised item ordering (node type is defined in schema; execution throws `NotImplementedError`)

@@ -1,4 +1,6 @@
 import { generateReport } from './pdf/report.js';
+import { score } from './engine/scoring.js';
+import { evaluateAlerts } from './engine/alerts.js';
 import { tagForType, canAdvance, autoAdvances } from '../shared/config/item-types.js';
 import { resolveItemOptions } from '../shared/config/options.js';
 
@@ -44,8 +46,7 @@ export function createController(container, router) {
   let _itemEl        = null;
   let _advanceTimer  = null;
   let _session       = null;
-  let _locked        = false; // true once patient proceeds to results screen
-  let _sessionState  = null;  // saved when onSessionComplete fires; used by _onPopForward
+  let _sessionState  = null;  // saved when onSessionComplete fires; used by showResults
 
   // ── Shell setup ──────────────────────────────────────────────────────────
 
@@ -142,7 +143,6 @@ export function createController(container, router) {
   // ── popstate handlers ────────────────────────────────────────────────────
 
   function _onPopBack(screen) {
-    if (_locked) return;
     // Cancel any pending auto-advance. A rapid tap+swipe could otherwise fire
     // engine.advance() after the back navigation has already repositioned the engine.
     clearTimeout(_advanceTimer);
@@ -152,9 +152,12 @@ export function createController(container, router) {
       return;
     }
 
-    const completionEl = _shellEl?.querySelector('completion-screen');
-    if (completionEl) {
-      completionEl.remove();
+    // Leaving the results screen to review/edit answers. Scores are recomputed
+    // from the current answers whenever the results screen is re-entered
+    // (showResults), so back-navigation is safe — no lock required.
+    const resultsEl = _shellEl?.querySelector('results-screen');
+    if (resultsEl) {
+      resultsEl.remove();
       if (_shellEl) _shellEl.gesturesEnabled = true;
     }
 
@@ -168,20 +171,11 @@ export function createController(container, router) {
   }
 
   function _onPopForward(screen) {
-    if (_locked) return;
-
     if (screen === 'complete') {
-      if (!_shellEl?.querySelector('completion-screen')) {
+      if (!_shellEl?.querySelector('results-screen')) {
         if (_itemEl) { _itemEl.remove(); _itemEl = null; }
         if (_progressEl) { _progressEl.remove(); _progressEl = null; }
-        _shellEl.canGoBack    = true;
-        _shellEl.canGoForward = false;
-        _shellEl.gesturesEnabled = true;
-        const completionEl = document.createElement('completion-screen');
-        _shellEl.appendChild(completionEl);
-        // Pass _sessionState via closure — do NOT pass _onViewResults directly;
-    // a bare event-handler reference receives the Event object, not the session state.
-    completionEl.addEventListener('view-results', () => _onViewResults(_sessionState), { once: true });
+        showResults();
       }
       return;
     }
@@ -204,20 +198,53 @@ export function createController(container, router) {
     }
   }
 
-  function _onViewResults(sessionState) {
-    const completionEl = _shellEl?.querySelector('completion-screen');
-    if (completionEl) completionEl.remove();
+  // Recompute scores and alerts for every answered questionnaire from the
+  // current answers, writing them back into the session state. Runs on every
+  // entry to the results screen so the displayed scores — and the PDF, which
+  // reads the same session-state snapshot — always reflect the latest edits.
+  // Scoring and alert evaluation are pure functions of (questionnaire, answers),
+  // so this cannot diverge from what a fresh engine would produce. Note: this
+  // re-scores the questionnaires that were answered; it does not re-derive which
+  // questionnaires a battery includes (branch membership is fixed at the moment
+  // each if-node was evaluated during the forward walk).
+  function recomputeDerived(sessionState) {
+    if (!sessionState || !_config) return;
+    const answersByKey = sessionState.answers ?? {};
+    sessionState.scores = sessionState.scores ?? {};
+    sessionState.alerts = sessionState.alerts ?? {};
+    for (const key of Object.keys(answersByKey)) {
+      const qId = sessionState.questionnaireIds?.[key] ?? key;
+      const q   = _config.questionnaires.find(x => x.id === qId);
+      if (!q) continue;
+      const sc = score(q, answersByKey[key]);
+      sessionState.scores[key] = sc;
+      sessionState.alerts[key] = evaluateAlerts(q, answersByKey[key], sc);
+    }
+  }
 
-    _locked = true;
-    router.replace('results');
-    _shellEl.canGoBack    = false;
+  // Mount (or remount) the results screen. The session is NOT locked: the shell
+  // back button and swipe-back stay live so the patient can return to review or
+  // change answers. Re-entering the results screen (via forward navigation)
+  // recomputes scores/alerts, so consistency between the shown score and the PDF
+  // is guaranteed by recomputation, not by refusing further edits.
+  function showResults() {
+    const existing = _shellEl?.querySelector('results-screen');
+    if (existing) existing.remove();
+
+    recomputeDerived(_sessionState);
+
+    _shellEl.canGoBack    = true;
     _shellEl.canGoForward = false;
+    // Briefly disable gestures to absorb any trailing touch from the last answer,
+    // then re-enable so the patient can swipe back from the results screen.
+    _shellEl.gesturesEnabled = false;
+    setTimeout(() => { if (_shellEl) _shellEl.gesturesEnabled = true; }, 400);
 
-    const results = Object.entries((sessionState ?? {}).scores ?? {}).map(([key, scoreResult]) => {
+    const results = Object.entries(_sessionState?.scores ?? {}).map(([key, scoreResult]) => {
       // Resolve questionnaire via the orchestrator's sessionKey → questionnaireId
       // map. Falls back to treating the key as a questionnaireId for older
       // callers (tests) that may not populate questionnaireIds.
-      const qId = sessionState?.questionnaireIds?.[key] ?? key;
+      const qId = _sessionState?.questionnaireIds?.[key] ?? key;
       const q   = _config.questionnaires.find(q => q.id === qId);
       return {
         title:    q?.title ?? key,
@@ -231,7 +258,7 @@ export function createController(container, router) {
     const canShareFiles = !!(navigator.share);
 
     const doDownload = async () => {
-      const { blob, filename } = await generateReport(sessionState, _config, _session);
+      const { blob, filename } = await generateReport(_sessionState, _config, _session);
       const url = URL.createObjectURL(blob);
       const a   = Object.assign(document.createElement('a'), { href: url, download: filename });
       document.body.appendChild(a);
@@ -241,7 +268,7 @@ export function createController(container, router) {
     };
 
     const doShare = async () => {
-      const { blob, filename } = await generateReport(sessionState, _config, _session);
+      const { blob, filename } = await generateReport(_sessionState, _config, _session);
       try {
         await navigator.share({
           files: [new File([blob], filename, { type: 'application/pdf' })],
@@ -303,22 +330,11 @@ export function createController(container, router) {
     _sessionState = sessionState;
     if (_itemEl) { _itemEl.remove(); _itemEl = null; }
     if (_progressEl) { _progressEl.remove(); _progressEl = null; }
-    if (_shellEl) {
-      _shellEl.canGoBack       = true;
-      _shellEl.canGoForward    = false;
-      // Briefly disable gestures to absorb any trailing touch from the last answer,
-      // then re-enable so the patient can swipe back from the completion screen.
-      _shellEl.gesturesEnabled = false;
-      setTimeout(() => { if (_shellEl) _shellEl.gesturesEnabled = true; }, 400);
-    }
 
     router.push('complete');
 
-    // Mount completion screen — patient can still go back from here
-    const completionEl = document.createElement('completion-screen');
-    _shellEl.appendChild(completionEl);
-
-    completionEl.addEventListener('view-results', () => _onViewResults(sessionState), { once: true });
+    // Show results directly — patient can still go back to review/change answers.
+    showResults();
   }
 
   function onError(err) {

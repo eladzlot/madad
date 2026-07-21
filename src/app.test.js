@@ -11,7 +11,6 @@ vi.mock('./components/item-multiselect.js',  () => ({}));
 vi.mock('./components/app-shell.js',         () => ({}));
 vi.mock('./components/progress-bar.js',      () => ({}));
 vi.mock('./components/welcome-screen.js',    () => ({}));
-vi.mock('./components/completion-screen.js', () => ({}));
 vi.mock('./components/results-screen.js',    () => ({}));
 vi.mock('./config/loader.js',       () => ({ loadConfig: vi.fn() }));
 vi.mock('./resolve-items.js',       () => ({ resolveItems: vi.fn() }));

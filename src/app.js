@@ -40,7 +40,6 @@ import './components/item-multiselect.js';
 import './components/app-shell.js';
 import './components/progress-bar.js';
 import './components/welcome-screen.js';
-import './components/completion-screen.js';
 import './components/results-screen.js';
 
 // ── Loading screen ────────────────────────────────────────────────────────────

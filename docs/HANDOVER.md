@@ -61,7 +61,7 @@ src/pdf/report.js              ← PDF generation (pdfmake, lazy-loaded)
 
 ### What is complete and tested
 
-- Full patient flow: welcome → items → completion → results → PDF
+- Full patient flow: welcome → items → results (single back-navigable screen; scores/alerts recomputed on entry) → PDF
 - All item types: select (Likert), binary (yes/no, requires explicit option labels), instructions, text, slider, multiselect
 - Binary items require explicit option labels — supplied inline as `options`, via `optionSetId`, or via the questionnaire's `defaultOptionSetId`. The validator rejects bare binary items.
 - Scoring: sum, average, subscales (sum or mean), custom DSL formula
@@ -208,7 +208,6 @@ Configs under `test/` get `dev: true` catalog entries — skipped entirely in pr
 │   │   ├── item-slider.js
 │   │   ├── item-multiselect.js
 │   │   ├── progress-bar.js
-│   │   ├── completion-screen.js
 │   │   └── results-screen.js
 │   ├── helpers/gestures.js       # Swipe gesture handler
 │   ├── pdf/report.js             # PDF generation (pdfmake, lazy-loaded)

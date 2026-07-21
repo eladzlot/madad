@@ -1,5 +1,5 @@
 # RENDER_SPEC.md
-**Status:** Current — derived from `controller.js`, `app-shell.js`, `item-select.js`, `item-binary.js`, `item-instructions.js`, `progress-bar.js`, `welcome-screen.js`, `completion-screen.js`, `results-screen.js`, `gestures.js`, and their test files.
+**Status:** Current — derived from `controller.js`, `app-shell.js`, `item-select.js`, `item-binary.js`, `item-instructions.js`, `progress-bar.js`, `welcome-screen.js`, `results-screen.js`, `gestures.js`, and their test files.
 
 ---
 
@@ -39,7 +39,7 @@ controller.start(config, { sequence }, { createOrchestrator, session });
 | `_progressEl` | `<progress-bar>` | Mounted in shell progress slot |
 | `_itemEl` | item component | Currently active item element; replaced on type change |
 | `_advanceTimer` | timer ID | 150ms delay timer between answer and engine advance |
-| `_locked` | boolean | True once patient proceeds to results; all navigation ignored |
+| `_sessionState` | object | Session state saved on completion; read by `showResults()` and the PDF handlers |
 
 ### 2.2 Startup Sequence
 
@@ -109,14 +109,12 @@ The shell's `back` and `forward` buttons call `history.back()` / `history.forwar
 **Exception — skippable unanswered items:** For items where `canAdvance(item, answer)` is true and `answer` is `null` (skippable, not yet answered), there is no forward history entry. In this case the shell's `forward` event handler calls `onAdvance()` directly instead of `history.forward()`. This covers both the Next button tap and the swipe-up gesture (both fire the same `forward` event).
 
 **`_onPopBack(screen)`:**
-- Returns immediately if `_locked`
 - If `screen === 'welcome'`: calls `location.reload()` (restarts the session)
-- Removes any `<completion-screen>` present and re-enables gestures
+- Removes any `<results-screen>` present and re-enables gestures (the session is never locked — the patient may return to edit answers)
 - Calls `engine.back()` if `engine.canGoBack()`, otherwise calls `orchestrator.engineCrossBack()`
 
 **`_onPopForward(screen)`:**
-- Returns immediately if `_locked`
-- If `screen === 'complete'`: remounts the completion screen if it isn't already present
+- If `screen === 'complete'`: remounts the results screen (via `showResults()`) if it isn't already present — this recomputes scores/alerts from the current answers
 - If `screen === 'q'`: re-advances the engine (subject to the same 150ms/0ms delay as a normal advance event) — does nothing if the current item is unanswered and required
 
 ### 2.8 Orchestrator Callbacks
@@ -128,28 +126,28 @@ Stores `_engine` and `_questionnaire`. Calls `engine.advance()` for the first it
 Fired by `orchestrator.engineCrossBack()` when the patient navigates back across a questionnaire boundary. The engine is already positioned on the previous questionnaire's last item — the controller must NOT advance. Stores `_engine` and `_questionnaire`, calls `router.push('q')`, and mounts `engine.currentItem()` directly. If `currentItem()` is null (defensive — empty questionnaire being resumed), calls `orchestrator.engineComplete()` instead.
 
 **`onSessionComplete(sessionState)`:**
-1. Removes `_itemEl` and `_progressEl`
-2. Sets `_shellEl.canGoBack = true`, `canGoForward = false`
-3. Disables gestures for 400ms to absorb any trailing touch from the last answer tap, then re-enables
-4. Calls `router.push('complete')`
-5. Creates and appends `<completion-screen>`
-6. Attaches a `{ once: true }` listener for the `view-results` event → `_onViewResults(sessionState)`
+1. Saves `_sessionState = sessionState`
+2. Removes `_itemEl` and `_progressEl`
+3. Calls `router.push('complete')`
+4. Calls `showResults()` — mounts the results screen directly (there is no separate completion/confirmation screen)
 
-**`_onViewResults(sessionState)`:**
-1. Removes `<completion-screen>`
-2. Sets `_locked = true`
-3. Calls `router.replace('results')` — replaces rather than pushes so back from results goes to `'complete'`'s `pendingBefore`, not back to `'complete'`
-4. Sets `_shellEl.canGoBack = false`, `canGoForward = false`
-5. Builds the results array: `[{ title, total }]` for each score in `sessionState.scores`
-6. Creates `<results-screen>`, sets `results`, `canShare`, and `onDownload`
-7. Appends to shell
+**`recomputeDerived(sessionState)`:**
+Re-scores every answered questionnaire from the current answers and re-evaluates its alerts, writing both back into `sessionState.scores` / `sessionState.alerts`. Scoring (`score(q, answers)`) and alert evaluation (`evaluateAlerts(q, answers, score)`) are pure functions, so this cannot diverge from a fresh engine's output. It re-scores the questionnaires that were answered; it does **not** re-derive which questionnaires a battery includes (branch membership is fixed when each if-node is evaluated during the forward walk).
+
+**`showResults()`:** Called on session complete and on forward-nav re-entry to `'complete'`.
+1. Removes any existing `<results-screen>`
+2. Calls `recomputeDerived(_sessionState)` so the shown scores and the PDF (which reads the same session-state snapshot) reflect the latest edits
+3. Sets `_shellEl.canGoBack = true`, `canGoForward = false` — the session is **not** locked; the patient may swipe/tap back to review or change answers
+4. Disables gestures for 400ms to absorb any trailing touch from the last answer tap, then re-enables
+5. Builds the results array: `[{ title, total, category }]` for each score in `_sessionState.scores`
+6. Creates `<results-screen>`, sets `results`, `canShare`, `onDownload`, `onShare`, and appends to shell
 
 **`onError(err)`:** Replaces container `innerHTML` with an RTL error message, `console.error`s.
 
 ### 2.9 PDF Delivery
 
 The `onDownload` function set on `<results-screen>`:
-1. Calls `generateReport(sessionState, _config, _session)` → `{ blob, filename }`
+1. Calls `generateReport(_sessionState, _config, _session)` → `{ blob, filename }`
 2. If `navigator.canShare?.({ files: [...] })` is true: calls `navigator.share(...)`. On `AbortError` (user cancelled), returns without fallback.
 3. Otherwise (desktop or share failed for non-abort reason): creates an `<a download>`, appends to body, clicks it, removes it, revokes the object URL.
 
@@ -168,11 +166,11 @@ Screen names are stored as `state.screen` in the history entry. A monotonic `pos
 | `router.onBack(fn)` | Registers back handler; called with screen name when pop goes backward |
 | `router.onForward(fn)` | Registers forward handler; called with screen name when pop goes forward |
 
-Screen name values used by the controller: `'welcome'`, `'q'`, `'complete'`, `'results'`.
+Screen name values used by the controller: `'welcome'`, `'q'`, `'complete'`.
 
 `'welcome'` is pushed by `app.js` before the welcome screen is shown, so popping back from the first question reloads the page.
 
-`'results'` is reached via `router.replace('complete' → 'results')`, so there is no history entry for `'complete'` that the patient can pop forward into from results.
+`'complete'` is pushed when the session completes and hosts the results screen. It stays back-navigable: popping back removes the results screen and returns to the last item; popping forward again re-enters `'complete'` and recomputes scores/alerts. There is no separate `'results'` screen or navigation lock.
 
 ---
 
@@ -213,7 +211,7 @@ Both nav buttons are rendered always. When their corresponding property is false
 | Slot | Used for |
 |---|---|
 | `progress` | `<progress-bar>` |
-| (default) | item components, `<completion-screen>`, `<results-screen>` |
+| (default) | item components, `<results-screen>` |
 
 ---
 
@@ -396,31 +394,12 @@ Shown before the session. Displays the battery title, introductory text, a name 
 
 ---
 
-### 4.10 `<completion-screen>`
-
-**File:** `src/components/completion-screen.js`  
-**Tag:** `completion-screen`
-
-Shown after all questions are answered. Confirms completion, reminds the patient they can still go back, and offers a button to proceed to results.
-
-**No properties.**
-
-**Events fired:**
-
-| Event | Payload | When |
-|---|---|---|
-| `view-results` | `CustomEvent` | "צפה בתוצאות" tapped |
-
-The controller listens with `{ once: true }`. Navigation lock (`_locked = true`) is set by the controller in response to this event, not by this component.
-
----
-
-### 4.11 `<results-screen>`
+### 4.10 `<results-screen>`
 
 **File:** `src/components/results-screen.js`  
 **Tag:** `results-screen`
 
-Shown after session lock. Displays one score row per questionnaire and a PDF delivery button.
+Shown as the single terminal screen once all questions are answered (there is no separate completion/confirmation screen). Displays one score row per questionnaire and a PDF delivery button. It stays back-navigable — a `.review-hint` line tells the patient they may return to change answers, and the scores/PDF update accordingly (the controller recomputes on every re-entry).
 
 **Properties:**
 

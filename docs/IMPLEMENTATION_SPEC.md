@@ -60,7 +60,6 @@ This document specifies how Madad is to be built. It is intended for the develop
 │   ├── components/                   # Lit web components (UI only, no logic)
 │   │   ├── app-shell.js / .test.js
 │   │   ├── welcome-screen.js / .test.js
-│   │   ├── completion-screen.js / .test.js
 │   │   ├── results-screen.js / .test.js
 │   │   ├── item-select.js / .test.js
 │   │   ├── item-binary.js / .test.js
@@ -208,7 +207,7 @@ Session state is a single plain JS object created by the app shell at startup an
 }
 ```
 
-The resolved config and the `locked` flag are held by the controller, not on the session state object. The orchestrator's `sessionState()` method returns the `{ answers, scores, alerts }` object above.
+The resolved config is held by the controller, not on the session state object. The orchestrator's `sessionState()` method returns the `{ answers, scores, alerts }` object above.
 
 ### 6.2 Ownership and Mutation Rules
 
@@ -217,10 +216,10 @@ The resolved config and the `locked` flag are held by the controller, not on the
 | `name` | App shell (welcome screen) | Never after set | PDF generator |
 | `pid` | App shell (URL params) | Never | PDF generator |
 | `answers[qId]` | Orchestrator (on questionnaire start) | Engine (on each answer) | Scoring, DSL context, PDF |
-| `scores[qId]` | Orchestrator (on questionnaire complete) | Never after set | Results screen, DSL context, PDF |
-| `alerts[qId]` | Orchestrator (on questionnaire complete) | Never after set | PDF generator |
+| `scores[qId]` | Orchestrator (on questionnaire complete) | Controller (`recomputeDerived`, on each results-screen entry) | Results screen, DSL context, PDF |
+| `alerts[qId]` | Orchestrator (on questionnaire complete) | Controller (`recomputeDerived`, on each results-screen entry) | PDF generator |
 
-The resolved config object and the `locked` flag live in the controller, not in session state. No module other than those listed above should write to any field. Modules that only read state receive it as a function argument — they do not hold a reference to the full session object.
+The resolved config object lives in the controller, not in session state. No module other than those listed above should write to any field. The controller's `recomputeDerived` re-scores answered questionnaires from `answers` on every results-screen entry (scoring and alert evaluation are pure functions of `(questionnaire, answers)`), which keeps the shown scores and the PDF consistent with the latest answers even after back-navigation edits. Modules that only read state receive it as a function argument — they do not hold a reference to the full session object.
 
 ### 6.3 Current Questionnaire Context
 
@@ -258,9 +257,10 @@ Neither context object holds a reference to the full session state — they are 
 | Patient answers an item | `answers[qId][itemId]` set |
 | Patient goes back and re-answers | `answers[qId][itemId]` overwritten |
 | Questionnaire complete | `scores[qId]` and `alerts[qId]` set by orchestrator |
-| Patient taps "view results" | `_locked` set to `true` in controller; router replaces to 'results' |
+| Session complete | Controller pushes `'complete'` and shows the results screen directly |
+| Patient re-enters results (forward nav) | Controller recomputes `scores[qId]`/`alerts[qId]` from current answers |
 
-Once `_locked` is `true` in the controller, no further navigation into the questionnaire is possible. The router enforces this by ignoring popstate events when locked.
+There is no navigation lock. The results screen stays back-navigable so the patient may return to edit answers; the controller recomputes derived state on every results-screen entry, so the shown scores and the generated PDF always reflect the current answers.
 
 ## 7. Config Schema
 
@@ -874,27 +874,21 @@ Tokens are resolved in URL order, which defines the session order.
 A minimal History API router using `pushState` / `replaceState`. Target under 60 lines. Screen names (stored as state values, not URL hashes):
 - `'welcome'` — replaced onto the stack before the welcome screen shows
 - `'q'` — pushed on each item advance (including first item of each questionnaire)
-- `'complete'` — pushed when session completes
-- `'results'` — replaces `'complete'` (one-way: patient cannot pop back to completion screen)
+- `'complete'` — pushed when the session completes; hosts the results screen, which stays back-navigable (the patient may pop back to edit answers, then forward again to re-enter results)
 
 Direction is determined by comparing a monotonic `pos` counter embedded in every state entry. The controller registers `onBack` / `onForward` handlers and receives the screen name string.
 
 ---
 
-## 17. Completion Screen
+## 17. Session Completion
 
-Shown when the engine reports the last item has been answered. Displays:
-- A completion message
-- A reminder that the Back button can still be used to review or change answers
-- A "view results" button
-
-Once the patient taps "view results", the router navigates to `#/results`. This transition is one-way — the back button is hidden or disabled on the results screen.
+When the engine reports the last item has been answered, the controller pushes the `'complete'` history entry and shows the results screen directly — there is no separate completion/confirmation screen and no navigation lock. The results screen stays back-navigable: popping back returns to the last questionnaire item, and navigating forward re-enters the results screen. On every entry the controller's `recomputeDerived` re-scores answered questionnaires from the current answers, so the shown scores — and the PDF, which reads the same session-state snapshot — always reflect the latest answers.
 
 ---
 
 ## 18. Results Screen
 
-Displayed after session lock. Shows summary scores only — one total per questionnaire. Does not show interpretation labels, alerts, subscales, or individual responses.
+Shows summary scores only — one total per questionnaire. Does not show interpretation labels, alerts, subscales, or individual responses. Includes a reminder (`.review-hint`) that the Back button can still be used to review or change answers.
 
 Contains a single button to generate and deliver the PDF. The button label adapts to the device:
 - **Mobile (Web Share API available):** "שתף דוח PDF" — triggers `navigator.share({ files: [...] })` so the patient can send the file directly via a messaging app or email.
@@ -1072,7 +1066,7 @@ Vitest is configured to include `src/**/*.test.js` in its test glob.
 
 ### E2E tests (Playwright, Chromium only in CI)
 Located in `tests/e2e/`. Cover full flows that span multiple modules and require a real browser.
-- Full patient flow: welcome → name entry → item navigation → completion screen → back navigation → results → PDF download
+- Full patient flow: welcome → name entry → item navigation → results screen (back-navigable) → PDF download
 
 ### CI pipeline (`npm run ci`)
 Mirrors the GitHub Actions workflow exactly: `lint → test → validate:configs → build → size → e2e`. Run this locally before pushing to catch issues before CI. Playwright browsers must be installed locally: `npx playwright install --with-deps chromium`.

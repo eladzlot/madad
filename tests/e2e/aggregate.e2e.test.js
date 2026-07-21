@@ -46,9 +46,7 @@ async function downloadReport(page, optionIndex = 0) {
   await page.goto(PHQ9_URL);
   await clickBegin(page);
   await answerAllPHQ9Items(page, optionIndex);
-  await expect(page.locator('completion-screen')).toBeVisible({ timeout: 2000 });
-  await page.locator('completion-screen >> button.view-btn').click();
-  await expect(page.locator('results-screen')).toBeVisible();
+  await expect(page.locator('results-screen')).toBeVisible({ timeout: 2000 });
 
   const pdfBtn = page.locator('results-screen >> button.pdf-btn--primary');
   await expect(pdfBtn).not.toHaveAttribute('disabled', { timeout: 5000 });
