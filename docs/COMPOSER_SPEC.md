@@ -140,6 +140,23 @@ Flat checkbox list, grouped into two sections: **סוללות** (batteries) and 
 
 Each entry shows: title, description (if any), keyword tags (if any).
 
+### Preview
+
+Each browse card carries an **eye (👁) button** on its trailing edge (a DOM sibling of the select button, so opening a preview never toggles selection). It opens a **static, read-only preview** of the instrument in a native `<dialog>` (full-screen on mobile) that doubles as a discovery/spec sheet.
+
+The preview is built by a **pure** model builder, `composer/src/preview/preview-model.js` — `buildPreviewModel(config, entryId) → DisplayModel`. It never runs the engine: `if` conditions are shown **structurally** under indented "מוצג בתנאי" dividers, `randomize` as a "סדר אקראי" marker, and conditions are never evaluated.
+
+A **"מנגנון" (mechanics) toggle** in the header reveals the underlying wiring — each item's id (labelled `id: <id>`), the explicit DSL of every condition/alert (prettified: `>=`→`≥`, `==`→`=`, `||`→`או`, `&&`→`וגם`; item references left verbatim), subscale member ids, and the keyword list. Off by default for a clean clinical read; on for authors tracing the logic.
+
+The dialog (`composer/src/components/preview-dialog.js`) renders three parts:
+- **Summary** — title, id, description, meta badges (type/domains/populations/tags), item count, duration, keywords.
+- **Scoring & interpretation** — scoring method, subscales (id → label → member items), interpretation ranges ladder, psychometrics, alerts. Only the parts the config has are rendered.
+- **Item walk** — each item read-only by type (options for select/binary/multiselect, range for slider, a free-text placeholder for text, muted text for instructions), with conditional groups shown under indented "מוצג בתנאי: `<DSL>`" / "אחרת" dividers.
+
+**Batteries** render as an all-collapsed accordion of steps (`<details>`); each step shows its title, item count, and gating condition, and expands to that questionnaire's own summary + scoring + item walk. `questionnaireId` is resolved to the real title from the loaded dependencies.
+
+The dialog keeps a **↗ live-flow link** that opens the patient app for that entry (`buildUrl({ selected: [id] })`). Loading is lazy: the loader (AJV), the model builder, and the dialog component are dynamically imported on first open, and each entry's `ResolvedConfig` is cached for instant reopen — none of this is in the composer's startup bundle (enforced by `scripts/check-size.mjs`, `preview-dialog` chunk ≤ 8 KB gz).
+
 ### Order list
 
 A drag-reorderable list of currently selected items, shown in the sidebar. The list reflects **selection order** — the order items will run in the patient session.

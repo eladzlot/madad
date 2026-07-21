@@ -100,6 +100,33 @@ export class CatalogCard extends LitElement {
       color: var(--color-accent, #2BB3C0);
       white-space: nowrap;
     }
+
+    /* Preview (👁) — sits ON the card at its trailing edge. It is a DOM sibling
+       of the card button (a button-in-button is invalid HTML), absolutely
+       positioned inside the space the card reserves via padding-inline-end, so
+       it reads as part of the card yet toggling and previewing stay separate. */
+    .row { position: relative; }
+    button.card { padding-inline-end: 44px; }
+    .preview-btn {
+      position: absolute;
+      inset-inline-end: 6px;
+      inset-block-start: 50%;
+      transform: translateY(-50%);
+      inline-size: 32px;
+      block-size: 32px;
+      display: grid;
+      place-items: center;
+      border: none;
+      border-radius: var(--radius-sm, 6px);
+      background: transparent;
+      color: var(--color-text-muted, #5E7080);
+      cursor: pointer;
+      font-family: inherit;
+      transition: background var(--transition-fast, 120ms ease), color var(--transition-fast, 120ms ease);
+    }
+    .preview-btn svg { inline-size: 18px; block-size: 18px; display: block; }
+    .preview-btn:hover { background: var(--color-selected-bg, #E4F6F8); color: var(--color-primary, #1A9FAD); }
+    .preview-btn:focus-visible { outline: 2px solid var(--color-border-focus, #2BB3C0); outline-offset: 2px; }
   `];
 
   // Mirror the entry id onto the host as a stable hook for e2e selectors
@@ -119,6 +146,14 @@ export class CatalogCard extends LitElement {
     }));
   }
 
+  _preview() {
+    this.dispatchEvent(new CustomEvent('preview', {
+      detail: { id: this.entry.id },
+      bubbles: true,
+      composed: true,
+    }));
+  }
+
   render() {
     const e = this.entry;
     if (!e) return nothing;
@@ -131,22 +166,37 @@ export class CatalogCard extends LitElement {
       : (e.type === 'worksheet' ? 'דף עבודה' : null);
 
     return html`
-      <button
-        class="card"
-        type="button"
-        role="checkbox"
-        aria-checked=${this.selected ? 'true' : 'false'}
-        @click=${this._toggle}
-      >
-        <span class="check" aria-hidden="true">✓</span>
-        <span class="body">
-          <span class="name-row">
-            <span class="name">${e.title}</span>
-            <span class="id">${e.id}</span>
+      <div class="row">
+        <button
+          class="card"
+          type="button"
+          role="checkbox"
+          aria-checked=${this.selected ? 'true' : 'false'}
+          @click=${this._toggle}
+        >
+          <span class="check" aria-hidden="true">✓</span>
+          <span class="body">
+            <span class="name-row">
+              <span class="name">${e.title}</span>
+              <span class="id">${e.id}</span>
+            </span>
           </span>
-        </span>
-        ${kindBadge ? html`<span class="kind">${kindBadge}</span>` : nothing}
-      </button>
+          ${kindBadge ? html`<span class="kind">${kindBadge}</span>` : nothing}
+        </button>
+        <button
+          class="preview-btn"
+          type="button"
+          @click=${this._preview}
+          title="תצוגה מקדימה"
+          aria-label="תצוגה מקדימה"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+        </button>
+      </div>
     `;
   }
 }

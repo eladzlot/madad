@@ -34,7 +34,8 @@ async function gotoComposer(page) {
 }
 
 const searchBox = (page) => page.locator('catalog-controls input[type="search"]');
-const cardButton = (page, id) => page.locator(`catalog-card[data-id="${id}"] button`);
+const cardButton = (page, id) => page.locator(`catalog-card[data-id="${id}"] button.card`);
+const previewButton = (page, id) => page.locator(`catalog-card[data-id="${id}"] button.preview-btn`);
 const urlBox = (page) => page.locator('selection-cart .url-box');
 
 // The category switch (tabs) and filter chips are collapsed behind the סינון
@@ -139,7 +140,7 @@ test.describe('reset', () => {
     await page.locator('#cart-pid').fill('TRC-001');
     await page.locator('catalog-controls .reset-btn').click();
     await expect(urlBox(page)).toContainText('לא נבחרו');
-    await expect(page.locator('catalog-card[data-id="phq9"] button')).toHaveAttribute('aria-checked', 'false');
+    await expect(page.locator('catalog-card[data-id="phq9"] button.card')).toHaveAttribute('aria-checked', 'false');
   });
 });
 
@@ -178,6 +179,40 @@ test.describe('mobile bottom sheet', () => {
     await expect(sheet).toBeVisible();
     await expect(sheet.locator('.url-box')).toContainText('items=phq9');
     await expect(sheet.locator('#sheet-pid')).toBeVisible();
+  });
+});
+
+// ── Preview modal ──────────────────────────────────────────────────────────────
+
+test.describe('preview modal', () => {
+  const dialog = (page) => page.locator('preview-dialog dialog');
+
+  test('👁 opens a read-only preview; mechanics reveals ids/DSL; ✕ closes it', async ({ page }) => {
+    await gotoComposer(page);
+    // phq9 is featured → visible in the curated view without searching.
+    await previewButton(page, 'phq9').click();
+    await expect(dialog(page)).toBeVisible({ timeout: 10_000 });
+    // Summary + a resolved select option + the alert message (always shown).
+    await expect(dialog(page)).toContainText('PHQ-9');
+    await expect(dialog(page)).toContainText('כלל לא');
+    await expect(dialog(page)).toContainText('אובדנות');
+    // Raw DSL is hidden until the mechanics toggle is on.
+    await expect(dialog(page)).not.toContainText('item.9 ≥ 1');
+    await dialog(page).locator('.mech-btn').click();
+    await expect(dialog(page)).toContainText('item.9 ≥ 1');
+    // Opening the preview must not select the item.
+    await expect(cardButton(page, 'phq9')).toHaveAttribute('aria-checked', 'false');
+    // Close.
+    await dialog(page).locator('button.icon-btn').click();
+    await expect(dialog(page)).toBeHidden();
+  });
+
+  test('conditional items render under a "מוצג בתנאי" divider', async ({ page }) => {
+    await gotoComposer(page);
+    // top3 is featured and has nested item-level if-nodes.
+    await previewButton(page, 'top3').click();
+    await expect(dialog(page)).toBeVisible({ timeout: 10_000 });
+    await expect(dialog(page)).toContainText('מוצג בתנאי');
   });
 });
 

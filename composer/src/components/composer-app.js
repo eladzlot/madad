@@ -13,6 +13,7 @@
 import { LitElement, html, css, unsafeCSS, nothing } from 'lit';
 import { clinicianCss } from '../../../clinician/styles/clinician-styles.js';
 import { resetCSS } from '../ui-reset.js';
+import { buildUrl } from '../composer-state.js';
 import '../../../clinician/components/clinician-nav.js';
 import './catalog-controls.js';
 import './catalog-list.js';
@@ -22,6 +23,9 @@ import './mobile-bar.js';
 export class ComposerApp extends LitElement {
   static properties = {
     store: { type: Object },
+    _previewModel:   { state: true },
+    _previewOpen:    { state: true },
+    _previewLiveUrl: { state: true },
   };
 
   static styles = [resetCSS, unsafeCSS(clinicianCss), css`
@@ -80,6 +84,12 @@ export class ComposerApp extends LitElement {
     this._copyTimer = null;
     this._onNotify = () => this.requestUpdate();
     this._unsub = null;
+    // Preview: state + a per-session cache of loaded ResolvedConfigs, so
+    // reopening a previously previewed entry is instant.
+    this._previewModel = null;
+    this._previewOpen = false;
+    this._previewLiveUrl = null;
+    this._configCache = new Map();
   }
 
   connectedCallback() {
@@ -123,6 +133,38 @@ export class ComposerApp extends LitElement {
     if (url) window.open(url, '_blank', 'noopener');
   }
 
+  // ── preview ──
+  // Everything the preview needs is loaded lazily on first open: the config
+  // loader (which pulls in AJV), the pure model builder, and the dialog
+  // component. This keeps them out of the composer's startup bundle.
+  async _onPreview(id) {
+    try {
+      const [{ loadConfig }, { buildPreviewModel }] = await Promise.all([
+        import('../../../shared/config/loader.js'),
+        import('../preview/preview-model.js'),
+        import('./preview-dialog.js'),
+      ]);
+      let config = this._configCache.get(id);
+      if (!config) {
+        // A battery's referenced questionnaires arrive via declared dependencies.
+        config = await loadConfig([id], { loadDependencies: true });
+        this._configCache.set(id, config);
+      }
+      const model = buildPreviewModel(config, id);
+      if (!model) return;
+      this._previewModel = model;
+      this._previewLiveUrl = buildUrl({ selected: [id] });
+      this._previewOpen = true;
+    } catch {
+      // A failed fetch/validation just leaves the dialog closed — the browse
+      // list stays usable. (The full flow surfaces load errors on its own.)
+    }
+  }
+
+  _closePreview() {
+    this._previewOpen = false;
+  }
+
   render() {
     const s = this.store;
     if (!s) return nothing;
@@ -144,6 +186,7 @@ export class ComposerApp extends LitElement {
       <div
         class="layout"
         @item-toggle=${(e) => s.toggle(e.detail.id)}
+        @preview=${(e) => this._onPreview(e.detail.id)}
         @tab-change=${(e) => s.setTab(e.detail.tab)}
         @query-change=${(e) => s.setQuery(e.detail.query)}
         @filter-toggle=${(e) => s.toggleFilter(e.detail.kind, e.detail.value)}
@@ -203,6 +246,15 @@ export class ComposerApp extends LitElement {
         .copied=${s.copied}
         .canShare=${this._canShare}
       ></mobile-bar>
+
+      ${this._previewModel ? html`
+        <preview-dialog
+          .model=${this._previewModel}
+          .liveUrl=${this._previewLiveUrl}
+          .open=${this._previewOpen}
+          @preview-close=${() => this._closePreview()}
+        ></preview-dialog>
+      ` : nothing}
     `;
   }
 }

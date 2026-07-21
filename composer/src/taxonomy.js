@@ -52,6 +52,31 @@ export const TYPE_LABELS = {
   other:     'אחר',
 };
 
+// Hebrew labels for the answerable item *types* (used by the preview to name each
+// item's kind). Distinct from TYPE_LABELS above, which labels the catalog meta
+// `type` (screener/severity/…). When a new item type is added to
+// shared/config/item-types.js, add its label here too (see that file's header).
+export const ITEM_TYPE_LABELS = {
+  instructions: 'הנחיה',
+  select:       'בחירה',
+  binary:       'כן/לא',
+  slider:       'סקאלה',
+  text:         'טקסט חופשי',
+  multiselect:  'בחירה מרובה',
+};
+
+// Hebrew labels for the scoring.method enum (shown in the preview).
+export const SCORING_METHOD_LABELS = {
+  none:      'ללא ניקוד',
+  sum:       'סכום',
+  average:   'ממוצע',
+  subscales: 'תת-סולמות',
+  custom:    'מותאם אישית',
+};
+
+export const itemTypeLabel      = (v) => ITEM_TYPE_LABELS[v] ?? v;
+export const scoringMethodLabel = (v) => SCORING_METHOD_LABELS[v] ?? v;
+
 export const domainLabel     = (v) => DOMAIN_LABELS[v] ?? v;
 export const populationLabel = (v) => POPULATION_LABELS[v] ?? v;
 export const typeLabel       = (v) => TYPE_LABELS[v] ?? v;

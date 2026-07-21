@@ -59,9 +59,19 @@ describe('catalog-card', () => {
     expect(detail).toEqual({ id: 'phq9' });
   });
 
-  it('focus() focuses the internal button', async () => {
+  it('focus() focuses the card button (not the preview button)', async () => {
     const el = await makeEl();
     el.focus();
-    expect(el.shadowRoot.activeElement).toBe(el.shadowRoot.querySelector('button'));
+    expect(el.shadowRoot.activeElement).toBe(el.shadowRoot.querySelector('button.card'));
+  });
+
+  it('fires preview { id } from the ⓘ button without toggling selection', async () => {
+    const el = await makeEl();
+    let previewed = null, toggled = false;
+    el.addEventListener('preview', (e) => { previewed = e.detail; });
+    el.addEventListener('item-toggle', () => { toggled = true; });
+    el.shadowRoot.querySelector('.preview-btn').click();
+    expect(previewed).toEqual({ id: 'phq9' });
+    expect(toggled).toBe(false);
   });
 });

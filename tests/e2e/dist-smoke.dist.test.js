@@ -103,6 +103,14 @@ test.describe('dist smoke — production bundle at production base', () => {
     // phq9 card is present so an empty/mis-parsed catalog can't pass silently.
     await expect(page.locator('catalog-card[data-id="phq9"]')).toBeAttached();
 
+    // Open the preview: this dynamically imports the loader (AJV validator) and
+    // the preview-dialog chunk, then fetches configs/prod/phq9.json — a code
+    // path with its own chunks and fetch, exercised here so a lazy-chunk 404 or
+    // a CSP violation on the dynamic import can't slip through.
+    await page.locator('catalog-card[data-id="phq9"] button.preview-btn').click();
+    await expect(page.locator('preview-dialog dialog')).toBeVisible({ timeout: 10_000 });
+    await expect(page.locator('preview-dialog dialog')).toContainText('כלל לא');
+
     // Wait for the catalog fetch to complete before asserting on the
     // network record.
     await page.waitForLoadState('networkidle');

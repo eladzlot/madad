@@ -37,6 +37,7 @@ const BUDGETS = [
   { pattern: /pdf-vendor/,       limit: 500 * KB, label: 'pdf-vendor  (pdfmake — lazy)' },
   { pattern: /^main/,            limit:  30 * KB, label: 'main        (app + Lit + engine)' },
   { pattern: /^composer/,        limit:  30 * KB, label: 'composer    (browse UI + Lit)' },
+  { pattern: /^preview-dialog/,  limit:   8 * KB, label: 'preview     (dialog + model — lazy)' },
   { pattern: /^aggregate/,       limit:  40 * KB, label: 'aggregate   (charts + parser + Lit)' },
 ];
 
