@@ -40,7 +40,7 @@ function flatText(node) {
 }
 
 // bidiNodes replaces spaces with NBSP; normalise for comparison against source.
-const norm = (s) => flatText(s).replace(/ /g, ' ');
+const norm = (s) => flatText(s).replace(/\u00a0/g, ' ');
 
 // ── fixtures ────────────────────────────────────────────────────────────────
 
