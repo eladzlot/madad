@@ -206,7 +206,7 @@
       "id": "dar5",
       "kind": "questionnaire",
       "title": "שאלון תגובות כעס (DAR-5)",
-      "description": "5-item anger reactions scale assessing frequency, intensity, duration, aggression, and social interference over the past 4 weeks.…",
+      "description": "סולם בן 5 פריטים להערכת תגובות כעס במהלך ארבעת השבועות האחרונים — תדירות, עוצמה, משך, תוקפנות והפרעה בתפקוד החברתי (Dimensions of Anger…",
       "keywords": [
         "anger",
         "aggression",
@@ -306,7 +306,7 @@
       "id": "diamond_sr",
       "kind": "questionnaire",
       "title": "DIAMOND Self Report Screener",
-      "description": "30-item binary screener covering anxiety, mood, OCD-spectrum, trauma, psychosis, eating, substance use, ADHD, and tic disorders.",
+      "description": "שאלון סינון בן 30 פריטים (כן/לא) המכסה חרדה, מצב רוח, ספקטרום טורדני-כפייתי, טראומה, פסיכוזה, הפרעות אכילה, שימוש בחומרים, ADHD והפרעות טיק.",
       "keywords": [
         "DIAMOND",
         "screener",
@@ -409,7 +409,7 @@
       "id": "isi",
       "kind": "questionnaire",
       "title": "מדד חומרת נדודי שינה (ISI)",
-      "description": "7-item insomnia severity scale assessing sleep difficulty, satisfaction, and daytime impact over the past 2 weeks. (Insomnia Severity Index)",
+      "description": "סולם בן 7 פריטים להערכת חומרת נדודי שינה במהלך השבועיים האחרונים — קשיי שינה, שביעות רצון והשפעה על התפקוד היומי (Insomnia Severity Index).",
       "keywords": [
         "insomnia",
         "sleep",
@@ -485,7 +485,7 @@
       "id": "oasis",
       "kind": "questionnaire",
       "title": "שאלון חומרת חרדה ופגיעה תפקודית (OASIS)",
-      "description": "5-item transdiagnostic scale assessing anxiety severity and functional impairment over the past week. Applicable across anxiety disorders.",
+      "description": "סולם טרנס-אבחנתי בן 5 פריטים להערכת חומרת חרדה ופגיעה תפקודית במהלך השבוע האחרון, ישים למגוון הפרעות חרדה.",
       "keywords": [
         "anxiety",
         "OASIS",
@@ -741,7 +741,7 @@
       "id": "procsi",
       "kind": "questionnaire",
       "title": "שאלון אובססיות וכפייתיות ממוקדות-בן/בת-זוג (PROCSI)",
-      "description": "28-item scale assessing partner-focused obsessive-compulsive symptoms in romantic relationships.",
+      "description": "סולם בן 28 פריטים להערכת תסמינים טורדניים-כפייתיים הממוקדים בבן/בת הזוג במערכות יחסים זוגיות.",
       "keywords": [
         "PROCSI",
         "ROCD",
@@ -769,7 +769,7 @@
       "id": "ptci",
       "kind": "questionnaire",
       "title": "שאלון קוגניציות פוסט-טראומטיות (PTCI)",
-      "description": "33-item measure of trauma-related thoughts and beliefs across three subscales: negative cognitions about self, the world, and self-blame.",
+      "description": "כלי בן 33 פריטים להערכת מחשבות ואמונות הקשורות לטראומה בשלושה תת-סולמות: קוגניציות שליליות על העצמי, על העולם, והאשמה עצמית.",
       "keywords": [
         "PTSD",
         "טראומה",
@@ -795,7 +795,7 @@
       "id": "roci",
       "kind": "questionnaire",
       "title": "שאלון אובססיות וכפייתיות בקשר רומנטי (ROCI)",
-      "description": "14-item scale assessing relationship-centered obsessive-compulsive symptoms in romantic relationships.",
+      "description": "סולם בן 14 פריטים להערכת תסמינים טורדניים-כפייתיים הממוקדים במערכת היחסים הזוגית.",
       "keywords": [
         "ROCI",
         "ROCD",
@@ -849,7 +849,7 @@
       "id": "scared_child",
       "kind": "questionnaire",
       "title": "שאלון חרדה לילדים — דיווח עצמי (SCARED)",
-      "description": "41 items, 0–2 scale. Five subscales: panic/somatic, GAD, separation anxiety, social phobia, school avoidance.",
+      "description": "41 פריטים בסולם 0–2, בדיווח הילד/ה. חמישה תת-סולמות: פאניקה/סומטי, חרדה כללית, חרדת פרידה, פוביה חברתית והימנעות מבית הספר.",
       "keywords": [
         "חרדה",
         "ילדים",
@@ -875,7 +875,7 @@
       "id": "scared_parent",
       "kind": "questionnaire",
       "title": "שאלון חרדה לילדים — דיווח הורי (SCARED)",
-      "description": "41 items, 0–2 scale. Five subscales: panic/somatic, GAD, separation anxiety, social phobia, school avoidance.",
+      "description": "41 פריטים בסולם 0–2, בדיווח ההורה. חמישה תת-סולמות: פאניקה/סומטי, חרדה כללית, חרדת פרידה, פוביה חברתית והימנעות מבית הספר.",
       "keywords": [
         "חרדה",
         "ילדים",
@@ -926,7 +926,7 @@
       "id": "spin",
       "kind": "questionnaire",
       "title": "שאלון פוביה חברתית (SPIN)",
-      "description": "17-item social phobia severity scale. Screens for social anxiety disorder and measures symptom severity. (Social Phobia Inventory)",
+      "description": "סולם בן 17 פריטים להערכת חומרת פוביה חברתית; משמש לסינון הפרעת חרדה חברתית ולמדידת חומרת התסמינים (Social Phobia Inventory).",
       "keywords": [
         "social anxiety",
         "social phobia",
@@ -1027,7 +1027,7 @@
       "id": "top3",
       "kind": "questionnaire",
       "title": "שלושת הבעיות המרכזיות",
-      "description": "Idiographic 3-problem questionnaire. Patient names up to three main problems and rates the severity of each on a 1–12 scale, with an…",
+      "description": "שאלון אידיוגרפי לשלוש בעיות: המטופל/ת מגדיר/ה עד שלוש בעיות מרכזיות ומדרג/ת את חומרת כל אחת בסולם 1–12, עם תיאור התמודדות אופציונלי לכל…",
       "keywords": [
         "problems",
         "idiographic",
@@ -1080,7 +1080,7 @@
       "id": "wai6",
       "kind": "questionnaire",
       "title": "שאלון ברית טיפולית (WAI-6)",
-      "description": "6-item working alliance measure assessing bond and goal/task agreement between patient and therapist. Administered after therapy sessions.",
+      "description": "כלי בן 6 פריטים להערכת הברית הטיפולית — קשר והסכמה על מטרות ומשימות בין המטופל/ת למטפל/ת. מועבר בתום מפגשי טיפול.",
       "keywords": [
         "alliance",
         "therapeutic",
@@ -1106,7 +1106,7 @@
       "id": "wsas",
       "kind": "questionnaire",
       "title": "סולם עבודה והתאמה חברתית (WSAS)",
-      "description": "5-item scale measuring functional impairment in work, home management, social leisure, private leisure, and relationships. Scores 0-40;…",
+      "description": "סולם בן 5 פריטים למדידת פגיעה תפקודית בעבודה, בניהול הבית, בפנאי חברתי, בפנאי אישי ובמערכות יחסים. טווח הציונים 0–40; ציון גבוה יותר מציין…",
       "keywords": [
         "functioning",
         "impairment",
