@@ -84,7 +84,7 @@ src/pdf/report.js              ← PDF generation (pdfmake, lazy-loaded)
 - Config manifest `dev: true` flag: configs marked `dev:true` are skipped in production builds, loaded in dev and test
 - CI workflow: `.github/workflows/ci.yml` — lint → unit tests → validate configs → build → size → E2E
 - Deploy workflow: `.github/workflows/deploy-cloudflare.yml` — same gate + Wrangler deploy of `dist/` (app) and `dist-landing/` (landing) to Cloudflare Pages; legacy `deploy.yml` now only publishes the github.io redirect shim
-- **1081 unit tests passing across 37 test files**
+- **1341 unit tests passing across 52 test files**
 - E2E tests passing (Chromium; mobile-safari locally only)
 - Aggregate surface at `/aggregate/` (סיכום מטופל) — slice 1: clinicians drop Madad PDFs in, get per-instrument trajectory charts (severity bands, cutoff lines, 5-session window, pid filter). Stateless, in-browser only. See `docs/AGGREGATE_SPEC.md`; envelope contract in `shared/pdf/envelope-schema.js`
 - Dist-smoke E2E project (`tests/e2e/*.dist.test.js`) — runs Playwright against the *built* bundle served at the production base (`/`) via `vite preview`. Catches the class of "works on dev, broken on dist" bugs that unit tests and the dev e2e suite cannot see (absolute-path fetches that bypass Vite's base, missing chunks, CSP violations). CI runs it at `/` plus a multi-base matrix (`/`, `/some/deep/path/`).
@@ -283,7 +283,8 @@ See `public/configs/CONTRIBUTING.md` (human guide) or `public/configs/LLM_GUIDE.
 |---|---|---|
 | Alert severity rendering | ✓ Complete | — |
 | Embedded JSON in PDF | ✓ Complete | `data.json` envelope in every PDF — see `IMPLEMENTATION_SPEC.md` §19.4a |
-| Component branch coverage ~60% | UI regressions may go undetected | E2E tests compensate |
+| PDF-render plumbing in `report.js` uncovered (funcs ~66%) | pdfmake layout callbacks / font preload state machine need a real render surface | E2E tests compensate; score/label builders are directly unit-tested |
+| Aggregate `pid-filter.js` / `raw-data-list.js` at 0% | UI regressions in the aggregate surface may go undetected | E2E tests compensate |
 | Production-only failures invisible to dev/unit tests | Bugs reach patients (e.g. the base-path bug that produced "לא ניתן לטעון את השאלון" on `/madad/` while dev worked) | ✓ Resolved — `dist-smoke` Playwright project runs against the built bundle at the production base in CI; deploy is gated on it |
 
 ## 6a. Security model (summary)
@@ -332,8 +333,9 @@ The following security controls are in place. Do not remove them without underst
 - WSAS top band label fixed ("פסיכופתולוגיה" → "פגיעה תפקודית חמורה")
 - bidi-js integrated (replaced hand-rolled bidiNodes approximation)
 - Documentation: README rewritten, HANDOVER updated, INSTRUMENTS/CONTRIBUTING consolidated, CHANGELOG created
-- Test coverage: 90%+ statements/lines, 84%+ branches — all thresholds passing
+- Test coverage: ~90% statements, ~92% lines, ~83% branches — all thresholds passing
 - Coverage config: validate-schema.js, composer.js, composer-render.js excluded (generated/DOM entry files)
+- PDF score/label render tests (`src/pdf/report-render.test.js`, 47 tests): direct unit coverage of `buildSectionHeader`, `buildSubscoresLine`, `buildSummaryBlock`, `buildItemRow`, `buildTextBlock`, `buildMultiselectBlock` — the builders that turn scores/subscales/answers into the numbers a clinician reads. Lifted `report.js` functions 56%→66%, branches 68%→83%. Covers the total:0-not-missing, mean-vs-sum formatting, and out-of-range/exclude edges.
 - Scroll fix: `overflow: hidden` removed from `.content-inner`; `body` and `app-shell` host use fixed height (`block-size: 100dvh` / `block-size: 100%`) so `.content` scroll container is properly constrained
 - `totalMethod: sum_of_items` added to scoring engine and schema — allows subscale mean + raw item sum total (used by PCL-5)
 - Mean subscale values rounded to 1 decimal in PDF (integers remain whole)
@@ -373,7 +375,7 @@ Read in this order:
 ```bash
 npm ci
 npm run dev              # localhost:5173 (base /)
-npm test                 # 932 unit tests
+npm test                 # 1341 unit tests
 npm run validate:configs
 npm run build && npm run preview  # localhost:4173/ (base /)
 ```
