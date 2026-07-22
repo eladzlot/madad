@@ -19,7 +19,7 @@ vi.mock('./engine/orchestrator.js', () => ({ createOrchestrator: vi.fn() }));
 vi.mock('./router.js',              () => ({ createRouter: vi.fn() }));
 vi.mock('./pdf/report.js',          () => ({ preloadPdf: vi.fn() }));
 
-import { showLoading, showError } from './app.js';
+import { showLoading, showError, readPid } from './app.js';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -126,6 +126,17 @@ describe('showError — base behaviour', () => {
     expect(c.querySelector('.old')).toBeNull();
     cleanup(c);
   });
+
+  it('renders message and detail as text, never as markup (XSS guard)', () => {
+    const c = makeContainer();
+    const payload = '<img src=x onerror=alert(1)>';
+    showError(c, payload, payload);
+    // The string must appear verbatim as text and must NOT create an element.
+    expect(c.querySelector('img')).toBeNull();
+    expect(c.querySelector('.boot-screen__title').textContent).toBe(payload);
+    expect(c.querySelector('.boot-screen__hint').textContent).toBe(payload);
+    cleanup(c);
+  });
 });
 
 describe('showError — non-retryable (default)', () => {
@@ -163,6 +174,30 @@ describe('showError — retryable', () => {
 
     vi.unstubAllGlobals();
     cleanup(c);
+  });
+});
+
+// ─── readPid ────────────────────────────────────────────────────────────────────
+
+describe('readPid — fragment/query precedence', () => {
+  it('reads the pid from the URL fragment (new links)', () => {
+    expect(readPid({ hash: '#pid=TRC-001', search: '' })).toBe('TRC-001');
+  });
+
+  it('falls back to the query string (legacy links)', () => {
+    expect(readPid({ hash: '', search: '?items=phq9&pid=TRC-002' })).toBe('TRC-002');
+  });
+
+  it('prefers the fragment when both are present', () => {
+    expect(readPid({ hash: '#pid=FROM-HASH', search: '?pid=FROM-QUERY' })).toBe('FROM-HASH');
+  });
+
+  it('decodes percent-encoded pids from the fragment', () => {
+    expect(readPid({ hash: '#pid=a%20b', search: '' })).toBe('a b');
+  });
+
+  it('returns null when no pid is present anywhere', () => {
+    expect(readPid({ hash: '#other=1', search: '?items=phq9' })).toBeNull();
   });
 });
 

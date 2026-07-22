@@ -294,13 +294,21 @@ The following security controls are in place. Do not remove them without underst
 |---|---|---|
 | `allowedOrigins` in `loadConfig` | `shared/config/loader.js` | External servers injecting malicious configs via crafted `?configs=` URLs. Default: same-origin only. |
 | `http://` rejection | `shared/config/loader.js` | Config loading over unencrypted transport. |
-| `textContent` in error rendering | `src/app.js`, `src/controller.js` | XSS via error messages containing HTML from crafted URL parameters. |
-| PID validation (`PID_PATTERN`, max 64 chars) | `src/app.js` | Crafted PIDs entering error surfaces or the PDF filename. |
+| Path-traversal rejection (`..` in sources) + short-name allowlist (`SHORT_NAME_RE`) | `shared/config/loader.js` | Crafted `items=` tokens escaping the config base to fetch arbitrary paths. |
+| Fetch timeout (`fetchTimeoutMs`, default 10s) | `shared/config/loader.js` | A hung/slow config host stalling the patient app indefinitely. |
+| Inbound envelope validation (`validateEnvelope`, never-throw parser) | `shared/pdf/envelope-schema.js`, `aggregate/src/parse-pdf.js` | Malformed or hostile uploaded PDFs crashing or injecting bad data into the Aggregate surface; unknown/newer schema versions are rejected cleanly. |
+| SVG-export escaping (`esc`) | `aggregate/src/chart/export-svg.js` | Injection when untrusted envelope text (titles, labels, pid) is stamped into exported SVG/PNG. |
+| Lit auto-escaping (framework-level) | all `src/components/`, `composer/`, `aggregate/` Lit templates | XSS from config- or upload-derived text rendered in the UI — Lit escapes all interpolated bindings; no `unsafeHTML` is used anywhere. |
+| DOM-built error rendering (`textContent`) | `src/app.js` (`showError`), `src/controller.js` | XSS via error messages containing HTML from crafted URL parameters. `showError` builds its DOM with `document.createElement`/`textContent` and a static SVG icon — no caller string ever reaches an HTML parser. |
+| PID validation (`PID_PATTERN`, max 64 chars) | `src/app.js`, `shared/pid.js` | Crafted PIDs entering error surfaces or the PDF filename. |
+| PID carried in URL fragment (`#pid=`) | `composer/src/composer-state.js` (writer), `src/app.js` `readPid()` (reader) | Keeps the patient identifier client-side: fragments never reach the request line, so the pid stays out of server/CDN access logs and the `Referer` header. Legacy `?pid=` links still read (backward-compatible). |
 | Name length cap (200 chars) + BiDi strip | `src/components/welcome-screen.js` | Oversized or directionally-manipulated names in the PDF. |
 | `_isSafePattern` ReDoS guard | `src/components/item-text.js` | Config-supplied `pattern` fields causing catastrophic regex backtracking. |
-| Content-Security-Policy meta tag | `index.html`, `composer/index.html` | Limits the blast radius of any future XSS: no inline scripts, no external connects. |
+| DSL length + nesting caps (`MAX_EXPRESSION_LENGTH`, `MAX_PARSE_DEPTH`) | `src/engine/dsl.js` | A hostile config expression exhausting the JS stack (deep nesting) or memory (megabyte-scale string). Defense-in-depth — only reachable if external configs are ever enabled. |
+| Content-Security-Policy (meta tag, build-injected) | `vite.shared.js` `cspPlugin` → all built HTML | Limits the blast radius of any future XSS: no inline scripts, no external connects. Injected at build time into every entry point (patient/composer/aggregate/help/landing); **not** hand-written in `index.html`. |
+| HTTP security headers | `public/_headers` (copied to `dist-landing/` by `vite.landing.config.js`) | Header-level `Content-Security-Policy` incl. `frame-ancestors 'none'` + `X-Frame-Options: DENY` (clickjacking — meta CSP cannot express `frame-ancestors`), `Referrer-Policy: no-referrer`, `X-Content-Type-Options: nosniff`, `Strict-Transport-Security`. Served by Cloudflare Pages. |
 
-**To allow an external config server in the future**, pass `allowedOrigins` at the `loadConfig` call site in `src/app.js` — no changes to `loader.js` are needed. See `IMPLEMENTATION_SPEC.md §9.1`.
+**To allow an external config server in the future**, pass `allowedOrigins` at the `loadConfig` call site in `src/app.js` — no changes to `loader.js` are needed. See `IMPLEMENTATION_SPEC.md §9.1`. Before doing so, note the DSL caps above already bound untrusted-expression cost.
 
 ---
 

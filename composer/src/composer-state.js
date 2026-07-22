@@ -28,13 +28,18 @@ export { PID_PATTERN, pidWarning, matchesQuery };
 // the token itself (configs/prod/<id>.json) and auto-fetches battery
 // dependencies. The URL therefore carries no config list at all — only the
 // ordered `items` and an optional `pid`.
+//
+// The pid is a patient identifier, so it rides in the URL *fragment* (`#pid=`)
+// rather than the query string. Fragments are never sent in the HTTP request
+// line, so the pid stays entirely client-side: out of Cloudflare/CDN access
+// logs and out of the Referer header. Links generated the old way (`?pid=`)
+// keep working — the patient app reads both forms (see src/app.js readPid()).
 export function buildUrl({ selected = [], pid = '' } = {}, base = getAppRoot()) {
   if (selected.length === 0) return null;
 
-  const parts = [`items=${selected.join(',')}`];
-  if (pid.trim()) parts.push(`pid=${encodeURIComponent(pid.trim())}`);
-
-  return `${base}?${parts.join('&')}`;
+  const url = `${base}?items=${selected.join(',')}`;
+  if (pid.trim()) return `${url}#pid=${encodeURIComponent(pid.trim())}`;
+  return url;
 }
 
 // Returns the app root URL (the page serving index.html), derived from the

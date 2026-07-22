@@ -29,6 +29,15 @@ describe('buildUrl', () => {
     expect(buildUrl({ selected: ['phq9'], pid: 'TRC-001' }, ORIGIN)).toContain('pid=TRC-001');
   });
 
+  it('carries the pid in the URL fragment, not the query string', () => {
+    // Keeps the patient identifier client-side: fragments never reach the
+    // server/CDN request line or the Referer header. See buildUrl comment.
+    const url = new URL(buildUrl({ selected: ['phq9'], pid: 'TRC-001' }, ORIGIN));
+    expect(url.searchParams.has('pid')).toBe(false);
+    expect(url.searchParams.get('items')).toBe('phq9');
+    expect(url.hash).toBe('#pid=TRC-001');
+  });
+
   it('omits pid param when pid is empty', () => {
     expect(buildUrl({ selected: ['phq9'], pid: '' }, ORIGIN)).not.toContain('pid=');
   });

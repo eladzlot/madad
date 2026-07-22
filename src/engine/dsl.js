@@ -123,8 +123,16 @@ function tokenize(expression) {
 // ─── Parser ───────────────────────────────────────────────────────────────────
 // Produces an AST. Each node: { kind, ... }
 
+// Maximum parser recursion depth. Each level of parenthesis / call nesting and
+// each chained unary operator descends one level. Bounds stack usage so a
+// pathologically nested expression (e.g. thousands of "(") throws a clean
+// DSLSyntaxError instead of overflowing the JS call stack. Legitimate clinical
+// formulas nest only a handful of levels deep, so 100 is far above any real use.
+const MAX_PARSE_DEPTH = 100;
+
 function parse(tokens, expression) {
   let pos = 0;
+  let depth = 0;
 
   const peek    = ()  => tokens[pos];
   const consume = ()  => tokens[pos++];
@@ -135,7 +143,14 @@ function parse(tokens, expression) {
     return t;
   };
 
-  function parseExpression() { return parseOr(); }
+  // Runs fn() one recursion level deeper, throwing if the nesting cap is hit.
+  const descend = (fn) => {
+    if (++depth > MAX_PARSE_DEPTH)
+      throw new DSLSyntaxError(`expression nested too deeply (max ${MAX_PARSE_DEPTH})`, expression);
+    try { return fn(); } finally { depth--; }
+  };
+
+  function parseExpression() { return descend(parseOr); }
 
   function parseOr() {
     let left = parseAnd();
@@ -158,7 +173,7 @@ function parse(tokens, expression) {
   function parseNot() {
     if (peek().type === TOKEN.OP && peek().value === '!') {
       consume();
-      return { kind: 'unary', op: '!', operand: parseNot() };
+      return { kind: 'unary', op: '!', operand: descend(parseNot) };
     }
     return parseComparison();
   }
@@ -194,7 +209,7 @@ function parse(tokens, expression) {
   function parseUnary() {
     if (peek().type === TOKEN.OP && peek().value === '-') {
       consume();
-      return { kind: 'unary', op: '-', operand: parseUnary() };
+      return { kind: 'unary', op: '-', operand: descend(parseUnary) };
     }
     return parsePrimary();
   }
@@ -453,7 +468,20 @@ function evalNode(node, context, expression) {
  * @param {'number'|'boolean'} expected - Expected return type
  * @returns {number|boolean}
  */
+// Upper bound on raw expression length. Tokenizing/parsing is linear, but a cap
+// keeps a hostile config (relevant only if external config servers are ever
+// enabled via loadConfig's allowedOrigins) from feeding in a megabyte-scale
+// string. Real formulas are well under a few hundred characters.
+const MAX_EXPRESSION_LENGTH = 2000;
+
 export function evaluate(expression, context, expected) {
+  // Length cap applies only to genuine strings — a non-string expression is a
+  // config bug that must surface (tokenize throws), not be reclassified here.
+  if (typeof expression === 'string' && expression.length > MAX_EXPRESSION_LENGTH)
+    throw new DSLSyntaxError(
+      `expression exceeds maximum length (${MAX_EXPRESSION_LENGTH})`,
+      `${expression.slice(0, 60)}…`,
+    );
   const tokens = tokenize(expression);
   const ast    = parse(tokens, expression);
   const result = evalNode(ast, context, expression);

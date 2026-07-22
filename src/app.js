@@ -65,34 +65,77 @@ export function showLoading(container) {
 
 // ── Error screen ──────────────────────────────────────────────────────────────
 
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+// Static error icon, built with DOM APIs (no HTML string) so nothing in this
+// function ever routes a caller-supplied string through an HTML parser.
+function errorIcon() {
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  for (const [k, v] of Object.entries({
+    width: '48', height: '48', viewBox: '0 0 24 24', 'aria-hidden': 'true',
+    fill: 'none', stroke: 'var(--color-no)', 'stroke-width': '1.5',
+    'stroke-linecap': 'round', 'stroke-linejoin': 'round',
+  })) svg.setAttribute(k, v);
+
+  const shape = (tag, attrs) => {
+    const el = document.createElementNS(SVG_NS, tag);
+    for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+    return el;
+  };
+  svg.append(
+    shape('circle', { cx: '12', cy: '12', r: '10' }),
+    shape('line',   { x1: '12', y1: '8',  x2: '12',    y2: '12' }),
+    shape('line',   { x1: '12', y1: '16', x2: '12.01', y2: '16' }),
+  );
+  return svg;
+}
+
 export function showError(container, message, detail = '', { retryable = false } = {}) {
   const hintText = detail || 'אנא פנה למטפל שלך לקבלת קישור חדש.';
-  const retryBtn = retryable
-    ? `<button class="boot-screen__retry" data-action="retry">נסה שוב</button>`
-    : '';
 
-  container.innerHTML = `
-    <div class="boot-screen" role="alert">
-      <svg width="48" height="48" viewBox="0 0 24 24" aria-hidden="true"
-        fill="none" stroke="var(--color-no)" stroke-width="1.5"
-        stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="10"/>
-        <line x1="12" y1="8" x2="12" y2="12"/>
-        <line x1="12" y1="16" x2="12.01" y2="16"/>
-      </svg>
-      <p class="boot-screen__title">${message}</p>
-      <p class="boot-screen__hint">${hintText}</p>
-      ${retryBtn}
-    </div>
-  `;
+  // Built entirely with DOM APIs. `message` and `detail` reach the page only
+  // via textContent, so crafted URL parameters can never inject markup even if
+  // a future caller forwards user input here.
+  const wrap = document.createElement('div');
+  wrap.className = 'boot-screen';
+  wrap.setAttribute('role', 'alert');
+  wrap.appendChild(errorIcon());
+
+  const title = document.createElement('p');
+  title.className = 'boot-screen__title';
+  title.textContent = message;
+  wrap.appendChild(title);
+
+  const hint = document.createElement('p');
+  hint.className = 'boot-screen__hint';
+  hint.textContent = hintText;
+  wrap.appendChild(hint);
 
   if (retryable) {
-    container.querySelector('[data-action="retry"]')
-      .addEventListener('click', () => location.reload());
+    const btn = document.createElement('button');
+    btn.className = 'boot-screen__retry';
+    btn.dataset.action = 'retry';
+    btn.textContent = 'נסה שוב';
+    btn.addEventListener('click', () => location.reload());
+    wrap.appendChild(btn);
   }
+
+  container.innerHTML = '';
+  container.appendChild(wrap);
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────
+
+// Reads the patient identifier, preferring the URL fragment (`#pid=…`, the form
+// the composer now generates — keeps the pid out of the request line, and thus
+// out of server/CDN logs and the Referer header) and falling back to the query
+// string (`?pid=…`) so links generated before the switch keep working.
+export function readPid(loc = location) {
+  const hash = loc.hash?.startsWith('#') ? loc.hash.slice(1) : (loc.hash ?? '');
+  const fromHash = new URLSearchParams(hash).get('pid');
+  if (fromHash !== null) return fromHash;
+  return new URLSearchParams(loc.search).get('pid');
+}
 
 async function main() {
   const params = new URLSearchParams(location.search);
@@ -101,7 +144,7 @@ async function main() {
   // PID validation lives in shared/pid.js — single source of truth shared with the composer.
   // Invalid PIDs are silently treated as absent rather than surfaced in error messages,
   // to avoid reflecting crafted strings back into the UI.
-  const pid = sanitizePid(params.get('pid'));
+  const pid = sanitizePid(readPid());
 
   const container = document.getElementById('app');
 

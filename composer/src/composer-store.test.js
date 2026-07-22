@@ -233,7 +233,8 @@ describe('url / warnings / reset', () => {
     store.setPid('TRC-1');
     const url = new URL(store.url(), 'http://localhost');
     expect(url.searchParams.get('items')).toBe('phq9');
-    expect(url.searchParams.get('pid')).toBe('TRC-1');
+    // pid rides in the fragment now (kept out of server/CDN logs) — see buildUrl.
+    expect(url.hash).toBe('#pid=TRC-1');
   });
 
   it('url is null with no selection', () => {

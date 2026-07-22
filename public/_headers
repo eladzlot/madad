@@ -1,0 +1,23 @@
+# Cloudflare Pages HTTP response headers.
+# https://developers.cloudflare.com/pages/configuration/headers/
+#
+# These complement the build-time <meta> CSP injected by vite.shared.js. Two
+# things can ONLY be set at the HTTP layer, never via a meta tag, which is why
+# this file exists:
+#   • frame-ancestors / X-Frame-Options — clickjacking protection (browsers
+#     ignore frame-ancestors in a meta CSP)
+#   • Referrer-Policy / HSTS / nosniff  — response-header-only controls
+#
+# Referrer-Policy matters here specifically: patient links may still carry a
+# ?pid= (legacy links pre-fragment migration), and no-referrer stops that value
+# leaking to any origin the patient later navigates to. New links keep the pid
+# in the URL fragment, which never leaves the browser at all.
+#
+# Copied verbatim into the landing artifact by landingAssetsPlugin
+# (vite.landing.config.js) so both surfaces are protected identically.
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' blob:; worker-src blob:; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload

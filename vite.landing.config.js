@@ -21,6 +21,9 @@ function landingAssetsPlugin() {
     closeBundle() {
       cpSync(abs('public/fonts'), abs('dist-landing/fonts'), { recursive: true });
       cpSync(abs('public/og-image.png'), abs('dist-landing/og-image.png'));
+      // Security response headers — publicDir is off, so public/_headers is not
+      // copied automatically. Landing shares the app's policy (see the file).
+      cpSync(abs('public/_headers'), abs('dist-landing/_headers'));
     },
   };
 }

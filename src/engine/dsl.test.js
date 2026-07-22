@@ -333,3 +333,32 @@ describe('spec examples', () => {
       'boolean'
     )).toBe(true));
 });
+
+// ─── Resource limits (defense-in-depth) ──────────────────────────────────────
+// Bounds that keep a hostile config (only reachable if external config servers
+// are ever enabled via loadConfig allowedOrigins) from exhausting the stack or
+// feeding a megabyte-scale expression. See dsl.js MAX_PARSE_DEPTH / MAX_EXPRESSION_LENGTH.
+
+describe('resource limits', () => {
+  it('rejects an over-length expression', () => {
+    const long = '1' + '+1'.repeat(1100); // > 2000 chars
+    expect(() => evaluate(long, {}, 'number')).toThrow(DSLSyntaxError);
+  });
+
+  it('rejects deeply nested parentheses instead of overflowing the stack', () => {
+    const deep = '('.repeat(200) + '1' + ')'.repeat(200);
+    expect(() => evaluate(deep, {}, 'number')).toThrow(DSLSyntaxError);
+  });
+
+  it('rejects a deep chain of unary operators', () => {
+    expect(() => evaluate('-'.repeat(200) + '1', {}, 'number')).toThrow(DSLSyntaxError);
+  });
+
+  it('still evaluates a normally nested expression', () => {
+    expect(evaluate('((1 + 2) * (3 + 4))', {}, 'number')).toBe(21);
+  });
+
+  it('surfaces a non-string expression as an error (config bug, not swallowed)', () => {
+    expect(() => evaluate(null, {}, 'number')).toThrow();
+  });
+});
