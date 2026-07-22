@@ -972,6 +972,37 @@
       "featured": false
     },
     {
+      "id": "stss",
+      "kind": "questionnaire",
+      "title": "שאלון סטרס טראומטי משני (STSS)",
+      "description": "שאלון דיווח עצמי בן 17 פריטים המודד סטרס טראומטי משני בקרב אנשי מקצוע העובדים עם מטופלים שחוו טראומה, בשבעת הימים האחרונים; מפיק תת-סולמות…",
+      "keywords": [
+        "trauma",
+        "secondary traumatic stress",
+        "STSS",
+        "compassion fatigue",
+        "טראומה משנית",
+        "סטרס טראומטי משני",
+        "שחיקת חמלה",
+        "מטפלים"
+      ],
+      "itemCount": 17,
+      "estMinutes": 2,
+      "hasConditional": false,
+      "domains": [
+        "trauma"
+      ],
+      "type": "severity",
+      "populations": [
+        "adult"
+      ],
+      "tags": [
+        "secondary trauma",
+        "clinicians"
+      ],
+      "featured": false
+    },
+    {
       "id": "test_q",
       "kind": "questionnaire",
       "title": "שאלון בדיקה",

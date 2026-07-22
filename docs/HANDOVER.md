@@ -128,6 +128,7 @@ Note: `pcl5` and `ptci` were moved from `standard.json` to `trauma.json` at v1.6
 | `pc_ptsd5` | questionnaire | סקר טראומה קצר (PC-PTSD-5) | Binary screener; `exposure` item excluded from scoring via `scoring.exclude` |
 | `pcl5` | questionnaire | שאלון פוסט טראומה (PCL-5) | 4 subscales (sum); alert at score ≥ 33 |
 | `ptci` | questionnaire | שאלון קוגניציות פוסט-טראומטיות (PTCI) | 3 subscales (mean) |
+| `stss` | questionnaire | שאלון סטרס טראומטי משני (STSS) | Secondary traumatic stress in clinicians; 3 subscales (sum); severity ranges + cutoff 38 (Bride 2007); warning alert at score ≥ 38; unvalidated Hebrew translation; © Bride, free non-commercial |
 | `trauma_eval` | battery | הערכת טראומה ראשונית | PC-PTSD-5 → if score ≥ 4: PCL-5 + PTCI |
 
 **intake family** — initial assessment:
@@ -142,7 +143,7 @@ Note: `pcl5` and `ptci` were moved from `standard.json` to `trauma.json` at v1.6
 
 Battery files declare `dependencies` on every questionnaire file they reference (e.g. `clinical_intake.json` depends on `diamond_sr.json`, `phq9.json`, `pcl5.json`, …). Generated URLs name only the selected items' configs — dependency resolution happens patient-side in `loadConfig`'s BFS auto-fetch.
 
-**Policy:** Only open-source or public-domain instruments. Do not add proprietary instruments (e.g. BDI-II) without a verified license.
+**Policy:** Add instruments that are free to use for non-commercial (research/clinical) purposes — public-domain, open-license, or copyrighted-but-free (e.g. STSS, © Brian E. Bride). Do not add proprietary/commercial instruments that require a paid license or restrict reproduction (e.g. BDI-II).
 
 ### Config files
 

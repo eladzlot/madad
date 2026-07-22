@@ -24,11 +24,17 @@ browsing and **must be regenerated** whenever you add or change a config
 ## Hard rules
 
 - **Hebrew only.** All patient-facing text (titles, instructions, items, option labels,
-  interpretation labels, alert messages) must be in Hebrew. English appears only in the
-  parenthesised instrument initials of the title (e.g. `שאלון דיכאון (PHQ-9)`) and in
-  subscale label parentheses.
-- **License gate.** Only open-source or public-domain instruments. If the license is
-  unclear or proprietary (e.g. BDI-II), stop and tell the user — do not add it.
+  interpretation labels, alert messages) **and the composer-facing `description`** must be
+  in Hebrew. English appears only in the parenthesised instrument initials of the title
+  (e.g. `שאלון דיכאון (PHQ-9)`) and in subscale label parentheses. (`keywords` may mix
+  Hebrew and English to aid search.)
+- **License gate.** Add any instrument that is free to use for non-commercial
+  (research/clinical) purposes — whether public-domain/open-license (e.g. PHQ-9, PCL-5) or
+  copyrighted but distributed free for clinical use (e.g. the STSS, `© Brian E. Bride`).
+  Just note the copyright holder in the Step 7 review; no special approval is needed. Only
+  *proprietary/commercial* instruments — those requiring a paid license or restricting
+  reproduction (e.g. BDI-II, Pearson instruments) — are off-limits: stop and tell the
+  user, do not add. When it is genuinely unclear whether use is free, ask.
 - **Validated numbers only.** Scoring method, severity ranges, cutoffs, and alert
   thresholds must match the published, validated instrument. Never invent or "round"
   them. If a value cannot be sourced, leave the field out and say so.
@@ -50,7 +56,10 @@ Establish what the user has provided:
 ## Step 2 — Psychometrics and cutoffs
 
 If a paper was supplied, extract from it. Otherwise **search the web** (original
-validation paper + widely cited follow-ups). Collect:
+validation paper + widely cited follow-ups). **If a key paper is paywalled or you
+otherwise can't reach it, ask the user before falling back to secondary sources or
+dropping a psychometric field — they often have institutional access and can send you the
+PDF.** Collect:
 
 - Response scale (values, anchor labels) and whether any items are reverse-scored.
 - Scoring method (sum / average / subscales; subscale item assignments and whether

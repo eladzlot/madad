@@ -18,7 +18,7 @@ The output is **pure JSON** — no comments, no trailing commas, no JavaScript.
 {
   "id": "instrument_id",
   "title": "Display title shown to clinician",
-  "description": "One sentence shown in the Composer search UI.",
+  "description": "משפט אחד בעברית המוצג בממשק החיפוש של הקומפוזר.",
   "keywords": ["keyword1", "keyword2"],
   "meta": {
     "domains": ["anxiety"],
@@ -43,6 +43,8 @@ The output is **pure JSON** — no comments, no trailing commas, no JavaScript.
 ```
 
 Only `id`, `title`, `items` are strictly required. All other fields are optional but you should include `description`, `keywords`, `meta`, `scoring`, and `interpretations` for any real clinical instrument.
+
+**`description` must be written in Hebrew** — it is shown to clinicians in the composer's search UI. Keep it to one sentence. (`keywords` may mix Hebrew and English to aid search.)
 
 ---
 
@@ -617,7 +619,7 @@ The `else` array must be present even if empty. DSL expressions in battery condi
 {
   "id": "gad7",
   "title": "שאלון חרדה (GAD-7)",
-  "description": "7-item anxiety severity scale. Standard screening for generalised anxiety.",
+  "description": "סולם חומרת חרדה בן 7 פריטים; כלי סינון סטנדרטי לחרדה מוכללת.",
   "keywords": ["anxiety", "GAD", "screening", "חרדה"],
   "defaultOptionSetId": "frequency_4",
   "optionSets": {
