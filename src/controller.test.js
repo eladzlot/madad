@@ -160,6 +160,43 @@ describe('answer and advance', () => {
     expect(el.selected).toBe(3);
   });
 
+  it('rated_text answer records both the rating and the sidecar text key', () => {
+    const questionnaire = {
+      id: 'w', title: 'W',
+      items: [{ id: 'p1', type: 'rated_text', text: 'בעיה', min: 1, max: 12 }],
+      scoring: { method: 'none' }, alerts: [],
+    };
+    const { container, engine } = makeSetup({ questionnaire });
+    container.querySelector('item-rated-text')
+      .dispatchEvent(new CustomEvent('answer', { detail: { value: 8, text: 'קושי' }, bubbles: true }));
+    expect(engine.recordAnswer).toHaveBeenCalledWith('p1', 8);
+    expect(engine.recordAnswer).toHaveBeenCalledWith('p1__text', 'קושי');
+  });
+
+  it('rated_text records null under the sidecar key when text is absent', () => {
+    const questionnaire = {
+      id: 'w', title: 'W',
+      items: [{ id: 'p1', type: 'rated_text', text: 'בעיה', min: 1, max: 12 }],
+      scoring: { method: 'none' }, alerts: [],
+    };
+    const { container, engine } = makeSetup({ questionnaire });
+    container.querySelector('item-rated-text')
+      .dispatchEvent(new CustomEvent('answer', { detail: { value: 3 }, bubbles: true }));
+    expect(engine.recordAnswer).toHaveBeenCalledWith('p1__text', null);
+  });
+
+  it('rated_text rehydrates rating and text from existing answers on mount', () => {
+    const questionnaire = {
+      id: 'w', title: 'W',
+      items: [{ id: 'p1', type: 'rated_text', text: 'בעיה', min: 1, max: 12 }],
+      scoring: { method: 'none' }, alerts: [],
+    };
+    const { container } = makeSetup({ questionnaire, existingAnswers: { p1: 8, p1__text: 'קושי' } });
+    const el = container.querySelector('item-rated-text');
+    expect(el.selected).toBe(8);
+    expect(el.selectedText).toBe('קושי');
+  });
+
   it('calls engine.advance after 150ms delay on advance event', () => {
     vi.useFakeTimers();
     const { container, engine } = makeSetup();

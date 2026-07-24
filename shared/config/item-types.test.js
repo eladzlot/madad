@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { isScored, autoAdvances, isSkippable, canAdvance, answerShape, isKnownType } from './item-types.js';
+import {
+  isScored, autoAdvances, isSkippable, canAdvance, answerShape, isKnownType,
+  ratedTextTextKey, RATED_TEXT_TEXT_SUFFIX, tagForType,
+} from './item-types.js';
 
 // ── isScored ──────────────────────────────────────────────────────────────────
 
@@ -121,8 +124,39 @@ describe('isKnownType', () => {
     expect(isKnownType('select')).toBe(true);
     expect(isKnownType('multiselect')).toBe(true);
     expect(isKnownType('instructions')).toBe(true);
+    expect(isKnownType('rated_text')).toBe(true);
     expect(isKnownType('if')).toBe(false);       // control-flow, not an item type
     expect(isKnownType('nope')).toBe(false);
+  });
+});
+
+// ── rated_text ────────────────────────────────────────────────────────────────
+
+describe('rated_text', () => {
+  it('is a known, scalar, scored type with its own tag', () => {
+    expect(isKnownType('rated_text')).toBe(true);
+    expect(answerShape('rated_text')).toBe('scalar');
+    expect(isScored({ type: 'rated_text' })).toBe(true);
+    expect(tagForType('rated_text')).toBe('item-rated-text');
+  });
+
+  it('does not auto-advance (requires explicit submit)', () => {
+    expect(autoAdvances({ type: 'rated_text' })).toBe(false);
+  });
+
+  it('requires the rating by default, honours required override', () => {
+    // skippableDefault is false — like a required slider (the rating gates)
+    expect(isSkippable({ type: 'rated_text' })).toBe(false);
+    expect(isSkippable({ type: 'rated_text', required: false })).toBe(true);
+    expect(canAdvance({ type: 'rated_text' }, null)).toBe(false);
+    expect(canAdvance({ type: 'rated_text' }, 0)).toBe(true);   // 0 is a valid rating
+    expect(canAdvance({ type: 'rated_text', required: false }, null)).toBe(true);
+  });
+
+  it('ratedTextTextKey derives the sidecar key from the item id', () => {
+    expect(RATED_TEXT_TEXT_SUFFIX).toBe('__text');
+    expect(ratedTextTextKey('p1')).toBe('p1__text');
+    expect(ratedTextTextKey('stuck_point')).toBe('stuck_point__text');
   });
 });
 

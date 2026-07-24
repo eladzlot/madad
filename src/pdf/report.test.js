@@ -399,6 +399,45 @@ describe('RTL invariants', () => {
   });
 });
 
+// ── rated_text in the response table ──────────────────────────────────────────
+
+describe('buildResponseTable — rated_text', () => {
+  const collect = (node) => {
+    if (node == null) return '';
+    if (typeof node === 'string' || typeof node === 'number') return String(node);
+    if (Array.isArray(node)) return node.map(collect).join('');
+    if (node.text !== undefined) return collect(node.text);
+    if (node.stack) return node.stack.map(collect).join('');
+    if (node.columns) return node.columns.map(collect).join('');
+    if (node.table) return node.table.body.map(r => r.map(collect).join('')).join('');
+    return '';
+  };
+
+  const q = {
+    id: 'w', title: 'W',
+    items: [{ id: 'p1', type: 'rated_text', text: 'הבעיה', min: 1, max: 12 }],
+    scoring: { method: 'none' },
+  };
+
+  it('renders the rating (from the item id) and the text (from the sidecar key)', () => {
+    // Single-word tokens: bidiNodes fuses inner spaces to NBSP, so assert per word.
+    const result = buildResponseTable(q, { p1: 8, p1__text: 'קושי' });
+    const flat = collect(result);
+    expect(flat).toContain('הבעיה');   // prompt
+    expect(flat).toContain('קושי');    // sidecar free-text
+    expect(flat).toContain('8');       // rating value
+  });
+
+  it('does not emit an orphan row for the sidecar __text key', () => {
+    // The response table iterates declared items only; the sidecar key must not
+    // surface as its own entry.
+    const result = buildResponseTable(q, { p1: 8, p1__text: 'x' });
+    // exactly one rated_text block, no table rows (rated_text flushes the table)
+    const blocks = result.stack ?? [result];
+    expect(blocks.some(b => b.table)).toBe(false);
+  });
+});
+
 // ── if/randomize node flattening ──────────────────────────────────────────────
 
 describe('buildResponseTable — if/randomize node handling', () => {

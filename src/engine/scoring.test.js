@@ -37,6 +37,37 @@ const baseQ = (overrides = {}) => ({
   ...overrides,
 });
 
+describe('rated_text scoring', () => {
+  const q = (method) => ({
+    id: 'w', title: 'W',
+    items: [
+      { id: 'p1', type: 'rated_text', text: 'problem 1', min: 1, max: 12 },
+      { id: 'p2', type: 'rated_text', text: 'problem 2', min: 1, max: 12 },
+    ],
+    scoring: { method },
+  });
+
+  it('the rating (stored under the item id) contributes to sum/average', () => {
+    expect(score(q('sum'), { p1: 8, p2: 4 }).total).toBe(12);
+    expect(score(q('average'), { p1: 8, p2: 4 }).total).toBe(6);
+  });
+
+  it('ignores the free-text sidecar key (a string) during scoring', () => {
+    const answers = { p1: 8, p1__text: 'I am unsafe', p2: 4, p2__text: 'I cannot trust' };
+    expect(score(q('sum'), answers).total).toBe(12);   // strings skipped by typeof-number filter
+  });
+
+  it('reverse scoring uses the rated_text min/max bounds', () => {
+    const rq = {
+      id: 'w', title: 'W',
+      items: [{ id: 'p1', type: 'rated_text', text: 'p', min: 1, max: 12, reverse: true }],
+      scoring: { method: 'sum' },
+    };
+    // reversed = min + max - raw = 1 + 12 - 8 = 5
+    expect(score(rq, { p1: 8 }).total).toBe(5);
+  });
+});
+
 describe('method: none', () => {
   it('returns null total when no scoring spec', () => {
     const result = score(baseQ(), { '1': 2, '2': 3, '3': 1 });

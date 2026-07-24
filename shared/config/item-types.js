@@ -68,7 +68,31 @@ const REGISTRY = {
     contributesToScore: false,
     answerShape:        'array',
   },
+  rated_text: {
+    tag:                'item-rated-text',
+    autoAdvance:        false,   // requires explicit submit
+    skippableDefault:   false,   // the rating is required by default, like a slider
+    contributesToScore: true,    // the rating (a number) is the scored answer
+    answerShape:        'scalar',
+  },
 };
+
+// ─── rated_text sidecar key ──────────────────────────────────────────────────
+// A `rated_text` item bundles a free-text phrase with a 0-N rating on one
+// screen, but the answer spine stores exactly one scalar per key. So the RATING
+// is stored under the item's own id (a number — scored, DSL-referenced, and
+// aggregated exactly like a slider), and the TEXT rides alongside under a
+// derived sidecar key. Everything downstream (scoring, alerts, envelope,
+// Aggregate) keeps seeing scalars and needs no rated_text awareness.
+//
+// This is the single source of truth for the suffix; the component, controller,
+// PDF renderer, and config validator all import it.
+export const RATED_TEXT_TEXT_SUFFIX = '__text';
+
+/** The answers-map key under which a rated_text item's free-text half is stored. */
+export function ratedTextTextKey(itemId) {
+  return `${itemId}${RATED_TEXT_TEXT_SUFFIX}`;
+}
 
 /**
  * Whether this item type contributes to questionnaire scoring.

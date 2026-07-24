@@ -63,6 +63,7 @@ export const ITEM_TYPE_LABELS = {
   slider:       'סקאלה',
   text:         'טקסט חופשי',
   multiselect:  'בחירה מרובה',
+  rated_text:   'טקסט + דירוג',
 };
 
 // Hebrew labels for the scoring.method enum (shown in the preview).

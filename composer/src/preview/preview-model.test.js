@@ -42,7 +42,7 @@ describe('prettifyCondition', () => {
   });
 
   it('does not resolve item references', () => {
-    expect(prettifyCondition('count(item.p2_label) >= 1')).toBe('count(item.p2_label) ≥ 1');
+    expect(prettifyCondition('count(item.p2__text) >= 1')).toBe('count(item.p2__text) ≥ 1');
   });
 
   it('is safe on null/empty', () => {
@@ -88,39 +88,41 @@ describe('buildPreviewModel — phq9', () => {
   });
 });
 
-// ── Questionnaire: top3 (nested item-level ifs, text, slider, required) ────────
+// ── Questionnaire: top3 (nested item-level ifs, rated_text, required) ──────────
 describe('buildPreviewModel — top3', () => {
   const model = buildPreviewModel(loadProd('top3'), 'top3');
 
   it('marks required items', () => {
-    const p1 = items(model).find(n => n.id === 'p1_label');
-    expect(p1.type).toBe('text');
-    expect(p1.inputType).toBe('multiline');
+    const p1 = items(model).find(n => n.id === 'p1');
+    expect(p1.type).toBe('rated_text');
     expect(p1.required).toBe(true);
   });
 
-  it('renders sliders with a range and labels', () => {
-    const s = items(model).find(n => n.id === 'p1_severity');
-    expect(s.range).toEqual({ min: 1, max: 12, labels: { min: 'במידה מועטה מאד', max: 'במידה רבה מאד' } });
+  it('exposes both the free-text field and the rating scale for rated_text', () => {
+    const p1 = items(model).find(n => n.id === 'p1');
+    expect(p1.inputType).toBe('multiline');
+    expect(p1.range).toEqual({ min: 1, max: 12, labels: { min: 'במידה מועטה מאד', max: 'במידה רבה מאד' } });
   });
 
   it('emits an if condition entry with prettified DSL', () => {
     const ifs = conditions(model).filter(c => c.variant === 'if');
     expect(ifs.map(c => c.label)).toEqual([
-      'count(item.p2_label) ≥ 1',
-      'count(item.p3_label) ≥ 1',
+      'count(item.p2__text) ≥ 1',
+      'count(item.p3__text) ≥ 1',
     ]);
   });
 
   it('nests the inner condition and items one depth deeper', () => {
-    const outer = conditions(model).find(c => c.label === 'count(item.p2_label) ≥ 1');
-    const inner = conditions(model).find(c => c.label === 'count(item.p3_label) ≥ 1');
+    const outer = conditions(model).find(c => c.label === 'count(item.p2__text) ≥ 1');
+    const inner = conditions(model).find(c => c.label === 'count(item.p3__text) ≥ 1');
     expect(outer.depth).toBe(0);
     expect(inner.depth).toBe(1);
-    const p2sev = items(model).find(n => n.id === 'p2_severity');
-    const p3sev = items(model).find(n => n.id === 'p3_severity');
-    expect(p2sev.depth).toBe(1);
-    expect(p3sev.depth).toBe(2);
+    // p2 (rated_text) sits at the top level, before the if_p2 gate; p3 lives
+    // inside the outer branch.
+    const p2 = items(model).find(n => n.id === 'p2');
+    const p3 = items(model).find(n => n.id === 'p3');
+    expect(p2.depth).toBe(0);
+    expect(p3.depth).toBe(1);
   });
 });
 

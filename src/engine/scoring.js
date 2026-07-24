@@ -47,11 +47,13 @@ function isAnswerable(item) {
  * Resolves the [min, max] response range an item can produce.
  * select/binary: min and max of the option values (inline options, the item's
  * optionSetId, or the questionnaire's defaultOptionSetId — same resolution
- * order as the renderer). slider: the item's min/max bounds.
+ * order as the renderer). slider/rated_text: the item's min/max bounds.
  * Returns null when no range can be determined.
  */
 function responseRange(item, questionnaire) {
-  if (item.type === 'slider') {
+  // slider and rated_text both carry explicit numeric min/max bounds; the
+  // rated_text rating is scored exactly like a slider value.
+  if (item.type === 'slider' || item.type === 'rated_text') {
     if (typeof item.min !== 'number' || typeof item.max !== 'number') return null;
     return [item.min, item.max];
   }

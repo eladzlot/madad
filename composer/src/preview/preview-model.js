@@ -53,6 +53,14 @@ function buildItemEntry(item, questionnaire, depth) {
       return { ...base, options: item.options ?? [] };
     case 'slider':
       return { ...base, range: { min: item.min, max: item.max, labels: item.labels ?? null } };
+    case 'rated_text':
+      // Both a free-text field and a rating scale — expose each so the preview
+      // can show the input box and the range together.
+      return {
+        ...base,
+        inputType: item.inputType ?? 'multiline',
+        range: { min: item.min, max: item.max, labels: item.labels ?? null },
+      };
     case 'text':
       return { ...base, inputType: item.inputType ?? 'line' };
     default:

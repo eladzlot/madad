@@ -247,6 +247,9 @@
           "$ref": "#/$defs/multiselectItem"
         },
         {
+          "$ref": "#/$defs/ratedTextItem"
+        },
+        {
           "$ref": "#/$defs/ifNode"
         },
         {
@@ -491,6 +494,75 @@
               }
             }
           }
+        },
+        "required": {
+          "type": "boolean"
+        }
+      }
+    },
+    "ratedTextItem": {
+      "type": "object",
+      "description": "A free-text phrase paired with a numeric rating on one screen (e.g. a stuck point + belief 0-100, or a problem + severity). The rating is stored under the item id (scored like a slider); the text is stored under '<id>__text'.",
+      "required": [
+        "id",
+        "type",
+        "text",
+        "min",
+        "max"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "type": {
+          "const": "rated_text"
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "ratingText": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Optional prompt shown above the rating slider. Defaults to the item text when absent."
+        },
+        "inputType": {
+          "enum": [
+            "line",
+            "multiline"
+          ],
+          "default": "multiline"
+        },
+        "min": {
+          "type": "number"
+        },
+        "max": {
+          "type": "number"
+        },
+        "step": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "min": {
+              "type": "string",
+              "minLength": 1
+            },
+            "max": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "reverse": {
+          "type": "boolean"
+        },
+        "weight": {
+          "type": "number"
         },
         "required": {
           "type": "boolean"

@@ -117,6 +117,32 @@ describe('binary item options', () => {
 
 // ─── Interpretation range overlap ─────────────────────────────────────────────
 
+describe('rated_text validation', () => {
+  const ratedTextQ = (items) => ({ id: 'w', title: 'W', items, scoring: { method: 'none' } });
+
+  it('accepts a well-formed rated_text item', () => {
+    const errors = collectConfigErrors(minimalConfig([ratedTextQ([
+      { id: 'p1', type: 'rated_text', text: 'problem', min: 1, max: 12 },
+    ])]));
+    expect(errors).toEqual([]);
+  });
+
+  it('flags a declared item id that collides with a rated_text sidecar key', () => {
+    const errors = collectConfigErrors(minimalConfig([ratedTextQ([
+      { id: 'p1', type: 'rated_text', text: 'problem', min: 1, max: 12 },
+      { id: 'p1__text', type: 'text', text: 'note' },
+    ])]));
+    expect(errors.some(e => e.includes('p1__text') && e.includes('sidecar'))).toBe(true);
+  });
+
+  it('enforces min < max like a slider', () => {
+    const errors = collectConfigErrors(minimalConfig([ratedTextQ([
+      { id: 'p1', type: 'rated_text', text: 'problem', min: 12, max: 1 },
+    ])]));
+    expect(errors.some(e => e.includes('min') && e.includes('max'))).toBe(true);
+  });
+});
+
 describe('interpretation range overlap', () => {
   const qWithRanges = (ranges) => ({ ...minimalQ(), interpretations: { target: 'total', ranges } });
 

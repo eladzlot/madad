@@ -119,6 +119,20 @@
               "label": "קשיי שינה"
             }
           ]
+        },
+        {
+          "id": "rated1",
+          "type": "rated_text",
+          "inputType": "multiline",
+          "text": "תאר מחשבה תקועה",
+          "ratingText": "עד כמה אתה מאמין למחשבה הזו?",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "labels": {
+            "min": "כלל לא",
+            "max": "לחלוטין"
+          }
         }
       ],
       "scoring": {

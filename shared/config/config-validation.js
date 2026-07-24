@@ -13,6 +13,8 @@
 // Error classes:
 //   ConfigError  — re-exported so callers don't need a separate import.
 
+import { ratedTextTextKey } from './item-types.js';
+
 export class ConfigError extends Error {
   constructor(message) {
     super(message);
@@ -78,6 +80,43 @@ function checkDuplicateItemIds(data, errors) {
         errors.push(`Questionnaire "${q.id}": duplicate item id "${id}".`);
       }
       seen.add(id);
+    }
+  }
+}
+
+// Collects the ids of rated_text items only — their free-text half is stored
+// under a derived sidecar key (`<id>__text`), so no declared item id may collide
+// with one, or the two answers would clobber each other in the answer map.
+function collectRatedTextIds(items, ids) {
+  for (const item of items ?? []) {
+    if (item.type === 'if') {
+      collectRatedTextIds(item.then, ids);
+      collectRatedTextIds(item.else, ids);
+    } else if (item.type === 'randomize') {
+      collectRatedTextIds(item.ids, ids);
+    } else if (item.type === 'rated_text' && item.id) {
+      ids.push(item.id);
+    }
+  }
+}
+
+function checkRatedTextKeyCollisions(data, errors) {
+  for (const q of data.questionnaires ?? []) {
+    const allIds = [];
+    collectAllItemIds(q.items, allIds);
+    const idSet = new Set(allIds);
+
+    const ratedIds = [];
+    collectRatedTextIds(q.items, ratedIds);
+    for (const id of ratedIds) {
+      const sidecar = ratedTextTextKey(id);
+      if (idSet.has(sidecar)) {
+        errors.push(
+          `Questionnaire "${q.id}": item id "${sidecar}" collides with the sidecar ` +
+          `key generated for rated_text item "${id}". Rename one of them — a rated_text ` +
+          `item stores its free-text half under "<id>__text".`
+        );
+      }
     }
   }
 }
@@ -247,8 +286,8 @@ function checkSliderItemsInList(items, qId, errors) {
       checkSliderItemsInList(item.ids, qId, errors);
       continue;
     }
-    if (item.type !== 'slider') continue;
-    const label = `Questionnaire "${qId}" › item "${item.id}" (slider)`;
+    if (item.type !== 'slider' && item.type !== 'rated_text') continue;
+    const label = `Questionnaire "${qId}" › item "${item.id}" (${item.type})`;
     if (item.min >= item.max) {
       errors.push(`${label}: min (${item.min}) must be less than max (${item.max}).`);
     }
@@ -297,6 +336,7 @@ export function collectConfigErrors(data) {
   const errors = [];
   checkDuplicateSessionKeys(data, errors);
   checkDuplicateItemIds(data, errors);
+  checkRatedTextKeyCollisions(data, errors);
   checkOptionSets(data, errors);
   checkScoringRefs(data, errors);
   checkSliderItems(data, errors);

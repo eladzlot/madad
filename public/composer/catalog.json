@@ -12,7 +12,7 @@
         "all-types"
       ],
       "dev": true,
-      "itemCount": 6,
+      "itemCount": 7,
       "estMinutes": 2,
       "hasConditional": false,
       "domains": [],
@@ -34,7 +34,7 @@
         "all-types"
       ],
       "dev": true,
-      "itemCount": 6,
+      "itemCount": 7,
       "estMinutes": 2,
       "hasConditional": false,
       "domains": [],
@@ -1027,7 +1027,7 @@
       "id": "top3",
       "kind": "questionnaire",
       "title": "שלושת הבעיות המרכזיות",
-      "description": "שאלון אידיוגרפי לשלוש בעיות: המטופל/ת מגדיר/ה עד שלוש בעיות מרכזיות ומדרג/ת את חומרת כל אחת בסולם 1–12, עם תיאור התמודדות אופציונלי לכל…",
+      "description": "שאלון אישי לשלוש בעיות: המטופל/ת מגדיר/ה עד שלוש בעיות מרכזיות ומדרג/ת את חומרת כל אחת בסולם 1–12, עם תיאור התמודדות אופציונלי לכל בעיה.",
       "keywords": [
         "problems",
         "idiographic",
@@ -1036,8 +1036,8 @@
         "בעיות",
         "התמודדות"
       ],
-      "itemCount": 4,
-      "estMinutes": 2,
+      "itemCount": 3,
+      "estMinutes": 1,
       "hasConditional": true,
       "domains": [
         "general"

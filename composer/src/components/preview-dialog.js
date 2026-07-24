@@ -531,6 +531,16 @@ export class PreviewDialog extends LitElement {
     if (n.type === 'text') {
       return html`<div class="text-field">תשובה חופשית · ${INPUT_TYPE_LABELS[n.inputType] ?? n.inputType}</div>`;
     }
+    if (n.type === 'rated_text') {
+      const { min, max, labels } = n.range;
+      return html`
+        <div class="text-field">תשובה חופשית · ${INPUT_TYPE_LABELS[n.inputType] ?? n.inputType}</div>
+        <div class="slider">
+          ${labels?.min || labels?.max ? html`<div class="slider-labels"><span>${labels?.min ?? ''}</span><span>${labels?.max ?? ''}</span></div>` : nothing}
+          <div class="slider-bar"></div>
+          <div class="slider-range">${min} — ${max}</div>
+        </div>`;
+    }
     return nothing;
   }
 

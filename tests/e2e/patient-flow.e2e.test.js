@@ -356,6 +356,23 @@ async function clickSelectOption(page, index) {
   await page.locator('item-select >> button.option').nth(index).click();
 }
 
+/** Fill a rated_text item (free-text + rating slider) and optionally submit */
+async function fillRatedText(page, { text, value, submit = true } = {}) {
+  if (text != null) {
+    await page.locator('item-rated-text >> textarea').fill(text);
+  }
+  if (value != null) {
+    const input = page.locator('item-rated-text >> input[type="range"]');
+    await input.evaluate((el, val) => {
+      el.value = val;
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+    }, String(value));
+  }
+  if (submit) {
+    await page.locator('item-rated-text >> button.submit-btn').click();
+  }
+}
+
 // ── Error handling ────────────────────────────────────────────────────────────
 
 test.describe('error handling', () => {
@@ -528,11 +545,25 @@ test.describe('PDF error recovery', () => {
 
 // ── All item types battery ────────────────────────────────────────────────────
 
-test.describe('all item types battery (instructions + select + binary + select + slider + text + multiselect)', () => {
+test.describe('all item types battery (instructions + select + binary + select + slider + text + multiselect + rated_text)', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto(ALL_TYPES_URL);
     await clickBegin(page);
   });
+
+  // Walk instructions → … → multiselect, leaving the rated_text item on screen.
+  async function walkToRatedText(page) {
+    await clickContinue(page);
+    await clickSelectOption(page, 1);
+    await clickBinaryFirst(page);
+    await clickSelectOption(page, 0);
+    await setSliderValue(page, 5);
+    await skipTextItem(page);
+    await expect(page.locator('item-multiselect')).toBeVisible();
+    await toggleMultiselectOption(page, 2);
+    await submitMultiselect(page);
+    await expect(page.locator('item-rated-text')).toBeVisible();
+  }
 
   test('first item is instructions', async ({ page }) => {
     await expect(page.locator('item-instructions')).toBeVisible();
@@ -558,6 +589,43 @@ test.describe('all item types battery (instructions + select + binary + select +
     await skipTextItem(page);
 
     await expect(page.locator('item-multiselect')).toBeVisible();
+    await toggleMultiselectOption(page, 2);
+    await submitMultiselect(page);
+
+    await expect(page.locator('item-rated-text')).toBeVisible();
+    // both halves are present on one screen
+    await expect(page.locator('item-rated-text >> textarea')).toBeVisible();
+    await expect(page.locator('item-rated-text >> input[type="range"]')).toBeVisible();
+  });
+
+  test('rated_text: the rating gates submit; typing text alone does not', async ({ page }) => {
+    await walkToRatedText(page);
+    const submit = page.locator('item-rated-text >> button.submit-btn');
+
+    // untouched → disabled
+    await expect(submit).toBeDisabled();
+
+    // text only → still disabled (the rating is the gate)
+    await page.locator('item-rated-text >> textarea').fill('אני בסכנה');
+    await expect(submit).toBeDisabled();
+
+    // touch the slider → enabled
+    await fillRatedText(page, { value: 60, submit: false });
+    await expect(submit).toBeEnabled();
+  });
+
+  test('rated_text: back-navigation preserves both the text and the rating', async ({ page }) => {
+    await walkToRatedText(page);
+    await fillRatedText(page, { text: 'מחשבה תקועה', value: 40, submit: false });
+
+    // advance to results, then go back to the rated_text item
+    await page.locator('item-rated-text >> button.submit-btn').click();
+    await expect(page.locator('results-screen')).toBeVisible({ timeout: 2000 });
+    await page.goBack();
+
+    await expect(page.locator('item-rated-text')).toBeVisible();
+    await expect(page.locator('item-rated-text >> textarea')).toHaveValue('מחשבה תקועה');
+    await expect(page.locator('item-rated-text >> input[type="range"]')).toHaveValue('40');
   });
 
   test('completes full battery and shows results with pdf button', async ({ page }) => {
@@ -581,6 +649,9 @@ test.describe('all item types battery (instructions + select + binary + select +
     await expect(page.locator('item-multiselect')).toBeVisible();
     await toggleMultiselectOption(page, 2);
     await submitMultiselect(page);
+
+    await expect(page.locator('item-rated-text')).toBeVisible();
+    await fillRatedText(page, { text: 'מחשבה תקועה', value: 75 });
 
     await expect(page.locator('results-screen')).toBeVisible({ timeout: 2000 });
     await expect(page.locator('results-screen >> button.pdf-btn--primary')).toBeVisible();

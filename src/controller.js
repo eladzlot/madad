@@ -1,7 +1,7 @@
 import { generateReport } from './pdf/report.js';
 import { score } from './engine/scoring.js';
 import { evaluateAlerts } from './engine/alerts.js';
-import { tagForType, canAdvance, autoAdvances } from '../shared/config/item-types.js';
+import { tagForType, canAdvance, autoAdvances, ratedTextTextKey } from '../shared/config/item-types.js';
 import { resolveItemOptions } from '../shared/config/options.js';
 
 // Controller — wires orchestrator + engine to Lit components.
@@ -112,14 +112,25 @@ export function createController(container, router) {
     el.selected = null;
     el.item = resolved;
     el.selected = _engine.answers()[item.id] ?? null;
+    // rated_text stores its free-text half under a sidecar key — rehydrate it too.
+    if (item.type === 'rated_text') {
+      el.selectedText = _engine.answers()[ratedTextTextKey(item.id)] ?? null;
+    }
     updateNav();
   }
 
   // ── Engine event handlers ────────────────────────────────────────────────
 
   function onAnswer(e) {
-    if (!_engine?.currentItem()) return;
-    _engine.recordAnswer(_engine.currentItem().id, e.detail.value);
+    const item = _engine?.currentItem();
+    if (!item) return;
+    // The rating (e.detail.value) is the item's canonical scalar answer; the
+    // rated_text free-text half rides under a sidecar key so the scoring/alert/
+    // envelope pipeline keeps seeing plain scalars.
+    _engine.recordAnswer(item.id, e.detail.value);
+    if (item.type === 'rated_text') {
+      _engine.recordAnswer(ratedTextTextKey(item.id), e.detail.text ?? null);
+    }
     if (_itemEl) _itemEl.selected = e.detail.value;
     updateNav();
   }

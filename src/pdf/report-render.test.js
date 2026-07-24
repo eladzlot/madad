@@ -20,6 +20,7 @@ import {
   buildItemRow,
   buildTextBlock,
   buildMultiselectBlock,
+  buildRatedTextBlock,
   initBidiForTesting,
 } from './report.js';
 
@@ -350,6 +351,40 @@ describe('buildTextBlock', () => {
   it('renders an em-dash when the answer is null', () => {
     const block = buildTextBlock(item, null);
     expect(flatText(block.stack[1])).toContain('—');
+  });
+});
+
+// ── buildRatedTextBlock ───────────────────────────────────────────────────────
+
+describe('buildRatedTextBlock', () => {
+  const item = { id: 'p1', type: 'rated_text', text: 'הבעיה המרכזית', min: 1, max: 12 };
+
+  it('renders the prompt (bold), the free-text half, and the rating', () => {
+    const block = buildRatedTextBlock(item, 8, 'קושי להירדם');
+    expect(block.stack[0].bold).toBe(true);
+    expect(norm(block.stack[0])).toContain('הבעיה המרכזית');
+    expect(norm(block.stack[1])).toContain('קושי להירדם');
+    // rating line shows the value and the max
+    expect(flatText(block.stack[2])).toContain('8');
+    expect(flatText(block.stack[2])).toContain('12');
+  });
+
+  it('shows the rating 0 (not treated as missing)', () => {
+    const zeroItem = { ...item, min: 0, max: 100 };
+    expect(flatText(buildRatedTextBlock(zeroItem, 0, 'x'))).toContain('0');
+  });
+
+  it('renders an em-dash for missing rating and missing text', () => {
+    const block = buildRatedTextBlock(item, null, null);
+    expect(flatText(block.stack[1])).toContain('—');   // text half
+    expect(flatText(block.stack[2])).toContain('—');   // rating half
+  });
+
+  it('omits the /max suffix when the item has no numeric max', () => {
+    const noMax = { id: 'p1', type: 'rated_text', text: 'x' };
+    const flat = flatText(buildRatedTextBlock(noMax, 5, 'y'));
+    expect(flat).toContain('5');
+    expect(flat).not.toContain('/');
   });
 });
 

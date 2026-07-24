@@ -28,6 +28,7 @@
 import regularFontUrl from '../../public/fonts/NotoSansHebrew-Regular.ttf?url';
 import boldFontUrl    from '../../public/fonts/NotoSansHebrew-Bold.ttf?url';
 import { buildEnvelope } from '../../shared/pdf/envelope-schema.js';
+import { ratedTextTextKey } from '../../shared/config/item-types.js';
 import { resolveItemOptions } from '../../shared/config/options.js';
 
 // App version recorded in the embedded envelope (forensic only). Vite/Vitest
@@ -767,6 +768,9 @@ export function buildResponseTable(questionnaire, answers) {
     } else if (item.type === 'multiselect') {
       flushTable();
       blocks.push(buildMultiselectBlock(item, answers[item.id]));
+    } else if (item.type === 'rated_text') {
+      flushTable();
+      blocks.push(buildRatedTextBlock(item, answers[item.id], answers[ratedTextTextKey(item.id)]));
     } else {
       // Only top-level items advance the row counter — conditional follow-ups
       // render as unnumbered continuation rows so that numbering stays stable
@@ -833,6 +837,49 @@ export function buildTextBlock(item, answer) {
         text: answer ? bidiNodes(String(answer)) : [{ text: '—', color: '#AAAAAA' }],
         fontSize: SZ.td,
         alignment: 'right',
+      },
+    ],
+    margin: [0, 6, 0, 10],
+  };
+}
+
+// ── Rated-text item block ─────────────────────────────────────────────────────
+// A free-text phrase plus its numeric rating. `rating` is the item's scalar
+// answer; `text` is the sidecar free-text half. The rating number is kept in its
+// own node (digits/punctuation only) so pdfmake's RTL shaping never touches it.
+
+export function buildRatedTextBlock(item, rating, text) {
+  const hasRating = typeof rating === 'number';
+  const ratingToken = hasRating
+    ? (typeof item.max === 'number'
+        ? `${formatScore(rating)}${NBSP}/${NBSP}${item.max}`
+        : String(formatScore(rating)))
+    : '—';
+
+  return {
+    stack: [
+      { text: bidiNodes(item.text), bold: true, fontSize: SZ.td, alignment: 'right', margin: [0, 0, 0, 3] },
+      {
+        text: text ? bidiNodes(String(text)) : [{ text: '—', color: '#AAAAAA' }],
+        fontSize: SZ.td,
+        alignment: 'right',
+        margin: [0, 0, 0, 3],
+      },
+      {
+        columns: [
+          { width: '*', text: '' },
+          {
+            width: 'auto',
+            text: [{ text: ratingToken, bold: true, fontSize: SZ.td, color: hasRating ? '#111111' : '#AAAAAA' }],
+            alignment: 'right',
+          },
+          {
+            width: 'auto',
+            text: bidiNodes('דירוג:', { fontSize: SZ.td, color: '#777777' }),
+            alignment: 'right',
+          },
+        ],
+        columnGap: 4,
       },
     ],
     margin: [0, 6, 0, 10],
