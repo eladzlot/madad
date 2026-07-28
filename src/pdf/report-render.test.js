@@ -21,6 +21,8 @@ import {
   buildTextBlock,
   buildMultiselectBlock,
   buildRatedTextBlock,
+  buildSliderBlock,
+  buildChoiceBlock,
   initBidiForTesting,
 } from './report.js';
 
@@ -385,6 +387,62 @@ describe('buildRatedTextBlock', () => {
     const flat = flatText(buildRatedTextBlock(noMax, 5, 'y'));
     expect(flat).toContain('5');
     expect(flat).not.toContain('/');
+  });
+});
+
+// ── buildSliderBlock ──────────────────────────────────────────────────────────
+
+describe('buildSliderBlock', () => {
+  const item = { id: 'rerate', type: 'slider', text: 'עד כמה את/ה מאמין/ה?', min: 0, max: 100 };
+
+  it('renders the prompt (bold) and the value / max', () => {
+    const block = buildSliderBlock(item, 65);
+    expect(block.stack[0].bold).toBe(true);
+    expect(norm(block.stack[0])).toContain('עד כמה');
+    const val = flatText(block.stack[1]);
+    expect(val).toContain('65');
+    expect(val).toContain('100');
+  });
+
+  it('shows the value 0 (not treated as missing)', () => {
+    expect(flatText(buildSliderBlock(item, 0))).toContain('0');
+  });
+
+  it('renders an em-dash when unanswered', () => {
+    expect(flatText(buildSliderBlock(item, null))).toContain('—');
+  });
+
+  it('omits the /max suffix when the item has no numeric max', () => {
+    const noMax = { id: 's', type: 'slider', text: 'x' };
+    const flat = flatText(buildSliderBlock(noMax, 5));
+    expect(flat).toContain('5');
+    expect(flat).not.toContain('/');
+  });
+});
+
+// ── buildChoiceBlock ──────────────────────────────────────────────────────────
+
+describe('buildChoiceBlock', () => {
+  const q = {
+    id: 'w', title: 'W',
+    optionSets: { yn: [{ label: 'כן', value: 1 }, { label: 'לא', value: 0 }] },
+    defaultOptionSetId: 'yn',
+  };
+  const item = { id: 'b1', type: 'binary', text: 'רלוונטי?' };
+
+  it('renders the prompt (bold) and the resolved option label', () => {
+    const block = buildChoiceBlock(item, 1, q);
+    expect(block.stack[0].bold).toBe(true);
+    expect(norm(block.stack[0])).toContain('רלוונטי');
+    expect(norm(block.stack[1])).toContain('כן');
+  });
+
+  it('resolves the "no" label from value 0 (not treated as missing)', () => {
+    expect(norm(buildChoiceBlock(item, 0, q).stack[1])).toContain('לא');
+  });
+
+  it('renders an em-dash when unanswered', () => {
+    expect(flatText(buildChoiceBlock(item, null, q).stack[1])).toContain('—');
   });
 });
 

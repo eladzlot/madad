@@ -46,6 +46,14 @@
       "type": "string",
       "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_]*$"
     },
+    "display": {
+      "enum": [
+        "table",
+        "block"
+      ],
+      "default": "table",
+      "description": "How this item renders in the PDF report. 'table' (default) places it as a row in the shared response table (compact, risk-highlighted). 'block' renders it as a standalone prompt+answer block — used to keep a lone rating/choice from fragmenting a document-style questionnaire (e.g. a worksheet) into one-row tables."
+    },
     "meta": {
       "type": "object",
       "required": [
@@ -290,6 +298,9 @@
         },
         "required": {
           "type": "boolean"
+        },
+        "display": {
+          "$ref": "#/$defs/display"
         }
       },
       "not": {
@@ -332,6 +343,9 @@
         },
         "required": {
           "type": "boolean"
+        },
+        "display": {
+          "$ref": "#/$defs/display"
         }
       }
     },
@@ -455,6 +469,9 @@
         },
         "required": {
           "type": "boolean"
+        },
+        "display": {
+          "$ref": "#/$defs/display"
         }
       }
     },

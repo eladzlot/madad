@@ -771,6 +771,14 @@ export function buildResponseTable(questionnaire, answers) {
     } else if (item.type === 'rated_text') {
       flushTable();
       blocks.push(buildRatedTextBlock(item, answers[item.id], answers[ratedTextTextKey(item.id)]));
+    } else if (item.display === 'block' && item.type === 'slider') {
+      // Opt-out of the response table: render as a standalone block so a lone
+      // rating doesn't fragment a document-style questionnaire into 1-row tables.
+      flushTable();
+      blocks.push(buildSliderBlock(item, answers[item.id]));
+    } else if (item.display === 'block' && (item.type === 'select' || item.type === 'binary')) {
+      flushTable();
+      blocks.push(buildChoiceBlock(item, answers[item.id], questionnaire));
     } else {
       // Only top-level items advance the row counter — conditional follow-ups
       // render as unnumbered continuation rows so that numbering stays stable
@@ -835,6 +843,62 @@ export function buildTextBlock(item, answer) {
       { text: bidiNodes(item.text), bold: true, fontSize: SZ.td, alignment: 'right', margin: [0, 0, 0, 3] },
       {
         text: answer ? bidiNodes(String(answer)) : [{ text: '—', color: '#AAAAAA' }],
+        fontSize: SZ.td,
+        alignment: 'right',
+      },
+    ],
+    margin: [0, 6, 0, 10],
+  };
+}
+
+// ── Slider item block (display: 'block') ──────────────────────────────────────
+// A prompt plus its numeric value, rendered as a block instead of a table row.
+// The number is isolated (digits/punctuation only) so pdfmake's RTL shaping
+// never touches it.
+
+export function buildSliderBlock(item, rawAnswer) {
+  const answered = typeof rawAnswer === 'number';
+  const token = answered
+    ? (typeof item.max === 'number'
+        ? `${formatScore(rawAnswer)}${NBSP}/${NBSP}${item.max}`
+        : String(formatScore(rawAnswer)))
+    : '—';
+
+  return {
+    stack: [
+      { text: bidiNodes(item.text), bold: true, fontSize: SZ.td, alignment: 'right', margin: [0, 0, 0, 3] },
+      {
+        columns: [
+          { width: '*', text: '' },
+          {
+            width: 'auto',
+            text: [{ text: token, bold: true, fontSize: SZ.td, color: answered ? '#111111' : '#AAAAAA' }],
+            alignment: 'right',
+          },
+        ],
+        columnGap: 4,
+      },
+    ],
+    margin: [0, 6, 0, 10],
+  };
+}
+
+// ── Choice item block (display: 'block') ──────────────────────────────────────
+// A select/binary prompt plus its resolved option label, rendered as a block
+// instead of a table row. No risk highlighting — block mode is for document-
+// style (unscored) items.
+
+export function buildChoiceBlock(item, rawAnswer, questionnaire) {
+  const options  = resolveOptions(item, questionnaire);
+  const answered = rawAnswer != null;
+  const option   = options.find(o => o.value === rawAnswer) ?? null;
+  const label    = option?.label ?? (answered ? String(rawAnswer) : '—');
+
+  return {
+    stack: [
+      { text: bidiNodes(item.text), bold: true, fontSize: SZ.td, alignment: 'right', margin: [0, 0, 0, 3] },
+      {
+        text: answered ? bidiNodes(label) : [{ text: '—', color: '#AAAAAA' }],
         fontSize: SZ.td,
         alignment: 'right',
       },

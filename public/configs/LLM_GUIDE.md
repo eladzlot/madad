@@ -222,6 +222,19 @@ Key differences from `select`:
 - Use `count()` and `checked()` in DSL conditions to work with the answer (see DSL section).
 - Minimum 1 option required. No `optionSetId` — options must always be inline.
 
+### PDF rendering: `display` (table vs. block)
+
+`select`, `binary`, and `slider` items render in the PDF as rows of a shared **response table** — compact and risk-highlighted. Add `"display": "block"` to render such an item as a standalone prompt+answer block instead:
+
+```json
+{ "id": "rerate", "type": "slider", "text": "עד כמה?", "min": 0, "max": 100, "display": "block" }
+```
+
+- `"table"` (default) — a row in the response table.
+- `"block"` — a standalone block: the prompt, then the value (`slider` → `value / max`; `select`/`binary` → the option label). No risk highlighting.
+
+Use `block` in document-style questionnaires (e.g. CPT worksheets) where a lone rating or choice sitting among `text`/`instructions`/`rated_text` blocks would otherwise fragment the page into one-row tables. `text`, `instructions`, `rated_text`, and `multiselect` items always render as blocks and ignore `display`.
+
 ### If node (conditional item display)
 
 Items can be shown or hidden based on a patient's previous answers by placing an `if` node in the `items` array.

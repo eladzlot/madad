@@ -438,6 +438,47 @@ describe('buildResponseTable — rated_text', () => {
   });
 });
 
+// ── display: 'block' opt-out of the response table ────────────────────────────
+
+describe('buildResponseTable — display: block', () => {
+  const hasTable = (result) => {
+    const blocks = result.stack ?? [result];
+    return blocks.some(b => b.table);
+  };
+
+  it('a display:block slider renders as a block, not a 1-row table', () => {
+    const q = {
+      id: 'w', title: 'W',
+      items: [{ id: 'rerate', type: 'slider', text: 'עד כמה?', min: 0, max: 100, display: 'block' }],
+      scoring: { method: 'none' },
+    };
+    const result = buildResponseTable(q, { rerate: 65 });
+    expect(hasTable(result)).toBe(false);
+  });
+
+  it('a default (table) slider still renders in the response table', () => {
+    const q = {
+      id: 's', title: 'S',
+      items: [{ id: 'sev', type: 'slider', text: 'חומרה', min: 0, max: 10 }],
+      scoring: { method: 'sum' },
+    };
+    const result = buildResponseTable(q, { sev: 7 });
+    expect(hasTable(result)).toBe(true);
+  });
+
+  it('a display:block binary renders its option label as a block', () => {
+    const q = {
+      id: 'w', title: 'W',
+      optionSets: { yn: [{ label: 'כן', value: 1 }, { label: 'לא', value: 0 }] },
+      defaultOptionSetId: 'yn',
+      items: [{ id: 'b1', type: 'binary', text: 'רלוונטי?', display: 'block' }],
+      scoring: { method: 'none' },
+    };
+    const result = buildResponseTable(q, { b1: 1 });
+    expect(hasTable(result)).toBe(false);
+  });
+});
+
 // ── if/randomize node flattening ──────────────────────────────────────────────
 
 describe('buildResponseTable — if/randomize node handling', () => {

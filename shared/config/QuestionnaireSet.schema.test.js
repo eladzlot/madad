@@ -335,6 +335,43 @@ describe('slider item', () => {
       items: [{ ...sliderItem, options: [] }],
     })],
   })).toBe(true));
+
+  it('accepts display: block / table on slider', () => {
+    expect(valid({ ...minimalConfig, questionnaires: [makeQuestionnaire({
+      items: [{ ...sliderItem, display: 'block' }],
+    })] })).toBe(true);
+    expect(valid({ ...minimalConfig, questionnaires: [makeQuestionnaire({
+      items: [{ ...sliderItem, display: 'table' }],
+    })] })).toBe(true);
+  });
+
+  it('rejects an unknown display value', () => expect(invalid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire({
+      items: [{ ...sliderItem, display: 'inline' }],
+    })],
+  })).toBe(true));
+});
+
+// ─── display field (select / binary) ──────────────────────────────────────────
+
+describe('display field', () => {
+  it('accepts display: block on a select item', () => expect(valid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire({ items: [{ ...selectItem, display: 'block' }] })],
+  })).toBe(true));
+
+  it('accepts display: block on a binary item', () => expect(valid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire({
+      items: [{ ...binaryItem, options: [{ label: 'כן', value: 1 }, { label: 'לא', value: 0 }], display: 'block' }],
+    })],
+  })).toBe(true));
+
+  it('rejects display on an instructions item (not a table-routed type)', () => expect(invalid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire({ items: [{ ...instructionsItem, display: 'block' }] })],
+  })).toBe(true));
 });
 
 // ─── Select item ──────────────────────────────────────────────────────────────

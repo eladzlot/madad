@@ -136,6 +136,7 @@ Every entry in the `items` array is a node. Nodes have a `type` field that deter
 | `reverse` | boolean | no | If true, apply reverse scoring: `reversed = minValue + maxValue - answer`, derived from the item's own option values. |
 | `weight` | number | no | Multiplier applied after reverse scoring. Default 1. |
 | `required` | boolean | no | If `false`, item is skippable. Default: required. |
+| `display` | `"table"` \| `"block"` | no | PDF rendering. Default `"table"` (row in the response table). `"block"` renders the option label as a standalone prompt+answer block — see §5.5a. |
 
 Each option object:
 
@@ -158,6 +159,7 @@ A two-button yes/no item. Stores the chosen option's numeric `value`. The two op
 | `reverse` | boolean | no | If true, apply reverse scoring: the two option values swap. |
 | `weight` | number | no | Default 1. |
 | `required` | boolean | no | If `false`, item is skippable. Default: required. |
+| `display` | `"table"` \| `"block"` | no | PDF rendering. Default `"table"`. See §5.5a. |
 
 The validator rejects bare binary items (no `options`, no `optionSetId`, no questionnaire-level `defaultOptionSetId`) with an actionable error.
 
@@ -199,8 +201,19 @@ Not scored. Answer not exposed in DSL expressions. Rendered verbatim in PDF.
 | `reverse` | boolean | no | |
 | `weight` | number | no | Default 1. |
 | `required` | boolean | no | If `false`, item is skippable. Default: required. |
+| `display` | `"table"` \| `"block"` | no | PDF rendering. Default `"table"`. `"block"` renders `value / max` as a standalone block — see §5.5a. |
 
 Contributes to scoring like a select item. Available in DSL as `item.<id>` (number).
+
+### 5.5a `display`: table vs. block (PDF)
+
+`select`, `binary`, and `slider` items render in the PDF report as rows of the shared **response table** (compact, risk-highlighted). Setting `"display": "block"` renders the item as a standalone prompt+answer block instead:
+
+- `slider` → prompt, then `value / max` (e.g. `65 / 100`).
+- `select` / `binary` → prompt, then the selected option's label.
+- No risk highlighting in block mode.
+
+The default is `"table"`; existing instruments are unaffected. `block` exists for document-style questionnaires — e.g. CPT worksheets — where a lone rating or choice among `text`/`instructions`/`rated_text` blocks would otherwise fragment the page into one-row tables. The other item types (`text`, `instructions`, `rated_text`, `multiselect`) always render as blocks and have no `display` field.
 
 ### 5.6 Multiselect Item
 
