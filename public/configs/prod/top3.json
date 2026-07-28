@@ -8,7 +8,7 @@
         "domains": [
           "general"
         ],
-        "type": "process",
+        "type": "worksheet",
         "populations": [
           "adult"
         ],

@@ -1,0 +1,219 @@
+{
+  "id": "cpt_alternative",
+  "version": "1.3.0",
+  "questionnaires": [
+    {
+      "id": "cpt_alternative",
+      "meta": {
+        "domains": [
+          "trauma"
+        ],
+        "type": "worksheet",
+        "populations": [
+          "adult"
+        ],
+        "tags": [
+          "CPT",
+          "iCPT"
+        ]
+      },
+      "title": "דף מחשבות אלטרנטיביות (Alternative Thoughts)",
+      "description": "דף העבודה המרכזי של CPT, המאגד את כל הכלים ליחידה אחת: זיהוי אירוע, מחשבה ורגש, בחינת המחשבה באמצעות שאלות ודפוסי חשיבה, ומציאת מחשבה חלופית מאוזנת יותר — עם דירוג מידת האמונה במחשבה ועוצמת הרגש.",
+      "keywords": [
+        "CPT",
+        "alternative thoughts",
+        "challenging beliefs",
+        "מחשבות אלטרנטיביות",
+        "מחשבות חלופיות",
+        "נקודת תקיעות"
+      ],
+      "items": [
+        {
+          "id": "situation",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "סיטואציה — תאר/י את האירוע, המחשבה או האמונה שהובילו לרגש לא נעים.",
+          "required": true
+        },
+        {
+          "id": "thought",
+          "type": "rated_text",
+          "inputType": "multiline",
+          "text": "מחשבה — רשום/י את נקודת התקיעות או המחשבה הקשורה לסיטואציה.",
+          "ratingText": "עד כמה את/ה מאמין/ה במחשבה הזו?",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "labels": {
+            "min": "בכלל לא",
+            "max": "באופן מלא"
+          },
+          "required": true
+        },
+        {
+          "id": "emotion",
+          "type": "rated_text",
+          "inputType": "multiline",
+          "text": "רגש — מה את/ה מרגיש/ה (עצב, כעס וכו')?",
+          "ratingText": "עד כמה הרגש הזה עוצמתי?",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "labels": {
+            "min": "בכלל לא",
+            "max": "באופן קיצוני"
+          },
+          "required": true
+        },
+        {
+          "id": "clarify",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "למה את/ה מתכוון/ת? כתוב/כתבי את נקודת התקיעות בצורה ברורה דיה שגם אדם זר יבין בדיוק מה מטריד אותך.",
+          "required": false
+        },
+        {
+          "id": "explore_intro",
+          "type": "instructions",
+          "text": "איתגור מחשבות — בחן/י את נקודת התקיעות בעזרת השאלות הבאות (ראה/י דף בירור מחשבות). ענה/עני על מה שרלוונטי, אין צורך על כולן."
+        },
+        {
+          "id": "explore_evidence",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "מהן הראיות נגד המחשבה?",
+          "required": false
+        },
+        {
+          "id": "explore_info",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "איזה מידע אינך כולל/ת לגבי המחשבה?",
+          "required": false
+        },
+        {
+          "id": "explore_extreme",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "האם יש במחשבה ניסוח של הכל-או-כלום, קיצוני או מוגזם? כיצד אפשר לנסח אותו בצורה מאוזנת יותר?",
+          "required": false
+        },
+        {
+          "id": "explore_onepiece",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "האם המחשבה ממוקדת יתר על המידה בחלק אחד של האירוע? אילו חלקים נוספים חשוב לקחת בחשבון?",
+          "required": false
+        },
+        {
+          "id": "explore_source",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "האם מקור המידע למחשבה מוטל בספק? כיצד?",
+          "required": false
+        },
+        {
+          "id": "explore_possible",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "האם המחשבה מבלבלת בין משהו אפשרי למשהו ודאי? כיצד?",
+          "required": false
+        },
+        {
+          "id": "explore_feelings",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "האם המחשבה מבוססת על רגשות ולא על עובדות? אילו עובדות סותרות את הרגש?",
+          "required": false
+        },
+        {
+          "id": "patterns_intro",
+          "type": "instructions",
+          "text": "דפוסי חשיבה — האם המחשבה משקפת אחד מהדפוסים הבאים (ראה/י דף דפוסי חשיבה)? אם דפוס רלוונטי, פרט/י כיצד הוא בא לידי ביטוי."
+        },
+        {
+          "id": "pattern_jumping",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "קפיצה למסקנות או ניבוי העתיד",
+          "required": false
+        },
+        {
+          "id": "pattern_ignoring",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "התעלמות מחלקים חשובים במצב",
+          "required": false
+        },
+        {
+          "id": "pattern_oversimplify",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "הפשטת יתר או הכללת יתר",
+          "required": false
+        },
+        {
+          "id": "pattern_mindreading",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "קריאת מחשבות",
+          "required": false
+        },
+        {
+          "id": "pattern_emotional",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "חשיבה רגשית",
+          "required": false
+        },
+        {
+          "id": "alternative",
+          "type": "rated_text",
+          "inputType": "multiline",
+          "text": "מחשבה אלטרנטיבית — מה את/ה יכול/ה לומר לעצמך במקום נקודת התקיעות שכתבת למעלה? כיצד אפשר לפרש את האירוע אחרת?",
+          "ratingText": "עד כמה את/ה מאמין/ה במחשבה החלופית?",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "labels": {
+            "min": "בכלל לא",
+            "max": "באופן מלא"
+          },
+          "required": true
+        },
+        {
+          "id": "rerate",
+          "type": "slider",
+          "text": "דירוג מחדש — עד כמה את/ה מאמין/ה עכשיו בנקודת התקיעות שכתבת למעלה?",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "labels": {
+            "min": "לא מאמין/ה בכלל",
+            "max": "מאמין/ה באופן מלא"
+          },
+          "display": "block",
+          "required": true
+        },
+        {
+          "id": "new_emotion",
+          "type": "rated_text",
+          "inputType": "multiline",
+          "text": "מה את/ה מרגיש/ה כשאת/ה חושב/ת את המחשבה האלטרנטיבית שלך?",
+          "ratingText": "עד כמה ההרגשה הזו עוצמתית?",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "labels": {
+            "min": "בכלל לא",
+            "max": "באופן קיצוני"
+          },
+          "required": true
+        }
+      ],
+      "scoring": {
+        "method": "none"
+      }
+    }
+  ]
+}

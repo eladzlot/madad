@@ -1,0 +1,100 @@
+{
+  "id": "cpt_exploring",
+  "version": "1.0.0",
+  "questionnaires": [
+    {
+      "id": "cpt_exploring",
+      "meta": {
+        "domains": [
+          "trauma"
+        ],
+        "type": "worksheet",
+        "populations": [
+          "adult"
+        ],
+        "tags": [
+          "CPT",
+          "iCPT"
+        ]
+      },
+      "title": "דף בירור מחשבות (Exploring Questions)",
+      "description": "דף עבודה מטיפול CPT לבחינה שיטתית של נקודת תקיעות באמצעות סדרת שאלות. המטופל/ת בוחר/ת נקודת תקיעות ועונה על השאלות המתאימות כדי לאתגר אותה.",
+      "keywords": [
+        "CPT",
+        "exploring questions",
+        "challenging questions",
+        "בירור מחשבות",
+        "נקודת תקיעות",
+        "שאלות לחקירה"
+      ],
+      "items": [
+        {
+          "id": "stuck_point",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "בחר/י נקודת תקיעות אחת לבחינה ורשום/י אותה כאן. להלן יופיעו שאלות שיעזרו לך לאתגר אותה — לא כל השאלות מתאימות לכל אמונה, ענה/עני על כמה שיותר מהן, בלי לחזור על עצמך.",
+          "required": true
+        },
+        {
+          "id": "clarify",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "למה את/ה מתכוון/ת? כתוב/כתבי בצורה ברורה דיה שגם אדם זר יבין בדיוק מה מטריד אותך.",
+          "required": false
+        },
+        {
+          "id": "evidence",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "מהן הראיות נגד המחשבה שלך?",
+          "required": false
+        },
+        {
+          "id": "not_including",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "איזה מידע את/ה לא כולל/ת לגבי נקודת התקיעות שלך?",
+          "required": false
+        },
+        {
+          "id": "all_or_none",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "האם נקודת התקיעות שלך כוללת מונחים של הכל-או-כלום (כגון \"הכל\", \"אף פעם\") או מילים וביטויים קיצוניים (כגון \"צריך\", \"חייב\", \"מוכרח\", \"לא יכול\", \"בכל פעם\")?",
+          "required": false
+        },
+        {
+          "id": "one_part",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "באיזה אופן נקודת התקיעות שלך מתמקדת יתר על המידה רק בחלק אחד מהאירוע?",
+          "required": false
+        },
+        {
+          "id": "source",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "כיצד מקור המידע לנקודת התקיעות הזו מוטל בספק?",
+          "required": false
+        },
+        {
+          "id": "possible_certain",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "כיצד נקודת התקיעות שלך מבלבלת בין משהו אפשרי לבין משהו ודאי?",
+          "required": false
+        },
+        {
+          "id": "feelings_facts",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "באילו דרכים נקודת התקיעות שלך מבוססת על רגשות, ולא על עובדות?",
+          "required": false
+        }
+      ],
+      "scoring": {
+        "method": "none"
+      }
+    }
+  ]
+}

@@ -1,0 +1,72 @@
+{
+  "id": "cpt_abc",
+  "version": "1.2.0",
+  "questionnaires": [
+    {
+      "id": "cpt_abc",
+      "meta": {
+        "domains": [
+          "trauma"
+        ],
+        "type": "worksheet",
+        "populations": [
+          "adult"
+        ],
+        "tags": [
+          "CPT",
+          "iCPT"
+        ]
+      },
+      "title": "דף אמ\"ר (ABC)",
+      "description": "דף עבודה מטיפול CPT לפירוק חוויה לשלושה מרכיבים — אירוע, מחשבה ורגש (אמ\"ר / ABC) — ולבחינה ראשונית של המחשבה. המטופל/ת ממלא/ת אותו על אירוע יומיומי או קשור לטראומה שעורר רגש שלילי.",
+      "keywords": [
+        "CPT",
+        "אמר",
+        "ABC",
+        "דף אירוע",
+        "מחשבה",
+        "נקודת תקיעות"
+      ],
+      "items": [
+        {
+          "id": "event",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "אירוע (א) — \"משהו קורה\". מה קרה?",
+          "required": true
+        },
+        {
+          "id": "thought",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "מחשבה / נקודת תקיעות (מ) — \"אני אומר/ת לעצמי משהו\". מה עבר לך בראש?",
+          "required": true
+        },
+        {
+          "id": "emotion",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "רגש (ר) — \"אני מרגיש/ה משהו\". מה הרגשת?",
+          "required": true
+        },
+        {
+          "id": "realistic",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "האם המחשבות שלך ב\"מחשבה\" (מ) מציאותיות ו/או מועילות?",
+          "required": false
+        },
+        {
+          "id": "future",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "מה את/ה יכול/ה לומר לעצמך במצבים כאלה בעתיד?",
+          "required": false
+        }
+      ],
+      "scoring": {
+        "method": "none"
+      }
+    }
+  ]
+}

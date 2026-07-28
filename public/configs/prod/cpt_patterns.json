@@ -1,0 +1,78 @@
+{
+  "id": "cpt_patterns",
+  "version": "1.1.0",
+  "questionnaires": [
+    {
+      "id": "cpt_patterns",
+      "meta": {
+        "domains": [
+          "trauma"
+        ],
+        "type": "worksheet",
+        "populations": [
+          "adult"
+        ],
+        "tags": [
+          "CPT",
+          "iCPT"
+        ]
+      },
+      "title": "דף דפוסי חשיבה (Thinking Patterns)",
+      "description": "דף עבודה מטיפול CPT לזיהוי דפוסי חשיבה לא מועילים במחשבה הקשורה לטראומה. עבור כל דפוס המטופל/ת בודק/ת אם הוא מתאים ומסביר/ה כיצד הוא משפיע.",
+      "keywords": [
+        "CPT",
+        "thinking patterns",
+        "דפוסי חשיבה",
+        "מחשבות אוטומטיות",
+        "נקודת תקיעות"
+      ],
+      "items": [
+        {
+          "id": "thought",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "לפניך דפוסי חשיבה נפוצים שהופכים לעיתים קרובות למחשבות אוטומטיות ולהרגלים הפוגעים בנו. רשום/י מחשבה הקשורה לטראומה שלך, ובהמשך בדוק/בדקי עבור כל דפוס אם הוא מתאים לה וכיצד הוא משפיע עליך. מחשבה יכולה להתאים לכמה דפוסים, וזה בסדר.",
+          "required": true
+        },
+        {
+          "id": "jumping",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "קפיצה למסקנות או ניבוי העתיד — האם הדפוס מתאים למחשבה? אם כן, כיצד הוא משפיע עליך?",
+          "required": false
+        },
+        {
+          "id": "ignoring",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "התעלמות מחלקים חשובים במצב — האם הדפוס מתאים למחשבה? אם כן, כיצד הוא משפיע עליך?",
+          "required": false
+        },
+        {
+          "id": "oversimplifying",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "הפשטת יתר (טוב-רע, נכון-לא נכון) או הכללת יתר מאירוע בודד — האם הדפוס מתאים למחשבה? אם כן, כיצד הוא משפיע עליך?",
+          "required": false
+        },
+        {
+          "id": "mind_reading",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "קריאת מחשבות (הנחה שאחרים חושבים עליך לרעה כשאין לכך ראיה ברורה) — האם הדפוס מתאים למחשבה? אם כן, כיצד הוא משפיע עליך?",
+          "required": false
+        },
+        {
+          "id": "emotional_reasoning",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "חשיבה רגשית (שימוש ברגשות כהוכחה — למשל, \"אני מרגיש/ה פחד, אז אני בטח בסכנה\") — האם הדפוס מתאים למחשבה? אם כן, כיצד הוא משפיע עליך?",
+          "required": false
+        }
+      ],
+      "scoring": {
+        "method": "none"
+      }
+    }
+  ]
+}

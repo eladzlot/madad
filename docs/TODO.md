@@ -104,6 +104,7 @@ Build slices per D-11. Slice 1 goes to pilot therapists before later slices are 
 | P1-7 | Delete `info` severity references | todo | Decision D-3: `info` abandoned |
 | P1-8 | Structured JSON output for `validate:configs` | todo | |
 | P1-9 | Single-file mode for `validate:configs` | todo | |
+| P1-10 | Repeated/duplicate questionnaire instances collide | todo | **Not urgent, but don't postpone too long. Report to ASHER when fixed.** Two related problems from session state being keyed by `sessionKey = node.instanceId ?? node.questionnaireId`: **(a)** if a run yields a screener *and* the questionnaire it gates to (battery or `items=`), the questionnaire can be served twice — and the second time it's **pre-filled** from the first (same key). For a screener re-serve this makes no sense. **(b)** Asking for N copies of the same questionnaire — e.g. `items=cpt_abc,cpt_abc,cpt_abc` (ABC×3, a real CPT-worksheet use case) — collapses to one shared instance, so they're "the same" (filling one fills all). Fix direction: auto-assign distinct instance keys for repeats (`cpt_abc#1`, `#2`, …) so each is independent, and dedupe/skip an instance that's already answered where re-serving is meaningless (screener). Surfaced 2026-07-26 during CPT worksheet authoring. |
 
 ### P2 — Polish
 
@@ -118,6 +119,7 @@ Build slices per D-11. Slice 1 goes to pilot therapists before later slices are 
 | P2-7 | Add property/fuzz tests to `dsl.test.js` | deferred | |
 | P2-8 | Expand orchestrator ↔ controller integration tests | deferred | Harness created in P0-0 (`src/integration.test.js`); expand to other seams as needed |
 | P2-9 | Validation-completeness audit pass | deferred | Catch-all after individual validation tasks land |
+| P2-10 | Worksheet PDF: block rendering instead of response table | done | Resolved 2026-07-28 via a **per-item** `display` field (the preferred option). `"display": "block"` on a `select`/`binary`/`slider` item renders it as a standalone prompt+answer block instead of a response-table row (`buildSliderBlock` / `buildChoiceBlock` in `report.js`); default `"table"` leaves all existing instruments unchanged. Schema `$defs/display` + regenerated validator; docs in CONFIG_SCHEMA_SPEC §5.5a + LLM_GUIDE. Used by `cpt_alternative` (`rerate`); all-`rated_text`/`text` worksheets (cpt_abc/exploring/patterns, top3) already block-render with no field needed. |
 
 ---
 
