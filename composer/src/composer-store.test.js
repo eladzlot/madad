@@ -110,6 +110,29 @@ describe('visibleEntries / curation', () => {
     expect(store.hasBeyondFeatured()).toBe(true);
   });
 
+  it('a tab with no featured entries shows all of them in the default view', () => {
+    // Worksheets carry no `featured` flag — curation must not empty the tab.
+    const store = seeded([
+      entry('cpt_abc', { type: 'worksheet' }),
+      entry('cpt_exploring', { type: 'worksheet' }),
+    ]);
+    store.setTab('worksheets');
+    expect(store.isCurated()).toBe(true);       // no query/chips/showAll
+    expect(store.curationActive()).toBe(false); // but nothing to curate down to
+    expect(store.visibleEntries().map(e => e.id).sort()).toEqual(['cpt_abc', 'cpt_exploring']);
+  });
+
+  it('curationActive is true only when the tab has a featured entry', () => {
+    const store = seeded([
+      entry('phq9', { featured: true }),
+      entry('cpt_abc', { type: 'worksheet' }),
+    ]);
+    store.setTab('questionnaires');
+    expect(store.curationActive()).toBe(true);  // phq9 is featured
+    store.setTab('worksheets');
+    expect(store.curationActive()).toBe(false); // worksheet tab has no featured
+  });
+
   it('showEverything reveals non-featured entries', () => {
     const store = seeded([
       entry('phq9', { featured: true, title: 'ב' }),

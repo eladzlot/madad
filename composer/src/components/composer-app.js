@@ -213,7 +213,7 @@ export class ComposerApp extends LitElement {
           <catalog-list
             .entries=${s.visibleEntries()}
             .selectedIds=${selected}
-            .curated=${s.isCurated()}
+            .curated=${s.curationActive()}
             .hasBeyond=${s.hasBeyondFeatured()}
             .crossTab=${s.crossTabMatches()}
             .query=${s.query}

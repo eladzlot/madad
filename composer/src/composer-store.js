@@ -59,11 +59,23 @@ export function createStore() {
     return !state.query.trim() && !filtersActive() && !state.showAll;
   }
 
+  // Whether the active tab has any featured entry to curate down to.
+  function tabHasFeatured() {
+    return entriesInTab(state.tab).filter(e => passesFilters(e)).some(e => e.featured);
+  }
+
+  // Curation only *narrows* the list when the tab actually has featured entries
+  // to highlight. A tab with content but no featured entries (e.g. worksheets)
+  // shows everything instead of rendering an empty curated view.
+  function curationActive() {
+    return isCurated() && tabHasFeatured();
+  }
+
   // The entries visible in the active tab, after filters, query, and curation.
   function visibleEntries() {
     let pool = entriesInTab(state.tab).filter(e => passesFilters(e));
     if (state.query.trim()) return rankForQuery(pool, state.query);
-    if (isCurated()) pool = pool.filter(e => e.featured);
+    if (curationActive()) pool = pool.filter(e => e.featured);
     return sortForBrowse(pool);
   }
 
@@ -192,6 +204,7 @@ export function createStore() {
     availablePopulations,
     filtersActive,
     isCurated,
+    curationActive,
     visibleEntries,
     hasBeyondFeatured,
     crossTabMatches,
