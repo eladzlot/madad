@@ -186,6 +186,8 @@ export class ComposerApp extends LitElement {
       <div
         class="layout"
         @item-toggle=${(e) => s.toggle(e.detail.id)}
+        @pin-toggle=${(e) => s.togglePin(e.detail.id)}
+        @restore-defaults=${() => s.restoreDefaults()}
         @preview=${(e) => this._onPreview(e.detail.id)}
         @tab-change=${(e) => s.setTab(e.detail.tab)}
         @query-change=${(e) => s.setQuery(e.detail.query)}
@@ -213,8 +215,10 @@ export class ComposerApp extends LitElement {
           <catalog-list
             .entries=${s.visibleEntries()}
             .selectedIds=${selected}
+            .pinnedIds=${s.pinnedIds()}
             .curated=${s.curationActive()}
             .hasBeyond=${s.hasBeyondFeatured()}
+            .customized=${s.profileCustomized()}
             .crossTab=${s.crossTabMatches()}
             .query=${s.query}
             .filtersActive=${s.filtersActive()}

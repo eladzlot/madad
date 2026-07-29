@@ -74,4 +74,30 @@ describe('catalog-card', () => {
     expect(previewed).toEqual({ id: 'phq9' });
     expect(toggled).toBe(false);
   });
+
+  it('reflects pinned via the host attribute and the star button state', async () => {
+    const el = await makeEl({ pinned: true });
+    expect(el.hasAttribute('pinned')).toBe(true);
+    const pin = el.shadowRoot.querySelector('.pin-btn');
+    expect(pin.getAttribute('aria-pressed')).toBe('true');
+    expect(pin.classList.contains('on')).toBe(true);
+    expect(pin.getAttribute('aria-label')).toBe('הסר מהמומלצים');
+  });
+
+  it('an unpinned card offers to add to the recommended set', async () => {
+    const el = await makeEl({ pinned: false });
+    const pin = el.shadowRoot.querySelector('.pin-btn');
+    expect(pin.getAttribute('aria-pressed')).toBe('false');
+    expect(pin.getAttribute('aria-label')).toBe('הוסף למומלצים');
+  });
+
+  it('fires pin-toggle { id } from the ★ button without toggling selection', async () => {
+    const el = await makeEl();
+    let pinned = null, toggled = false;
+    el.addEventListener('pin-toggle', (e) => { pinned = e.detail; });
+    el.addEventListener('item-toggle', () => { toggled = true; });
+    el.shadowRoot.querySelector('.pin-btn').click();
+    expect(pinned).toEqual({ id: 'phq9' });
+    expect(toggled).toBe(false);
+  });
 });

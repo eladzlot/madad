@@ -283,4 +283,120 @@ describe('url / warnings / reset', () => {
     expect(store.filtersActive()).toBe(false);
     expect(store.isCurated()).toBe(true);
   });
+
+  it('reset does not touch the persistent recommended profile', () => {
+    const { store } = pinned([entry('phq9', { featured: true }), entry('bdi')]);
+    store.togglePin('phq9'); // unpin an author default
+    store.togglePin('bdi');  // pin a non-default
+    store.reset();
+    expect(store.isPinned('phq9')).toBe(false);
+    expect(store.isPinned('bdi')).toBe(true);
+  });
+});
+
+// ── recommended profile (pins) ────────────────────────────────────────────────
+
+// Isolated in-memory Storage so pin tests never share real localStorage.
+function memStorage(initial = {}) {
+  const map = new Map(Object.entries(initial));
+  return {
+    getItem: (k) => (map.has(k) ? map.get(k) : null),
+    setItem: (k, v) => map.set(k, String(v)),
+    removeItem: (k) => map.delete(k),
+  };
+}
+
+function pinned(entries, { storage = memStorage() } = {}) {
+  const store = createStore({ storage });
+  store.ingestCatalog(catalog(entries), { catalogVersion: CATALOG_VERSION, isDev: true });
+  return { store, storage };
+}
+
+describe('recommended profile / pins', () => {
+  it('author-featured entries are pinned by default', () => {
+    const { store } = pinned([entry('phq9', { featured: true }), entry('bdi')]);
+    expect(store.isPinned('phq9')).toBe(true);
+    expect(store.isPinned('bdi')).toBe(false);
+    expect(store.profileCustomized()).toBe(false);
+  });
+
+  it('unpinning an author default removes it from the curated view', () => {
+    const { store } = pinned([entry('phq9', { featured: true }), entry('bdi', { featured: true })]);
+    store.togglePin('phq9');
+    expect(store.isPinned('phq9')).toBe(false);
+    expect(store.pinnedIds()).toEqual(['bdi']);
+    expect(store.visibleEntries().map(e => e.id)).toEqual(['bdi']); // curated to pins
+  });
+
+  it('pinning a non-default adds it to the curated view', () => {
+    const { store } = pinned([entry('phq9', { featured: true }), entry('bdi')]);
+    store.togglePin('bdi');
+    expect(store.isPinned('bdi')).toBe(true);
+    expect(store.pinnedIds().sort()).toEqual(['bdi', 'phq9']);
+  });
+
+  it('re-pinning an unpinned default clears the delta (self-normalizes)', () => {
+    const { store, storage } = pinned([entry('phq9', { featured: true })]);
+    store.togglePin('phq9'); // remove
+    store.togglePin('phq9'); // add back
+    expect(store.isPinned('phq9')).toBe(true);
+    expect(store.profileCustomized()).toBe(false);
+    // overlay is empty again → nothing meaningful persisted
+    expect(JSON.parse(storage.getItem('madad.composer.profile.v1'))).toEqual({ v: 1, added: [], removed: [] });
+  });
+
+  it('unpinning a freshly pinned non-default clears the delta', () => {
+    const { store } = pinned([entry('bdi')]);
+    store.togglePin('bdi'); // add
+    store.togglePin('bdi'); // remove
+    expect(store.isPinned('bdi')).toBe(false);
+    expect(store.profileCustomized()).toBe(false);
+  });
+
+  it('ignores pinning an id the catalog does not carry', () => {
+    const { store } = pinned([entry('phq9', { featured: true })]);
+    store.togglePin('ghost');
+    expect(store.profileCustomized()).toBe(false);
+    expect(store.pinnedIds()).toEqual(['phq9']);
+  });
+
+  it('persists the overlay and reloads it into a fresh store', () => {
+    const storage = memStorage();
+    const a = pinned([entry('phq9', { featured: true }), entry('bdi')], { storage }).store;
+    a.togglePin('phq9'); // remove default
+    a.togglePin('bdi');  // add non-default
+
+    const b = pinned([entry('phq9', { featured: true }), entry('bdi')], { storage }).store;
+    expect(b.isPinned('phq9')).toBe(false);
+    expect(b.isPinned('bdi')).toBe(true);
+  });
+
+  it('a newly-featured instrument still appears for a customized clinician (overlay, not snapshot)', () => {
+    const storage = memStorage();
+    // Clinician customizes: pins an extra questionnaire.
+    pinned([entry('phq9', { featured: true }), entry('bdi')], { storage }).store.togglePin('bdi');
+    // Author later ships a new featured instrument; clinician reloads.
+    const b = pinned([
+      entry('phq9', { featured: true }),
+      entry('bdi'),
+      entry('gad7', { featured: true }), // new default
+    ], { storage }).store;
+    expect(b.isPinned('gad7')).toBe(true); // reaches the customized clinician
+  });
+
+  it('restoreDefaults drops all divergence back to author featured', () => {
+    const { store } = pinned([entry('phq9', { featured: true }), entry('bdi')]);
+    store.togglePin('phq9'); store.togglePin('bdi');
+    expect(store.profileCustomized()).toBe(true);
+    store.restoreDefaults();
+    expect(store.profileCustomized()).toBe(false);
+    expect(store.pinnedIds()).toEqual(['phq9']);
+  });
+
+  it('curation falls back to showing everything when the clinician unpins all', () => {
+    const { store } = pinned([entry('phq9', { featured: true }), entry('bdi')]);
+    store.togglePin('phq9'); // now nothing is pinned in this tab
+    expect(store.curationActive()).toBe(false);
+    expect(store.visibleEntries().map(e => e.id).sort()).toEqual(['bdi', 'phq9']);
+  });
 });

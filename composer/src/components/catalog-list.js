@@ -21,22 +21,43 @@ export class CatalogList extends LitElement {
   static properties = {
     entries:       { type: Array },
     selectedIds:   { type: Array },
+    pinnedIds:     { type: Array },    // ids in the clinician's recommended set
     curated:       { type: Boolean },
-    hasBeyond:     { type: Boolean },  // tab has non-featured entries to reveal
+    hasBeyond:     { type: Boolean },  // tab has non-pinned entries to reveal
+    customized:    { type: Boolean },  // profile diverges from author defaults
     crossTab:      { type: Array },    // [{ tab, count }]
     query:         { type: String },
     filtersActive: { type: Boolean },
+    _confirmRestore: { state: true },  // two-step guard on "restore defaults"
   };
 
   constructor() {
     super();
     this.entries = [];
     this.selectedIds = [];
+    this.pinnedIds = [];
     this.curated = true;
     this.hasBeyond = false;
+    this.customized = false;
     this.crossTab = [];
     this.query = '';
     this.filtersActive = false;
+    this._confirmRestore = false;
+  }
+
+  // Restoring defaults discards every pin the clinician added or removed, so it
+  // asks first. If the profile stops being customized (e.g. they re-pinned back
+  // to parity elsewhere), drop any pending confirmation rather than leaving a
+  // stale prompt around.
+  willUpdate(changed) {
+    if (changed.has('customized') && !this.customized) this._confirmRestore = false;
+  }
+
+  _askRestore() { this._confirmRestore = true; }
+  _cancelRestore() { this._confirmRestore = false; }
+  _confirmRestoreNow() {
+    this._confirmRestore = false;
+    this._emit('restore-defaults', {});
   }
 
   static styles = [resetCSS, unsafeCSS(clinicianCss), css`
@@ -51,6 +72,9 @@ export class CatalogList extends LitElement {
       font-size: var(--font-size-sm, 14px);
       color: var(--color-text-muted, #5E7080);
     }
+    .note-actions { display: flex; gap: var(--space-md, 16px); flex-shrink: 0; }
+    .confirm-prompt { color: var(--color-text, #162232); }
+    .link-btn.danger { color: var(--color-no, #8B3A3A); font-weight: var(--font-weight-medium, 500); }
 
     ul { list-style: none; display: flex; flex-direction: column; gap: var(--space-sm, 8px); }
 
@@ -139,20 +163,47 @@ export class CatalogList extends LitElement {
     }
 
     const selected = new Set(this.selectedIds ?? []);
+    const pinned = new Set(this.pinnedIds ?? []);
+    const showNote = this.curated && (this.hasBeyond || this.customized);
     return html`
-      ${this.curated && this.hasBeyond ? html`
+      ${showNote ? html`
         <div class="curated-note">
-          <span>מוצגים שאלונים נפוצים</span>
-          <button class="link-btn" type="button" @click=${() => this._emit('show-all', {})}>
-            הצג הכל
-          </button>
+          ${this._confirmRestore ? html`
+            <span class="confirm-prompt">לבטל את ההתאמות ולשחזר את רשימת המומלצים?</span>
+            <span class="note-actions">
+              <button class="link-btn danger restore-confirm" type="button" @click=${this._confirmRestoreNow}>
+                שחזר
+              </button>
+              <button class="link-btn restore-cancel" type="button" @click=${this._cancelRestore}>
+                ביטול
+              </button>
+            </span>
+          ` : html`
+            <span>השאלונים המומלצים שלך</span>
+            <span class="note-actions">
+              ${this.hasBeyond ? html`
+                <button class="link-btn" type="button" @click=${() => this._emit('show-all', {})}>
+                  הצג הכל
+                </button>
+              ` : nothing}
+              ${this.customized ? html`
+                <button class="link-btn restore-trigger" type="button" @click=${this._askRestore}>
+                  שחזר מומלצים
+                </button>
+              ` : nothing}
+            </span>
+          `}
         </div>
       ` : nothing}
 
       <ul role="list" @keydown=${this._onKeydown}>
         ${this.entries.map(e => html`
           <li>
-            <catalog-card .entry=${e} ?selected=${selected.has(e.id)}></catalog-card>
+            <catalog-card
+              .entry=${e}
+              ?selected=${selected.has(e.id)}
+              ?pinned=${pinned.has(e.id)}
+            ></catalog-card>
           </li>
         `)}
       </ul>

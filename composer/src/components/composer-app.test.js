@@ -111,6 +111,18 @@ describe('composer-app', () => {
     expect(cards(el).map(c => c.entry.id).sort()).toEqual(['bdi', 'phq9']);
   });
 
+  it('pinning a card in the curated view unpins it out of the recommended set', async () => {
+    // Both featured → both start pinned and curated in. Unpinning bdi drops it.
+    const { el, store } = await mount([entry('phq9', { featured: true }), entry('bdi', { featured: true })]);
+    expect(cards(el).map(c => c.entry.id).sort()).toEqual(['bdi', 'phq9']);
+    const bdi = cards(el).find(c => c.entry.id === 'bdi');
+    bdi.shadowRoot.querySelector('.pin-btn').click();
+    await el.updateComplete;
+    expect(store.isPinned('bdi')).toBe(false);
+    expect(cards(el).map(c => c.entry.id)).toEqual(['phq9']); // curated to remaining pin
+    store.restoreDefaults(); // don't leak overlay into real localStorage
+  });
+
   it('focus-list moves focus into the card list; focus-search returns it', async () => {
     const { el } = await mount([entry('phq9')]);
     const controls = el.shadowRoot.querySelector('catalog-controls');

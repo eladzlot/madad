@@ -42,9 +42,69 @@ describe('catalog-list', () => {
     expect(shown).toBe(true);
   });
 
-  it('hides the curated note when nothing is hidden', async () => {
-    const el = await makeEl({ curated: true, hasBeyond: false });
+  it('hides the curated note when nothing is hidden and the profile is untouched', async () => {
+    const el = await makeEl({ curated: true, hasBeyond: false, customized: false });
     expect(el.shadowRoot.querySelector('.curated-note')).toBeNull();
+  });
+
+  it('marks pinned cards from pinnedIds', async () => {
+    const el = await makeEl({ pinnedIds: ['gad7'] });
+    const cards = [...el.shadowRoot.querySelectorAll('catalog-card')];
+    expect(cards.find(c => c.entry.id === 'gad7').hasAttribute('pinned')).toBe(true);
+    expect(cards.find(c => c.entry.id === 'phq9').hasAttribute('pinned')).toBe(false);
+  });
+
+  it('offers שחזר מומלצים only when the profile is customized', async () => {
+    const plain = await makeEl({ curated: true, hasBeyond: true, customized: false });
+    expect(plain.shadowRoot.textContent).not.toContain('שחזר מומלצים');
+
+    const el = await makeEl({ curated: true, hasBeyond: false, customized: true });
+    const note = el.shadowRoot.querySelector('.curated-note');
+    expect(note).not.toBeNull();                  // customized alone surfaces the note
+    expect(note.querySelector('.restore-trigger')).not.toBeNull();
+  });
+
+  it('restore is two-step: the trigger asks first and does not fire restore-defaults', async () => {
+    const el = await makeEl({ curated: true, hasBeyond: false, customized: true });
+    let restored = false;
+    el.addEventListener('restore-defaults', () => { restored = true; });
+
+    el.shadowRoot.querySelector('.restore-trigger').click();
+    await el.updateComplete;
+    expect(restored).toBe(false);                             // no destructive action yet
+    const note = el.shadowRoot.querySelector('.curated-note');
+    expect(note.querySelector('.confirm-prompt')).not.toBeNull();
+    expect(note.querySelector('.restore-trigger')).toBeNull(); // trigger replaced by confirm
+
+    note.querySelector('.restore-confirm').click();
+    expect(restored).toBe(true);                             // only after explicit confirm
+  });
+
+  it('cancelling the restore confirmation restores the trigger and fires nothing', async () => {
+    const el = await makeEl({ curated: true, hasBeyond: false, customized: true });
+    let restored = false;
+    el.addEventListener('restore-defaults', () => { restored = true; });
+
+    el.shadowRoot.querySelector('.restore-trigger').click();
+    await el.updateComplete;
+    el.shadowRoot.querySelector('.restore-cancel').click();
+    await el.updateComplete;
+
+    expect(restored).toBe(false);
+    expect(el.shadowRoot.querySelector('.confirm-prompt')).toBeNull();
+    expect(el.shadowRoot.querySelector('.restore-trigger')).not.toBeNull();
+  });
+
+  it('drops a pending restore confirmation if the profile stops being customized', async () => {
+    const el = await makeEl({ curated: true, hasBeyond: false, customized: true });
+    el.shadowRoot.querySelector('.restore-trigger').click();
+    await el.updateComplete;
+    expect(el.shadowRoot.querySelector('.confirm-prompt')).not.toBeNull();
+
+    el.customized = false;                 // e.g. re-pinned back to author parity
+    await el.updateComplete;
+    // note itself is gone now, but the pending confirm must not linger either
+    expect(el._confirmRestore).toBe(false);
   });
 
   it('shows an empty state for a query with no results, plus cross-tab hints', async () => {

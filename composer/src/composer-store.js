@@ -13,19 +13,25 @@
 import { buildUrl, pidWarning } from './composer-state.js';
 import { sortForBrowse, rankForQuery } from './search.js';
 import { TABS, ALL_TAB, tabOf } from './taxonomy.js';
+import { loadProfile, saveProfile, safeLocalStorage } from './composer-profile.js';
 
-export function createStore() {
+export function createStore({ storage = safeLocalStorage() } = {}) {
   const state = {
     entries:   [],              // all catalog entries (post dev-filter)
     warnings:  [],              // load-time warnings (catalog version, ...)
     tab:       ALL_TAB,
     query:     '',
     filters:   { domain: null, population: null },
-    showAll:   false,           // "הצג הכל" — escape the curated featured view
+    showAll:   false,           // "הצג הכל" — escape the curated recommended view
     selected:  [],              // string[] ids, in selection order
     pid:       '',
     copied:    false,
+    // The clinician's personal recommended-profile overlay on top of the
+    // catalog's author `featured` defaults. See composer-profile.js.
+    profile:   loadProfile(storage),
   };
+
+  const persist = () => saveProfile(state.profile, storage);
 
   const listeners = new Set();
   const notify = () => { for (const fn of listeners) fn(); };
@@ -53,38 +59,55 @@ export function createStore() {
 
   const filtersActive = () => !!(state.filters.domain || state.filters.population);
 
-  // Is the list showing the curated featured-only view? True only with no
+  // Is the list showing the curated recommended-only view? True only with no
   // query, no chips, and הצג הכל not yet clicked.
   function isCurated() {
     return !state.query.trim() && !filtersActive() && !state.showAll;
   }
 
-  // Whether the active tab has any featured entry to curate down to.
-  function tabHasFeatured() {
-    return entriesInTab(state.tab).filter(e => passesFilters(e)).some(e => e.featured);
+  // An entry is pinned when the clinician's overlay resolves it to "in" — the
+  // author `featured` default, plus their `added`, minus their `removed`.
+  function isPinned(id) {
+    const { added, removed } = state.profile;
+    if (removed.includes(id)) return false;
+    if (added.includes(id)) return true;
+    return !!entryById(id)?.featured;
   }
 
-  // Curation only *narrows* the list when the tab actually has featured entries
-  // to highlight. A tab with content but no featured entries (e.g. worksheets)
-  // shows everything instead of rendering an empty curated view.
+  // Whether the active tab has any pinned entry to curate down to.
+  function tabHasPinned() {
+    return entriesInTab(state.tab).filter(e => passesFilters(e)).some(e => isPinned(e.id));
+  }
+
+  // Curation only *narrows* the list when the tab actually has pinned entries
+  // to highlight. A tab with content but nothing pinned (e.g. a worksheet tab
+  // the clinician never curated) shows everything instead of an empty view.
   function curationActive() {
-    return isCurated() && tabHasFeatured();
+    return isCurated() && tabHasPinned();
   }
 
   // The entries visible in the active tab, after filters, query, and curation.
   function visibleEntries() {
     let pool = entriesInTab(state.tab).filter(e => passesFilters(e));
     if (state.query.trim()) return rankForQuery(pool, state.query);
-    if (curationActive()) pool = pool.filter(e => e.featured);
+    if (curationActive()) pool = pool.filter(e => isPinned(e.id));
     return sortForBrowse(pool);
   }
 
-  // Does the active tab have entries beyond the featured ones? Drives whether
-  // the curated view offers a "הצג הכל" escape hatch.
+  // Does the active tab have entries beyond the pinned ones? Drives whether the
+  // curated view offers a "הצג הכל" escape hatch.
   function hasBeyondFeatured() {
     const pool = entriesInTab(state.tab).filter(e => passesFilters(e));
-    return pool.some(e => !e.featured);
+    return pool.some(e => !isPinned(e.id));
   }
+
+  // Ids of every catalog entry currently pinned (across all tabs) — the UI uses
+  // this to mark cards. Kept catalog-scoped so stale overlay ids never surface.
+  const pinnedIds = () => state.entries.filter(e => isPinned(e.id)).map(e => e.id);
+
+  // Has the clinician diverged from the author defaults at all? Drives the
+  // "restore recommended" affordance.
+  const profileCustomized = () => state.profile.added.length > 0 || state.profile.removed.length > 0;
 
   // When a query or filters are active, count matches in the *other* category
   // tabs so the list can surface "נמצאו עוד N ב…" cross-tab hints. The 'all' tab
@@ -159,6 +182,35 @@ export function createStore() {
     clearFilters() { state.filters = { domain: null, population: null }; notify(); },
     showEverything() { state.showAll = true; notify(); },
 
+    // ── Recommended profile (pins) ──
+    // Toggle whether `id` is in the clinician's recommended set, recording only
+    // the delta from the author `featured` default so future defaults keep
+    // flowing. The four cases self-normalize: dropping an id from both lists
+    // first, then re-adding to exactly one only when it diverges from default.
+    togglePin(id) {
+      const e = entryById(id);
+      if (!e) return; // never pin an id the catalog doesn't carry
+      const featured = !!e.featured;
+      const wasPinned = isPinned(id);
+      let added   = state.profile.added.filter(x => x !== id);
+      let removed = state.profile.removed.filter(x => x !== id);
+      if (wasPinned) {
+        if (featured) removed = [...removed, id]; // remove an author default
+      } else {
+        if (!featured) added = [...added, id];     // add a non-default
+      }
+      state.profile = { added, removed };
+      persist();
+      notify();
+    },
+    isPinned,
+    // Drop all divergence and fall back to the author `featured` defaults.
+    restoreDefaults() {
+      state.profile = { added: [], removed: [] };
+      persist();
+      notify();
+    },
+
     // ── Selection ──
     toggle(id) {
       state.selected = state.selected.includes(id)
@@ -207,6 +259,8 @@ export function createStore() {
     curationActive,
     visibleEntries,
     hasBeyondFeatured,
+    pinnedIds,
+    profileCustomized,
     crossTabMatches,
     selectedEntries,
     entryById,
