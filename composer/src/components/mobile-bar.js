@@ -15,6 +15,7 @@
 import { LitElement, html, css, unsafeCSS, nothing } from 'lit';
 import { clinicianCss } from '../../../clinician/styles/clinician-styles.js';
 import { resetCSS } from '../ui-reset.js';
+import { PID_PATTERN } from '../../../shared/pid.js';
 
 export class MobileBar extends LitElement {
   static properties = {
@@ -48,7 +49,7 @@ export class MobileBar extends LitElement {
       align-items: center;
       gap: var(--space-sm, 8px);
       padding: var(--space-sm, 8px) var(--space-md, 16px);
-      background: var(--clin-header-bg, #1B3148);
+      background: var(--clin-header-bg, #3B2018);
       border-block-start: var(--border-width, 1px) solid rgba(255,255,255,0.12);
     }
     .count { flex: 1; color: #fff; font-size: var(--font-size-sm, 14px); }
@@ -132,8 +133,11 @@ export class MobileBar extends LitElement {
   _openSheet() { this._open = true; }
   _closeSheet() { this._open = false; }
 
+  // CTR POC: a link is only offered once a valid id is present (see selection-cart).
+  _ready() { return !!this.url && PID_PATTERN.test((this.pid ?? '').trim()); }
+
   _primary() {
-    const hasUrl = !!this.url;
+    const hasUrl = this._ready();
     if (this.canShare) {
       return html`<button class="c-btn c-btn--primary c-btn--sm" ?disabled=${!hasUrl}
         @click=${() => this._emit('share')}>שתף</button>`;
@@ -159,7 +163,7 @@ export class MobileBar extends LitElement {
 
   render() {
     const count = this.entries?.length ?? 0;
-    const hasUrl = !!this.url;
+    const hasUrl = this._ready();
 
     return html`
       <div class="bar">
@@ -185,14 +189,16 @@ export class MobileBar extends LitElement {
           </div>
 
           <div>
-            <label class="section-label" for="sheet-pid">מזהה מטופל (אופציונלי)</label>
-            <input class="pid" id="sheet-pid" type="text" dir="ltr" placeholder="TRC-2025-000123"
+            <label class="section-label" for="sheet-pid">מזהה מטופל (חובה)</label>
+            <input class="pid" id="sheet-pid" type="text" dir="ltr" required placeholder="TRC-2025-000123"
               .value=${this.pid ?? ''} autocomplete="off" spellcheck="false" @input=${this._onPid} />
           </div>
 
           <div>
             <div class="section-label">קישור</div>
-            <div class="url-box" dir="ltr">${hasUrl ? this.url : 'לא נבחרו שאלונים'}</div>
+            <div class="url-box" dir="ltr">
+              ${hasUrl ? this.url : (this.url ? 'הזינו מזהה מטופל כדי לקבל קישור' : 'לא נבחרו שאלונים')}
+            </div>
             <div class="btn-row" style="margin-block-start: var(--space-sm, 8px)">
               <button class="c-btn c-btn--primary c-btn--grow ${this.copied ? 'c-btn--copied' : ''}"
                 ?disabled=${!hasUrl} @click=${() => this._emit('copy')}>

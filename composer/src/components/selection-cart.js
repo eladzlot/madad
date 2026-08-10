@@ -2,7 +2,8 @@
 //
 // Holds the picked instruments in session order (mixed questionnaires /
 // batteries / worksheets in one list), the generated patient URL, the copy /
-// open / share actions, the optional patient-ID field, and reset. Reordering is
+// open / share actions, the patient-ID field (mandatory on this CTR instance),
+// and reset. Reordering is
 // available two ways — drag for the mouse, ↑/↓ buttons for the keyboard — both
 // emitting the same `reorder` { from, to }. Every action leaves as an event; the
 // component performs no clipboard/share/navigation side effects itself, so it
@@ -13,6 +14,7 @@
 import { LitElement, html, css, unsafeCSS, nothing } from 'lit';
 import { clinicianCss } from '../../../clinician/styles/clinician-styles.js';
 import { resetCSS } from '../ui-reset.js';
+import { PID_PATTERN } from '../../../shared/pid.js';
 
 export class SelectionCart extends LitElement {
   static properties = {
@@ -52,37 +54,37 @@ export class SelectionCart extends LitElement {
       font-weight: var(--font-weight-bold, 600);
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: #7AABBD;
+      color: #E0AE95;
       margin-block-end: var(--space-xs, 4px);
     }
     .hint {
       font-size: var(--font-size-xs, 12px);
-      color: #6898B0;
+      color: #CC9377;
       margin-block-end: var(--space-sm, 8px);
     }
 
     .url-box {
       font-family: ui-monospace, monospace;
       font-size: var(--font-size-xs, 12px);
-      background: #2A3D52;
-      border: var(--border-width, 1px) solid #2A3D52;
-      color: #A8CFDF;
+      background: #43241A;
+      border: var(--border-width, 1px) solid #43241A;
+      color: #F0CBB6;
       border-radius: var(--radius-sm, 6px);
       padding: var(--space-sm, 8px);
       word-break: break-all;
       max-block-size: 84px;
       overflow-y: auto;
     }
-    .url-box.empty { color: rgba(168, 207, 223, 0.6); }
+    .url-box.empty { color: rgba(240, 203, 182, 0.6); }
 
     .btn-row { display: flex; gap: var(--space-sm, 8px); margin-block-start: var(--space-sm, 8px); }
     .c-btn--grow { flex: 1; }
 
     /* Secondary actions (↗ open, שתף share) sit on the dark rail, not the page. */
     .c-btn--secondary {
-      background: #2A3D52;
-      border-color: #304860;
-      color: #A8CFDF;
+      background: #43241A;
+      border-color: #6E4433;
+      color: #F0CBB6;
     }
     .c-btn--secondary:not(:disabled):hover {
       border-color: var(--color-accent, #2BB3C0);
@@ -93,14 +95,14 @@ export class SelectionCart extends LitElement {
       inline-size: 100%;
       min-block-size: var(--item-min-touch, 44px);
       padding-inline: var(--space-md, 16px);
-      border: var(--border-width, 1px) solid #304860;
+      border: var(--border-width, 1px) solid #6E4433;
       border-radius: var(--radius-sm, 6px);
-      background: #2A3D52;
-      color: #C0D4E4;
+      background: #43241A;
+      color: #F5DDCE;
       font-family: inherit;
       font-size: var(--font-size-md, 16px);
     }
-    input.pid::placeholder { color: rgba(168, 207, 223, 0.5); }
+    input.pid::placeholder { color: rgba(240, 203, 182, 0.5); }
     input.pid:focus { outline: none; border-color: var(--color-accent, #2BB3C0); }
 
     ol { list-style: none; display: flex; flex-direction: column; gap: 6px; }
@@ -108,8 +110,8 @@ export class SelectionCart extends LitElement {
       display: flex;
       align-items: center;
       gap: 2px;
-      background: #2A3D52;
-      border: var(--border-width, 1px) solid #304860;
+      background: #43241A;
+      border: var(--border-width, 1px) solid #6E4433;
       border-radius: var(--radius-sm, 6px);
       padding-inline: var(--space-sm, 8px);
       padding-block: 5px;
@@ -133,7 +135,7 @@ export class SelectionCart extends LitElement {
       flex: 1;
       min-inline-size: 0;
       font-size: var(--font-size-sm, 14px);
-      color: #C0D4E4;
+      color: #F5DDCE;
       /* One line, ellipsis — overrides the reset's overflow-wrap so long titles
          don't wrap and buckle the row (the reference truncates too). */
       white-space: nowrap;
@@ -146,7 +148,7 @@ export class SelectionCart extends LitElement {
       background: none;
       border: none;
       cursor: pointer;
-      color: rgba(168, 207, 223, 0.7);
+      color: rgba(240, 203, 182, 0.7);
       font-size: 14px;
       line-height: 1;
       padding: 3px;
@@ -158,10 +160,10 @@ export class SelectionCart extends LitElement {
 
     .empty-cart {
       font-size: var(--font-size-sm, 14px);
-      color: #7AABBD;
+      color: #E0AE95;
     }
-    .empty-cart .help-link { color: #A8CFDF; text-decoration: underline; }
-    .empty-cart .help-link:hover { color: #C0D4E4; }
+    .empty-cart .help-link { color: #F0CBB6; text-decoration: underline; }
+    .empty-cart .help-link:hover { color: #F5DDCE; }
     .empty-cart .help-link:focus-visible {
       outline: 2px solid var(--color-border-focus, #2BB3C0);
       outline-offset: 2px;
@@ -206,14 +208,17 @@ export class SelectionCart extends LitElement {
   }
 
   render() {
-    const hasUrl = !!this.url;
+    // CTR POC: the id is mandatory — a link without one is refused by the
+    // patient app, so don't let the clinician build one.
+    const hasPid = PID_PATTERN.test((this.pid ?? '').trim());
+    const hasUrl = !!this.url && hasPid;
     const count = this.entries?.length ?? 0;
 
     return html`
       <div class="output-section">
         <div class="section-label">קישור למטופל</div>
         <div class="url-box ${hasUrl ? '' : 'empty'}" dir="ltr" aria-label="קישור שנוצר">
-          ${hasUrl ? this.url : 'לא נבחרו שאלונים'}
+          ${hasUrl ? this.url : (this.url ? 'הזינו מזהה מטופל כדי לקבל קישור' : 'לא נבחרו שאלונים')}
         </div>
         <div class="btn-row">
           <button class="c-btn c-btn--primary c-btn--grow ${this.copied ? 'c-btn--copied' : ''}"
@@ -230,9 +235,9 @@ export class SelectionCart extends LitElement {
       </div>
 
       <div class="output-section">
-        <label class="section-label" for="cart-pid">מזהה מטופל</label>
-        <p class="hint">אופציונלי — יופיע בדוח PDF בלבד</p>
-        <input class="pid" id="cart-pid" type="text" dir="ltr"
+        <label class="section-label" for="cart-pid">מזהה מטופל (חובה)</label>
+        <p class="hint">מזהה בלבד — לא שם ולא פרט מזהה אחר</p>
+        <input class="pid" id="cart-pid" type="text" dir="ltr" required
           placeholder="TRC-2025-000123" .value=${this.pid ?? ''}
           aria-label="מזהה מטופל" autocomplete="off" spellcheck="false" @input=${this._onPid} />
       </div>

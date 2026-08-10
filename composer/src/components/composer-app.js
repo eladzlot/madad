@@ -72,7 +72,7 @@ export class ComposerApp extends LitElement {
         /* A lighter navy than the header so the output rail reads as its own
            panel. Theme-independent dark chrome (like the header) — the fields
            inside carry their own slate colours, so it holds in dark mode too. */
-        background: #3A5068;
+        background: #5A3527;
       }
       mobile-bar { display: none; }
     }

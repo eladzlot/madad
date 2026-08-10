@@ -88,73 +88,8 @@ describe('buildPreviewModel — phq9', () => {
   });
 });
 
-// ── Questionnaire: top3 (nested item-level ifs, rated_text, required) ──────────
-describe('buildPreviewModel — top3', () => {
-  const model = buildPreviewModel(loadProd('top3'), 'top3');
-
-  it('marks required items', () => {
-    const p1 = items(model).find(n => n.id === 'p1');
-    expect(p1.type).toBe('rated_text');
-    expect(p1.required).toBe(true);
-  });
-
-  it('exposes both the free-text field and the rating scale for rated_text', () => {
-    const p1 = items(model).find(n => n.id === 'p1');
-    expect(p1.inputType).toBe('multiline');
-    expect(p1.range).toEqual({ min: 1, max: 12, labels: { min: 'במידה מועטה מאד', max: 'במידה רבה מאד' } });
-  });
-
-  it('emits an if condition entry with prettified DSL', () => {
-    const ifs = conditions(model).filter(c => c.variant === 'if');
-    expect(ifs.map(c => c.label)).toEqual([
-      'count(item.p2__text) ≥ 1',
-      'count(item.p3__text) ≥ 1',
-    ]);
-  });
-
-  it('nests the inner condition and items one depth deeper', () => {
-    const outer = conditions(model).find(c => c.label === 'count(item.p2__text) ≥ 1');
-    const inner = conditions(model).find(c => c.label === 'count(item.p3__text) ≥ 1');
-    expect(outer.depth).toBe(0);
-    expect(inner.depth).toBe(1);
-    // p2 (rated_text) sits at the top level, before the if_p2 gate; p3 lives
-    // inside the outer branch.
-    const p2 = items(model).find(n => n.id === 'p2');
-    const p3 = items(model).find(n => n.id === 'p3');
-    expect(p2.depth).toBe(0);
-    expect(p3.depth).toBe(1);
-  });
-});
-
-// ── Questionnaire: all_types_q (every item type + option resolution) ──────────
-describe('buildPreviewModel — all_types_q', () => {
-  const model = buildPreviewModel(loadProd('all_types_q'), 'all_types_q');
-  const byId = Object.fromEntries(items(model).map(n => [n.id, n]));
-
-  it('resolves binary options from a named optionSet', () => {
-    expect(byId.binary1.options).toEqual([
-      { label: 'כן', value: 1 },
-      { label: 'לא', value: 0 },
-    ]);
-  });
-
-  it('uses inline select options when present', () => {
-    expect(byId.select_mood.options).toHaveLength(4);
-    expect(byId.select_mood.options[0]).toEqual({ label: 'מצוין', value: 3 });
-  });
-
-  it('carries slider range and text inputType', () => {
-    expect(byId.slider1.range.min).toBe(0);
-    expect(byId.slider1.range.max).toBe(10);
-    expect(byId.text1.inputType).toBe('line');
-  });
-
-  it('renders multiselect positional options (label only)', () => {
-    expect(byId.multi1.options).toHaveLength(4);
-    expect(byId.multi1.options[0]).toEqual({ label: 'כאבי ראש' });
-    expect(byId.multi1.options[0].value).toBeUndefined();
-  });
-});
+// CTR POC: the top3 and all_types_q blocks were removed with their configs —
+// this instance ships no questionnaire containing free-text items.
 
 // ── Battery: clinical_intake (battery-level ifs → titled steps) ───────────────
 describe('buildPreviewModel — clinical_intake battery', () => {

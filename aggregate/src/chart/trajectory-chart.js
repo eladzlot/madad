@@ -144,7 +144,7 @@ export class TrajectoryChart extends LitElement {
     }
 
     .marker:focus {
-      stroke: #115e59;
+      stroke: #86381F;
       stroke-width: 3;
     }
 

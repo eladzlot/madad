@@ -31,7 +31,7 @@ export class ClinicianNav extends LitElement {
   static styles = css`
     :host {
       display: block;
-      background: var(--clin-header-bg, #1b3148);
+      background: var(--clin-header-bg, #3b2018);
     }
 
     .inner {
@@ -106,7 +106,7 @@ export class ClinicianNav extends LitElement {
       <header>
         <div class="inner">
           <div class="nav-group">
-            <a class="brand" href=${LANDING_HREF}>מדד</a>
+            <a class="brand" href=${LANDING_HREF}>מדד · CTR</a>
             <nav aria-label="עמודי מטפלים">
               ${PAGES.map(
                 (p) => html`

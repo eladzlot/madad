@@ -19,15 +19,15 @@
 
 export const clinicianCss = /* css */ `
   :root {
-    --clin-header-bg: #1B3148;
-    --clin-card-bg:   #FFFFFF;
+    --clin-header-bg: #3B2018;
+    --clin-card-bg:   #FFFDFB;
     --clin-grid:      #00000014;
     --clin-cutoff:    #B45309;
   }
 
   @media (prefers-color-scheme: dark) {
     :root {
-      --clin-card-bg: #161b22;
+      --clin-card-bg: #241A16;
       --clin-grid:    #ffffff1f;
       --clin-cutoff:  #E8A33D;
     }

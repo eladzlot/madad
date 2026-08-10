@@ -1,26 +1,30 @@
 /* Design tokens — all visual values live here.
    Components reference these via var(--token).
-   Replace values here to retheme without touching components. */
+   Replace values here to retheme without touching components.
+
+   CTR POC: the teal/slate production palette is replaced by a warm
+   terracotta/clay set so this instance is never mistaken for
+   app.ezmadad.com. Colour values only — no token was added or removed. */
 
 :root {
   /* Colour */
-  --color-bg:              #F2F4F7;
-  --color-surface:         #E8EBF0;
-  --color-border:          #D5DAE2;
-  --color-border-focus:    #2BB3C0;
-  --color-text:            #162232;
-  --color-text-muted:      #5E7080;
-  --color-primary:         #1A9FAD;
-  --color-primary-hover:   #148090;
+  --color-bg:              #F8F3EF;
+  --color-surface:         #EFE5DD;
+  --color-border:          #E0D0C4;
+  --color-border-focus:    #B45A3C;
+  --color-text:            #2B1D18;
+  --color-text-muted:      #7A625A;
+  --color-primary:         #A34A2E;
+  --color-primary-hover:   #86381F;
   --color-primary-text:    #ffffff;
-  --color-accent:          #2BB3C0;
-  --color-accent-hover:    #5BC0BE;
-  --color-selected-bg:     #E4F6F8;
-  --color-selected-border: #2BB3C0;
-  --color-yes:             #276749;
-  --color-yes-bg:          #F0FBF4;
-  --color-no:              #8B3A3A;
-  --color-no-bg:           #FDF3F3;
+  --color-accent:          #B45A3C;
+  --color-accent-hover:    #C97A5A;
+  --color-selected-bg:     #F7E6DC;
+  --color-selected-border: #B45A3C;
+  --color-yes:             #4E6B45;
+  --color-yes-bg:          #F1F5EC;
+  --color-no:              #8C2F2F;
+  --color-no-bg:           #FBEFEC;
 
   /* Spacing */
   --space-xs:  4px;
@@ -66,23 +70,23 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-bg:              #0d1117;
-    --color-surface:         #161b22;
-    --color-border:          #30363d;
-    --color-border-focus:    #5BC0BE;
-    --color-text:            #e6edf3;
-    --color-text-muted:      #8b949e;
-    --color-primary:         #4BA3D4;
-    --color-primary-hover:   #5BC0BE;
-    --color-primary-text:    #ffffff;
-    --color-accent:          #5BC0BE;
-    --color-accent-hover:    #2BB3C0;
-    --color-selected-bg:     #0d2a3a;
-    --color-selected-border: #5BC0BE;
-    --color-yes:             #4CAF82;
-    --color-yes-bg:          #0d2b1e;
-    --color-no:              #E07070;
-    --color-no-bg:           #2d1515;
+    --color-bg:              #191110;
+    --color-surface:         #241A16;
+    --color-border:          #3D2C25;
+    --color-border-focus:    #E08A63;
+    --color-text:            #F2E7E1;
+    --color-text-muted:      #B39C92;
+    --color-primary:         #D9744C;
+    --color-primary-hover:   #E08A63;
+    --color-primary-text:    #241A16;
+    --color-accent:          #E08A63;
+    --color-accent-hover:    #D9744C;
+    --color-selected-bg:     #3A231A;
+    --color-selected-border: #E08A63;
+    --color-yes:             #85AC6F;
+    --color-yes-bg:          #1E2A18;
+    --color-no:              #E08585;
+    --color-no-bg:           #33191A;
   }
 }
 

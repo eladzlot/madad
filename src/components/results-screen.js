@@ -125,6 +125,28 @@ export class ResultsScreen extends LitElement {
       bottom: var(--space-lg);
     }
 
+    /* ── Demo send notice (CTR POC) ─────────────────────────────────── */
+
+    .demo-send {
+      border: var(--border-width) dashed var(--color-border-focus);
+      border-radius: var(--radius-md);
+      background: var(--color-selected-bg);
+      padding: var(--space-md);
+      margin-block-end: var(--space-lg);
+    }
+
+    .demo-send__line {
+      font-size: var(--font-size-md);
+      font-weight: var(--font-weight-medium);
+      color: var(--color-text);
+    }
+
+    .demo-send__note {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+      margin-block-start: var(--space-xs);
+    }
+
     .pdf-btn {
       display: block;
       width: 100%;
@@ -217,6 +239,14 @@ export class ResultsScreen extends LitElement {
             </span>
           </div>
         `)}
+      </div>
+
+      <!-- CTR POC: illustrates where the send-confirmation will sit once remote
+           tracking exists. Nothing is transmitted — there is no server and no
+           network call — so the line says so plainly. -->
+      <div class="demo-send" role="note">
+        <p class="demo-send__line">התוצאות יישלחו למטפל/ת שלך</p>
+        <p class="demo-send__note">הדגמה בלבד — בגרסה זו לא נשלחים נתונים לשום מקום</p>
       </div>
 
       <div class="actions">

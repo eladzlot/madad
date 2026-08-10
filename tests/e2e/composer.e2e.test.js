@@ -45,6 +45,11 @@ async function openFilters(page) {
   await expect(page.locator('catalog-controls [role="tablist"]')).toBeVisible();
 }
 
+// CTR POC: the id is mandatory — no id, no link. Desktop cart only.
+async function setPid(page, pid = 'TRC-1') {
+  await page.locator('#cart-pid').fill(pid);
+}
+
 // Reach any instrument (featured or not) by searching, then toggle its card.
 async function selectItem(page, id) {
   await searchBox(page).fill(id);
@@ -84,6 +89,7 @@ test.describe('selection', () => {
   test('checking an item generates an items= URL', async ({ page }) => {
     await gotoComposer(page);
     await selectItem(page, 'phq9');
+    await setPid(page);
     await expect(urlBox(page)).toContainText('items=phq9');
   });
 
@@ -111,6 +117,7 @@ test.describe('selection', () => {
     await selectItem(page, 'phq9');
     // Move the 2nd row up → phq9 becomes first in the URL.
     await page.locator('selection-cart li.item').nth(1).locator('[aria-label="הזז מעלה"]').click();
+    await setPid(page);
     await expect(urlBox(page)).toContainText('items=phq9,test_q');
   });
 });
@@ -177,8 +184,10 @@ test.describe('mobile bottom sheet', () => {
     await page.locator('mobile-bar .bar button:has-text("פרטים")').click();
     const sheet = page.locator('mobile-bar .sheet');
     await expect(sheet).toBeVisible();
-    await expect(sheet.locator('.url-box')).toContainText('items=phq9');
+    // CTR POC: the link only appears once the mandatory id is filled in.
     await expect(sheet.locator('#sheet-pid')).toBeVisible();
+    await sheet.locator('#sheet-pid').fill('TRC-1');
+    await expect(sheet.locator('.url-box')).toContainText('items=phq9');
   });
 });
 
@@ -209,8 +218,9 @@ test.describe('preview modal', () => {
 
   test('conditional items render under a "מוצג בתנאי" divider', async ({ page }) => {
     await gotoComposer(page);
-    // top3 is featured and has nested item-level if-nodes.
-    await previewButton(page, 'top3').click();
+    // CTR POC: top3 was removed (free text); pqb has item-level if-nodes too.
+    await searchBox(page).fill('pqb');
+    await previewButton(page, 'pqb').click();
     await expect(dialog(page)).toBeVisible({ timeout: 10_000 });
     await expect(dialog(page)).toContainText('מוצג בתנאי');
   });
@@ -226,6 +236,7 @@ test.describe('generated URL launches valid session', () => {
   test('phq9 URL loads the patient app welcome screen', async ({ page }) => {
     await gotoComposer(page);
     await selectItem(page, 'phq9');
+    await setPid(page);
     const url = await urlBox(page).textContent();
     await page.goto(url.trim());
     await expect(page.locator('welcome-screen')).toBeVisible({ timeout: 10_000 });
@@ -237,6 +248,7 @@ test.describe('generated URL launches valid session', () => {
     await openFilters(page);
     await page.locator('catalog-controls [role="tab"]', { hasText: 'סוללות' }).click();
     await selectItem(page, 'phq9_intake');
+    await setPid(page);
     const url = await urlBox(page).textContent();
     await page.goto(url.trim());
     await expect(page.locator('welcome-screen')).toBeVisible({ timeout: 10_000 });

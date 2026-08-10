@@ -132,8 +132,8 @@ export class CatalogControls extends LitElement {
        as a distinct control. */
     @media (prefers-color-scheme: dark) {
       input[type='search'] {
-        background: #1e2733;
-        border-color: #3a4656;
+        background: #241A16;
+        border-color: #3D2C25;
       }
     }
 

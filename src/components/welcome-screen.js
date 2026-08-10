@@ -4,8 +4,11 @@ import { resetCSS } from '../styles/reset.js';
 /**
  * <welcome-screen>
  *
- * Shown before the session starts. Collects patient name and fires
- * 'begin' when the patient is ready.
+ * Shown before the session starts. Fires 'begin' when the patient is ready.
+ *
+ * CTR POC: the name field is gone — this instance identifies sessions by the
+ * id in the link and never asks the patient who they are. 'begin' still
+ * carries a name so the rest of the pipeline is untouched; it is always ''.
  *
  * Properties:
  *   batteryTitle  {string}  — title of the battery about to be administered
@@ -16,7 +19,6 @@ import { resetCSS } from '../styles/reset.js';
 export class WelcomeScreen extends LitElement {
   static properties = {
     batteryTitle: { type: String },
-    _name: { type: String, state: true },
   };
 
   static styles = [resetCSS, css`
@@ -71,43 +73,6 @@ export class WelcomeScreen extends LitElement {
       margin-block-end: var(--space-xl);
     }
 
-    /* ── Name field ─────────────────────────────────────────────────── */
-
-    .field {
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-xs);
-      margin-block-end: var(--space-md);
-    }
-
-    label {
-      font-size: var(--font-size-sm);
-      font-weight: var(--font-weight-medium);
-      color: var(--color-text-muted);
-    }
-
-    input {
-      block-size: var(--item-min-touch);
-      padding-inline: var(--space-md);
-      border: var(--border-width) solid var(--color-border);
-      border-radius: var(--radius-md);
-      background: var(--color-surface);
-      font-size: var(--font-size-md);
-      font-family: inherit;
-      color: var(--color-text);
-      transition: border-color var(--transition-fast);
-      width: 100%;
-    }
-
-    input:focus {
-      outline: none;
-      border-color: var(--color-border-focus);
-    }
-
-    input::placeholder {
-      color: var(--color-text-muted);
-    }
-
     /* ── CTA ────────────────────────────────────────────────────────── */
 
     .begin-btn {
@@ -139,24 +104,11 @@ export class WelcomeScreen extends LitElement {
   constructor() {
     super();
     this.batteryTitle = '';
-    this._name = '';
-  }
-
-  _onInput(e) {
-    // Cap name length at the component level so oversized values never reach the PDF
-    this._name = e.target.value.slice(0, 200);
-  }
-
-  _onKeyDown(e) {
-    if (e.key === 'Enter') this._begin();
   }
 
   _begin() {
-    // Strip Unicode BiDi control characters before emitting the name.
-    // These can cause misleading visual rendering in PDF documents.
-    const safeName = this._name.trim().replace(/[\u200E\u200F\u202A-\u202E\u2066-\u2069]/g, '');
     this.dispatchEvent(new CustomEvent('begin', {
-      detail: { name: safeName },
+      detail: { name: '' },
       bubbles: true,
       composed: true,
     }));
@@ -165,7 +117,7 @@ export class WelcomeScreen extends LitElement {
   render() {
     return html`
       <div class="card">
-        <span class="app-name">מדד</span>
+        <span class="app-name">מדד · CTR</span>
         <span class="app-tagline">הערכה קלינית דיגיטלית</span>
 
         ${this.batteryTitle ? html`
@@ -175,19 +127,6 @@ export class WelcomeScreen extends LitElement {
         <p class="intro">
           התשובות שלך יעזרו לצוות המטפל להבין אותך טוב יותר.
         </p>
-
-        <div class="field">
-          <label for="patient-name">שמך</label>
-          <input
-            id="patient-name"
-            type="text"
-            placeholder="שמך המלא"
-            .value=${this._name}
-            @input=${this._onInput}
-            @keydown=${this._onKeyDown}
-            autocomplete="name"
-          />
-        </div>
 
         <button class="begin-btn" @click=${this._begin}>
           התחל

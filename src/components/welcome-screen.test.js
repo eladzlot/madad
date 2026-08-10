@@ -27,21 +27,10 @@ describe('rendering', () => {
 
 // ─── Events ───────────────────────────────────────────────────────────────────
 
+// CTR POC: the name field is gone, so the name-entry cases went with it.
+// `begin` still carries a name for the rest of the pipeline; it is always ''.
 describe('begin event', () => {
-  it('fires begin with name on button click', async () => {
-    const el = await makeEl();
-    const handler = vi.fn();
-    el.addEventListener('begin', handler);
-    const input = el.shadowRoot.querySelector('input');
-    input.value = 'ישראל ישראלי';
-    input.dispatchEvent(new Event('input', { bubbles: true }));
-    await el.updateComplete;
-    el.shadowRoot.querySelector('.begin-btn').click();
-    expect(handler).toHaveBeenCalledOnce();
-    expect(handler.mock.calls[0][0].detail).toEqual({ name: 'ישראל ישראלי' });
-  });
-
-  it('fires begin with empty name when no input given', async () => {
+  it('fires begin with an empty name on button click', async () => {
     const el = await makeEl();
     const handler = vi.fn();
     el.addEventListener('begin', handler);
@@ -50,34 +39,9 @@ describe('begin event', () => {
     expect(handler.mock.calls[0][0].detail).toEqual({ name: '' });
   });
 
-  it('trims whitespace from name', async () => {
+  it('does not render a name field', async () => {
     const el = await makeEl();
-    const handler = vi.fn();
-    el.addEventListener('begin', handler);
-    const input = el.shadowRoot.querySelector('input');
-    input.value = '  שרה  ';
-    input.dispatchEvent(new Event('input', { bubbles: true }));
-    await el.updateComplete;
-    el.shadowRoot.querySelector('.begin-btn').click();
-    expect(handler.mock.calls[0][0].detail).toEqual({ name: 'שרה' });
-  });
-
-  it('fires begin on Enter key in input', async () => {
-    const el = await makeEl();
-    const handler = vi.fn();
-    el.addEventListener('begin', handler);
-    el.shadowRoot.querySelector('input')
-      .dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
-    expect(handler).toHaveBeenCalledOnce();
-  });
-
-  it('does not fire begin on other keys', async () => {
-    const el = await makeEl();
-    const handler = vi.fn();
-    el.addEventListener('begin', handler);
-    el.shadowRoot.querySelector('input')
-      .dispatchEvent(new KeyboardEvent('keydown', { key: 'a', bubbles: true }));
-    expect(handler).not.toHaveBeenCalled();
+    expect(el.shadowRoot.querySelector('input')).toBeNull();
   });
 });
 

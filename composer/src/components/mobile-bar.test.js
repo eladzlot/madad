@@ -8,7 +8,7 @@ async function makeEl(props = {}) {
   const el = await fixture(html`<mobile-bar></mobile-bar>`);
   Object.assign(el, {
     entries: [{ id: 'phq9', title: 'דיכאון' }], url: 'http://x/?items=phq9',
-    pid: '', copied: false, canShare: false, ...props,
+    pid: 'TRC-1', copied: false, canShare: false, ...props,
   });
   await el.updateComplete;
   return el;

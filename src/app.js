@@ -5,7 +5,10 @@
 //
 //   items    — comma-separated ordered list of questionnaire IDs or battery IDs.
 //              Required. Error shown if absent.
-//   pid      — optional patient identifier.
+//   pid      — patient identifier. REQUIRED on this CTR instance (upstream it is
+//              optional): the session is identified by the id in the link and
+//              the patient is never asked for a name, so a link without one
+//              would produce an unattributable session.
 //
 // Item IDs are addresses: every questionnaire/battery lives in its own config
 // file at configs/prod/<id>.json, so the config sources ARE the item tokens.
@@ -159,6 +162,13 @@ async function main() {
 
   if (itemTokens.length === 0) {
     showError(container, 'לא נבחרו שאלונים.', 'יש לפתוח את הקישור שקיבלת מהמטפל.');
+    return;
+  }
+
+  // CTR POC: the id is mandatory. Without it the session cannot be attributed
+  // to anyone (no name is collected), so refuse rather than produce an orphan.
+  if (!pid) {
+    showError(container, 'הקישור חסר מזהה.', 'אנא פנה למטפל שלך לקבלת קישור חדש.');
     return;
   }
 

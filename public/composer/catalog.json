@@ -2,75 +2,6 @@
   "catalogVersion": 1,
   "entries": [
     {
-      "id": "all_types_battery",
-      "kind": "battery",
-      "title": "בדיקת כל הסוגים",
-      "description": "Battery with one item of each type.",
-      "keywords": [
-        "test",
-        "e2e",
-        "all-types"
-      ],
-      "dev": true,
-      "itemCount": 7,
-      "estMinutes": 2,
-      "hasConditional": false,
-      "domains": [],
-      "type": null,
-      "populations": [
-        "adult"
-      ],
-      "tags": [],
-      "featured": false
-    },
-    {
-      "id": "all_types_q",
-      "kind": "questionnaire",
-      "title": "שאלון כל הסוגים (E2E)",
-      "description": "Test fixture with one item of each type.",
-      "keywords": [
-        "test",
-        "e2e",
-        "all-types"
-      ],
-      "dev": true,
-      "itemCount": 7,
-      "estMinutes": 2,
-      "hasConditional": false,
-      "domains": [],
-      "type": null,
-      "populations": [
-        "adult"
-      ],
-      "tags": [],
-      "featured": false
-    },
-    {
-      "id": "anger_log",
-      "kind": "questionnaire",
-      "title": "דו\"ח כעס",
-      "description": "דף עבודה לתיעוד אירועי כעס, תגובות, ומחשבה על דרכי התמודדות חלופיות.",
-      "keywords": [
-        "כעס",
-        "anger log",
-        "worksheet",
-        "דף עבודה",
-        "דו\"ח כעס"
-      ],
-      "itemCount": 10,
-      "estMinutes": 3,
-      "hasConditional": false,
-      "domains": [
-        "anger"
-      ],
-      "type": "worksheet",
-      "populations": [
-        "adult"
-      ],
-      "tags": [],
-      "featured": false
-    },
-    {
       "id": "aq",
       "kind": "questionnaire",
       "title": "שאלון לסריקת תסמינים בספקטרום האוטיסטי (AQ)",
@@ -203,121 +134,6 @@
       "featured": true
     },
     {
-      "id": "cpt_abc",
-      "kind": "questionnaire",
-      "title": "דף אמ\"ר (ABC)",
-      "description": "דף עבודה מטיפול CPT לפירוק חוויה לשלושה מרכיבים — אירוע, מחשבה ורגש (אמ\"ר / ABC) — ולבחינה ראשונית של המחשבה. המטופל/ת ממלא/ת אותו על אירוע…",
-      "keywords": [
-        "CPT",
-        "אמר",
-        "ABC",
-        "דף אירוע",
-        "מחשבה",
-        "נקודת תקיעות"
-      ],
-      "itemCount": 5,
-      "estMinutes": 2,
-      "hasConditional": false,
-      "domains": [
-        "trauma"
-      ],
-      "type": "worksheet",
-      "populations": [
-        "adult"
-      ],
-      "tags": [
-        "CPT",
-        "iCPT"
-      ],
-      "featured": false
-    },
-    {
-      "id": "cpt_alternative",
-      "kind": "questionnaire",
-      "title": "דף מחשבות אלטרנטיביות (Alternative Thoughts)",
-      "description": "דף העבודה המרכזי של CPT, המאגד את כל הכלים ליחידה אחת: זיהוי אירוע, מחשבה ורגש, בחינת המחשבה באמצעות שאלות ודפוסי חשיבה, ומציאת מחשבה…",
-      "keywords": [
-        "CPT",
-        "alternative thoughts",
-        "challenging beliefs",
-        "מחשבות אלטרנטיביות",
-        "מחשבות חלופיות",
-        "נקודת תקיעות"
-      ],
-      "itemCount": 19,
-      "estMinutes": 6,
-      "hasConditional": false,
-      "domains": [
-        "trauma"
-      ],
-      "type": "worksheet",
-      "populations": [
-        "adult"
-      ],
-      "tags": [
-        "CPT",
-        "iCPT"
-      ],
-      "featured": false
-    },
-    {
-      "id": "cpt_exploring",
-      "kind": "questionnaire",
-      "title": "דף בירור מחשבות (Exploring Questions)",
-      "description": "דף עבודה מטיפול CPT לבחינה שיטתית של נקודת תקיעות באמצעות סדרת שאלות. המטופל/ת בוחר/ת נקודת תקיעות ועונה על השאלות המתאימות כדי לאתגר אותה.",
-      "keywords": [
-        "CPT",
-        "exploring questions",
-        "challenging questions",
-        "בירור מחשבות",
-        "נקודת תקיעות",
-        "שאלות לחקירה"
-      ],
-      "itemCount": 9,
-      "estMinutes": 3,
-      "hasConditional": false,
-      "domains": [
-        "trauma"
-      ],
-      "type": "worksheet",
-      "populations": [
-        "adult"
-      ],
-      "tags": [
-        "CPT",
-        "iCPT"
-      ],
-      "featured": false
-    },
-    {
-      "id": "cpt_patterns",
-      "kind": "questionnaire",
-      "title": "דף דפוסי חשיבה (Thinking Patterns)",
-      "description": "דף עבודה מטיפול CPT לזיהוי דפוסי חשיבה לא מועילים במחשבה הקשורה לטראומה. עבור כל דפוס המטופל/ת בודק/ת אם הוא מתאים ומסביר/ה כיצד הוא משפיע.",
-      "keywords": [
-        "CPT",
-        "thinking patterns",
-        "דפוסי חשיבה",
-        "מחשבות אוטומטיות",
-        "נקודת תקיעות"
-      ],
-      "itemCount": 6,
-      "estMinutes": 2,
-      "hasConditional": false,
-      "domains": [
-        "trauma"
-      ],
-      "type": "worksheet",
-      "populations": [
-        "adult"
-      ],
-      "tags": [
-        "CPT",
-        "iCPT"
-      ],
-      "featured": false
-    },
-    {
       "id": "dar5",
       "kind": "questionnaire",
       "title": "שאלון תגובות כעס (DAR-5)",
@@ -368,29 +184,6 @@
       ],
       "tags": [],
       "featured": true
-    },
-    {
-      "id": "demographics",
-      "kind": "questionnaire",
-      "title": "פרטים אישיים",
-      "description": "פרטים אישיים ותיאור קצר של הפנייה.",
-      "keywords": [
-        "demographics",
-        "intake",
-        "personal"
-      ],
-      "itemCount": 10,
-      "estMinutes": 3,
-      "hasConditional": false,
-      "domains": [
-        "intake"
-      ],
-      "type": "other",
-      "populations": [
-        "adult"
-      ],
-      "tags": [],
-      "featured": false
     },
     {
       "id": "ders",
@@ -1012,32 +805,6 @@
       "featured": true
     },
     {
-      "id": "scq",
-      "kind": "questionnaire",
-      "title": "שאלון קוגניציות חברתיות (SCQ)",
-      "description": "הערכת תדירות מחשבות שליליות אופייניות לחרדה חברתית במהלך השבוע האחרון.",
-      "keywords": [
-        "social anxiety",
-        "cognitions",
-        "SCQ",
-        "חרדה חברתית",
-        "מחשבות אוטומטיות",
-        "פוביה חברתית"
-      ],
-      "itemCount": 23,
-      "estMinutes": 3,
-      "hasConditional": false,
-      "domains": [
-        "social"
-      ],
-      "type": "process",
-      "populations": [
-        "adult"
-      ],
-      "tags": [],
-      "featured": false
-    },
-    {
       "id": "spin",
       "kind": "questionnaire",
       "title": "שאלון פוביה חברתית (SPIN)",
@@ -1137,32 +904,6 @@
       ],
       "tags": [],
       "featured": false
-    },
-    {
-      "id": "top3",
-      "kind": "questionnaire",
-      "title": "שלושת הבעיות המרכזיות",
-      "description": "שאלון אישי לשלוש בעיות: המטופל/ת מגדיר/ה עד שלוש בעיות מרכזיות ומדרג/ת את חומרת כל אחת בסולם 1–12, עם תיאור התמודדות אופציונלי לכל בעיה.",
-      "keywords": [
-        "problems",
-        "idiographic",
-        "severity",
-        "coping",
-        "בעיות",
-        "התמודדות"
-      ],
-      "itemCount": 3,
-      "estMinutes": 1,
-      "hasConditional": true,
-      "domains": [
-        "general"
-      ],
-      "type": "worksheet",
-      "populations": [
-        "adult"
-      ],
-      "tags": [],
-      "featured": true
     },
     {
       "id": "trauma_eval",
