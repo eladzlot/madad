@@ -22,7 +22,7 @@ The Composer generates URLs with the following parameters:
 : Comma-separated ordered list of questionnaire or battery IDs. Order defines session order. Batteries are expanded by the runtime into their full sequences. **Item IDs are addresses**: the patient app expands each token to `configs/prod/<id>.json` — there is no separate config list.
 
 `pid`
-: Optional patient identifier. Must match `^[a-zA-Z0-9\u0590-\u05FF_-]{1,64}$` (see `src/pid.js`); invalid values are silently dropped by the patient runtime.
+: Optional patient identifier. Must match `^[a-zA-Z0-9\u0590-\u05FF_-]{1,64}$` (see `shared/pid.js`); invalid values are silently dropped by the patient runtime.
 
 Example:
 ```

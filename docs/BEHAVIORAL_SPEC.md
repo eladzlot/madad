@@ -33,7 +33,7 @@ The Composer is a clinician-facing tool, served at `/composer/`. Its purpose is 
 
 ### 4.2 Flow
 1. Clinician opens the Composer.
-2. The Composer loads a manifest of available config files and all questionnaires and batteries defined within them.
+2. The Composer loads the generated catalog index (`public/composer/catalog.json`) listing every questionnaire and battery, with its taxonomy metadata. It never downloads the full configs.
 3. Clinician selects which questionnaires or batteries to include, in selection order.
 4. Clinician optionally enters a patient ID — an opaque clinic code (e.g. `TRC-2025-000123`). No patient name is entered at this stage.
 5. The Composer generates a URL live as selections are made.
@@ -44,20 +44,21 @@ The generated URL uses the following parameters:
 
 | Parameter | Description |
 |---|---|
-| `configs` | Comma-separated list of config source URLs required to resolve the selected items |
-| `items` | Comma-separated ordered list of questionnaire and/or battery IDs in session order |
-| `pid` | Patient identifier (optional) |
+| `items` | Comma-separated ordered list of questionnaire and/or battery IDs in session order. Each ID is an address: it resolves to `configs/prod/<id>.json`. |
+| `#pid` | Patient identifier (optional), carried in the URL **fragment** so it never reaches server or CDN logs. A legacy `?pid=` query parameter is still read. |
 
 Example:
 ```
-https://app.example.com/?configs=/configs/core.json,/configs/trauma.json&items=intake_battery,phq9,pcl5&pid=TRC-2025-000123
+https://app.ezmadad.com/?items=trauma_eval,phq9,pcl5#pid=TRC-2025-000123
 ```
 
 The URL contains:
 - The selected questionnaires and/or batteries, in order
-- The config sources needed to resolve them
-- The patient ID (if provided)
+- The patient ID (if provided), in the fragment
 - No patient name or personally identifying information
+
+A legacy `configs=` parameter from the bundle era is accepted and ignored;
+those URLs still resolve because their `items=` tokens name instruments.
 - No clinical scoring rules or alert thresholds
 
 ### 4.4 Config maintenance
@@ -182,30 +183,18 @@ Questionnaires and batteries are defined in configuration files maintained by th
 
 ### 9.1 Config strategy
 
-All standard instruments are defined in a single canonical config file (`standard.json`). Specialised or complex instruments that require their own file (e.g. structured diagnostic interviews, worksheet-style content) are defined in separate config files loaded alongside `standard.json` via the multi-config URL mechanism.
+Every questionnaire and battery lives in its own file at `public/configs/prod/<id>.json`, where the filename equals the entity id. A battery that references questionnaires defined elsewhere declares them in its `dependencies` array; the loader auto-fetches those at runtime (BFS walk), so a generated URL names only the items the clinician selected.
 
 ### 9.2 Currently configured instruments
 
-| Instrument | Full name | Config file | Subscales |
-|---|---|---|---|
-| PHQ-9 | Patient Health Questionnaire — 9 items | `standard.json` | — |
-| GAD-7 | Generalised Anxiety Disorder scale — 7 items | `standard.json` | — |
-| PCL-5 | PTSD Checklist for DSM-5 | `standard.json` | Intrusion, Avoidance, Dysphoria, Hyperarousal |
-| OCI-R | Obsessive Compulsive Inventory — Revised | `standard.json` | Washing, Obsessing, Hoarding, Ordering, Checking, Neutralising |
-| PDSS-SR | Panic Disorder Severity Scale — Self Report | `standard.json` | — |
-| ASI-3 | Anxiety Sensitivity Index — 3 | `standard.json` | Physical, Cognitive, Social |
-| HAI | Health Anxiety Inventory — Part 1 | `standard.json` | — |
-| MGH-HPS | MGH Hairpulling Scale | `standard.json` | — |
-| DIAMOND-SR | DIAMOND Self-Report Screener (30-item binary) | `intake.json` | — |
-| Demographics | Intake demographics questionnaire | `intake.json` | — |
+The live library is listed in `docs/HANDOVER.md` §3 ("Instrument library")
+and generated into `public/composer/catalog.json`. It is not duplicated
+here — this specification defines *how* instruments behave, not which ones
+exist.
 
-Batteries:
-
-| Battery | Contents | Config file |
-|---|---|---|
-| `clinical_intake` | DIAMOND-SR → conditional OCI-R, PCL-5, PDSS-SR, GAD-7, PHQ-9, HAI, MGH-HPS | `intake.json` |
-
-Additional instruments using any supported item type may be added by editing `standard.json` (or a new specialised config file). See `docs/INSTRUMENTS.md` for the step-by-step process.
+Adding an instrument is a config-only change for standard Likert/binary
+scales; no application code is involved. See
+`public/configs/CONTRIBUTING.md` for the process.
 
 ---
 

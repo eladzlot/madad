@@ -6,49 +6,37 @@
 
 ---
 
-## Current library
+## Where the library is listed
 
-### `standard.json` (v1.6.1) — 14 instruments
+This file no longer duplicates the instrument list — that duplication is
+what made it go stale. The current library lives in two places, both of
+which are kept in step with the configs:
 
-| ID | Hebrew name | Subscales | Alerts |
-|---|---|---|---|
-| `phq9` | שאלון דיכאון (PHQ-9) | — | Suicidality (item 9 ≥ 1) |
-| `gad7` | שאלון חרדה (GAD-7) | — | — |
-| `oci_r` | שאלון טורדנות כפייתית (OCI-R) | שטיפה, אובססיות, אגירה, סדר, בדיקה, נטרול | — |
-| `pdss_sr` | שאלון פאניקה (PDSS-SR) | — | — |
-| `asi_3` | שאלון רגישות לחרדה (ASI-3) | — | — |
-| `hai` | שאלון חרדת בריאות (HAI) | — | — |
-| `mgh_hps` | סולם תלישת שיער MGH (MGH-HPS) | — | — |
-| `spin` | שאלון פוביה חברתית (SPIN) | — | — |
-| `isi` | מדד חומרת נדודי שינה (ISI) | — | — |
-| `dar5` | שאלון תגובות כעס (DAR-5) | — | — |
-| `oasis` | שאלון חומרת חרדה ופגיעה תפקודית (OASIS) | — | — |
-| `wsas` | סולם עבודה והתאמה חברתית (WSAS) | — | — |
-| `wai6` | שאלון ברית טיפולית (WAI-6) | — | — |
-| `top3` | שלושת הבעיות המרכזיות | — | — |
+- **[`docs/HANDOVER.md`](HANDOVER.md) §3 "Instrument library"** — the
+  human-readable table: ID, Hebrew name, subscales, alerts, cutoffs,
+  provenance caveats.
+- **`public/composer/catalog.json`** — the generated index the Composer
+  reads. Regenerate with `npm run build:catalog`; CI fails on drift via
+  `npm run validate:catalog`.
 
-### `trauma.json` (v1.0.0) — 3 instruments + 1 battery
-
-| ID | Type | Hebrew name | Notes |
-|---|---|---|---|
-| `pc_ptsd5` | questionnaire | סקר טראומה קצר (PC-PTSD-5) | Binary screener; `exposure` item excluded from scoring |
-| `pcl5` | questionnaire | שאלון פוסט טראומה (PCL-5) | 4 subscales (mean); alert at total ≥ 33 |
-| `ptci` | questionnaire | שאלון קוגניציות פוסט-טראומטיות (PTCI) | 3 subscales (mean) |
-| `trauma_eval` | battery | הערכת טראומה ראשונית | PC-PTSD-5 → if score ≥ 4: PCL-5 + PTCI |
-
-### `intake.json` (v1.2.1) — 2 instruments + 1 battery
-
-| ID | Type | Hebrew name | Notes |
-|---|---|---|---|
-| `demographics` | questionnaire | פרטים אישיים | — |
-| `diamond_sr` | questionnaire | DIAMOND Self Report Screener | Conditional branching; multiple alerts |
-| `clinical_intake` | battery | הערכה ראשונית | DIAMOND → targeted questionnaires per domain |
+The configs themselves are the source of truth: one questionnaire or
+battery per file at `public/configs/prod/<id>.json`, filename = entity id.
 
 ---
 
 ## Policy
 
-- **Open-source instruments only.** Do not add proprietary instruments (e.g. BDI-II, STAI commercial editions) without verifying the license.
-- **Scoring must match validated published versions.** Do not adjust thresholds or ranges.
-- **Hebrew item text.** The platform language is Hebrew — all item text must be in Hebrew.
-- **Each instrument needs a unique ID** — lowercase letters, digits, underscores only (`phq9` not `phq-9`). IDs must be unique across all loaded config files.
+- **Free for non-commercial use only.** Public-domain, open-license, or
+  copyrighted-but-free-to-use instruments (e.g. STSS, © Brian E. Bride).
+  Do not add proprietary instruments that require a paid license or
+  restrict reproduction (e.g. BDI-II, commercial STAI editions).
+- **Scoring must match validated published versions.** Do not adjust
+  thresholds or ranges. Where a Hebrew translation is unvalidated or a
+  cutoff does not exist, say so in the config's provenance notes rather
+  than inventing one.
+- **Hebrew item text.** The platform language is Hebrew — all item text
+  must be in Hebrew.
+- **Each instrument needs a unique ID** — lowercase letters, digits and
+  underscores only (`phq9`, not `phq-9`). The ID is the filename, the URL
+  token, and the key in every PDF ever generated: it is a permanent
+  external contract. Never rename or delete one.

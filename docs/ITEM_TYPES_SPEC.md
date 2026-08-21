@@ -327,7 +327,7 @@ Config JSON
 
 ### 5. Exact Changes Required, By File
 
-#### 5.1 `src/item-types.js` — NEW FILE
+#### 5.1 `shared/config/item-types.js`
 
 The registry. Exports:
 - `isScored(item)` — replaces all `type === 'select' || type === 'binary'` checks
@@ -356,7 +356,7 @@ Add `compositeItem` fields: `options` (array of `{label, value}` where value is 
 
 **Important:** composite option values are strings (identifiers), not numbers — the `optionList` def requires `value: number`. Composite needs its own option list def: `compositeOptionList` with `value: string`.
 
-#### 5.3 `src/config/config-validation.js`
+#### 5.3 `shared/config/config-validation.js`
 
 Add `validateItem` dispatch: loop items, call `TYPE_REGISTRY[item.type].validateItem(item, q, errors)` if defined.
 
@@ -506,7 +506,7 @@ Each step is independently mergeable and testable. Steps are ordered so the syst
 
 #### Step 1 — Type registry scaffold (no behaviour change)
 
-Create `src/item-types.js` with only the existing four types (`select`, `binary`, `instructions`, `if`, `randomize`). Migrate all existing `type === 'select'` checks in `scoring.js`, `controller.js`, and `report.js` to use registry helpers. All tests must pass with no observable change.
+Create `shared/config/item-types.js` with only the existing four types (`select`, `binary`, `instructions`, `if`, `randomize`). Migrate all existing `type === 'select'` checks in `scoring.js`, `controller.js`, and `report.js` to use registry helpers. All tests must pass with no observable change.
 
 **Tests:** Existing 641 tests pass unchanged. Add unit tests for each registry helper with existing types.
 

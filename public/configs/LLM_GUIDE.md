@@ -6,7 +6,7 @@ You are helping a clinician create a questionnaire instrument for the Madad clin
 
 ## What you are producing
 
-A single JSON object to be added to `public/configs/prod/standard.json`, inside the `questionnaires` array. Optionally, a battery definition to add to the `batteries` array in the same file.
+A complete config file at `public/configs/prod/<instrument_id>.json` — one questionnaire per file, where the file's top-level `id`, the questionnaire's `id`, and the filename all match. Optionally, a battery as its own separate file (see the final section). There is no bundle file to append to and no manifest to register in.
 
 The output is **pure JSON** — no comments, no trailing commas, no JavaScript.
 

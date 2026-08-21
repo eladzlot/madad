@@ -11,7 +11,7 @@ The rendering layer is split into two parts with a strict boundary between them.
 
 **Controller** (`src/controller.js`) is a plain JS module. It creates and mutates components, handles their events, drives the engine and orchestrator, and manages the History API stack through the router. It is the only place where engine calls, orchestrator calls, and DOM mutations coexist.
 
-Nothing in `src/engine/` or `src/config/` touches the DOM.
+Nothing in `src/engine/` or `shared/` touches the DOM.
 
 ---
 
@@ -83,7 +83,7 @@ _progressEl.batteryProgress   = orchestrator.progress();
 _progressEl.questionnaireName = questionnaire.title ?? '';
 ```
 
-`canAdvance(item, answer)` is imported from `src/item-types.js`. It returns `true` when the item is skippable (regardless of answer) or when the item is required and has been answered. This means skippable items (`text`, `multiselect`, `instructions`) always show an enabled forward button.
+`canAdvance(item, answer)` is imported from `shared/config/item-types.js`. It returns `true` when the item is skippable (regardless of answer) or when the item is required and has been answered. This means skippable items (`text`, `multiselect`, `instructions`) always show an enabled forward button.
 
 ### 2.6 Answer and Advance Flow
 

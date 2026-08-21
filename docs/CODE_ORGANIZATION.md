@@ -2,13 +2,13 @@
 
 How code is organized across surfaces in the Madad project.
 
-This is a structural plan, not a build plan. It describes where files
-live, how directories relate, and what rules govern cross-imports — for
-the four surfaces today (Patient, Composer, Aggregate, Landing) and any
-future surface (Questionnaire Viewer, Outcome Atlas, etc.) that the
-project might add.
+This describes where files live, how directories relate, and what rules
+govern cross-imports — for the surfaces today (Patient, Composer,
+Aggregate, Help, Landing) and any future surface (Questionnaire Viewer,
+Outcome Atlas, etc.) that the project might add.
 
-It belongs in `docs/` once landed.
+The reorganization this document specifies has landed: `shared/` and
+`clinician/` exist and the rules below are in force.
 
 ---
 
@@ -77,19 +77,22 @@ very small set:
 ```
 shared/
   pid.js                        PID validation regex + warning helper
-  pid.test.js
   config/
     loader.js                   loadConfig() — fetches and merges configs
-    loader.test.js
     validate-schema.js          generated schema validator
     config-validation.js        cross-validation rules (item IDs unique, etc.)
-    config-validation.test.js
+    item-types.js               item type registry (isScored, canAdvance, ...)
+    options.js                  option-set resolution
     QuestionnaireSet.schema.json
-    QuestionnaireSet.schema.test.js
+  catalog/
+    build-catalog.js            builds the composer catalog index from prod/
+  pdf/
+    envelope-schema.js          embedded data.json envelope + validateEnvelope
   styles/
     tokens.css                  design tokens (--color-*, --space-*, etc.)
-    severity-colors.js          shared severity palette (PDF + Aggregate charts)
 ```
+
+(Tests live beside each module; omitted here for brevity.)
 
 That's it. The criterion for `shared/` is **strict**: a file lives here
 only if it is actually imported by the patient surface AND at least one
@@ -108,7 +111,8 @@ clinician/
     clinician-nav.js            top-bar nav (Composer / Aggregate / Landing links)
     clinician-nav.test.js
   styles/
-    clinician-tokens.css        clinician-only tokens (denser type scale, etc.)
+    clinician-styles.js         clinician design vocabulary, adopted at the
+                                document level by each clinician surface
   helpers/                      (when shared utilities emerge)
 ```
 
@@ -120,18 +124,19 @@ shape is; one copy doesn't.
 
 ### 3.3 `src/` — the patient surface
 
-Stays at the root. Everything currently in `src/` that is patient-only
-stays. Two files move out:
+Stays at the root. Everything in `src/` that is patient-only stays.
+What moved out:
 
 - `src/pid.js` → `shared/pid.js`
 - `src/config/*` → `shared/config/*`
+- `src/item-types.js` → `shared/config/item-types.js`
 - `src/styles/tokens.css` → `shared/styles/tokens.css`
-- `src/styles/main.css` → stays (patient-specific layout)
-- `src/styles/reset.js` → stays (patient-specific)
+- `src/styles/main.css` — stayed (patient-specific layout)
+- `src/styles/reset.js` — stayed (patient-specific)
 
 `src/pdf/` is a special case — see §4.
 
-After the move, `src/` looks like:
+`src/` today:
 
 ```
 src/
@@ -139,7 +144,6 @@ src/
   router.js                     patient routing
   controller.js                 patient session controller
   resolve-items.js
-  item-types.js
   components/                   patient Lit components (item-*, screens, etc.)
   engine/                       scoring, alerts, DSL, orchestrator
   helpers/                      gestures (touch handlers)
@@ -155,51 +159,50 @@ This is essentially what's there today minus the four shared things.
 composer/
   index.html
   src/
-    composer.js                 entry
-    composer-state.js
-    composer-render.js
-    composer-handlers.js
-    composer-loader.js
+    composer.js                 entry / composition root
+    composer-store.js           reactive store
+    composer-state.js           URL builder, pid, getAppRoot()
+    composer-loader.js          catalog fetch + dev filtering
+    composer-profile.js         personal pin overlay (localStorage)
+    search.js taxonomy.js ui-reset.js
+    preview/                    preview-model
+    components/                 composer-only Lit components
     composer.css
 
 aggregate/
   index.html
   src/
-    aggregate.js                 entry
-    aggregate-store.js
-    parse-pdf.js
-    aggregate.js
-    rci.js
-    export.js
-    aggregate.css
+    aggregate.js                entry / composition root
+    store.js                    session store + pid filter
+    parse-pdf.js                data.json extraction
+    chart/                      scales, models, trajectory-chart, export
     components/                 aggregate-only Lit components
+    aggregate.css
+
+help/
+  index.html
+  src/                          help.js (nav + styles only), help.css
 
 landing/
-  index.html                    static, no JS today
-  (src/ created if Landing ever needs JS)
+  index.html                    static, built by vite.landing.config.js
 ```
 
-Each surface owns everything it uses, except imports from `shared/` and
-`clinician/`.
+Each surface owns its own components. A component moves to `clinician/`
+only when a second clinician surface imports it (see §3.2).
 
 ---
 
 ## 4. The PDF subsystem — a real edge case
 
-`src/pdf/` is currently patient-only — the patient app generates PDFs.
-Aggregate will *read* PDFs but the **reader is `pdf-lib`, not the
-generator**. The two are different code paths.
+`src/pdf/` is patient-only — the patient app generates PDFs. Aggregate
+*reads* them, which is a different code path entirely. What the two share
+is the envelope: the generator writes it, Aggregate reads it.
 
-However, Aggregate will share the `embed-payload.js` envelope schema with
-the patient PDF generator: the generator writes payloads, Aggregate reads
-them. The envelope shape itself is shared knowledge.
-
-The cleanest split:
+The split:
 
 ```
 src/pdf/                        patient-only PDF generation
-  report.js                     pdfmake doc definition builder
-  embed-payload.js              builds the JSON envelope (uses shared schema)
+  report.js                     pdfmake doc definition builder + envelope embed
 
 shared/pdf/                     PDF-related shared code
   envelope-schema.js            ENVELOPE_VERSION constant + payload type/validator
@@ -211,8 +214,9 @@ constant and the payload validator. Aggregate imports the same module to
 validate inbound payloads. They never go out of sync because there's one
 source of truth.
 
-The `pdf-lib`-based reader belongs to Aggregate and lives at
-`aggregate/src/parse-pdf.js`. It's not shared — only Aggregate reads PDFs.
+The reader belongs to Aggregate and lives at `aggregate/src/parse-pdf.js`
+— a zero-dependency byte scanner (TODO.md D-9), not a PDF library. It's
+not shared: only Aggregate reads PDFs.
 
 ---
 
@@ -293,10 +297,11 @@ The ESLint config (sketch):
 
 ```js
 input: {
-  patient:  'index.html',
-  composer: 'composer/index.html',
+  patient:   'index.html',
+  composer:  'composer/index.html',
   aggregate: 'aggregate/index.html',
-  landing:  'landing/index.html',
+  help:      'help/index.html',
+  // landing/ builds separately → dist-landing/ (vite.landing.config.js)
 },
 ```
 
@@ -306,11 +311,13 @@ surfaces:
 ```js
 output: {
   manualChunks: {
-    'pdf-vendor':          ['pdfmake', 'bidi-js'],   // patient only
-    'aggregate-pdf-parser': ['pdf-lib'],              // aggregate only
+    'pdf-vendor': ['pdfmake', 'bidi-js'],   // patient only, lazy-loaded
   },
 },
 ```
+
+(The Aggregate needs no PDF vendor — `parse-pdf.js` extracts the embedded
+`data.json` with zero dependencies.)
 
 `shared/` and `clinician/` modules are split per-surface by Rollup
 naturally — each surface's bundle includes only what it imports
@@ -331,8 +338,7 @@ If `shared/` ever grows to >20 KB and is loaded by ≥3 surfaces, revisit.
 ## 7. Test layout
 
 Tests live alongside source files (`<file>.test.js`), matching the
-existing project convention. The `vitest.config.js` `include` pattern
-becomes:
+existing project convention. The `vitest.config.js` `include` pattern is:
 
 ```js
 include: [
@@ -344,7 +350,10 @@ include: [
 ],
 ```
 
-Coverage thresholds and exclusions update similarly.
+Coverage `include` mirrors it; surface composition roots
+(`composer/src/composer.js`, `aggregate/src/aggregate.js`), `src/app.js`,
+`src/router.js`, and the generated `shared/config/validate-schema.js` are
+excluded — the E2E suite covers those boot paths.
 
 E2E tests stay in `tests/e2e/` (no need to fragment them by surface —
 they exercise the deployed app).
@@ -372,53 +381,14 @@ that would otherwise creep in and silently couple two surfaces.
 
 ---
 
-## 9. The migration
-
-This reorganization is a single PR. It's a mechanical refactor — file
-moves, import path updates, ESLint config — with zero behaviour change.
-
-Steps in order (each step is independently committable):
-
-1. **Create empty target directories.** `shared/`, `clinician/`. Add
-   to `vitest.config.js` `include` and `coverage.include`.
-
-2. **Move shared modules.** With their tests:
-   - `src/pid.js` + test → `shared/pid.js`
-   - `src/config/*` → `shared/config/*`
-   - `src/styles/tokens.css` → `shared/styles/tokens.css`
-   Update import paths in:
-   - All `src/` files (patient app)
-   - `composer/src/composer-loader.js` (`config/loader`)
-   - `composer/src/composer-state.js` (`pid`)
-   - `composer/index.html` (the `<link rel="stylesheet">` to tokens)
-   - `index.html` (same)
-
-3. **Split the PDF subsystem.** Create `shared/pdf/envelope-schema.js`
-   with the `ENVELOPE_VERSION` constant and the payload validator. This
-   step happens during Phase 1 of the Aggregate build, not as part of
-   this restructure. Mentioned here for completeness.
-
-4. **Add ESLint boundary rules** (§5). Run `npm run lint` and confirm no
-   violations exist after the moves.
-
-5. **Verify.** `npm test`, `npm run e2e`, `npm run validate:configs`,
-   `npm run check:size` all green.
-
-The migration is small enough to do in one sitting (~half a day,
-including verification). It must land **before** the Aggregate build
-starts, so Aggregate is the first surface that uses the new structure
-from day one.
-
----
-
-## 10. What this doesn't solve
+## 9. What this doesn't solve
 
 To be honest about the limits:
 
-- **Shared visual identity across surfaces.** The clinician surfaces will
-  share `clinician-tokens.css` for typography and spacing scales beyond
-  the patient defaults, but there's no shared "design system" component
-  library. Each surface still owns its own form controls, buttons,
+- **Shared visual identity across surfaces.** The clinician surfaces
+  share `clinician/styles/clinician-styles.js` for typography, spacing,
+  and the `c-*` vocabulary beyond the patient defaults, but there's no
+  shared "design system" component library. Each surface still owns its own form controls, buttons,
   panels. If those start diverging visually, the answer is to move
   components into `clinician/components/` one at a time as they emerge
   — not to pre-build a full DS.

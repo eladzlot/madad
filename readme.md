@@ -24,7 +24,7 @@ Vanilla JS + ES Modules (framework-free engine), [Lit](https://lit.dev/) compone
 
 ```bash
 npm ci
-npm run dev      # → http://localhost:5173  (/, /composer/, /landing/, /aggregate/)
+npm run dev      # → http://localhost:5173  (/, /composer/, /aggregate/, /help/, /landing/)
 npm test         # unit tests
 npm run e2e      # Playwright end-to-end tests
 ```
