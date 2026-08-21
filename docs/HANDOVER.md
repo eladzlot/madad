@@ -84,7 +84,7 @@ src/pdf/report.js              ← PDF generation (pdfmake, lazy-loaded)
 - Config manifest `dev: true` flag: configs marked `dev:true` are skipped in production builds, loaded in dev and test
 - CI workflow: `.github/workflows/ci.yml` — lint → unit tests → validate configs → build → size → E2E
 - Deploy workflow: `.github/workflows/deploy-cloudflare.yml` — same gate + Wrangler deploy of `dist/` (app) and `dist-landing/` (landing) to Cloudflare Pages; legacy `deploy.yml` now only publishes the github.io redirect shim
-- **1341 unit tests passing across 52 test files**
+- **1421 unit tests passing across 54 test files** (verified 2026-08-21)
 - E2E tests passing (Chromium; mobile-safari locally only)
 - Aggregate surface at `/aggregate/` (סיכום מטופל) — slice 1: clinicians drop Madad PDFs in, get per-instrument trajectory charts (severity bands, cutoff lines, 5-session window, pid filter). Stateless, in-browser only. See `docs/AGGREGATE_SPEC.md`; envelope contract in `shared/pdf/envelope-schema.js`
 - Dist-smoke E2E project (`tests/e2e/*.dist.test.js`) — runs Playwright against the *built* bundle served at the production base (`/`) via `vite preview`. Catches the class of "works on dev, broken on dist" bugs that unit tests and the dev e2e suite cannot see (absolute-path fetches that bypass Vite's base, missing chunks, CSP violations). CI runs it at `/` plus a multi-base matrix (`/`, `/some/deep/path/`).
@@ -362,6 +362,13 @@ Tool is ready to ship. Priority actions:
 
 ### ~~Step D — Documentation: update remaining specs~~ ✓ Complete
 COMPOSER_SPEC.md rewritten. All specs current.
+
+### Step E — Idiographic / personalized measures (exploration)
+Custom questionnaires encoded in the URL with patient-specific content — repeated
+top3, PSYCHLOPS, goal attainment, CPT stuck points. Design options and composer UI
+sketch in `docs/IDIOGRAPHIC_PLAN.md`; tracked as the `IDIO` band in `docs/TODO.md`.
+**Nothing decided** — `IDIO-0` is the encoding decision gate. Note that the engine
+already supports repeated instances via `instanceId`; the blocker is `P1-10`.
 
 ---
 

@@ -53,15 +53,28 @@ The phrase **"Continue with TODO"** means: do the above, then pick up the curren
 
 ## 1. Status
 
-**Currently working on:** idle — AGG-6 complete (see archive A-11), awaiting commit approval. Next: AGG-4 (RCI — blocked on AGG-P).
-**Last session ended:** 2026-07-06 — AGG-6 shipped in working tree: shared clinician-nav + styles module (D-15), chart-card segmented control + export menu (D-16), landing links = aggregate unveiling (D-17). 1148 unit, 101 e2e passed / 9 skipped, budgets green. **Not yet committed.**
-**Blocked on:** AGG-4 needs AGG-P (user's psychometrics literature pass). (P0-1/P0-2/P0-7 validation cluster deprioritized by user 2026-07-03.)
+**Currently working on:** idle. Backlog refreshed 2026-08-21 — new `IDIO` band (idiographic measures; options in `docs/IDIOGRAPHIC_PLAN.md`), new `CONT` band (instrument content), plus `AGG-7` and `AGG-8`. Nothing started. If the idiographic stream is picked up, `IDIO-0` is the decision gate everything else waits behind.
+
+**Last session ended:** 2026-08-21 — planning only, no code changed. State verified on `main`: HEAD `8455ced`, in sync with `origin/main`, working tree clean, `npm test` green at **1421 tests across 54 files**.
+
+**AGG-6 is complete *and committed*** — the previous status ("awaiting commit approval… Not yet committed", dated 2026-07-06) was stale by seven weeks. A-11's work is on `main`, and the composer upgrade (Lit rewrite, catalog index, preview modal, Fuse.js search, help page, pins), the security-hardening pass, `rated_text`, the per-item `display` field, the four CPT worksheets, and STSS/CAPE/PQ-B all landed after it.
+
+**Blocked on:** AGG-4 needs AGG-P (user's psychometrics literature pass). P0-1/P0-2/P0-7 validation cluster deprioritized by user 2026-07-03.
+
+**Side branch — do not land work there:** `ctr` (`dcf8bce`) is a throwaway CTR proof-of-concept per `docs/CTR_PLAN.md` ("Throwaway. Not maintained." / "Zero commits on `main`"). It is never merged, and it prunes ten configs from `public/configs/prod/`. All work in this document targets `main`.
 
 ---
 
 ## 2. Task List
 
 Task IDs are stable and match `REVIEW.md` section references. Status values: `todo` | `in-progress` | `done` | `blocked` | `deferred` | `abandoned`.
+
+**All work in this document targets `main`.** The `ctr` branch is a throwaway POC
+(`docs/CTR_PLAN.md`: "Throwaway. Not maintained." / "Zero commits on `main`") — it
+is not a place to land features, fixes, or content. It also pruned ten configs
+from `public/configs/prod/` in `e284581` (`scq`, `top3`, the four CPT worksheets,
+`demographics`, `anger_log`, and two test fixtures), so some tasks cannot even be
+started there.
 
 ### P0 — Correctness, clinical impact
 
@@ -90,6 +103,40 @@ Build slices per D-11. Slice 1 goes to pilot therapists before later slices are 
 | AGG-5 | Slice 4 — PNG/SVG export | done | See archive A-10. |
 | AGG-6 | Design dive: aggregate visual refresh + clinician shell integration | done | See archive A-11. D-15/D-16/D-17 applied. |
 | AGG-P | Psychometrics content: reliability/SD/source per instrument | todo | **User-owned clinical workstream** — can start now; long pole for AGG-4 |
+| AGG-7 | Sort questionnaires in the aggregate by number of applications | todo | Small. Most-administered instrument first, so the chart a clinician cares about is at the top instead of in config/upload order. Ordering lives in the composition root (`aggregate/src/aggregate.js`), which already computes the shared x-domain per D-14 — count sessions per `questionnaireId` in the pid-filtered set and sort descending. Open: tie-break (most-recent? alphabetical?), and whether the order should be stable as new PDFs are dropped in mid-session. |
+| AGG-8 | Capture and report time spent answering | todo | **Spans three layers.** (1) Capture: nothing times anything today — no `Date.now()` in orchestrator/engine/controller. Decide the grain (per item / per questionnaire / per session) and how to handle a patient who leaves the tab open. (2) Carry: new envelope field; `validateEnvelope` already tolerates unknown extra fields (forward-compatible by design), so this is **additive — no `ENVELOPE_VERSION` bump** — but every historical PDF lacks it, so readers must handle absence. (3) Report: PDF and/or aggregate. Purpose per user: see response burden on patients, so per-questionnaire is probably the useful grain. Privacy note: duration is behavioural data about the patient — decide deliberately whether it belongs in the PDF the patient sees. |
+
+### IDIO — Idiographic / personalized measures (docs/IDIOGRAPHIC_PLAN.md)
+
+Custom questionnaires encoded in the URL, with patient-specific content (repeated
+top3, PSYCHLOPS, goal attainment, CPT stuck points). **Nothing is decided** —
+options and trade-offs live in the plan doc; IDIO-0 is the decision gate and
+everything else is blocked behind it. Working recommendation in the plan:
+parameterized templates (config stays server-side, URL carries only slot values)
+plus carry-forward of slot values from the previous session's PDF.
+
+| ID | Title | Status | Notes |
+|---|---|---|---|
+| IDIO-0 | Decide the encoding: parameterized template vs inline config vs mini-grammar | todo | **Decision gate.** Options in plan doc §2; open questions in §6. Produces a D-N entry. |
+| IDIO-1 | Schema: param slots + text substitution | todo | Blocked on IDIO-0. Fixed vs variable arity is open (plan §2.2). Follow the `schema-change` skill's validator-regeneration chain. |
+| IDIO-2 | Catalog: derive `params[]` in `shared/catalog/build-catalog.js` | todo | Blocked on IDIO-1. Keeps the composer's "never download full configs" property (plan §3.5). |
+| IDIO-3 | Composer: slots dialog + cart row states + pid-keyed param store | todo | Blocked on IDIO-2. Plan §3. Real cost is `selection-cart.js` **and** `mobile-bar.js` + both test files, not the dialog. Params must be keyed by pid — otherwise patient B gets patient A's problem descriptions. |
+| IDIO-4 | Carry-forward: pre-fill slots from the prior session's PDF | todo | Blocked on IDIO-3. Reuses `aggregate/src/parse-pdf.js`; the `__text` sidecars are already in every PDF ever generated (`envelope-schema.js:34`). This is what makes the feature actually get used. |
+| IDIO-5 | Multi-instance templates in one session | todo | **Blocked on P1-10** (same substrate). Engine + envelope already support it via `instanceId`; unreachable from the URL/composer. Plan §5. |
+
+### CONT — Instrument library / clinical content
+
+Config-only work: no application code. Use the `add-questionnaire` skill
+(psychometrics lookup → Hebrew translation → proofread → validate → review) and
+`public/configs/CONTRIBUTING.md`. Every row needs `npm run build:catalog` +
+committed `catalog.json`, and must respect the §Policy rule in `HANDOVER.md` —
+free for non-commercial research/clinical use only.
+
+| ID | Title | Status | Notes |
+|---|---|---|---|
+| CONT-1 | SCQ should be 0-based | todo | Currently 22 items scored 1–5 (per `HANDOVER.md` §Instrument library); rescore to 0-based. Check what moves with it: option values, `scoring`, any `interpretations.ranges`, and the total's meaning. Hebrew translation is already flagged unvalidated and there are no validated cutoffs, so no published norm is being contradicted — but record *why* 0-based is right in the config's provenance/notes so it isn't flipped back. Bump the config `version`. |
+| CONT-2 | Add PTCI-9 | todo | Short form of the 37-item `ptci` (3 subscales, mean, `totalMethod: sum_of_items`). **Design question shared with CONT-3:** separate config file (`ptci9`) duplicating item text, vs. deriving a short form from the parent. Item IDs are addresses and one entity lives per file, so separate file is the grain the system expects — the cost is that the Hebrew wording of shared items can drift between the two. Decide once, apply to both rows. |
+| CONT-3 | Add PCL-5 4-item and 8-item short forms | todo | **Source (user-specified):** https://www.sciencedirect.com/science/article/pii/S0165178115300664 — *Psychiatry Research*, paywalled. **User will supply the paper at implementation time.** Take the item subsets, scoring, and cutoffs from it directly — do not infer which PCL-5 items belong to each short form, and do not carry over the parent's ≥ 33 alert or its interpretation bands. Parent `pcl5` is 21 items (20 scored + instructions), 4 sum subscales. Same separate-file-vs-derived question as CONT-2. |
 
 ### P1 — API stability, author experience
 
@@ -104,7 +151,7 @@ Build slices per D-11. Slice 1 goes to pilot therapists before later slices are 
 | P1-7 | Delete `info` severity references | todo | Decision D-3: `info` abandoned |
 | P1-8 | Structured JSON output for `validate:configs` | todo | |
 | P1-9 | Single-file mode for `validate:configs` | todo | |
-| P1-10 | Repeated/duplicate questionnaire instances collide | todo | **Not urgent, but don't postpone too long. Report to ASHER when fixed.** Two related problems from session state being keyed by `sessionKey = node.instanceId ?? node.questionnaireId`: **(a)** if a run yields a screener *and* the questionnaire it gates to (battery or `items=`), the questionnaire can be served twice — and the second time it's **pre-filled** from the first (same key). For a screener re-serve this makes no sense. **(b)** Asking for N copies of the same questionnaire — e.g. `items=cpt_abc,cpt_abc,cpt_abc` (ABC×3, a real CPT-worksheet use case) — collapses to one shared instance, so they're "the same" (filling one fills all). Fix direction: auto-assign distinct instance keys for repeats (`cpt_abc#1`, `#2`, …) so each is independent, and dedupe/skip an instance that's already answered where re-serving is meaningless (screener). Surfaced 2026-07-26 during CPT worksheet authoring. |
+| P1-10 | Repeated/duplicate questionnaire instances collide | todo | **Not urgent, but don't postpone too long. Report to ASHER when fixed.** Two related problems from session state being keyed by `sessionKey = node.instanceId ?? node.questionnaireId`: **(a)** if a run yields a screener *and* the questionnaire it gates to (battery or `items=`), the questionnaire can be served twice — and the second time it's **pre-filled** from the first (same key). For a screener re-serve this makes no sense. **(b)** Asking for N copies of the same questionnaire — e.g. `items=cpt_abc,cpt_abc,cpt_abc` (ABC×3, a real CPT-worksheet use case) — collapses to one shared instance, so they're "the same" (filling one fills all). Fix direction: auto-assign distinct instance keys for repeats (`cpt_abc#1`, `#2`, …) so each is independent, and dedupe/skip an instance that's already answered where re-serving is meaningless (screener). Surfaced 2026-07-26 during CPT worksheet authoring. **Blocks IDIO-5** — multi-instance idiographic templates sit on this same substrate; see `docs/IDIOGRAPHIC_PLAN.md` §5. Note `src/app.js:177` also dedupes item tokens, so the URL layer needs the same fix. |
 
 ### P2 — Polish
 
