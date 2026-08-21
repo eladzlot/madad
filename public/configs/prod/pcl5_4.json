@@ -1,0 +1,124 @@
+{
+  "id": "pcl5_4",
+  "version": "1.0.0",
+  "questionnaires": [
+    {
+      "id": "pcl5_4",
+      "meta": {
+        "domains": [
+          "trauma"
+        ],
+        "type": "screener",
+        "populations": [
+          "adult"
+        ],
+        "tags": [
+          "PCL-5",
+          "גרסה מקוצרת",
+          "screening"
+        ]
+      },
+      "title": "שאלון פוסט-טראומה מקוצר בן 4 פריטים (PCL-5)",
+      "description": "גרסה מקוצרת בת 4 פריטים של ה-PCL-5 לסינון תסמיני פוסט-טראומה בשבוע האחרון (Price et al., 2016); סף סינון 10.",
+      "keywords": [
+        "PTSD",
+        "טראומה",
+        "PCL-5",
+        "trauma",
+        "screening",
+        "סינון",
+        "גרסה מקוצרת"
+      ],
+      "defaultOptionSetId": "frequency_5",
+      "optionSets": {
+        "frequency_5": [
+          {
+            "label": "כלל לא",
+            "value": 0
+          },
+          {
+            "label": "מעט",
+            "value": 1
+          },
+          {
+            "label": "במידה בינונית",
+            "value": 2
+          },
+          {
+            "label": "במידה רבה",
+            "value": 3
+          },
+          {
+            "label": "במידה רבה מאוד",
+            "value": 4
+          }
+        ]
+      },
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "להלן רשימת בעיות שלאנשים יש לפעמים בתגובה לחוויה טראומטית מאוד מלחיצה. קרא/י כל בעיה בעיון ובחר/י את התשובה המתארת עד כמה אותה בעיה הטרידה אותך בשבוע האחרון."
+        },
+        {
+          "id": "1",
+          "type": "select",
+          "text": "חוויות חוזרות ונשנות, מטרידות ובלתי-רצוניות של החוויה הטראומטית?"
+        },
+        {
+          "id": "7",
+          "type": "select",
+          "text": "הימנעות מתזכורות חיצוניות של החוויה הטראומטית (אנשים, מקומות, שיחות, פעילויות, חפצים, מצבים)?"
+        },
+        {
+          "id": "9",
+          "type": "select",
+          "text": "אמונות שליליות חזקות לגבי עצמך, אנשים אחרים, או העולם?"
+        },
+        {
+          "id": "18",
+          "type": "select",
+          "text": "להיבהל בקלות?"
+        }
+      ],
+      "scoring": {
+        "method": "sum"
+      },
+      "interpretations": {
+        "target": "total",
+        "type": "screening",
+        "ranges": [
+          {
+            "min": 0,
+            "max": 9,
+            "label": "מתחת לסף הסינון"
+          },
+          {
+            "min": 10,
+            "max": 16,
+            "label": "מעל סף הסינון"
+          }
+        ],
+        "cutoffs": [
+          {
+            "value": 10,
+            "label": "סף סינון"
+          }
+        ]
+      },
+      "psychometrics": {
+        "reliability": 0.82,
+        "sd": 4.48,
+        "source": "Price, Szafranski, van Stolk-Cooke & Gros (2016), Psychiatry Research 239, 124-130 (clinical sample, Study 2)"
+      },
+      "alerts": [
+        {
+          "id": "screen_cutoff",
+          "condition": "score.pcl5_4 >= 10",
+          "message": "מעל סף סינון ל-PTSD",
+          "severity": "warning"
+        }
+      ]
+    }
+  ]
+}

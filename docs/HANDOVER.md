@@ -144,7 +144,7 @@ Clinician drops Madad PDFs in and gets per-instrument trajectory charts. Statele
 
 ### Instrument library
 
-`public/configs/prod/` holds **48 files**: 42 production entities (40 questionnaires, 2 batteries) and 6 dev-only fixtures marked `"dev": true`. One entity per file, filename = entity id — enforced by `npm run validate:configs`. Item IDs are URL addresses (`?items=phq9`).
+`public/configs/prod/` holds **51 files**: 45 production entities (43 questionnaires, 2 batteries) and 6 dev-only fixtures marked `"dev": true`. One entity per file, filename = entity id — enforced by `npm run validate:configs`. Item IDs are URL addresses (`?items=phq9`).
 
 **Depression / mood**
 
@@ -182,7 +182,10 @@ Clinician drops Madad PDFs in and gets per-instrument trajectory charts. Statele
 |---|---|---|
 | `pc_ptsd5` | סקר טראומה קצר (PC-PTSD-5) | Binary screener; `exposure` item excluded from scoring |
 | `pcl5` | שאלון פוסט-טראומה (PCL-5) | 4 subscales; `totalMethod: sum_of_items`; warning alert at ≥ 33 |
-| `ptci` | שאלון קוגניציות פוסט-טראומטיות (PTCI) | 3 subscales (mean) |
+| `pcl5_4` | שאלון פוסט-טראומה מקוצר בן 4 פריטים (PCL-5) | Cluster-derived short form (items 1, 7, 9, 18); sum 0–16; screening cutoff 10; warning alert (Price et al., 2016) |
+| `pcl5_8` | שאלון פוסט-טראומה מקוצר בן 8 פריטים (PCL-5) | Cluster-derived short form (items 1, 4, 6, 7, 9, 12, 18, 19); sum 0–32; screening cutoff 19; warning alert (Price et al., 2016) |
+| `ptci` | שאלון קוגניציות פוסט-טראומטיות, גרסה מלאה (PTCI) | 36 items, 33 scored — fillers 13/32/34 in `scoring.exclude`; 3 subscales (mean); validated Hebrew (Daie-Gabai et al., 2011) |
+| `ptci9` | שאלון קוגניציות פוסט-טראומטיות מקוצר (PTCI-9) | Items 1, 7, 22, 23, 25, 27, 31, 33, 36 (Wells et al., 2019); 3 subscales of 3 (mean); Hebrew from the validated PTCI |
 | `stss` | שאלון סטרס טראומטי משני (STSS) | Secondary traumatic stress in clinicians; 3 sum subscales; cutoff 38 (Bride 2007); warning alert; unvalidated Hebrew; © Bride, free non-commercial |
 
 **Psychosis / prodrome**
@@ -205,7 +208,7 @@ Clinician drops Madad PDFs in and gets per-instrument trajectory charts. Statele
 | ID | Name | Notes |
 |---|---|---|
 | `sbq` | שאלון התנהגויות חברתיות (SBQ) | 29 items, 0–3; safety behaviours (Clark & Wells); no validated cutoffs |
-| `scq` | שאלון קוגניציות חברתיות (SCQ) | 22 items, 1–5 frequency; unvalidated Hebrew; no validated cutoffs (`CONT-1`: rescore 0-based) |
+| `scq` | שאלון קוגניציות חברתיות (SCQ) | 22 items, 0–4 frequency (rescored 0-based at v2.0.0 — total 0–88, so "never" scores 0); unvalidated Hebrew; no validated cutoffs |
 | `ders` | שאלון קשיים בוויסות רגשי (DERS) | 6 subscales |
 | `ecrs` | שאלון התקשרות (ECR-S) | 2 subscales (anxiety/avoidance) |
 | `wai6` | שאלון ברית טיפולית (WAI-6) | — |
@@ -244,7 +247,7 @@ Battery files declare `dependencies` on every questionnaire file they reference.
 ```
 public/configs/
   prod/<id>.json           ← ONE questionnaire or battery per file, filename =
-                             entity id (48 files, 6 of them `"dev": true`).
+                             entity id (51 files, 6 of them `"dev": true`).
                              Enforced by validate:configs. Short name in URLs = id.
   CONTRIBUTING.md          ← How to add an instrument (human-readable)
   LLM_GUIDE.md             ← Comprehensive spec for LLM-assisted authoring

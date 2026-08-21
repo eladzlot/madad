@@ -1,0 +1,144 @@
+{
+  "id": "pcl5_8",
+  "version": "1.0.0",
+  "questionnaires": [
+    {
+      "id": "pcl5_8",
+      "meta": {
+        "domains": [
+          "trauma"
+        ],
+        "type": "screener",
+        "populations": [
+          "adult"
+        ],
+        "tags": [
+          "PCL-5",
+          "גרסה מקוצרת",
+          "screening"
+        ]
+      },
+      "title": "שאלון פוסט-טראומה מקוצר בן 8 פריטים (PCL-5)",
+      "description": "גרסה מקוצרת בת 8 פריטים של ה-PCL-5 למעקב אחר תסמיני פוסט-טראומה בשבוע האחרון (Price et al., 2016); סף סינון 19.",
+      "keywords": [
+        "PTSD",
+        "טראומה",
+        "PCL-5",
+        "trauma",
+        "screening",
+        "סינון",
+        "גרסה מקוצרת"
+      ],
+      "defaultOptionSetId": "frequency_5",
+      "optionSets": {
+        "frequency_5": [
+          {
+            "label": "כלל לא",
+            "value": 0
+          },
+          {
+            "label": "מעט",
+            "value": 1
+          },
+          {
+            "label": "במידה בינונית",
+            "value": 2
+          },
+          {
+            "label": "במידה רבה",
+            "value": 3
+          },
+          {
+            "label": "במידה רבה מאוד",
+            "value": 4
+          }
+        ]
+      },
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "להלן רשימת בעיות שלאנשים יש לפעמים בתגובה לחוויה טראומטית מאוד מלחיצה. קרא/י כל בעיה בעיון ובחר/י את התשובה המתארת עד כמה אותה בעיה הטרידה אותך בשבוע האחרון."
+        },
+        {
+          "id": "1",
+          "type": "select",
+          "text": "חוויות חוזרות ונשנות, מטרידות ובלתי-רצוניות של החוויה הטראומטית?"
+        },
+        {
+          "id": "4",
+          "type": "select",
+          "text": "הרגשה עזה של מצוקה, כאשר משהו מזכיר לך את החוויה הטראומטית?"
+        },
+        {
+          "id": "6",
+          "type": "select",
+          "text": "הימנעות מזיכרונות, מחשבות או רגשות הקשורים לחוויה הטראומטית?"
+        },
+        {
+          "id": "7",
+          "type": "select",
+          "text": "הימנעות מתזכורות חיצוניות של החוויה הטראומטית (אנשים, מקומות, שיחות, פעילויות, חפצים, מצבים)?"
+        },
+        {
+          "id": "9",
+          "type": "select",
+          "text": "אמונות שליליות חזקות לגבי עצמך, אנשים אחרים, או העולם?"
+        },
+        {
+          "id": "12",
+          "type": "select",
+          "text": "איבוד עניין בפעילויות שפעם נהנית מהן?"
+        },
+        {
+          "id": "18",
+          "type": "select",
+          "text": "להיבהל בקלות?"
+        },
+        {
+          "id": "19",
+          "type": "select",
+          "text": "קושי בריכוז?"
+        }
+      ],
+      "scoring": {
+        "method": "sum"
+      },
+      "interpretations": {
+        "target": "total",
+        "type": "screening",
+        "ranges": [
+          {
+            "min": 0,
+            "max": 18,
+            "label": "מתחת לסף הסינון"
+          },
+          {
+            "min": 19,
+            "max": 32,
+            "label": "מעל סף הסינון"
+          }
+        ],
+        "cutoffs": [
+          {
+            "value": 19,
+            "label": "סף סינון"
+          }
+        ]
+      },
+      "psychometrics": {
+        "reliability": 0.9,
+        "sd": 8.17,
+        "source": "Price, Szafranski, van Stolk-Cooke & Gros (2016), Psychiatry Research 239, 124-130 (clinical sample, Study 2)"
+      },
+      "alerts": [
+        {
+          "id": "screen_cutoff",
+          "condition": "score.pcl5_8 >= 19",
+          "message": "מעל סף סינון ל-PTSD",
+          "severity": "warning"
+        }
+      ]
+    }
+  ]
+}

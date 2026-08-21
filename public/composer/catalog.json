@@ -730,6 +730,68 @@
       "featured": true
     },
     {
+      "id": "pcl5_4",
+      "kind": "questionnaire",
+      "title": "שאלון פוסט-טראומה מקוצר בן 4 פריטים (PCL-5)",
+      "description": "גרסה מקוצרת בת 4 פריטים של ה-PCL-5 לסינון תסמיני פוסט-טראומה בשבוע האחרון (Price et al., 2016); סף סינון 10.",
+      "keywords": [
+        "PTSD",
+        "טראומה",
+        "PCL-5",
+        "trauma",
+        "screening",
+        "סינון",
+        "גרסה מקוצרת"
+      ],
+      "itemCount": 4,
+      "estMinutes": 1,
+      "hasConditional": false,
+      "domains": [
+        "trauma"
+      ],
+      "type": "screener",
+      "populations": [
+        "adult"
+      ],
+      "tags": [
+        "PCL-5",
+        "גרסה מקוצרת",
+        "screening"
+      ],
+      "featured": false
+    },
+    {
+      "id": "pcl5_8",
+      "kind": "questionnaire",
+      "title": "שאלון פוסט-טראומה מקוצר בן 8 פריטים (PCL-5)",
+      "description": "גרסה מקוצרת בת 8 פריטים של ה-PCL-5 למעקב אחר תסמיני פוסט-טראומה בשבוע האחרון (Price et al., 2016); סף סינון 19.",
+      "keywords": [
+        "PTSD",
+        "טראומה",
+        "PCL-5",
+        "trauma",
+        "screening",
+        "סינון",
+        "גרסה מקוצרת"
+      ],
+      "itemCount": 8,
+      "estMinutes": 1,
+      "hasConditional": false,
+      "domains": [
+        "trauma"
+      ],
+      "type": "screener",
+      "populations": [
+        "adult"
+      ],
+      "tags": [
+        "PCL-5",
+        "גרסה מקוצרת",
+        "screening"
+      ],
+      "featured": false
+    },
+    {
       "id": "pdss_sr",
       "kind": "questionnaire",
       "title": "שאלון חומרת הפרעת פאניקה (PDSS-SR)",
@@ -883,15 +945,16 @@
     {
       "id": "ptci",
       "kind": "questionnaire",
-      "title": "שאלון קוגניציות פוסט-טראומטיות (PTCI)",
-      "description": "כלי בן 33 פריטים להערכת מחשבות ואמונות הקשורות לטראומה בשלושה תת-סולמות: קוגניציות שליליות על העצמי, על העולם, והאשמה עצמית.",
+      "title": "שאלון קוגניציות פוסט-טראומטיות, גרסה מלאה (PTCI)",
+      "description": "כלי בן 36 פריטים (33 מנוקדים) להערכת מחשבות ואמונות הקשורות לטראומה, בשלושה תת-סולמות: קוגניציות שליליות על העצמי, על העולם, והאשמה עצמית.…",
       "keywords": [
         "PTSD",
         "טראומה",
         "קוגניציות",
         "PTCI",
         "trauma",
-        "cognitions"
+        "cognitions",
+        "גרסה מלאה"
       ],
       "itemCount": 36,
       "estMinutes": 4,
@@ -903,7 +966,41 @@
       "populations": [
         "adult"
       ],
-      "tags": [],
+      "tags": [
+        "PTCI",
+        "גרסה מלאה"
+      ],
+      "featured": false
+    },
+    {
+      "id": "ptci9",
+      "kind": "questionnaire",
+      "title": "שאלון קוגניציות פוסט-טראומטיות מקוצר (PTCI-9)",
+      "description": "גרסה מקוצרת בת 9 פריטים של ה-PTCI (Wells et al., 2019), שלושה פריטים בכל תת-סולם: קוגניציות שליליות על העצמי, על העולם, והאשמה עצמית. נוסח…",
+      "keywords": [
+        "PTSD",
+        "טראומה",
+        "קוגניציות",
+        "PTCI-9",
+        "PTCI",
+        "trauma",
+        "cognitions",
+        "גרסה מקוצרת"
+      ],
+      "itemCount": 9,
+      "estMinutes": 2,
+      "hasConditional": false,
+      "domains": [
+        "trauma"
+      ],
+      "type": "process",
+      "populations": [
+        "adult"
+      ],
+      "tags": [
+        "PTCI",
+        "גרסה מקוצרת"
+      ],
       "featured": false
     },
     {
