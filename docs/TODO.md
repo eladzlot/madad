@@ -53,9 +53,11 @@ The phrase **"Continue with TODO"** means: do the above, then pick up the curren
 
 ## 1. Status
 
-**Currently working on:** idle. Backlog refreshed 2026-08-21 — new `IDIO` band (idiographic measures; options in `docs/IDIOGRAPHIC_PLAN.md`), new `CONT` band (instrument content), plus `AGG-7` and `AGG-8`. Nothing started. If the idiographic stream is picked up, `IDIO-0` is the decision gate everything else waits behind.
+**Currently working on:** idle. The `CONT` band is cleared — CONT-1/2/3 all landed 2026-08-21 (archive A-12/A-13/A-14, decision D-18). Before that, the same day, a documentation pass refreshed `HANDOVER.md` and the specs against the tree. If the idiographic stream is picked up next, `IDIO-0` is the decision gate everything else waits behind.
 
-**Last session ended:** 2026-08-21 — planning only, no code changed. State verified on `main`: HEAD `8455ced`, in sync with `origin/main`, working tree clean, `npm test` green at **1421 tests across 54 files**.
+**Last session ended:** 2026-08-21 — docs refresh (`40046a2`) + the CONT band (`84799f4`). State on `main`: working tree clean, `npm test` green at **1421 tests across 54 files**, `validate:configs` 51/51. **Local `main` is ahead of `origin/main` by three commits — not yet pushed.**
+
+**Content watch-outs from this session:** `scq` and `ptci` both changed scoring meaning (see A-12/A-13). Nothing in the PDF envelope records which config version produced a score, so an aggregate trajectory spanning the change will show an artificial step. Consider whether the envelope should carry the config `version` — not filed as a task yet.
 
 **AGG-6 is complete *and committed*** — the previous status ("awaiting commit approval… Not yet committed", dated 2026-07-06) was stale by seven weeks. A-11's work is on `main`, and the composer upgrade (Lit rewrite, catalog index, preview modal, Fuse.js search, help page, pins), the security-hardening pass, `rated_text`, the per-item `display` field, the four CPT worksheets, and STSS/CAPE/PQ-B all landed after it.
 
@@ -134,9 +136,9 @@ free for non-commercial research/clinical use only.
 
 | ID | Title | Status | Notes |
 |---|---|---|---|
-| CONT-1 | SCQ should be 0-based | todo | Currently 22 items scored 1–5 (per `HANDOVER.md` §Instrument library); rescore to 0-based. Check what moves with it: option values, `scoring`, any `interpretations.ranges`, and the total's meaning. Hebrew translation is already flagged unvalidated and there are no validated cutoffs, so no published norm is being contradicted — but record *why* 0-based is right in the config's provenance/notes so it isn't flipped back. Bump the config `version`. |
-| CONT-2 | Add PTCI-9 | todo | Short form of the 37-item `ptci` (3 subscales, mean, `totalMethod: sum_of_items`). **Design question shared with CONT-3:** separate config file (`ptci9`) duplicating item text, vs. deriving a short form from the parent. Item IDs are addresses and one entity lives per file, so separate file is the grain the system expects — the cost is that the Hebrew wording of shared items can drift between the two. Decide once, apply to both rows. |
-| CONT-3 | Add PCL-5 4-item and 8-item short forms | todo | **Source (user-specified):** https://www.sciencedirect.com/science/article/pii/S0165178115300664 — *Psychiatry Research*, paywalled. **User will supply the paper at implementation time.** Take the item subsets, scoring, and cutoffs from it directly — do not infer which PCL-5 items belong to each short form, and do not carry over the parent's ≥ 33 alert or its interpretation bands. Parent `pcl5` is 21 items (20 scored + instructions), 4 sum subscales. Same separate-file-vs-derived question as CONT-2. |
+| CONT-1 | SCQ should be 0-based | done | See archive A-12. |
+| CONT-2 | Add PTCI-9 | done | See archive A-13. D-18 applied (separate file). Surfaced and fixed a content bug in the parent `ptci`. |
+| CONT-3 | Add PCL-5 4-item and 8-item short forms | done | See archive A-14. D-18 applied (separate file). |
 
 ### P1 — API stability, author experience
 
@@ -344,7 +346,32 @@ Append-only. Date format: YYYY-MM-DD.
 
 ---
 
+### D-18 — Short forms live in their own config file, item text copied from the parent
+**Date:** 2026-08-21
+**Context:** CONT-2/CONT-3. PTCI-9 and the PCL-5 4/8-item scales are subsets of instruments already in the library. Options: a separate `<id>.json` duplicating the item text, or deriving the short form from the parent at load time.
+**Decision:** Separate file. Item IDs are addresses and one entity lives per file — that is the grain the whole system (URLs, catalog, envelope, aggregate) expects, and a derived form would need new schema and new engine paths for one content case. The known cost is wording drift between parent and short form; it is mitigated by building the short form's items *from the parent file* programmatically, and by keeping the parent's item numbering as the short form's item IDs so the provenance is visible in the PDF and the heatmap.
+**Consequence:** A change to a parent's Hebrew wording must be mirrored into its short forms by hand. `ptci`/`ptci9` and `pcl5`/`pcl5_4`/`pcl5_8` are the pairs to check.
+
+---
+
 ## 5. Task Archive
+
+### A-14 — CONT-3 PCL-5 4- and 8-item short forms
+**Completed:** 2026-08-21
+**Summary:** `pcl5_4` (items 1, 7, 9, 18 — clusters B1, C2, D2, E4; sum 0–16; screening cutoff 10) and `pcl5_8` (items 1, 4, 6, 7, 9, 12, 18, 19 — B1, B4, C1, C2, D2, D5, E4, E5; sum 0–32; cutoff 19), both the cluster-derived scales evaluated in Study 2 of Price, Szafranski, van Stolk-Cooke & Gros (2016), *Psychiatry Research* 239, 124–130. Screening interpretations + warning alert at each cutoff; neither carries the parent's ≥ 33 alert or severity bands. Hebrew item text copied verbatim from `pcl5`. `psychometrics` from the paper's clinical sample (4-item α=.82 SD=4.48; 8-item α=.90 SD=8.17). Watch-out recorded: the paper's Table 2 note renders ambiguously in two-column extraction — the verbatim line is "Items selected for the 4-item measure used in Study 2 were B1, C2, D2, E4".
+**Files:** `public/configs/prod/pcl5_4.json`, `pcl5_8.json` (new), `public/composer/catalog.json`, `docs/HANDOVER.md`.
+**Decisions referenced:** D-18.
+
+### A-13 — CONT-2 PTCI-9, plus a rebuild of the parent PTCI
+**Completed:** 2026-08-21
+**Summary:** `ptci9` = PTCI items 1, 7, 22, 23, 25, 27, 31, 33, 36 (Wells, Morland, Torres, Kloezeman, Mackintosh & Aarons, 2019, *Assessment* 26(2)), three per subscale, subscale means + total as sum of the nine items. Building it exposed a content bug in the parent: `ptci`'s Hebrew did not match the PTCI item numbering its own subscales assume (item 7 held item 18's content, 25 and 33 and 36 likewise displaced), plus near-duplicate and ungrammatical items — an unproofed machine translation. Every item PTCI-9 selects was affected. `ptci` was therefore rebuilt (v2.0.0) from the validated Hebrew version (Daie-Gabai, Aderka, Allon-Schindel, Foa & Gilboa-Schechtman, 2011), published free at mta.ac.il; filler items 13/32/34 moved into `scoring.exclude` (with `totalMethod: sum_of_items` they had been inflating the total, which the published instrument computes over the 33 scored items); titled as the long form. **PTCI totals from v1 are not comparable to v2.** No `psychometrics` on `ptci9` — the paper reports subscale α's only, and the schema requires reliability+sd+source together (an AGG-P item).
+**Files:** `public/configs/prod/ptci.json` (rewritten), `ptci9.json` (new), `public/composer/catalog.json`, `docs/HANDOVER.md`.
+**Decisions referenced:** D-18.
+
+### A-12 — CONT-1 SCQ rescored 0-based
+**Completed:** 2026-08-21
+**Summary:** `scq` v2.0.0 — option values 1–5 → 0–4, so "the thought never occurs" scores 0 and the total runs 0–88 instead of 22–110. No interpretations, cutoffs or alerts exist on the SCQ, so nothing else moved. The schema has no provenance field (`additionalProperties: false`), so the rationale lives in the commit message and this entry: the Hebrew translation is unvalidated and there are no published cutoffs, so no norm is contradicted, and a floor of 22 was misleading in trajectories. **Do not flip it back.** Scores from before the change are not comparable to scores after it.
+**Files:** `public/configs/prod/scq.json`, `public/composer/catalog.json`, `docs/HANDOVER.md`.
 
 ### A-11 — AGG-6 Clinician shell integration + chart-card control redesign
 **Completed:** 2026-07-06
