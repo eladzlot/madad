@@ -18,12 +18,16 @@
  *   {
  *     "pid": "DEMO-001",
  *     "name": null,
- *     "config": "public/configs/prod/standard.json",
  *     "sessions": [
  *       { "date": "2026-06-05", "instruments": { "phq9": 18, "oci_r": 31 } },
  *       { "date": "2026-06-12", "instruments": { "phq9": 14 } }
  *     ]
  *   }
+ *
+ * There is no config field: item IDs are addresses, so each instrument named
+ * in `instruments` is loaded from public/configs/prod/<id>.json — the same
+ * expansion the patient app does with `?items=`. A legacy `config` field in an
+ * old scenario file is ignored.
  *
  * Instrument values are target *total scores*; answers are derived
  * greedily (first items filled to max first), then scored by the real
@@ -56,7 +60,6 @@ const ROOT = resolve(__dirname, '..');
 const DEFAULT_SCENARIO = {
   pid: 'DEMO-001',
   name: null,
-  config: 'public/configs/prod/standard.json',
   sessions: [
     { date: '2026-06-05', instruments: { phq9: 18, oci_r: 31 } },
     { date: '2026-06-12', instruments: { phq9: 14 } },
@@ -155,19 +158,43 @@ function initPdfmake() {
   });
 }
 
+// ── Config loading ────────────────────────────────────────────────────────────
+
+// Item IDs are addresses: every questionnaire lives at
+// public/configs/prod/<id>.json, filename = entity id. The scenario names
+// instruments, so the config sources ARE those names — the same expansion
+// src/app.js does with `items=`. Only the instruments a scenario actually
+// uses are read.
+function loadQuestionnaires(scenario) {
+  const ids = [...new Set(scenario.sessions.flatMap((s) => Object.keys(s.instruments)))];
+  const questionnaires = new Map();
+  for (const id of ids) {
+    const path = resolve(ROOT, 'public/configs/prod', `${id}.json`);
+    let configData;
+    try {
+      configData = JSON.parse(readFileSync(path, 'utf8'));
+    } catch (err) {
+      throw new Error(`Cannot load config for instrument "${id}" (${path}): ${err.message}`);
+    }
+    for (const q of configData.questionnaires ?? []) {
+      // Mirror the loader's annotation: with one entity per file the config
+      // short name is the instrument id itself.
+      questionnaires.set(q.id, { ...q, configFile: id });
+    }
+    if (!questionnaires.has(id)) {
+      throw new Error(`Config ${id}.json defines no questionnaire "${id}" — batteries are not supported here.`);
+    }
+  }
+  return questionnaires;
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 async function main() {
   await initBidiForTesting();
   initPdfmake();
 
-  const configData = JSON.parse(readFileSync(resolve(ROOT, scenario.config), 'utf8'));
-  // Mirror the loader's configFile annotation so envelopes carry the same
-  // short name a browser session would ('standard', not a path).
-  const shortName = scenario.config.replace(/^public\/configs\/prod\//, '').replace(/\.json$/, '');
-  const questionnaires = new Map(
-    configData.questionnaires.map((q) => [q.id, { ...q, configFile: shortName }])
-  );
+  const questionnaires = loadQuestionnaires(scenario);
   const config = { questionnaires: [...questionnaires.values()] };
   const session = { pid: scenario.pid ?? null, name: scenario.name ?? null };
 
