@@ -208,6 +208,17 @@ one chart:
 Subscales are available as additional togglable lines via a per-chart
 legend. Total is on by default; subscales are off by default.
 
+**Chart order** (decided 2026-08-22, AGG-7): charts are ordered by number
+of administrations, descending — the instrument the clinician has the most
+data on is the one they came to read, and it belongs at the top rather than
+wherever upload order happened to put it. Ties break on the most recent
+administration (between two instruments seen equally often, the one still
+in use leads), then on title, so the order is fully determined. The order
+is derived, not frozen: it recomputes with the pid filter and with each
+batch of uploaded PDFs, because a frozen order would misrepresent the set
+currently on screen. The non-quantitative list (§5.5) is ordered the same
+way.
+
 ### 5.2 Severity bands and screening cutoffs
 
 *Revised 2026-07-03 (supersedes the original per-range `type` design):

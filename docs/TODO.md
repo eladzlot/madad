@@ -53,7 +53,7 @@ The phrase **"Continue with TODO"** means: do the above, then pick up the curren
 
 ## 1. Status
 
-**Currently working on:** idle. The `CONT` band is cleared — CONT-1/2/3 all landed 2026-08-21 (archive A-12/A-13/A-14, decision D-18). Before that, the same day, a documentation pass refreshed `HANDOVER.md` and the specs against the tree. If the idiographic stream is picked up next, `IDIO-0` is the decision gate everything else waits behind.
+**Currently working on:** idle. `AGG-7` landed 2026-08-22 (archive A-15) and `AGG-9` was filed the same day. The `CONT` band is cleared — CONT-1/2/3 all landed 2026-08-21 (archive A-12/A-13/A-14, decision D-18). Before that, the same day, a documentation pass refreshed `HANDOVER.md` and the specs against the tree. If the idiographic stream is picked up next, `IDIO-0` is the decision gate everything else waits behind.
 
 **Last session ended:** 2026-08-21 — docs refresh (`40046a2`) + the CONT band (`84799f4`). State on `main`: working tree clean, `npm test` green at **1421 tests across 54 files**, `validate:configs` 51/51. **Local `main` is ahead of `origin/main` by three commits — not yet pushed.**
 
@@ -105,8 +105,9 @@ Build slices per D-11. Slice 1 goes to pilot therapists before later slices are 
 | AGG-5 | Slice 4 — PNG/SVG export | done | See archive A-10. |
 | AGG-6 | Design dive: aggregate visual refresh + clinician shell integration | done | See archive A-11. D-15/D-16/D-17 applied. |
 | AGG-P | Psychometrics content: reliability/SD/source per instrument | todo | **User-owned clinical workstream** — can start now; long pole for AGG-4 |
-| AGG-7 | Sort questionnaires in the aggregate by number of applications | todo | Small. Most-administered instrument first, so the chart a clinician cares about is at the top instead of in config/upload order. Ordering lives in the composition root (`aggregate/src/aggregate.js`), which already computes the shared x-domain per D-14 — count sessions per `questionnaireId` in the pid-filtered set and sort descending. Open: tie-break (most-recent? alphabetical?), and whether the order should be stable as new PDFs are dropped in mid-session. |
+| AGG-7 | Sort questionnaires in the aggregate by number of applications | done | See archive A-15. |
 | AGG-8 | Capture and report time spent answering | todo | **Spans three layers.** (1) Capture: nothing times anything today — no `Date.now()` in orchestrator/engine/controller. Decide the grain (per item / per questionnaire / per session) and how to handle a patient who leaves the tab open. (2) Carry: new envelope field; `validateEnvelope` already tolerates unknown extra fields (forward-compatible by design), so this is **additive — no `ENVELOPE_VERSION` bump** — but every historical PDF lacks it, so readers must handle absence. (3) Report: PDF and/or aggregate. Purpose per user: see response burden on patients, so per-questionnaire is probably the useful grain. Privacy note: duration is behavioural data about the patient — decide deliberately whether it belongs in the PDF the patient sees. |
+| AGG-9 | Record the config version in the envelope | todo | **Small, additive.** Nothing in `data.json` says which config version produced a score, so a trajectory spanning a scoring change shows an artificial step the chart cannot detect — `scq` (1–5 → 0–4) and `ptci` (item text + filler exclusion) both changed meaning on 2026-08-21 and every PDF on either side looks identical to the reader. Write the config's top-level `version` (and the questionnaire id it belongs to) next to each instrument in the envelope; `validateEnvelope` already tolerates unknown fields, so this is **additive — no `ENVELOPE_VERSION` bump** — but every historical PDF lacks it, so the aggregate must treat absence as "unknown", never as "same". Open, and the only part needing a call: what the aggregate *does* when two points on one chart disagree — annotate the boundary, split the series, or just tooltip it. Suggest starting with the capture side (envelope + `report.js`), which is useful on its own and decides nothing.
 
 ### IDIO — Idiographic / personalized measures (docs/IDIOGRAPHIC_PLAN.md)
 
@@ -355,6 +356,12 @@ Append-only. Date format: YYYY-MM-DD.
 ---
 
 ## 5. Task Archive
+
+### A-15 — AGG-7 Aggregate instruments ordered by administration count
+**Completed:** 2026-08-22
+**Summary:** Charts (and the non-quantitative list) are ordered most-administered first instead of by upload order. Sorting lives in `store.js`'s derivations, not the composition root as the task note suggested — the store already owns every derivation, it is unit-testable, and `aggregate.js` is excluded from coverage. Tie-breaks: most recent administration, then title, so the order is fully determined and equal rows never reshuffle on re-render. **Order is derived, not frozen** (this reverses the "stable-within-session" default floated in chat): it recomputes with the pid filter and each upload batch, because a frozen order stops being true as soon as the visible set changes. Spec updated (AGGREGATE_SPEC §5.1).
+**Files:** `aggregate/src/store.js` (+ `store.test.js`, 5 new tests), `tests/e2e/aggregate.e2e.test.js` (order test over the mixed15 fixture: PHQ-9 ×16, WSAS ×4, ASI-3 ×1), `docs/AGGREGATE_SPEC.md`.
+**Test delta:** 1421 → 1426 unit; aggregate e2e 8 → 9.
 
 ### A-14 — CONT-3 PCL-5 4- and 8-item short forms
 **Completed:** 2026-08-21

@@ -186,6 +186,86 @@ describe('pid filter', () => {
   });
 });
 
+// ── Instrument ordering (AGG-7) ───────────────────────────────────────────────
+
+describe('instrument ordering', () => {
+  // One session containing the given instruments, each with a total.
+  function session(date, ids, name = `${date}.pdf`) {
+    return okFile(makeEnvelope({
+      generatedAt: `${date}T10:00:00Z`,
+      instruments: ids.map(id => ({ questionnaireId: id, title: id.toUpperCase(), configFile: 'x' })),
+      answers: Object.fromEntries(ids.map(id => [id, { q1: 1 }])),
+      scores: Object.fromEntries(ids.map(id => [id, { total: 5 }])),
+    }), name);
+  }
+
+  it('puts the most-administered instrument first, regardless of upload order', () => {
+    const store = createStore();
+    store.addFiles([
+      session('2026-07-01', ['wsas', 'phq9']),   // wsas appears first in upload order
+      session('2026-07-08', ['phq9']),
+      session('2026-07-15', ['phq9']),
+    ]);
+    expect(store.series().map(s => s.questionnaireId)).toEqual(['phq9', 'wsas']);
+  });
+
+  it('breaks count ties by the most recent administration', () => {
+    const store = createStore();
+    store.addFiles([
+      session('2026-07-01', ['gad7']),
+      session('2026-07-02', ['phq9']),
+      session('2026-07-20', ['gad7']),   // gad7 is the one still in use
+      session('2026-07-10', ['phq9']),
+    ]);
+    expect(store.series().map(s => s.questionnaireId)).toEqual(['gad7', 'phq9']);
+  });
+
+  it('breaks a full tie by title, so the order is deterministic', () => {
+    const store = createStore();
+    store.addFiles([session('2026-07-01', ['zzz', 'aaa'])]);
+    expect(store.series().map(s => s.questionnaireId)).toEqual(['aaa', 'zzz']);
+  });
+
+  it('re-sorts when the pid filter changes the counts', () => {
+    const store = createStore();
+    store.addFiles([
+      okFile(makeEnvelope({
+        pid: 'P001', generatedAt: '2026-07-01T10:00:00Z',
+        instruments: [{ questionnaireId: 'phq9', title: 'PHQ9', configFile: 'x' }],
+        answers: { phq9: { q1: 1 } }, scores: { phq9: { total: 5 } },
+      })),
+      okFile(makeEnvelope({
+        pid: 'P002', generatedAt: '2026-07-02T10:00:00Z',
+        instruments: [{ questionnaireId: 'gad7', title: 'GAD7', configFile: 'x' }],
+        answers: { gad7: { q1: 1 } }, scores: { gad7: { total: 5 } },
+      })),
+      okFile(makeEnvelope({
+        pid: 'P002', generatedAt: '2026-07-09T10:00:00Z',
+        instruments: [{ questionnaireId: 'gad7', title: 'GAD7', configFile: 'x' }],
+        answers: { gad7: { q1: 1 } }, scores: { gad7: { total: 5 } },
+      })),
+    ]);
+    expect(store.series().map(s => s.questionnaireId)).toEqual(['gad7', 'phq9']);
+    store.setPidFilter('P001');
+    expect(store.series().map(s => s.questionnaireId)).toEqual(['phq9']);
+  });
+
+  it('orders the raw-data list the same way', () => {
+    const store = createStore();
+    const raw = (date, ids, name) => okFile(makeEnvelope({
+      generatedAt: `${date}T10:00:00Z`,
+      instruments: ids.map(id => ({ questionnaireId: id, title: id.toUpperCase(), configFile: 'x' })),
+      answers: Object.fromEntries(ids.map(id => [id, { q1: 'text' }])),
+      scores: {},
+    }), name);
+    store.addFiles([
+      raw('2026-07-01', ['anger_log', 'top3'], 'a.pdf'),
+      raw('2026-07-08', ['top3'], 'b.pdf'),
+    ]);
+    expect(store.rawInstruments().map(r => r.questionnaireId)).toEqual(['top3', 'anger_log']);
+  });
+});
+
 // ── Raw (non-quantitative) instruments ────────────────────────────────────────
 
 describe('rawInstruments', () => {

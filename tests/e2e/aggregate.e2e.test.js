@@ -243,6 +243,28 @@ test.describe('aggregate image export', () => {
   });
 });
 
+// ── Chart order (AGGREGATE_SPEC §5.1, AGG-7) ──────────────────────────────────
+
+test.describe('aggregate chart order', () => {
+  test('the most-administered instrument charts first', async ({ page }) => {
+    const { readdirSync } = await import('fs');
+    const dir = new URL('../fixtures/pdfs/mixed15/', import.meta.url).pathname;
+    // 16 weeks of one patient: PHQ-9 every session, WSAS every fourth,
+    // ASI-3 once. Uploaded in filename (chronological) order, so the first
+    // session alone would put PHQ-9 and WSAS side by side.
+    const files = readdirSync(dir).filter(n => n.endsWith('.pdf')).sort().map(n => dir + n);
+
+    await page.goto('/aggregate/');
+    await uploadInput(page).setInputFiles(files);
+
+    const titles = page.locator('trajectory-chart h3');
+    await expect(titles).toHaveCount(3);
+    await expect(titles.nth(0)).toContainText('PHQ-9');   // 16 administrations
+    await expect(titles.nth(1)).toContainText('WSAS');    // 4
+    await expect(titles.nth(2)).toContainText('ASI-3');   // 1
+  });
+});
+
 // ── Bad-file handling (AGGREGATE_SPEC §5.7) ───────────────────────────────────
 
 test.describe('aggregate bad-file handling', () => {

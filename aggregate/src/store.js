@@ -68,6 +68,9 @@ export function createStore() {
      * Per-instrument series of quantitative points, honouring the pid
      * filter, sorted by date ascending (time flows LTR — D-10).
      *
+     * Instruments are ordered most-administered first (AGG-7); see
+     * byAdministrationCount below for the tie-breaks.
+     *
      * @returns {Array<{questionnaireId, title, points}>}
      *   points: [{ date, total, subscales, category, alerts, pid, fileName }]
      */
@@ -99,13 +102,14 @@ export function createStore() {
       }
       const result = [...byInstrument.values()];
       for (const s of result) s.points.sort((a, b) => a.date - b.date);
-      return result;
+      return result.sort(byAdministrationCount(s => s.points));
     },
 
     /**
      * Instruments completed in uploaded sessions that have no quantitative
      * total — idiographic scales, screeners without scores, worksheets.
      * Rendered as the "raw data, not graphed" list (AGGREGATE_SPEC §5.5).
+     * Ordered most-administered first, like series().
      *
      * @returns {Array<{questionnaireId, title, sessions: [{date, pid, fileName}]}>}
      */
@@ -130,7 +134,7 @@ export function createStore() {
       }
       const result = [...byInstrument.values()];
       for (const r of result) r.sessions.sort((a, b) => a.date - b.date);
-      return result;
+      return result.sort(byAdministrationCount(r => r.sessions));
     },
 
     /**
@@ -174,5 +178,28 @@ export function createStore() {
 
   function titleFor(envelope, qId) {
     return envelope.instruments.find(i => i.questionnaireId === qId)?.title ?? qId;
+  }
+
+  // Instrument ordering (AGG-7): most-administered first, so the trajectory a
+  // clinician came to read is at the top instead of wherever upload order put
+  // it. Ties go to the instrument administered most recently — between two
+  // instruments seen the same number of times, the one still in use is the
+  // live one — and then to the title, so the order is fully determined and a
+  // re-render never reshuffles equal rows.
+  //
+  // Recomputed on every derivation rather than frozen at first render: the
+  // list is derived from the pid-filtered set, so freezing it would make the
+  // order lie as soon as a filter changes or a later batch of PDFs arrives.
+  // `entries` picks the dated array to count (points for charts, sessions for
+  // the raw list); both are already sorted ascending by date when this runs.
+  function byAdministrationCount(entries) {
+    return (a, b) => {
+      const ea = entries(a), eb = entries(b);
+      if (eb.length !== ea.length) return eb.length - ea.length;
+      const lastA = ea[ea.length - 1]?.date ?? 0;
+      const lastB = eb[eb.length - 1]?.date ?? 0;
+      if (lastB - lastA !== 0) return lastB - lastA;
+      return a.title.localeCompare(b.title, 'he');
+    };
   }
 }
