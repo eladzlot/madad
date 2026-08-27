@@ -16,6 +16,7 @@ import {
   ScenarioError,
   normalizeScenario,
   collectInstrumentIds,
+  patientOutDir,
   loadQuestionnaires,
   answerableItems,
   optionValues,
@@ -106,6 +107,29 @@ describe('collectInstrumentIds', () => {
       { pid: 'B', sessions: [{ date: '2026-06-05', instruments: { phq9: 3 } }] },
     ]);
     expect(collectInstrumentIds(patients).sort()).toEqual(['gad7', 'phq9']);
+  });
+});
+
+describe('patientOutDir', () => {
+  // Both CLIs derive output paths from this — generate-test-pdfs.mjs writes
+  // there, generate-demo-shots.mjs reads from there without re-running the
+  // build. They must agree by construction, so pin the shape.
+  const p = (extra = {}) => ({ pid: 'DEMO-A', sessions: [], ...extra });
+
+  it('writes a lone patient straight into the base directory', () => {
+    expect(patientOutDir(p(), 0, 1, '/out')).toBe('/out');
+  });
+
+  it('prefers an explicit `out` name for a set', () => {
+    expect(patientOutDir(p({ out: 'remitting' }), 0, 2, '/out')).toBe('/out/remitting');
+  });
+
+  it('falls back to the pid', () => {
+    expect(patientOutDir(p(), 1, 2, '/out')).toBe('/out/DEMO-A');
+  });
+
+  it('falls back to the patient index when there is no pid or out', () => {
+    expect(patientOutDir(p({ pid: null }), 2, 3, '/out')).toBe('/out/patient-2');
   });
 });
 

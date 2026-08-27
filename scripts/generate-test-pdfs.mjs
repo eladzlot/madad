@@ -63,6 +63,7 @@ import {
   buildSessionState,
   describeInstrument,
   summarizeSession,
+  patientOutDir,
 } from './lib/mock-report.js';
 
 // CJS interop: pdfmake's node entry is `module.exports = new pdfmake()`;
@@ -220,13 +221,9 @@ async function main() {
 
   const questionnaires = loadQuestionnaires(collectInstrumentIds(patients), CONFIG_DIR);
 
-  // One patient writes straight into the output dir (the fixture case and the
-  // common demo case); a set fans out into per-patient subdirectories so the
-  // Aggregate can be fed one profile at a time.
   let written = 0;
-  for (const patient of patients) {
-    const outDir =
-      patients.length === 1 ? baseOut : join(baseOut, patient.out ?? patient.pid ?? `patient-${written}`);
+  for (const [i, patient] of patients.entries()) {
+    const outDir = patientOutDir(patient, i, patients.length, baseOut);
     if (patients.length > 1) console.log(`\n── ${patient.pid ?? '(no pid)'} → ${outDir}`);
     written += await generatePatient(patient, questionnaires, outDir);
   }

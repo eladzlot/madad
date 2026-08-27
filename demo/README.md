@@ -8,8 +8,9 @@ Nothing in here is committed except this file. `demo/scenarios/` and
 `demo/out/` are gitignored: mock patient material has no place in git.
 
 ```bash
-npm run demo -- demo/scenarios/my-profile.json   # → demo/out/
-npm run demo -- --describe phq9                  # item ids + legal values
+npm run demo -- demo/scenarios/my-profile.json         # PDFs → demo/out/
+npm run demo -- --describe phq9                        # item ids + legal values
+npm run demo:shots -- demo/scenarios/my-profile.json   # + Aggregate images
 ```
 
 ## Scenario grammar
@@ -111,6 +112,48 @@ checked against what the engine scored, then summarised:
 Read those lines before building the slide — they are the confirmation that the
 profile you got is the profile you asked for.
 
+## Images of the Aggregate views
+
+`npm run demo:shots -- <scenario.json>` generates the PDFs *and* renders the
+Aggregate's per-instrument views as PNGs, one file per instrument per view:
+
+```
+demo/out/<patient>/
+  report-DEMO-A-2026-06-05.pdf
+  images/
+    phq9-chart.png       1600×1000 — the app's own framed export
+    phq9-heatmap.png     2048×N    — element screenshot at 2×
+```
+
+It drives a real browser over the real Aggregate surface, because that is the
+only way to get these views: the chart has a DOM-free export builder
+(`export-svg.js`) but it emits SVG, and the heatmap has no export path at all.
+The PDFs are rebuilt on every run, so the images can never drift from them.
+
+| Flag | |
+|---|---|
+| `--views chart` | just one view (`chart`, `heatmap`, or both — the default) |
+| `--pid` | stamp the patient identifier on chart exports (off by default) |
+| `--out <dir>` | write somewhere other than `demo/out` |
+| `--headed` | watch the browser work, for debugging |
+
+**Chart** images come from clicking the app's own PNG export, so you get the
+framed 1600×1000 artifact a clinician would send — title, date range, `מדד`
+footer, optional pid — not a screenshot of the card with its toolbar in shot.
+
+**Heatmap** images are element screenshots with the view switcher and export
+buttons hidden, keeping the instrument title. Two things to know:
+
+- Past **12 sessions** the heatmap drops in-cell numbers and renders bare colour
+  chips, so a 16-session profile and a 6-session one look quite different. Choose
+  the session count deliberately when the item map is the slide.
+- The heatmap needs the instrument's config to render at all. It is skipped with
+  a warning if the config didn't load.
+
+The item map is also where a greedy-filled scenario gives itself away — the
+front-loading shows up as a clean diagonal staircase no real patient produces.
+One more reason to write explicit answers.
+
 ## Scope
 
 `select` and `binary` items only. Instruments with `if`/`randomize` branching
@@ -119,5 +162,6 @@ profile you got is the profile you asked for.
 `trauma_eval`) are rejected by name rather than silently mis-scored. Extending
 to those means extending `scripts/lib/mock-report.js`.
 
-The generator itself is `scripts/generate-test-pdfs.mjs`; the scenario logic and
-its tests live in `scripts/lib/mock-report.js` and `mock-report.test.js`.
+The PDF generator is `scripts/generate-test-pdfs.mjs` and the image generator is
+`scripts/generate-demo-shots.mjs`; the scenario logic and its tests live in
+`scripts/lib/mock-report.js` and `mock-report.test.js`.

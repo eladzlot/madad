@@ -154,7 +154,8 @@ envelope), swapping only the browser pdfmake build for the node one and injectin
 the session date. Each PDF is then re-parsed with the Aggregate's own `parse-pdf.js`
 and its envelope checked against what the engine scored.
 
-- `scripts/generate-test-pdfs.mjs` — the CLI (fonts, pdfmake, writing, verification)
+- `scripts/generate-test-pdfs.mjs` — the PDF CLI (fonts, pdfmake, writing, verification)
+- `scripts/generate-demo-shots.mjs` — `npm run demo:shots`, the image CLI (below)
 - `scripts/lib/mock-report.js` — the scenario grammar, validation and session
   assembly, unit-tested in `mock-report.test.js` against the **real prod configs**,
   so the tests break if an instrument's shape changes under them
@@ -183,6 +184,28 @@ wrapper emits a whole slide set, one subdirectory each.
 `pqb`, `ocsrs_m`, `top3`), scored `slider`/`rated_text` (worksheets), `multiselect`
 (`pdss_sr`) and batteries are **rejected by name rather than silently mis-scored** —
 extending coverage means extending `scripts/lib/mock-report.js` and its tests.
+
+**Aggregate images.** `npm run demo:shots -- <scenario.json>` regenerates the PDFs
+and then renders each instrument's **chart** and **item heatmap** as PNGs into
+`demo/out/<patient>/images/`. It drives a real browser over the real Aggregate
+surface — the only route available, since `export-svg.js` emits SVG and the
+heatmap has no export path at all. Two deliberately different capture strategies:
+
+- **chart** — clicks the app's own `.export-png`, yielding the framed 1600×1000
+  export (title, date range, `מדד` footer, `--pid`-gated identifier) rather than a
+  card screenshot with the toolbar in shot
+- **heatmap** — element screenshot at `deviceScaleFactor: 2` with a
+  `.controls { display: none }` rule injected into the component's shadow root
+  (page-level CSS cannot reach into a Lit shadow DOM)
+
+Runs as plain node, not vite-node — the PDF half is delegated to a `npm run demo`
+subprocess, the same way `tests/e2e/global-setup.js` builds its fixtures. Vite is
+started programmatically on an ephemeral port and closed in a `finally`. Selectors
+used (`button[data-view=…]`, `.export-png`, `.export-pid`, `table.heatmap`) all
+already exist in `trajectory-chart.js`; **no production code was changed for it**.
+
+Above `COMPACT_THRESHOLD` (12 sessions) the heatmap drops in-cell numbers for
+colour chips, so session count changes what the image looks like.
 
 **`demo/scenarios/` and `demo/out/` are gitignored** (`demo/README.md` is not).
 Mock patient material stays out of git; never relocate it somewhere tracked.
@@ -397,6 +420,7 @@ The pre-collapse bundle files (`standard.json`, `trauma.json`, `intake.json`, `o
 │   ├── build-catalog.mjs         # Writes public/composer/catalog.json
 │   ├── build-validator.mjs       # Regenerates validate-schema.js from AJV
 │   ├── generate-test-pdfs.mjs    # Mock report CLI (fixtures + demo PDFs)
+│   ├── generate-demo-shots.mjs   # Aggregate chart/heatmap PNGs (Playwright)
 │   ├── lib/mock-report.js        # Scenario grammar, validation, scoring
 │   ├── lib/mock-report.test.js   #   (its tests — run by npm test)
 │   ├── build-og-image.sh
@@ -510,6 +534,7 @@ npm run build && npm run preview  # localhost:4173/ (base /)
 npm run e2e              # Playwright
 npm run e2e:dist         # build + dist-smoke against the production base
 npm run demo -- <s.json> # mock report PDFs into demo/out/ (see demo/README.md)
+npm run demo:shots -- <s.json>   # + Aggregate chart/heatmap PNGs
 ```
 
 To add a new instrument: `public/configs/CONTRIBUTING.md`.

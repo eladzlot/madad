@@ -21,6 +21,7 @@
     "validate:configs": "node scripts/validate-configs.mjs",
     "validate:catalog": "node scripts/build-catalog.mjs --check",
     "demo": "vite-node scripts/generate-test-pdfs.mjs --out demo/out",
+    "demo:shots": "node scripts/generate-demo-shots.mjs",
     "pdf:fixtures": "vite-node scripts/generate-test-pdfs.mjs",
     "pdf:fixtures:e2e": "vite-node scripts/generate-test-pdfs.mjs tests/fixtures/scenarios/mixed-15-weeks.json --out tests/fixtures/pdfs/mixed15",
     "size": "node scripts/check-size.mjs",

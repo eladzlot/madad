@@ -61,8 +61,14 @@ Scenario files go in `demo/scenarios/`, output in `demo/out/`. Both are gitignor
 **never commit either, and never move mock reports elsewhere in the repo.**
 
 ```bash
-npm run demo -- demo/scenarios/<name>.json
+npm run demo -- demo/scenarios/<name>.json          # PDFs only
+npm run demo:shots -- demo/scenarios/<name>.json    # PDFs + Aggregate images
 ```
+
+Use `demo:shots` whenever the user wants **slides** — it renders each instrument's
+chart and item heatmap as PNGs into `demo/out/<patient>/images/`. It regenerates
+the PDFs itself, so never run both. `--views chart` limits it; `--pid` stamps the
+identifier on chart exports (off by default — ask before turning it on).
 
 Several patients in one file (each into its own subdirectory) is the right shape for
 a slide set — see `demo/README.md` §"Several patients in one file".
@@ -80,6 +86,17 @@ Read those lines against what the user asked for and **report them back**. If th
 category or alerts don't match the described severity, fix the answers — don't
 explain the mismatch away. The user is putting these on a slide; a report labelled
 "moderate" when they asked for "severe" is a wasted slide.
+
+## Two things that bite on slides
+
+**Past 12 sessions the item heatmap goes compact** — no in-cell numbers, just
+colour chips. If the user wants the item map readable, keep the session count at
+or below 12, or tell them why it changed.
+
+**Greedy-filled scenarios are visibly fake in the heatmap.** The front-loading
+renders as a clean diagonal staircase. This is the concrete reason step 2 insists
+on explicit answers; if you see that staircase in a generated image, the scenario
+used target totals somewhere.
 
 ## Scope limits
 
