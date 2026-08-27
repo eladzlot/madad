@@ -2,51 +2,68 @@
  * generate-test-pdfs.mjs
  *
  * Generates real Madad report PDFs from a scenario description — for
- * Aggregate testing, demo slides, and any future "show me a patient with
- * outcome X" need. The output is byte-faithful to patient-produced PDFs:
- * it reuses the production pipeline end to end (engine scoring → alert
- * evaluation → buildDocDefinition → pdfmake → embedded data.json
- * envelope), only swapping the browser pdfmake build for the node one and
- * injecting the session date.
+ * Aggregate testing, demo slides, and any "show me a patient with symptom
+ * profile X" need. The output is byte-faithful to patient-produced PDFs: it
+ * reuses the production pipeline end to end (engine scoring → alert
+ * evaluation → buildDocDefinition → pdfmake → embedded data.json envelope),
+ * only swapping the browser pdfmake build for the node one and injecting the
+ * session date.
+ *
+ * The scenario grammar and everything that turns a scenario into a scored
+ * session live in scripts/lib/mock-report.js (and are unit-tested there).
+ * This file is the CLI: fonts, pdfmake, writing, verification, reporting.
  *
  * Run with vite-node (report.js uses Vite-only `?url` font imports):
  *
- *   npx vite-node scripts/generate-test-pdfs.mjs                 # default scenario
- *   npx vite-node scripts/generate-test-pdfs.mjs my-scenario.json --out some/dir
+ *   npx vite-node scripts/generate-test-pdfs.mjs                    # default scenario
+ *   npx vite-node scripts/generate-test-pdfs.mjs s.json --out dir   # a scenario file
+ *   npx vite-node scripts/generate-test-pdfs.mjs --describe phq9    # item ids + options
  *
- * Scenario shape (JSON):
+ * Or through the npm scripts: `npm run demo -- <scenario.json>` writes into
+ * demo/out/, `npm run pdf:fixtures` regenerates the test fixtures.
+ *
+ * Scenario shape (JSON) — see demo/README.md for the full grammar:
  *   {
  *     "pid": "DEMO-001",
  *     "name": null,
  *     "sessions": [
- *       { "date": "2026-06-05", "instruments": { "phq9": 18, "oci_r": 31 } },
- *       { "date": "2026-06-12", "instruments": { "phq9": 14 } }
+ *       { "date": "2026-06-05", "instruments": {
+ *           "phq9": { "answers": { "1": 3, "2": 2, ... } },   // explicit
+ *           "oci_r": 31                                        // target total
+ *       } }
  *     ]
  *   }
+ *
+ * A `{ "patients": [ … ] }` wrapper (or a bare array) generates a whole set in
+ * one run, each patient into its own subdirectory.
  *
  * There is no config field: item IDs are addresses, so each instrument named
  * in `instruments` is loaded from public/configs/prod/<id>.json — the same
  * expansion the patient app does with `?items=`. A legacy `config` field in an
  * old scenario file is ignored.
  *
- * Instrument values are target *total scores*; answers are derived
- * greedily (first items filled to max first), then scored by the real
- * engine — so the printed subscales, categories, and alerts are genuine.
- * If the greedy fill cannot hit the target exactly, the script aborts.
- *
- * Each written file is verified by re-parsing it with the Aggregate
- * parser (parse-pdf.js) and checking the envelope's totals and date.
+ * Each written file is verified by re-parsing it with the Aggregate parser
+ * (parse-pdf.js) and checking the envelope's totals against what the engine
+ * scored.
  */
 
 import { readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { resolve, join } from 'path';
 import { fileURLToPath } from 'url';
 
-import { score } from '../src/engine/scoring.js';
-import { evaluateAlerts } from '../src/engine/alerts.js';
 import { buildDocDefinition, buildFilename, initBidiForTesting } from '../src/pdf/report.js';
 import { parsePdfBytes } from '../aggregate/src/parse-pdf.js';
 import pdfmakeModule from 'pdfmake';
+
+import {
+  ScenarioError,
+  normalizeScenario,
+  collectInstrumentIds,
+  loadQuestionnaires,
+  buildSessionState,
+  describeInstrument,
+  summarizeSession,
+} from './lib/mock-report.js';
 
 // CJS interop: pdfmake's node entry is `module.exports = new pdfmake()`;
 // depending on the loader the instance is the default export or the module.
@@ -54,6 +71,7 @@ const pdfmake = pdfmakeModule.default ?? pdfmakeModule;
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const ROOT = resolve(__dirname, '..');
+const CONFIG_DIR = resolve(ROOT, 'public/configs/prod');
 
 // ── Default scenario: 5 weekly sessions, declining PHQ-9, OCI-R at the
 //    first and last (crossing its screening cutoff of 21 on the way down).
@@ -71,65 +89,24 @@ const DEFAULT_SCENARIO = {
 
 // ── CLI ───────────────────────────────────────────────────────────────────────
 
-const args = process.argv.slice(2);
-const outIdx = args.indexOf('--out');
-const outDir = resolve(ROOT, outIdx !== -1 ? args[outIdx + 1] : 'tests/fixtures/pdfs');
-const scenarioArg = args.filter((a, i) => a !== '--out' && i !== outIdx + 1)[0];
-const scenario = scenarioArg
-  ? JSON.parse(readFileSync(resolve(ROOT, scenarioArg), 'utf8'))
-  : DEFAULT_SCENARIO;
+function parseArgs(argv) {
+  const args = [...argv];
+  const opts = { out: null, describe: null, scenario: null };
 
-// ── Answer derivation ─────────────────────────────────────────────────────────
-
-// Greedy fill: walk scored items in order, assigning each the largest
-// available option value that doesn't overshoot the target. Front-loading
-// keeps late items at 0 — which for PHQ-9 keeps item 9 (suicidality alert)
-// quiet unless the target is high enough to force it, matching how a real
-// severe presentation would score anyway.
-function answersForTotal(questionnaire, target) {
-  const excluded = new Set(questionnaire.scoring?.exclude ?? []);
-  const items = questionnaire.items.filter(
-    (it) => it.type === 'select' && it.id && !excluded.has(it.id)
-  );
-  const answers = {};
-  let remaining = target;
-  for (const item of items) {
-    const options = item.options
-      ?? questionnaire.optionSets?.[item.optionSetId ?? questionnaire.defaultOptionSetId]
-      ?? [];
-    const values = options.map((o) => o.value).sort((a, b) => b - a);
-    const pick = values.find((v) => v <= remaining) ?? 0;
-    answers[item.id] = pick;
-    remaining -= pick;
-  }
-  if (remaining !== 0) {
-    throw new Error(
-      `Cannot reach total ${target} for "${questionnaire.id}" (short by ${remaining}).`
-    );
-  }
-  return answers;
-}
-
-// ── Session assembly ──────────────────────────────────────────────────────────
-
-function buildSessionState(questionnaires, instrumentTargets) {
-  const state = { answers: {}, scores: {}, alerts: {}, questionnaireIds: {} };
-  for (const [qId, target] of Object.entries(instrumentTargets)) {
-    const q = questionnaires.get(qId);
-    if (!q) throw new Error(`Questionnaire "${qId}" not found in config.`);
-    const answers = answersForTotal(q, target);
-    const scoreResult = score(q, answers);
-    if (scoreResult.total !== target) {
-      throw new Error(
-        `Engine scored "${qId}" at ${scoreResult.total}, expected ${target} — check the fill algorithm.`
-      );
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === '--out') {
+      opts.out = args[++i];
+    } else if (args[i] === '--describe') {
+      opts.describe = args[++i];
+    } else if (args[i].startsWith('--')) {
+      throw new ScenarioError(`Unknown flag "${args[i]}".`);
+    } else if (opts.scenario === null) {
+      opts.scenario = args[i];
+    } else {
+      throw new ScenarioError(`Unexpected argument "${args[i]}" — pass one scenario file.`);
     }
-    state.answers[qId] = answers;
-    state.scores[qId] = scoreResult;
-    state.alerts[qId] = evaluateAlerts(q, answers, scoreResult);
-    state.questionnaireIds[qId] = qId;
   }
-  return state;
+  return opts;
 }
 
 // ── PDF rendering (node-side pdfmake, same version as the browser) ────────────
@@ -158,45 +135,28 @@ function initPdfmake() {
   });
 }
 
-// ── Config loading ────────────────────────────────────────────────────────────
+// ── --describe ────────────────────────────────────────────────────────────────
 
-// Item IDs are addresses: every questionnaire lives at
-// public/configs/prod/<id>.json, filename = entity id. The scenario names
-// instruments, so the config sources ARE those names — the same expansion
-// src/app.js does with `items=`. Only the instruments a scenario actually
-// uses are read.
-function loadQuestionnaires(scenario) {
-  const ids = [...new Set(scenario.sessions.flatMap((s) => Object.keys(s.instruments)))];
-  const questionnaires = new Map();
-  for (const id of ids) {
-    const path = resolve(ROOT, 'public/configs/prod', `${id}.json`);
-    let configData;
-    try {
-      configData = JSON.parse(readFileSync(path, 'utf8'));
-    } catch (err) {
-      throw new Error(`Cannot load config for instrument "${id}" (${path}): ${err.message}`);
-    }
-    for (const q of configData.questionnaires ?? []) {
-      // Mirror the loader's annotation: with one entity per file the config
-      // short name is the instrument id itself.
-      questionnaires.set(q.id, { ...q, configFile: id });
-    }
-    if (!questionnaires.has(id)) {
-      throw new Error(`Config ${id}.json defines no questionnaire "${id}" — batteries are not supported here.`);
-    }
+function describe(instrumentId) {
+  const questionnaires = loadQuestionnaires([instrumentId], CONFIG_DIR);
+  const q = questionnaires.get(instrumentId);
+  const rows = describeInstrument(q);
+
+  console.log(`\n${instrumentId} — ${q.title ?? ''}`);
+  console.log(`${rows.length} scored items\n`);
+  for (const row of rows) {
+    const opts = row.options.map((o) => `${o.value}=${o.label}`).join('  ');
+    console.log(`  "${row.id}"${row.excluded ? ' (excluded from total)' : ''}  ${row.prompt}`);
+    console.log(`      ${opts}\n`);
   }
-  return questionnaires;
+  console.log('Answer with: { "answers": { ' + rows.slice(0, 3).map((r) => `"${r.id}": 0`).join(', ') + ', … } }\n');
 }
 
-// ── Main ──────────────────────────────────────────────────────────────────────
+// ── Generation ────────────────────────────────────────────────────────────────
 
-async function main() {
-  await initBidiForTesting();
-  initPdfmake();
-
-  const questionnaires = loadQuestionnaires(scenario);
+async function generatePatient(patient, questionnaires, outDir) {
   const config = { questionnaires: [...questionnaires.values()] };
-  const session = { pid: scenario.pid ?? null, name: scenario.name ?? null };
+  const session = { pid: patient.pid ?? null, name: patient.name ?? null };
 
   mkdirSync(outDir, { recursive: true });
 
@@ -205,10 +165,11 @@ async function main() {
   // browser-download names the same way).
   const usedNames = new Map();
 
-  for (const s of scenario.sessions) {
+  for (const s of patient.sessions) {
     const now = new Date(`${s.date}T09:30:00`);
     const sessionState = buildSessionState(questionnaires, s.instruments);
     const dd = buildDocDefinition(sessionState, config, session, now);
+
     let filename = buildFilename(session, now);
     const seen = usedNames.get(filename) ?? 0;
     usedNames.set(filename, seen + 1);
@@ -218,27 +179,64 @@ async function main() {
     const buffer = await pdfmake.createPdf(dd).getBuffer();
     writeFileSync(outPath, buffer);
 
-    // Verify: the Aggregate parser must read back exactly what we meant.
+    // Verify: the Aggregate parser must read back exactly what the engine scored.
     const parsed = await parsePdfBytes(new Uint8Array(buffer));
-    if (!parsed.ok) throw new Error(`${filename}: verification failed — ${parsed.reason} ${parsed.detail ?? ''}`);
-    const got = Object.fromEntries(
-      Object.entries(parsed.envelope.sessionState.scores).map(([k, v]) => [k, v.total])
-    );
-    for (const [qId, target] of Object.entries(s.instruments)) {
-      if (got[qId] !== target) throw new Error(`${filename}: envelope total for ${qId} is ${got[qId]}, expected ${target}`);
+    if (!parsed.ok) {
+      throw new Error(`${filename}: verification failed — ${parsed.reason} ${parsed.detail ?? ''}`);
+    }
+    for (const [qId, scoreResult] of Object.entries(sessionState.scores)) {
+      const got = parsed.envelope.sessionState.scores[qId]?.total;
+      if (got !== scoreResult.total) {
+        throw new Error(`${filename}: envelope total for ${qId} is ${got}, expected ${scoreResult.total}`);
+      }
     }
 
-    const alerts = Object.values(sessionState.alerts).flat().map((a) => a.id);
-    console.log(
-      `✓ ${filename} — ${Object.entries(s.instruments).map(([q, t]) => `${q}:${t}`).join(', ')}` +
-      (alerts.length ? `  [alerts: ${alerts.join(', ')}]` : '')
-    );
+    console.log(`✓ ${filename}`);
+    for (const line of summarizeSession(sessionState)) console.log(`    ${line}`);
   }
 
-  console.log(`\n${scenario.sessions.length} PDFs written to ${outDir}`);
+  return patient.sessions.length;
+}
+
+// ── Main ──────────────────────────────────────────────────────────────────────
+
+async function main() {
+  const opts = parseArgs(process.argv.slice(2));
+
+  if (opts.describe) {
+    describe(opts.describe);
+    return;
+  }
+
+  const raw = opts.scenario
+    ? JSON.parse(readFileSync(resolve(ROOT, opts.scenario), 'utf8'))
+    : DEFAULT_SCENARIO;
+
+  const patients = normalizeScenario(raw);
+  const baseOut = resolve(ROOT, opts.out ?? 'tests/fixtures/pdfs');
+
+  await initBidiForTesting();
+  initPdfmake();
+
+  const questionnaires = loadQuestionnaires(collectInstrumentIds(patients), CONFIG_DIR);
+
+  // One patient writes straight into the output dir (the fixture case and the
+  // common demo case); a set fans out into per-patient subdirectories so the
+  // Aggregate can be fed one profile at a time.
+  let written = 0;
+  for (const patient of patients) {
+    const outDir =
+      patients.length === 1 ? baseOut : join(baseOut, patient.out ?? patient.pid ?? `patient-${written}`);
+    if (patients.length > 1) console.log(`\n── ${patient.pid ?? '(no pid)'} → ${outDir}`);
+    written += await generatePatient(patient, questionnaires, outDir);
+  }
+
+  console.log(`\n${written} PDF${written === 1 ? '' : 's'} written to ${baseOut}`);
 }
 
 main().catch((err) => {
-  console.error(err);
+  // Authoring mistakes get their message alone; real bugs keep the stack.
+  if (err instanceof ScenarioError) console.error(`\n${err.message}\n`);
+  else console.error(err);
   process.exit(1);
 });

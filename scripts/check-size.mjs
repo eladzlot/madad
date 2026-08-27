@@ -19,10 +19,7 @@
 import { readFileSync, readdirSync, statSync } from 'fs';
 import { resolve, join, relative } from 'path';
 import { fileURLToPath } from 'url';
-import { createGunzip } from 'zlib';
-import { createReadStream } from 'fs';
-import { pipeline } from 'stream/promises';
-import { Writable } from 'stream';
+import { gzipSync } from 'zlib';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const ROOT      = resolve(__dirname, '..');
@@ -46,12 +43,10 @@ const TOTAL_BUDGET = 570 * KB;
 
 // ── Gzip size measurement ─────────────────────────────────────────────────────
 
-async function gzipSize(filePath) {
-  // Use zlib to get gzipped size without writing a file
-  const { gzipSync } = await import('zlib');
-  const buf = readFileSync(filePath);
-  const compressed = gzipSync(buf, { level: 9 });
-  return compressed.length;
+function gzipSize(filePath) {
+  // Compress in memory — the gzipped size is what the budgets are stated in,
+  // and nothing needs the bytes themselves.
+  return gzipSync(readFileSync(filePath), { level: 9 }).length;
 }
 
 // ── Collect dist assets ───────────────────────────────────────────────────────
@@ -103,9 +98,11 @@ if (assets.length === 0) {
 }
 
 // Measure all files
-const measured = await Promise.all(assets.map(async (f) => {
-  const size = await gzipSize(f);
-  return { path: f, rel: relative(DIST_DIR, f), name: f.split('/').pop(), size };
+const measured = assets.map((f) => ({
+  path: f,
+  rel: relative(DIST_DIR, f),
+  name: f.split('/').pop(),
+  size: gzipSize(f),
 }));
 
 console.log('\n  Bundle size report (gzipped)\n');

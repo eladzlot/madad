@@ -1,7 +1,7 @@
 # Handover Document
 **Project:** Madad — Clinical Assessment App
 **Document version:** 3.0
-**Last verified against the tree:** 2026-08-21 (file listing, config scan, `npm test`)
+**Last verified against the tree:** 2026-08-27 (`npm test`, `npm run lint`, aggregate E2E; §3 “Mock reports” added)
 **Status:** Living document — update whenever the system state changes
 **Purpose:** Everything a developer (human or AI) needs to understand the project, work safely within it, and expand it without breaking things.
 
@@ -135,13 +135,57 @@ Clinician drops Madad PDFs in and gets per-instrument trajectory charts. Statele
 
 ### Build, test, CI
 
-- **1421 unit tests passing across 54 test files** (verified 2026-08-21 via `npm test`)
+- **1470 unit tests passing across 55 test files** (verified 2026-08-27 via `npm test`)
 - E2E passing (Chromium; mobile-safari locally only): patient flow, composer, aggregate, help
 - Dist-smoke E2E project (`tests/e2e/*.dist.test.js`) runs Playwright against the *built* bundle served at the production base via `vite preview`. Catches the "works on dev, broken on dist" class of bug (absolute-path fetches that bypass Vite's base, missing chunks, CSP violations). CI runs it at `/` plus a multi-base matrix (`/`, `/some/deep/path/`).
 - PDF fixtures for the aggregate E2E suite (`tests/fixtures/pdfs/`) are gitignored and rebuilt by Playwright's `globalSetup` (`tests/e2e/global-setup.js` → `npm run pdf:fixtures:e2e`, ~1s) from the committed scenario in `tests/fixtures/scenarios/`. Never commit the PDFs; a fresh clone and CI generate them.
+- The same generator produces **mock reports for slides and demos** — see §3 “Mock reports” below.
 - CI workflow: `.github/workflows/ci.yml` — lint → unit tests → validate configs → validate catalog → build → size → E2E
 - Deploy workflow: `.github/workflows/deploy-cloudflare.yml` — same gate + Wrangler deploy of `dist/` (app) and `dist-landing/` (landing); legacy `deploy.yml` now only publishes the github.io redirect shim
 - MIT license (`LICENSE`) + instrument notice (`CONTENT_LICENSE.md`)
+
+### Mock reports (slides, demos, fixtures)
+
+`npm run demo -- <scenario.json>` generates real Madad PDFs from a described patient
+— for slide decks, walkthroughs, and Aggregate demos. Output is byte-faithful to a
+patient-produced report: the scenario drives the production pipeline end to end
+(engine scoring → alert evaluation → `buildDocDefinition` → pdfmake → embedded
+envelope), swapping only the browser pdfmake build for the node one and injecting
+the session date. Each PDF is then re-parsed with the Aggregate's own `parse-pdf.js`
+and its envelope checked against what the engine scored.
+
+- `scripts/generate-test-pdfs.mjs` — the CLI (fonts, pdfmake, writing, verification)
+- `scripts/lib/mock-report.js` — the scenario grammar, validation and session
+  assembly, unit-tested in `mock-report.test.js` against the **real prod configs**,
+  so the tests break if an instrument's shape changes under them
+- `demo/README.md` — the grammar reference
+- `.claude/skills/mock-report/` — turns a prose symptom profile into a scenario
+
+Two per-instrument forms. **Explicit answers** are the one to use when the profile
+matters — the writer supplies every item, the engine scores it, so totals,
+subscales, category and alerts are genuine with no solver in between:
+
+```jsonc
+"phq9": { "answers": { "1": 3, "2": 3, …, "9": 1 }, "total": 18 }   // "total" asserts
+"phq9": 18                                                          // greedy fill
+```
+
+The bare-number form fills items greedily (max in order, then zeros) — fine for
+chart fixtures, visibly synthetic in a PDF response table, and it ignores
+reverse-scored items (the engine check catches the mismatch and says so). The
+committed E2E fixture scenario uses it, which is why it stays.
+
+`npm run demo -- --describe <id>` prints item ids, prompts and legal values, so
+answers can be authored without opening config JSON. A `{ "patients": [ … ] }`
+wrapper emits a whole slide set, one subdirectory each.
+
+**Scope: `select` and `binary` items only.** Branching instruments (`cape42`,
+`pqb`, `ocsrs_m`, `top3`), scored `slider`/`rated_text` (worksheets), `multiselect`
+(`pdss_sr`) and batteries are **rejected by name rather than silently mis-scored** —
+extending coverage means extending `scripts/lib/mock-report.js` and its tests.
+
+**`demo/scenarios/` and `demo/out/` are gitignored** (`demo/README.md` is not).
+Mock patient material stays out of git; never relocate it somewhere tracked.
 
 ### Instrument library
 
@@ -334,6 +378,8 @@ The pre-collapse bundle files (`standard.json`, `trauma.json`, `intake.json`, `o
 │                                 # session-detail
 ├── help/                         # Help surface (static content + nav)
 ├── landing/                      # Landing page (built into dist-landing/)
+├── demo/                         # Mock-report grammar (README committed;
+│                                 # scenarios/ and out/ are gitignored)
 ├── pages-redirect/               # github.io redirect shim (Stage 9 deletes)
 ├── public/
 │   ├── configs/                  # Clinical content (see above)
@@ -350,7 +396,9 @@ The pre-collapse bundle files (`standard.json`, `trauma.json`, `intake.json`, `o
 │   ├── validate-configs.mjs      # Schema + cross-file ID/reference checks
 │   ├── build-catalog.mjs         # Writes public/composer/catalog.json
 │   ├── build-validator.mjs       # Regenerates validate-schema.js from AJV
-│   ├── generate-test-pdfs.mjs    # PDF fixtures for the aggregate tests
+│   ├── generate-test-pdfs.mjs    # Mock report CLI (fixtures + demo PDFs)
+│   ├── lib/mock-report.js        # Scenario grammar, validation, scoring
+│   ├── lib/mock-report.test.js   #   (its tests — run by npm test)
 │   ├── build-og-image.sh
 │   └── check-size.mjs
 ├── vite.config.js / vite.landing.config.js / vite.shared.js
@@ -455,12 +503,13 @@ Read in this order:
 ```bash
 npm ci
 npm run dev              # localhost:5173 (base /)
-npm test                 # 1421 unit tests across 54 files
+npm test                 # 1470 unit tests across 55 files
 npm run validate:configs
 npm run validate:catalog
 npm run build && npm run preview  # localhost:4173/ (base /)
 npm run e2e              # Playwright
 npm run e2e:dist         # build + dist-smoke against the production base
+npm run demo -- <s.json> # mock report PDFs into demo/out/ (see demo/README.md)
 ```
 
 To add a new instrument: `public/configs/CONTRIBUTING.md`.

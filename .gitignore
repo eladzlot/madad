@@ -12,3 +12,8 @@ tests/fixtures/pdfs/
 
 # Vite dep-optimizer cache (vite-node writes it at the repo root)
 .vite/
+
+# Local demo material — mock patient scenarios and the PDFs they generate.
+# Never commit these: they are patient-shaped content with no place in git.
+demo/scenarios/
+demo/out/

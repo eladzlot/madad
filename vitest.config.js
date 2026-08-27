@@ -11,7 +11,7 @@ export default defineConfig({
   test: {
     environment: 'node',
     globals: true,
-    include: ['src/**/*.test.js', 'shared/**/*.test.js', 'clinician/**/*.test.js', 'composer/src/**/*.test.js', 'aggregate/src/**/*.test.js'],
+    include: ['src/**/*.test.js', 'shared/**/*.test.js', 'clinician/**/*.test.js', 'composer/src/**/*.test.js', 'aggregate/src/**/*.test.js', 'scripts/**/*.test.js'],
     setupFiles: ['tests/setup.js'],
     environmentOptions: {
       happyDOM: { settings: { disableJavaScriptFileLoading: true } },
