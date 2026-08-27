@@ -227,7 +227,7 @@ Mock patient material stays out of git; never relocate it somewhere tracked.
 |---|---|---|
 | `gad7` | שאלון חרדה מוכללת (GAD-7) | — |
 | `pdss_sr` | שאלון חומרת הפרעת פאניקה (PDSS-SR) | — |
-| `asi_3` | שאלון רגישות לחרדה (ASI-3) | — |
+| `asi_3` | שאלון רגישות לחרדה (ASI-3) | 3 sum subscales (physical/cognitive/social) added at v1.1.0; total unchanged, so older reports stay comparable |
 | `hai` | שאלון חרדת בריאות (HAI) | — |
 | `oasis` | שאלון חומרת חרדה ופגיעה תפקודית (OASIS) | — |
 | `spin` | שאלון פוביה חברתית (SPIN) | social + anxiety |

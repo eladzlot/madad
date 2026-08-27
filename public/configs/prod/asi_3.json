@@ -1,6 +1,6 @@
 {
   "id": "asi_3",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "questionnaires": [
     {
       "id": "asi_3",
@@ -147,7 +147,19 @@
         }
       ],
       "scoring": {
-        "method": "sum"
+        "method": "subscales",
+        "subscaleMethod": "sum",
+        "subscales": {
+          "physical": ["3", "4", "7", "8", "12", "15"],
+          "cognitive": ["2", "5", "10", "14", "16", "18"],
+          "social": ["1", "6", "9", "11", "13", "17"]
+        },
+        "totalMethod": "sum_of_items"
+      },
+      "subscaleLabels": {
+        "physical": "חששות גופניים",
+        "cognitive": "חששות קוגניטיביים",
+        "social": "חששות חברתיים"
       },
       "alerts": []
     }
