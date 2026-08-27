@@ -207,8 +207,9 @@ already exist in `trajectory-chart.js`; **no production code was changed for it*
 Above `COMPACT_THRESHOLD` (12 sessions) the heatmap drops in-cell numbers for
 colour chips, so session count changes what the image looks like.
 
-**`demo/scenarios/` and `demo/out/` are gitignored** (`demo/README.md` is not).
-Mock patient material stays out of git; never relocate it somewhere tracked.
+**`demo/scenarios/`, `demo/out/` and `demo/notes/` are gitignored**
+(`demo/README.md` is not). Mock patient material and presentation notes stay out
+of git; never relocate them somewhere tracked.
 
 ### Instrument library
 

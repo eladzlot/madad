@@ -17,3 +17,4 @@ tests/fixtures/pdfs/
 # Never commit these: they are patient-shaped content with no place in git.
 demo/scenarios/
 demo/out/
+demo/notes/

@@ -116,8 +116,14 @@ describe('patientOutDir', () => {
   // build. They must agree by construction, so pin the shape.
   const p = (extra = {}) => ({ pid: 'DEMO-A', sessions: [], ...extra });
 
-  it('writes a lone patient straight into the base directory', () => {
+  it('writes an unnamed lone patient straight into the base directory', () => {
     expect(patientOutDir(p(), 0, 1, '/out')).toBe('/out');
+  });
+
+  it('honours an explicit `out` even for a lone patient', () => {
+    // Naming a subdirectory and having it ignored scatters files into the
+    // base directory alongside every other run.
+    expect(patientOutDir(p({ out: 'course' }), 0, 1, '/out')).toBe('/out/course');
   });
 
   it('prefers an explicit `out` name for a set', () => {

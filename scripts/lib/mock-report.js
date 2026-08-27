@@ -102,17 +102,19 @@ export function normalizeScenario(raw) {
 /**
  * Where one patient's PDFs are written, given the run's base output directory.
  *
- * A single patient writes straight into `baseOut` (the fixture case and the
- * common demo case); a set fans out into per-patient subdirectories so the
- * Aggregate can be fed one profile at a time.
+ * An explicit `out` always wins — naming a subdirectory and having it ignored
+ * is the kind of surprise that scatters files into the wrong place. Otherwise a
+ * lone patient writes straight into `baseOut` (the fixture case), while a set
+ * fans out per-patient so the Aggregate can be fed one profile at a time.
  *
  * Exported because the shot generator has to predict these paths without
  * re-running the PDF build — the two must agree by construction, not by two
  * copies of the same expression.
  */
 export function patientOutDir(patient, index, patientCount, baseOut) {
+  if (patient.out) return join(baseOut, patient.out);
   if (patientCount === 1) return baseOut;
-  return join(baseOut, patient.out ?? patient.pid ?? `patient-${index}`);
+  return join(baseOut, patient.pid ?? `patient-${index}`);
 }
 
 /** Every instrument id named anywhere in the scenario, deduped. */

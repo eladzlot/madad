@@ -141,15 +141,27 @@ async function shootChart(page, card, outPath, { pid }) {
  * Heatmap: no export path, so screenshot the card with its toolbar hidden.
  * The style goes into the element's shadow root — page-level CSS cannot
  * reach into a Lit component's shadow DOM.
+ *
+ * The mouse is parked in the corner first: after clicking the view switcher
+ * the cursor sits where that button was, which lands over a heatmap cell once
+ * the view re-renders and leaves a stray :hover outline in the image.
  */
-async function shootHeatmap(card, outPath) {
+async function shootHeatmap(page, card, outPath) {
   if (!(await selectView(card, 'heatmap'))) return false;
   await card.locator('table.heatmap').waitFor({ state: 'visible', timeout: 10_000 });
 
+  await page.mouse.move(0, 0);
   await card.evaluate((el) => {
+    el.shadowRoot.activeElement?.blur();
     const style = document.createElement('style');
     style.dataset.shotMask = 'true';
-    style.textContent = '.controls { display: none !important; }';
+    // Hide the toolbar, and neutralise the interaction states a driven browser
+    // leaves behind — they are UI affordances, not part of the picture.
+    style.textContent = `
+      .controls { display: none !important; }
+      *:hover, *:focus, *:focus-visible { outline: none !important; }
+      table.heatmap td.cell:hover { outline: none !important; }
+    `;
     el.shadowRoot.appendChild(style);
   });
   try {
@@ -188,7 +200,7 @@ async function shootPatient(page, { label, pdfDir, imageDir }, opts) {
       const outPath = join(imageDir, `${id}-${view}.png`);
       if (view === 'chart') {
         await shootChart(page, card, outPath, opts);
-      } else if (!(await shootHeatmap(card, outPath))) {
+      } else if (!(await shootHeatmap(page, card, outPath))) {
         console.warn(`   ! ${id}: no heatmap (needs the instrument's config) — skipped`);
         continue;
       }

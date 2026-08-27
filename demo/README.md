@@ -4,8 +4,9 @@ Mock Madad PDFs for slides, walkthroughs, and Aggregate demos — generated from
 a scenario file, scored by the real engine, byte-faithful to a patient-produced
 report.
 
-Nothing in here is committed except this file. `demo/scenarios/` and
-`demo/out/` are gitignored: mock patient material has no place in git.
+Nothing in here is committed except this file. `demo/scenarios/`, `demo/out/` and
+`demo/notes/` are gitignored: mock patient material has no place in git.
+`demo/notes/` is a scratch home for presentation notes and walkthroughs.
 
 ```bash
 npm run demo -- demo/scenarios/my-profile.json         # PDFs → demo/out/
