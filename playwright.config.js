@@ -15,6 +15,9 @@ const LANDING_BASE_URL = 'http://localhost:4174/';
 
 export default defineConfig({
   testDir: 'tests/e2e',
+  // Rebuilds the gitignored PDF fixtures the aggregate suite uploads
+  // (~1s) so a fresh clone or CI run has them.
+  globalSetup: './tests/e2e/global-setup.js',
   timeout: 30_000,
   expect: { timeout: 5_000 },
   fullyParallel: true,

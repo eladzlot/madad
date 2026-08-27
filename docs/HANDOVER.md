@@ -138,6 +138,7 @@ Clinician drops Madad PDFs in and gets per-instrument trajectory charts. Statele
 - **1421 unit tests passing across 54 test files** (verified 2026-08-21 via `npm test`)
 - E2E passing (Chromium; mobile-safari locally only): patient flow, composer, aggregate, help
 - Dist-smoke E2E project (`tests/e2e/*.dist.test.js`) runs Playwright against the *built* bundle served at the production base via `vite preview`. Catches the "works on dev, broken on dist" class of bug (absolute-path fetches that bypass Vite's base, missing chunks, CSP violations). CI runs it at `/` plus a multi-base matrix (`/`, `/some/deep/path/`).
+- PDF fixtures for the aggregate E2E suite (`tests/fixtures/pdfs/`) are gitignored and rebuilt by Playwright's `globalSetup` (`tests/e2e/global-setup.js` → `npm run pdf:fixtures:e2e`, ~1s) from the committed scenario in `tests/fixtures/scenarios/`. Never commit the PDFs; a fresh clone and CI generate them.
 - CI workflow: `.github/workflows/ci.yml` — lint → unit tests → validate configs → validate catalog → build → size → E2E
 - Deploy workflow: `.github/workflows/deploy-cloudflare.yml` — same gate + Wrangler deploy of `dist/` (app) and `dist-landing/` (landing); legacy `deploy.yml` now only publishes the github.io redirect shim
 - MIT license (`LICENSE`) + instrument notice (`CONTENT_LICENSE.md`)
