@@ -24,12 +24,18 @@ echo "<cloudflare api token with Email Sending>" | npx wrangler pages secret put
 npx wrangler email sending enable ezmadad.com
 ```
 
-Then in the dashboard: custom domain for the Pages project (spec §10.1),
-a DMARC record on the sending domain, and the WAF rate-limiting rule below.
+Then in the dashboard:
+
+- **Custom domain:** Workers & Pages → madad-remote → Custom domains → add
+  `moh.ezmadad.com`. The zone is on Cloudflare, so the CNAME is created for
+  you and the certificate follows within minutes.
+- A DMARC record on ezmadad.com if there is none yet, and the WAF
+  rate-limiting rule below (on the zone, scoped to the `moh` host).
 
 **WAF rate limit (per IP, spec §7):** Security → WAF → Rate limiting rules →
-`(http.request.uri.path starts_with "/api/v1/")`, 60 requests / 1 minute
-per IP, action Block for 10 minutes. The per-uid caps live in the Functions.
+`(http.host eq "moh.ezmadad.com" and http.request.uri.path starts_with "/api/v1/")`,
+60 requests / 1 minute per IP, action Block for 10 minutes. The per-uid caps
+live in the Functions.
 
 ## Minting uids for a course
 

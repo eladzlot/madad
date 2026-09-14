@@ -429,9 +429,12 @@ Revisiting requires updating this document.
 
 ## 10. Open questions
 
-1. **Trial name and origin.** Working name "מדד · CTR"; Pages project
-   `madad-remote`; domain (subdomain of ezmadad.com vs. a separate domain)
-   decided later. Switching is configuration only.
+1. **Trial name.** Working name "מדד · CTR", to confirm. The origin is
+   decided: **`moh.ezmadad.com`** (Pages project `madad-remote`, custom
+   domain on the ezmadad.com zone). Nothing in the code depends on the
+   host — links and API calls derive from the request origin — so the
+   only host-bearing strings are the Open Graph metas, the PDF's
+   non-browser fallback origin and the sender address.
 2. **Legal.** The questions for the lawyer are in `LEGAL_QUESTIONS.md`.
    Answers may change retention (D-6), logging (§7) and the disclosure
    wording (§8.1). The design assumes sensitive-tier obligations regardless.
@@ -563,7 +566,7 @@ requires updating this section.
 | Branch | `main` | `main` | `remote` |
 | Build | `vite build` | `vite.landing.config.js` | `vite build` (same config) |
 | Pages project | `madad-app` | `madad-landing` | `madad-remote` |
-| Domain | `app.ezmadad.com` | `ezmadad.com` | TBD (§10.1) |
+| Domain | `app.ezmadad.com` | `ezmadad.com` | `moh.ezmadad.com` |
 | Server side | none | none | Pages Functions (`functions/` + `server/`) + D1 + secrets |
 | Landing | — | yes | none (robots disallow; help page only) |
 

@@ -16,7 +16,7 @@ pages_build_output_dir = "dist"
 compatibility_date = "2026-09-01"
 
 [vars]
-EMAIL_FROM = "madad@ezmadad.com"          # must be a domain onboarded to Email Sending
+EMAIL_FROM = "moh@ezmadad.com"            # the domain (ezmadad.com) must be onboarded to Email Sending
 EMAIL_FROM_NAME = "מדד · CTR"
 CF_ACCOUNT_ID = ""                          # filled at bring-up (spec §12.5 stage 8)
 LINK_TTL_DAYS = "7"                         # §4.5 — revisited with access_log data
