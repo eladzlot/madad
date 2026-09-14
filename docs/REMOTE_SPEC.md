@@ -383,12 +383,18 @@ fresh-link form; PDF-download affordance hidden for server rows.
 
 ### 8.4 Branding
 
-The trial instance must never be confused with `app.ezmadad.com`:
-distinct palette (`shared/styles/tokens.css` only, once `main` has
-tokenised the remaining hardcoded chrome colours), wordmark
+The trial instance must never be confused with `app.ezmadad.com`.
+Decided 2026-09-14 after two rounds (a plum system was rejected as generic
+"app purple"; a terracotta POC before it): **muted burgundy on a neutral
+ground** — primary `#7A2E3B`, accent `#9A4453`, chrome `#3A1F25` /
+`#4E2A32`, warm-grey light background `#F5F4F2`, charcoal dark background
+`#161616` with a rose primary `#C9737F`. The wine is used only for chrome,
+primary actions, selection and the wordmark; semantic yes/no colours are
+unchanged. It lives in two token blocks (`shared/styles/tokens.css`, the
+`--clin-*` block in `clinician/styles/clinician-styles.js`) plus the
+favicon, the PDF footer link and the chart export line. Wordmark
 "מדד · CTR" (working name, to confirm) in the welcome screen, clinician
-nav, PDF footer and page titles, brown/alternate favicon, and
-`public/robots.txt` with `Disallow: /`.
+nav, PDF footer and page titles; `public/robots.txt` with `Disallow: /`.
 
 ---
 

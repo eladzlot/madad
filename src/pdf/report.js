@@ -1019,7 +1019,7 @@ export function buildFooter() {
       text: [
         { text: `עמוד${NBSP}${currentPage}${NBSP}מתוך${NBSP}${pageCount}` },
         { text: `${NBSP}${NBSP}|${NBSP}${NBSP}` },
-        { text: composerUrl, link: composerUrl, color: '#1E9BAA' },
+        { text: composerUrl, link: composerUrl, color: '#7A2E3B' },
         { text: `${NBSP}${NBSP}|${NBSP}${NBSP}` },
         ...bidiNodes(`מדד · CTR — מעקב טיפולי`),
       ],

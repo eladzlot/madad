@@ -2,31 +2,32 @@
    Components reference these via var(--token).
    Replace values here to retheme without touching components.
 
-   The brand colour has two forms. --color-primary sits at L* 64, which makes
-   it a good FILL and a bad INK: as small text it reaches only 2.66:1 on
-   --color-surface. Use --color-primary for fills, borders, large text
-   (≥ 24px, or ≥ 18.66px at weight 700 — note --font-weight-bold is 600, which
-   WCAG does not count as bold) and the wordmark; use --color-primary-ink for
-   brand-coloured small text and icons, where it clears 4.5:1 on every light
-   ground. In dark mode the primary is already light enough to be ink, so the
-   two are the same value there. */
+   Remote deployment (מדד · CTR): muted burgundy on a neutral ground.
+   Deliberately far from the public app's teal-on-cool-grey so the two
+   instances are never confused (REMOTE_SPEC §8.4). The wine is used only
+   for chrome, primary actions, selection and the wordmark; backgrounds stay
+   neutral (warm grey in light, charcoal in dark). Semantic yes/no colours
+   are unchanged — they carry meaning in the item components.
+
+   --color-primary-ink is the brand's form for small text and icons (see the
+   note on main). The wine is dark enough at L* 41 to serve as its own ink. */
 
 :root {
   /* Colour */
-  --color-bg:              #F2F4F7;
-  --color-surface:         #E8EBF0;
-  --color-border:          #D5DAE2;
-  --color-border-focus:    #2BB3C0;
-  --color-text:            #162232;
-  --color-text-muted:      #546675;
-  --color-primary:         #1A9FAD;
-  --color-primary-hover:   #57b5c0;
-  --color-primary-text:    #162232;
-  --color-primary-ink:     #00717b;
-  --color-accent:          #2BB3C0;
-  --color-accent-hover:    #5BC0BE;
-  --color-selected-bg:     #E4F6F8;
-  --color-selected-border: #2BB3C0;
+  --color-bg:              #F5F4F2;
+  --color-surface:         #EBE9E6;
+  --color-border:          #D9D5D0;
+  --color-border-focus:    #9A4453;
+  --color-text:            #26211F;
+  --color-text-muted:      #6B6360;
+  --color-primary:         #7A2E3B;
+  --color-primary-hover:   #632532;
+  --color-primary-text:    #ffffff;
+  --color-primary-ink:     #7A2E3B;
+  --color-accent:          #9A4453;
+  --color-accent-hover:    #B05C6A;
+  --color-selected-bg:     #F6ECEE;
+  --color-selected-border: #9A4453;
   --color-yes:             #276749;
   --color-yes-bg:          #F0FBF4;
   --color-no:              #8B3A3A;
@@ -76,20 +77,20 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-bg:              #0d1117;
-    --color-surface:         #161b22;
-    --color-border:          #30363d;
-    --color-border-focus:    #5BC0BE;
-    --color-text:            #e6edf3;
-    --color-text-muted:      #8b949e;
-    --color-primary:         #4BA3D4;
-    --color-primary-hover:   #5BC0BE;
-    --color-primary-text:    #0d1117;
-    --color-primary-ink:     #4BA3D4;
-    --color-accent:          #5BC0BE;
-    --color-accent-hover:    #2BB3C0;
-    --color-selected-bg:     #0d2a3a;
-    --color-selected-border: #5BC0BE;
+    --color-bg:              #161616;
+    --color-surface:         #1F1F21;
+    --color-border:          #343437;
+    --color-border-focus:    #D68B96;
+    --color-text:            #ECEAEA;
+    --color-text-muted:      #A4A1A1;
+    --color-primary:         #C9737F;
+    --color-primary-hover:   #D68B96;
+    --color-primary-text:    #1F1F21;
+    --color-primary-ink:     #C9737F;
+    --color-accent:          #D68B96;
+    --color-accent-hover:    #C9737F;
+    --color-selected-bg:     #2E2124;
+    --color-selected-border: #D68B96;
     --color-yes:             #4CAF82;
     --color-yes-bg:          #0d2b1e;
     --color-no:              #E07070;

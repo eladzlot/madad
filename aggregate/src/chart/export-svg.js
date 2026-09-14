@@ -36,7 +36,7 @@ const C = {
   text:    '#1c1917',
   muted:   '#78716c',
   grid:    '#00000014',
-  primary: '#1A9FAD',
+  primary: '#7A2E3B',
   cutoff:  '#b45309',
   alert:   '#b91c1c',
 };

@@ -24,17 +24,17 @@ export const clinicianCss = /* css */ `
        that hold in both colour schemes. Every chrome colour lives here so a
        deployment can re-hue the whole clinician shell from one block; the
        derived tints below (color-mix) follow automatically. */
-    --clin-header-bg:        #1B3148;
-    --clin-rail-bg:          #3A5068;   /* rail panel — a lighter navy than the header */
-    --clin-rail-field:       #2A3D52;   /* fields, list rows, secondary buttons on the rail */
-    --clin-rail-border:      #304860;
-    --clin-rail-text:        #A8CFDF;   /* body text on the rail */
-    --clin-rail-text-strong: #C0D4E4;   /* input values, item titles */
-    --clin-rail-label:       #bad5e9;   /* section labels, empty-state copy */
-    --clin-rail-hint:        #aec8dc;
-    --clin-reset-icon:       #B03A10;   /* the ↺ glyph in the catalog toolbar */
-    --clin-focus-stroke:     #115e59;   /* chart marker keyboard focus ring */
-    --clin-heatmap-ink:      #162232;   /* fixed dark ink over pastel heatmap cells */
+    --clin-header-bg:        #3A1F25;   /* מדד · CTR: deep burgundy chrome */
+    --clin-rail-bg:          #4E2A32;   /* rail panel — a lighter wine than the header */
+    --clin-rail-field:       #3B2028;   /* fields, list rows, secondary buttons on the rail */
+    --clin-rail-border:      #63404A;
+    --clin-rail-text:        #E3CFD3;   /* body text on the rail */
+    --clin-rail-text-strong: #F1E5E8;   /* input values, item titles */
+    --clin-rail-label:       #C3A4AC;   /* section labels, empty-state copy */
+    --clin-rail-hint:        #A88B93;
+    --clin-reset-icon:       #9A4453;   /* the ↺ glyph in the catalog toolbar */
+    --clin-focus-stroke:     #4A1C25;   /* chart marker keyboard focus ring */
+    --clin-heatmap-ink:      #26211F;   /* fixed dark ink over pastel heatmap cells */
 
     --clin-card-bg:   #FFFFFF;
     --clin-grid:      #00000014;
@@ -43,11 +43,11 @@ export const clinicianCss = /* css */ `
 
   @media (prefers-color-scheme: dark) {
     :root {
-      --clin-reset-icon:    #E07060;
-      --clin-search-bg:     #1e2733;   /* lifts the catalog search field off the dark surface */
-      --clin-search-border: #3a4656;
+      --clin-reset-icon:    #D68B96;
+      --clin-search-bg:     #252527;   /* lifts the catalog search field off the dark surface */
+      --clin-search-border: #3E3E42;
 
-      --clin-card-bg: #161b22;
+      --clin-card-bg: #1F1F21;
       --clin-grid:    #ffffff1f;
       --clin-cutoff:  #E8A33D;
     }

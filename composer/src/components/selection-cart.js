@@ -234,7 +234,7 @@ export class SelectionCart extends LitElement {
 
       <div class="output-section">
         <label class="section-label" for="cart-pid">מזהה מטופל</label>
-        <p class="hint">חובה — המזהה שהוקצה למטופל, בפורמט XXXX-XXXX</p>
+        <p class="hint">חובה — המזהה שהוקצה למטופל, בפורמט <bdi dir="ltr">XXXX-XXXX</bdi></p>
         <input class="pid" id="cart-pid" type="text" dir="ltr" list="cart-uid-memory"
           placeholder="XXXX-XXXX" .value=${this.pid ?? ''} maxlength="9"
           aria-label="מזהה מטופל" autocomplete="off" spellcheck="false" @input=${this._onPid} />

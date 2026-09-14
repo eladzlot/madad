@@ -187,7 +187,7 @@ export class MobileBar extends LitElement {
           </div>
 
           <div>
-            <label class="section-label" for="sheet-pid">מזהה מטופל (חובה, XXXX-XXXX)</label>
+            <label class="section-label" for="sheet-pid">מזהה מטופל (חובה, <bdi dir="ltr">XXXX-XXXX</bdi>)</label>
             <input class="pid" id="sheet-pid" type="text" dir="ltr" placeholder="XXXX-XXXX"
               list="sheet-uid-memory" maxlength="9"
               .value=${this.pid ?? ''} autocomplete="off" spellcheck="false" @input=${this._onPid} />
