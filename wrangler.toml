@@ -26,5 +26,5 @@ FAILED_CHECKS_PER_IP_PER_HOUR = "30"        # §7 per-IP cap on the uid check
 [[d1_databases]]
 binding = "DB"
 database_name = "madad-remote"
-database_id = "00000000-0000-0000-0000-000000000000"   # replaced at bring-up
+database_id = "f58baf06-cfc3-486d-b968-3b4e75630f3c"
 migrations_dir = "server/db/migrations"

@@ -314,6 +314,14 @@ Sent on every accepted submission via a provider behind one seam
 (`server/lib/email.js`): Cloudflare Email Service first; Resend/Postmark
 are drop-in alternatives.
 
+**Why REST and not a binding.** Pages Functions cannot bind `send_email` —
+that binding is Workers-only, and Pages supports only KV, D1, R2, Durable
+Objects, Queues, Hyperdrive, Vectorize, Workers AI, Analytics Engine,
+service bindings, vars and secrets. So the seam calls the Email Sending
+REST API with a scoped account token (`EMAIL_API_TOKEN`), the single
+credential the Functions hold. If the trial ever moves off Pages to a
+Worker, the seam collapses to `env.EMAIL.send()` and the token disappears.
+
 **Body contains, exhaustively:** the uid, the completion date, and a signed
 link (§4.5). Subject: `מדד — מטופל <uid> השלים שאלון`.
 

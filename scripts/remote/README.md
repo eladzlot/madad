@@ -15,14 +15,45 @@ npx wrangler pages project create madad-remote --production-branch remote
 npx wrangler d1 create madad-remote                  # paste database_id into wrangler.toml
 npx wrangler d1 migrations apply madad-remote --remote
 
-# Secrets (never in git)
+# Secrets (never in git). Stored encrypted at Cloudflare; these commands are
+# the only moment the values exist locally.
 openssl rand -base64 48 | npx wrangler pages secret put HMAC_SECRET --project-name madad-remote
 openssl rand -base64 24 | npx wrangler pages secret put IP_SALT     --project-name madad-remote
-echo "<cloudflare api token with Email Sending>" | npx wrangler pages secret put EMAIL_API_TOKEN --project-name madad-remote
 
-# Email: onboard the sending domain, then set CF_ACCOUNT_ID / EMAIL_FROM in wrangler.toml [vars]
-npx wrangler email sending enable ezmadad.com
+# The email token is PASTED, so take it at the prompt rather than on the
+# command line — a piped or echoed token lands in ~/.bash_history and in the
+# terminal scrollback. This form prompts and reads stdin without echoing:
+npx wrangler pages secret put EMAIL_API_TOKEN --project-name madad-remote
 ```
+
+`EMAIL_API_TOKEN` is a **scoped** API token, not the global key: My Profile →
+API Tokens → Create Token → Custom token → permission **Account · Email
+Sending · Edit**, limited to this account. It is the only credential the
+Functions hold, and it exists because Pages Functions cannot use the
+`send_email` binding (that binding is Workers-only — Pages supports KV, D1,
+R2, Durable Objects, Queues, Hyperdrive, Vectorize, Workers AI, Analytics
+Engine, service bindings, vars and secrets, and nothing else), so §6's
+provider seam talks to the Email Sending REST API instead.
+
+### Onboarding the sending domain
+
+Do this **in the dashboard**: Compute & AI → Email Service → Email Sending →
+Onboard Domain → `ezmadad.com` → Add records and onboard. It writes the SPF
+and DKIM records into the zone for you.
+
+The CLI equivalent (`npx wrangler email sending enable ezmadad.com`) is an
+open-beta command and currently fails against this account with
+`Unauthorized [code: 2036]` on `/zones/<id>/email/sending/subdomains`. It is
+not a scope typo: the same zone endpoint refuses a plain **read**
+(`email sending dns get`) identically, while the zone lookup that precedes it
+succeeds, and `wrangler whoami` lists `email_sending (write)`. The OAuth
+grant wrangler issues does not carry zone-level email authority. Use the
+dashboard, or mint a token with **Zone · Email Sending · Edit** on
+ezmadad.com and re-run the command with `CLOUDFLARE_API_TOKEN` exported.
+
+Then set `CF_ACCOUNT_ID` and `EMAIL_FROM` in `wrangler.toml` `[vars]`
+(`moh@ezmadad.com`; the sending domain is `ezmadad.com`, so the `moh`
+subdomain needs no separate onboarding).
 
 Then in the dashboard:
 
