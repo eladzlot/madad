@@ -18,10 +18,12 @@ import '../../../clinician/components/clinician-nav.js';
 import './catalog-controls.js';
 import './catalog-list.js';
 import './selection-cart.js';
+import { loadRecentUids, rememberUid } from '../remote/uid-memory.js';
 import './mobile-bar.js';
 
 export class ComposerApp extends LitElement {
   static properties = {
+    _recentUids: { state: true },
     store: { type: Object },
     _previewModel:   { state: true },
     _previewOpen:    { state: true },
@@ -86,6 +88,8 @@ export class ComposerApp extends LitElement {
     this._unsub = null;
     // Preview: state + a per-session cache of loaded ResolvedConfigs, so
     // reopening a previously previewed entry is instant.
+    // Remote deployment: uids this browser has produced links for (datalist).
+    this._recentUids = loadRecentUids();
     this._previewModel = null;
     this._previewOpen = false;
     this._previewLiveUrl = null;
@@ -113,11 +117,17 @@ export class ComposerApp extends LitElement {
   get _canShare() { return typeof navigator !== 'undefined' && typeof navigator.share === 'function'; }
 
   // ── side effects ──
+  // A link that was actually copied / shared / opened is a link that was used,
+  // so its uid is worth remembering for next time (uid-memory.js).
+  _rememberUid() {
+    this._recentUids = rememberUid(this.store.pid);
+  }
   async _copy() {
     const url = this.store.url();
     if (!url) return;
     try {
       await navigator.clipboard.writeText(url);
+      this._rememberUid();
       this.store.setCopied(true);
       clearTimeout(this._copyTimer);
       this._copyTimer = setTimeout(() => this.store.setCopied(false), 2000);
@@ -126,11 +136,16 @@ export class ComposerApp extends LitElement {
   async _share() {
     const url = this.store.url();
     if (!url || !this._canShare) return;
-    try { await navigator.share({ url, title: 'קישור לשאלון הערכה' }); } catch { /* cancelled */ }
+    try {
+      await navigator.share({ url, title: 'קישור לשאלון הערכה' });
+      this._rememberUid();
+    } catch { /* cancelled */ }
   }
   _open() {
     const url = this.store.url();
-    if (url) window.open(url, '_blank', 'noopener');
+    if (!url) return;
+    this._rememberUid();
+    window.open(url, '_blank', 'noopener');
   }
 
   // ── preview ──
@@ -230,6 +245,7 @@ export class ComposerApp extends LitElement {
             .entries=${selectedEntries}
             .url=${url}
             .pid=${s.pid}
+            .recentUids=${this._recentUids}
             .copied=${s.copied}
             .canShare=${this._canShare}
           ></selection-cart>
@@ -247,6 +263,7 @@ export class ComposerApp extends LitElement {
         .entries=${selectedEntries}
         .url=${url}
         .pid=${s.pid}
+        .recentUids=${this._recentUids}
         .copied=${s.copied}
         .canShare=${this._canShare}
       ></mobile-bar>

@@ -15,7 +15,7 @@ async function makeEl({ page, subtitle } = {}) {
 describe('clinician-nav', () => {
   it('renders the brand and a link per clinician surface', async () => {
     const el = await makeEl();
-    expect(el.shadowRoot.querySelector('.brand').textContent).toBe('מדד');
+    expect(el.shadowRoot.querySelector('.brand').textContent).toBe('מדד · CTR');
     const links = [...el.shadowRoot.querySelectorAll('nav .link')];
     expect(links.map((a) => a.textContent.trim())).toEqual(['מחולל קישורים', 'סיכום מטופל', 'עזרה']);
     // Relative one-level-up hrefs work under any deploy base path.

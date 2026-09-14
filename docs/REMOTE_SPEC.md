@@ -523,7 +523,8 @@ requires updating this section.
 | `src/controller.js` | one guarded submit call; status feed; `canShare=false` |
 | `src/components/welcome-screen.js`, `clinician/components/clinician-nav.js`, `src/pdf/report.js` | wordmark string |
 | `index.html`, `composer/index.html`, `aggregate/index.html`, `help/index.html` | `<title>`; help privacy copy |
-| `composer/src/composer-store.js`, `composer/src/components/selection-cart.js` | uid validation, link withheld, label/placeholder/datalist |
+| `composer/src/composer-store.js`, `composer/src/components/selection-cart.js`, `composer/src/components/mobile-bar.js`, `composer/src/components/composer-app.js` | uid validation, link withheld, label/placeholder/datalist, remembered uids |
+| `shared/config/loader.js` | one line: carries a file's `dev` flag onto its questionnaires so the runtime no-text guard can exempt fixtures |
 | `aggregate/src/aggregate.js`, `aggregate/src/store.js` | fetch mode; `addEnvelopes` |
 | `shared/styles/tokens.css`, `public/favicon.svg` | palette, favicon |
 | `scripts/validate-configs.mjs`, `scripts/build-catalog.mjs` | no-text rule wiring |
@@ -531,6 +532,7 @@ requires updating this section.
 | `public/robots.txt` | new, `Disallow: /` |
 | `.github/workflows/ci.yml` | branch added to triggers |
 | `tests/e2e/*` | uid in URL constants; composer tests fill the uid; text-instrument cases repointed |
+| `*.test.js` beside the files above | expectations updated for the uid, brand string and withheld link |
 | `package.json` | `dev:remote`, `deploy:remote` scripts; wrangler dev dependency |
 
 ### 12.3 Artifacts

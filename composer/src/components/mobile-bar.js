@@ -23,12 +23,14 @@ export class MobileBar extends LitElement {
     pid:      { type: String },
     copied:   { type: Boolean },
     canShare: { type: Boolean },
+    recentUids: { type: Array },
     _open:    { type: Boolean, state: true },
   };
 
   constructor() {
     super();
     this.entries = [];
+    this.recentUids = [];
     this.url = null;
     this.pid = '';
     this.copied = false;
@@ -185,14 +187,18 @@ export class MobileBar extends LitElement {
           </div>
 
           <div>
-            <label class="section-label" for="sheet-pid">מזהה מטופל (אופציונלי)</label>
-            <input class="pid" id="sheet-pid" type="text" dir="ltr" placeholder="TRC-2025-000123"
+            <label class="section-label" for="sheet-pid">מזהה מטופל (חובה, XXXX-XXXX)</label>
+            <input class="pid" id="sheet-pid" type="text" dir="ltr" placeholder="XXXX-XXXX"
+              list="sheet-uid-memory" maxlength="9"
               .value=${this.pid ?? ''} autocomplete="off" spellcheck="false" @input=${this._onPid} />
+            <datalist id="sheet-uid-memory">
+              ${(this.recentUids ?? []).map(u => html`<option value=${u}></option>`)}
+            </datalist>
           </div>
 
           <div>
             <div class="section-label">קישור</div>
-            <div class="url-box" dir="ltr">${hasUrl ? this.url : 'לא נבחרו שאלונים'}</div>
+            <div class="url-box" dir="ltr">${hasUrl ? this.url : (count > 0 ? 'יש להזין מזהה מטופל תקין' : 'לא נבחרו שאלונים')}</div>
             <div class="btn-row" style="margin-block-start: var(--space-sm, 8px)">
               <button class="c-btn c-btn--primary c-btn--grow ${this.copied ? 'c-btn--copied' : ''}"
                 ?disabled=${!hasUrl} @click=${() => this._emit('copy')}>

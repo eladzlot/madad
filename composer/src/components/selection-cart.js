@@ -19,6 +19,7 @@ export class SelectionCart extends LitElement {
     entries:  { type: Array },     // [{ id, title }] in order
     url:      { type: String },
     pid:      { type: String },
+    recentUids: { type: Array },   // remembered uids for the datalist (uid-memory.js)
     copied:   { type: Boolean },
     canShare: { type: Boolean },
     _dragIndex: { type: Number, state: true },
@@ -29,6 +30,7 @@ export class SelectionCart extends LitElement {
     this.entries = [];
     this.url = null;
     this.pid = '';
+    this.recentUids = [];
     this.copied = false;
     this.canShare = false;
     this._dragIndex = -1;
@@ -214,7 +216,7 @@ export class SelectionCart extends LitElement {
       <div class="output-section">
         <div class="section-label">קישור למטופל</div>
         <div class="url-box ${hasUrl ? '' : 'empty'}" dir="ltr" aria-label="קישור שנוצר">
-          ${hasUrl ? this.url : 'לא נבחרו שאלונים'}
+          ${hasUrl ? this.url : (count > 0 ? 'יש להזין מזהה מטופל תקין' : 'לא נבחרו שאלונים')}
         </div>
         <div class="btn-row">
           <button class="c-btn c-btn--primary c-btn--grow ${this.copied ? 'c-btn--copied' : ''}"
@@ -232,10 +234,13 @@ export class SelectionCart extends LitElement {
 
       <div class="output-section">
         <label class="section-label" for="cart-pid">מזהה מטופל</label>
-        <p class="hint">אופציונלי — יופיע בדוח PDF בלבד</p>
-        <input class="pid" id="cart-pid" type="text" dir="ltr"
-          placeholder="TRC-2025-000123" .value=${this.pid ?? ''}
+        <p class="hint">חובה — המזהה שהוקצה למטופל, בפורמט XXXX-XXXX</p>
+        <input class="pid" id="cart-pid" type="text" dir="ltr" list="cart-uid-memory"
+          placeholder="XXXX-XXXX" .value=${this.pid ?? ''} maxlength="9"
           aria-label="מזהה מטופל" autocomplete="off" spellcheck="false" @input=${this._onPid} />
+        <datalist id="cart-uid-memory">
+          ${(this.recentUids ?? []).map(u => html`<option value=${u}></option>`)}
+        </datalist>
       </div>
 
       <div class="output-section">

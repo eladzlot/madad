@@ -20,6 +20,7 @@ import { resolve, relative, join } from 'path';
 import { fileURLToPath } from 'url';
 import Ajv from 'ajv/dist/2020.js';
 import { collectConfigErrors, checkCrossFileBatteryRefs } from '../shared/config/config-validation.js';
+import { remoteExcludedIds } from '../shared/remote/no-text-rule.js';
 
 // ── Paths ─────────────────────────────────────────────────────────────────────
 
@@ -182,6 +183,17 @@ if (validFiles.length > 1) {
     console.error('\n  ✗  Cross-file battery reference errors:');
     for (const err of refErrors) console.error(`       ${err}`);
     failed++;
+  }
+}
+
+// ── Remote deployment: no-text rule (REMOTE_SPEC §5.3) ───────────────────────
+// Informational: which prod instruments the catalog will withhold because they
+// contain free-text items. The files are valid; they are simply not offered.
+{
+  const prod = validFiles.filter(f => f.rel.startsWith('public/configs/prod/')).map(f => f.data);
+  const excluded = [...remoteExcludedIds(prod)].sort();
+  if (excluded.length) {
+    console.log(`\n  ℹ  no-text rule withholds ${excluded.length} instrument(s) from the remote catalog: ${excluded.join(', ')}`);
   }
 }
 

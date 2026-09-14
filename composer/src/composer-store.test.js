@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
+import { generateUid } from '../../shared/remote/uid.js';
 import { createStore } from './composer-store.js';
 import { CATALOG_VERSION } from '../../shared/catalog/build-catalog.js';
 
@@ -250,19 +251,34 @@ describe('selection', () => {
 // ── url + warnings + reset ────────────────────────────────────────────────────
 
 describe('url / warnings / reset', () => {
-  it('url reflects selection and pid', () => {
+  // Remote deployment: the pid is a minted uid (shared/remote/uid.js) and the
+  // link is withheld until it is valid.
+  const UID = generateUid(() => Uint8Array.from([1, 2, 3, 4, 5, 6, 7]));
+
+  it('url reflects selection and the canonical uid', () => {
     const store = seeded([entry('phq9')]);
     store.toggle('phq9');
-    store.setPid('TRC-1');
+    store.setPid(UID.toLowerCase().replace('-', ''));
     const url = new URL(store.url(), 'http://localhost');
     expect(url.searchParams.get('items')).toBe('phq9');
     // pid rides in the fragment now (kept out of server/CDN logs) — see buildUrl.
-    expect(url.hash).toBe('#pid=TRC-1');
+    expect(url.hash).toBe(`#pid=${UID}`);
+    expect(store.uidValid()).toBe(true);
   });
 
   it('url is null with no selection', () => {
     const store = seeded([entry('phq9')]);
+    store.setPid(UID);
     expect(store.url()).toBeNull();
+  });
+
+  it('url is null while the uid is missing or invalid', () => {
+    const store = seeded([entry('phq9')]);
+    store.toggle('phq9');
+    expect(store.url()).toBeNull();
+    store.setPid('TRC-1');
+    expect(store.url()).toBeNull();
+    expect(store.uidValid()).toBe(false);
   });
 
   it('warnings include a non-blocking pid warning', () => {

@@ -243,6 +243,9 @@ function mergeConfigs(results) {
       // Annotated post-validation: records which config file the questionnaire
       // came from, for the PDF envelope's instruments[].configFile field.
       q.configFile = configFile;
+      // Remote deployment: carry the file's dev flag onto the questionnaire so
+      // the no-text guard in src/app.js can exempt dev fixtures (REMOTE_SPEC §5.3).
+      if (data.dev) q.dev = true;
       questionnaires.push(q);
     }
     for (const b of data.batteries ?? []) {

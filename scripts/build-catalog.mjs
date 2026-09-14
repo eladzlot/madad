@@ -22,6 +22,7 @@ import { readFileSync, writeFileSync, existsSync, readdirSync } from 'fs';
 import { resolve, join } from 'path';
 import { fileURLToPath } from 'url';
 import { buildCatalog, serializeCatalog } from '../shared/catalog/build-catalog.js';
+import { remoteExcludedIds, remoteExclude } from '../shared/remote/no-text-rule.js';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -35,8 +36,13 @@ const configs = readdirSync(PROD_DIR)
   .sort()
   .map((f) => JSON.parse(readFileSync(join(PROD_DIR, f), 'utf8')));
 
+// Remote deployment (REMOTE_SPEC §5.3): instruments with free-text items are
+// not offered. The files stay; they are simply absent from the catalog.
+const excludedIds = remoteExcludedIds(configs);
+
 let warnings = 0;
 const catalog = buildCatalog(configs, {
+  exclude: remoteExclude(excludedIds),
   warn: (msg) => {
     warnings++;
     console.warn(`⚠ ${msg}`);
@@ -53,11 +59,14 @@ if (checkMode) {
     );
     process.exit(1);
   }
-  console.log(`✓ catalog.json is up to date (${catalog.entries.length} entries)`);
+  console.log(`✓ catalog.json is up to date (${catalog.entries.length} entries; ${excludedIds.size} excluded by the no-text rule)`);
 } else {
   writeFileSync(CATALOG_PATH, output);
   console.log(
     `✓ catalog.json written (${catalog.entries.length} entries, ` +
     `${(output.length / 1024).toFixed(1)} KB${warnings ? `, ${warnings} warning(s)` : ''})`
   );
+  if (excludedIds.size) {
+    console.log(`  no-text rule excluded: ${[...excludedIds].sort().join(', ')}`);
+  }
 }

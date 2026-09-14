@@ -15,7 +15,7 @@
 
 import { test, expect } from '@playwright/test';
 
-const PHQ9_URL = `/?items=phq9_intake&pid=E2E-001`;
+const PHQ9_URL = `/?items=phq9_intake&pid=E2E0-0017`;
 
 // ── Patient-flow helpers (mirrors patient-flow.e2e.test.js) ──────────────────
 
@@ -163,7 +163,7 @@ test.describe('aggregate interaction', () => {
 
 test.describe('aggregate image export', () => {
   test('SVG export carries the chart framing; pid appears only when opted in', async ({ page }) => {
-    const pdfFile = await downloadReport(page, 0);   // session pid = E2E-001
+    const pdfFile = await downloadReport(page, 0);   // session pid = E2E0-0017
 
     await page.goto('/aggregate/');
     await uploadInput(page).setInputFiles(pdfFile);
@@ -192,13 +192,13 @@ test.describe('aggregate image export', () => {
     expect(plain).toContain('PHQ-9 (E2E)');
     expect(plain).toContain('הופק');
     expect(plain).toContain('מדד');
-    expect(plain).not.toContain('E2E-001');
+    expect(plain).not.toContain('E2E0-0017');
 
     // Opt in → pid stamped.
     await openExportMenu();
     await chart.locator('.export-pid input').check();
     const withPid = await downloadSvg();
-    expect(withPid).toContain('מזהה: E2E-001');
+    expect(withPid).toContain('מזהה: E2E0-0017');
   });
 
   test('copy places a PNG on the clipboard with visible feedback', async ({ page, context, browserName }) => {

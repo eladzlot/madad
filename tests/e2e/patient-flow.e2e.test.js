@@ -23,13 +23,15 @@ import { test, expect } from '@playwright/test';
 // hides them in production, but the patient app loads them like any config.
 
 /** PHQ-9 equivalent (phq9_test) — 1 instructions + 9 select + suicidality alert */
-const PHQ9_URL = `/?items=phq9_intake`;
+// Remote deployment: every session link carries a valid uid (shared/remote/uid.js).
+const UID = 'E2E0-0017';
+const PHQ9_URL = `/?items=phq9_intake#pid=${UID}`;
 
 /** test_q battery — binary + select mix */
-const TEST_URL = `/?items=standard_intake`;
+const TEST_URL = `/?items=standard_intake#pid=${UID}`;
 
 /** all_types_battery — instructions + select + binary + text */
-const ALL_TYPES_URL = `/?items=all_types_battery`;
+const ALL_TYPES_URL = `/?items=all_types_battery#pid=${UID}`;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -109,11 +111,26 @@ test.describe('welcome screen', () => {
     await expect(page.locator('app-shell')).toBeVisible();
   });
 
-  test('name entered on welcome screen is not in the URL', async ({ page }) => {
+  test('no name is ever collected — the welcome screen has no name field', async ({ page }) => {
     await page.goto(PHQ9_URL);
-    await shadowIn(page, 'welcome-screen', 'input#patient-name').fill('ישראל ישראלי');
-    await clickBegin(page);
-    expect(page.url()).not.toContain('ישראל');
+    await expect(page.locator('welcome-screen')).toBeVisible();
+    await expect(shadowIn(page, 'welcome-screen', 'input#patient-name')).toHaveCount(0);
+    await expect(shadowIn(page, 'welcome-screen', '.disclosure')).toContainText('יישלחו');
+  });
+
+  test('a link without a valid uid is refused before the welcome screen', async ({ page }) => {
+    await page.goto('/?items=phq9_intake');
+    await expect(page.locator('welcome-screen')).toHaveCount(0);
+    await expect(page.locator('#app')).toContainText('מזהה מטופל');
+    await page.goto('/?items=phq9_intake#pid=E2E0-0018');   // wrong check symbol
+    await expect(page.locator('welcome-screen')).toHaveCount(0);
+    await expect(page.locator('#app')).toContainText('מזהה מטופל');
+  });
+
+  test('a link to an instrument with free-text items is refused (no-text rule)', async ({ page }) => {
+    await page.goto(`/?items=top3#pid=${UID}`);
+    await expect(page.locator('welcome-screen')).toHaveCount(0);
+    await expect(page.locator('#app')).toContainText('אינו זמין בגרסה זו');
   });
 });
 
@@ -387,7 +404,7 @@ test.describe('error handling', () => {
     // fallback (200 + HTML) so the JSON parse fails → generic load-error
     // branch. Both land on the retryable error screen — assert that state
     // rather than environment-dependent message text.
-    await page.goto('/?items=nonexistent_xyz');
+    await page.goto(`/?items=nonexistent_xyz#pid=${UID}`);
     await expect(page.locator('#app')).toContainText('לא ניתן לטעון את השאלון');
     await expect(page.locator('[data-action="retry"]')).toBeVisible();
     await expect(page.locator('welcome-screen')).toHaveCount(0);
@@ -398,7 +415,7 @@ test.describe('error handling', () => {
     // paths, even nonexistent ones). The app ignores the parameter entirely
     // and resolves items= tokens as addresses, so old links keep working
     // even though the files the parameter names no longer exist.
-    await page.goto('/?configs=/configs/nonexistent_xyz.json&items=phq9_test');
+    await page.goto(`/?configs=/configs/nonexistent_xyz.json&items=phq9_test#pid=${UID}`);
     await expect(page.locator('welcome-screen')).toBeVisible({ timeout: 8000 });
     await expect(page.locator('#app')).not.toContainText('לא ניתן לטעון');
   });
@@ -407,7 +424,7 @@ test.describe('error handling', () => {
     // clinical_intake.json declares dependencies on every questionnaire file
     // its sequence references (diamond_sr, phq9, pcl5, …). The loader's BFS
     // auto-fetch pulls them, so a bare items=clinical_intake URL resolves.
-    await page.goto('/?items=clinical_intake');
+    await page.goto(`/?items=clinical_intake#pid=${UID}`);
     await expect(page.locator('welcome-screen')).toBeVisible({ timeout: 8000 });
     // No error screen — neither load-error nor resolution-error should appear.
     await expect(page.locator('#app')).not.toContainText('לא ניתן לטעון');

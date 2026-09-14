@@ -10,7 +10,10 @@
 // carries id, kind, title, description, keywords, and the meta taxonomy
 // (domains/type/populations/tags/featured) the browse UI filters on.
 
-import { buildUrl, pidWarning } from './composer-state.js';
+import { buildUrl } from './composer-state.js';
+// Remote deployment: the patient id is a minted uid (REMOTE_SPEC §3) and the
+// link is withheld until it is valid — a link without one cannot be attributed.
+import { formatUid, uidWarning } from '../../shared/remote/uid.js';
 import { sortForBrowse, rankForQuery } from './search.js';
 import { TABS, ALL_TAB, tabOf } from './taxonomy.js';
 import { loadProfile, saveProfile, safeLocalStorage } from './composer-profile.js';
@@ -265,11 +268,18 @@ export function createStore({ storage = safeLocalStorage() } = {}) {
     selectedEntries,
     entryById,
 
-    url() { return buildUrl({ selected: state.selected, pid: state.pid }); },
-    pidWarn() { return pidWarning(state.pid); },
-    // Load warnings plus a non-blocking PID warning (mirrors the old header).
+    // Null until both a selection and a valid uid exist; the uid is emitted in
+    // its canonical XXXX-XXXX form whatever the therapist typed.
+    url() {
+      const uid = formatUid(state.pid);
+      if (!uid) return null;
+      return buildUrl({ selected: state.selected, pid: uid });
+    },
+    uidValid() { return formatUid(state.pid) !== null; },
+    pidWarn() { return uidWarning(state.pid); },
+    // Load warnings plus a non-blocking uid warning (mirrors the old header).
     warnings() {
-      const w = state.pid ? pidWarning(state.pid) : null;
+      const w = state.pid ? uidWarning(state.pid) : null;
       return w ? [...state.warnings, w] : state.warnings.slice();
     },
   };

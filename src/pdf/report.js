@@ -1021,7 +1021,7 @@ export function buildFooter() {
         { text: `${NBSP}${NBSP}|${NBSP}${NBSP}` },
         { text: composerUrl, link: composerUrl, color: '#1E9BAA' },
         { text: `${NBSP}${NBSP}|${NBSP}${NBSP}` },
-        ...bidiNodes(`מדד — מדידה קלינית בלי חיכוך`),
+        ...bidiNodes(`מדד · CTR — מעקב טיפולי`),
       ],
       alignment: 'right',
       fontSize:  SZ.footer,

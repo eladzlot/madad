@@ -37,6 +37,10 @@ const searchBox = (page) => page.locator('catalog-controls input[type="search"]'
 const cardButton = (page, id) => page.locator(`catalog-card[data-id="${id}"] button.card`);
 const previewButton = (page, id) => page.locator(`catalog-card[data-id="${id}"] button.preview-btn`);
 const urlBox = (page) => page.locator('selection-cart .url-box');
+// Remote deployment: the link is withheld until a valid uid (XXXX-XXXX with a
+// check symbol — shared/remote/uid.js) is entered.
+const UID = 'CMPS-001J';
+const fillUid = (page) => page.locator('#cart-pid').fill(UID);
 
 // The category switch (tabs) and filter chips are collapsed behind the סינון
 // caret — open it before touching a tab.
@@ -81,9 +85,11 @@ test.describe('selection', () => {
     test.skip(isMobile, 'the URL cart is desktop-only; mobile uses the bottom sheet');
   });
 
-  test('checking an item generates an items= URL', async ({ page }) => {
+  test('checking an item generates an items= URL once a uid is entered', async ({ page }) => {
     await gotoComposer(page);
     await selectItem(page, 'phq9');
+    await expect(urlBox(page)).toContainText('יש להזין מזהה');
+    await fillUid(page);
     await expect(urlBox(page)).toContainText('items=phq9');
   });
 
@@ -111,6 +117,7 @@ test.describe('selection', () => {
     await selectItem(page, 'phq9');
     // Move the 2nd row up → phq9 becomes first in the URL.
     await page.locator('selection-cart li.item').nth(1).locator('[aria-label="הזז מעלה"]').click();
+    await fillUid(page);
     await expect(urlBox(page)).toContainText('items=phq9,test_q');
   });
 });
@@ -122,11 +129,20 @@ test.describe('patient ID field', () => {
     test.skip(isMobile, 'PID field is in the desktop cart');
   });
 
-  test('entering a PID adds it to the URL', async ({ page }) => {
+  test('a valid uid is canonicalised into the URL fragment', async ({ page }) => {
+    await gotoComposer(page);
+    await selectItem(page, 'phq9');
+    await page.locator('#cart-pid').fill(UID.toLowerCase().replace('-', ''));
+    await expect(urlBox(page)).toContainText(`#pid=${UID}`);
+  });
+
+  test('an invalid uid withholds the link and warns', async ({ page }) => {
     await gotoComposer(page);
     await selectItem(page, 'phq9');
     await page.locator('#cart-pid').fill('TRC-2025-001');
-    await expect(urlBox(page)).toContainText('pid=TRC-2025-001');
+    await expect(urlBox(page)).toContainText('יש להזין מזהה');
+    await expect(page.locator('composer-app .warnings')).toContainText('XXXX-XXXX');
+    await expect(page.locator('selection-cart .btn-row .c-btn--primary')).toBeDisabled();
   });
 });
 
@@ -177,8 +193,9 @@ test.describe('mobile bottom sheet', () => {
     await page.locator('mobile-bar .bar button:has-text("פרטים")').click();
     const sheet = page.locator('mobile-bar .sheet');
     await expect(sheet).toBeVisible();
-    await expect(sheet.locator('.url-box')).toContainText('items=phq9');
     await expect(sheet.locator('#sheet-pid')).toBeVisible();
+    await sheet.locator('#sheet-pid').fill(UID);
+    await expect(sheet.locator('.url-box')).toContainText('items=phq9');
   });
 });
 
@@ -209,8 +226,11 @@ test.describe('preview modal', () => {
 
   test('conditional items render under a "מוצג בתנאי" divider', async ({ page }) => {
     await gotoComposer(page);
-    // top3 is featured and has nested item-level if-nodes.
-    await previewButton(page, 'top3').click();
+    // pqb has nested item-level if-nodes (top3, the original subject, is
+    // withheld on the remote deployment by the no-text rule). Not featured, so
+    // reach it by search.
+    await searchBox(page).fill('pqb');
+    await previewButton(page, 'pqb').click();
     await expect(dialog(page)).toBeVisible({ timeout: 10_000 });
     await expect(dialog(page)).toContainText('מוצג בתנאי');
   });
@@ -226,6 +246,7 @@ test.describe('generated URL launches valid session', () => {
   test('phq9 URL loads the patient app welcome screen', async ({ page }) => {
     await gotoComposer(page);
     await selectItem(page, 'phq9');
+    await fillUid(page);
     const url = await urlBox(page).textContent();
     await page.goto(url.trim());
     await expect(page.locator('welcome-screen')).toBeVisible({ timeout: 10_000 });
@@ -237,6 +258,7 @@ test.describe('generated URL launches valid session', () => {
     await openFilters(page);
     await page.locator('catalog-controls [role="tab"]', { hasText: 'סוללות' }).click();
     await selectItem(page, 'phq9_intake');
+    await fillUid(page);
     const url = await urlBox(page).textContent();
     await page.goto(url.trim());
     await expect(page.locator('welcome-screen')).toBeVisible({ timeout: 10_000 });

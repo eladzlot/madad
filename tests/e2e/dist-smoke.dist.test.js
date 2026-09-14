@@ -42,7 +42,7 @@ test.describe('dist smoke — production bundle at production base', () => {
     // short-name expansion is also the code path that triggered the
     // production-only "לא ניתן לטעון את השאלון" base-path bug, so this URL
     // gates both: legacy-link compatibility and base-aware path resolution.
-    await page.goto('?items=phq9&configs=standard&pid=DISTSMOKE');
+    await page.goto('?items=phq9&configs=standard&pid=DSMK-001E');
 
     // Welcome screen is the patient-visible signal that loadConfig succeeded.
     // It's a custom element whose internal layout may change, so we match on
@@ -183,7 +183,7 @@ test.describe('dist smoke — production bundle at production base', () => {
     // (configs=configs/prod/standard.json). Both are ignored by the app —
     // items=phq9 resolves on its own. Kept as a distinct gate because these
     // exact URL shapes exist in the wild.
-    await page.goto('?items=phq9&configs=configs/prod/standard.json&pid=DISTSMOKE');
+    await page.goto('?items=phq9&configs=configs/prod/standard.json&pid=DSMK-001E');
 
     await expect(page.locator('welcome-screen')).toBeVisible({ timeout: 10_000 });
     await expect(page.getByText('לא ניתן לטעון את השאלון')).toHaveCount(0);
@@ -201,7 +201,7 @@ test.describe('dist smoke — production bundle at production base', () => {
 
     // The form every newly generated URL uses: items only. The app expands
     // each token to configs/prod/<id>.json.
-    await page.goto('?items=phq9,gad7&pid=DISTSMOKE');
+    await page.goto('?items=phq9,gad7&pid=DSMK-001E');
 
     await expect(page.locator('welcome-screen')).toBeVisible({ timeout: 10_000 });
     await expect(page.getByText('לא ניתן לטעון את השאלון')).toHaveCount(0);
@@ -222,7 +222,7 @@ test.describe('dist smoke — production bundle at production base', () => {
     // dependencies (diamond_sr, phq9, pcl5, …) are pulled by loadConfig's BFS
     // walk. If the dependency walk ever breaks (or a declaration goes
     // missing), every battery URL breaks with it — this is the gate.
-    await page.goto('?configs=intake&items=clinical_intake&pid=DISTSMOKE');
+    await page.goto('?configs=intake&items=clinical_intake&pid=DSMK-001E');
 
     await expect(page.locator('welcome-screen')).toBeVisible({ timeout: 10_000 });
     await expect(page.getByText('לא ניתן לטעון את השאלון')).toHaveCount(0);

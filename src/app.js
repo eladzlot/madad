@@ -30,7 +30,8 @@ import { createController } from './controller.js';
 import { createOrchestrator } from './engine/orchestrator.js';
 import { createRouter } from './router.js';
 import { preloadPdf } from './pdf/report.js';
-import { sanitizePid } from '../shared/pid.js';
+import { formatUid } from '../shared/remote/uid.js';
+import { textInstrumentsIn } from '../shared/remote/no-text-rule.js';
 import './components/item-select.js';
 import './components/item-binary.js';
 import './components/item-instructions.js';
@@ -142,16 +143,22 @@ async function main() {
   const params = new URLSearchParams(location.search);
 
   const itemsParam = params.get('items');
-  // PID validation lives in shared/pid.js — single source of truth shared with the composer.
-  // Invalid PIDs are silently treated as absent rather than surfaced in error messages,
-  // to avoid reflecting crafted strings back into the UI.
-  const pid = sanitizePid(readPid());
+  // Remote deployment (REMOTE_SPEC §3): the pid is a minted uid and it is
+  // REQUIRED — no name is collected, so a link without a valid uid would
+  // produce a session that belongs to nobody. formatUid() validates the check
+  // symbol and canonicalises to XXXX-XXXX; crafted strings never reach the UI.
+  const pid = formatUid(readPid());
 
   const container = document.getElementById('app');
 
   // `items` is required — show error before welcome screen if missing
   if (!itemsParam) {
     showError(container, 'לא נבחרו שאלונים.', 'יש לפתוח את הקישור שקיבלת מהמטפל.');
+    return;
+  }
+
+  if (!pid) {
+    showError(container, 'הקישור חסר מזהה מטופל תקין.', 'אנא פנה למטפל שלך לקבלת קישור חדש.');
     return;
   }
 
@@ -195,6 +202,20 @@ async function main() {
     return;
   }
 
+  // Remote deployment (REMOTE_SPEC §5.3): no free text ever reaches the
+  // server, so instruments with text items are not offered here. The catalog
+  // already hides them; this guards hand-crafted URLs. Dev fixtures are exempt.
+  const textInstruments = textInstrumentsIn(config);
+  if (textInstruments.length > 0) {
+    showError(
+      container,
+      'הקישור כולל שאלון שאינו זמין בגרסה זו.',
+      'אנא פנה למטפל שלך לקבלת קישור חדש.',
+    );
+    console.error('remote: refusing instruments with text items:', textInstruments.map(q => q.id));
+    return;
+  }
+
   // Resolve items to a sequence
   let sequence;
   try {
@@ -218,6 +239,7 @@ async function main() {
   container.innerHTML = '';
   const welcome = document.createElement('welcome-screen');
   welcome.batteryTitle = '';
+  welcome.collectName = false;   // the uid is the identity; no name is ever collected
   container.appendChild(welcome);
 
   welcome.addEventListener('begin', (e) => {

@@ -5,6 +5,10 @@ import { fixture, html } from '@open-wc/testing';
 import { createStore } from '../composer-store.js';
 import { CATALOG_VERSION } from '../../../shared/catalog/build-catalog.js';
 import './composer-app.js';
+import { generateUid } from '../../../shared/remote/uid.js';
+
+// Remote deployment: links exist only once a valid uid is set.
+const UID = generateUid(() => Uint8Array.from([1, 2, 3, 4, 5, 6, 7]));
 
 function entry(id, o = {}) {
   return {
@@ -48,7 +52,11 @@ describe('composer-app', () => {
     cards(el)[0].shadowRoot.querySelector('button').click();
     await el.updateComplete;
     expect(store.selected).toEqual(['phq9']);
+    expect(cart(el).url).toBeNull();          // no uid yet → link withheld
+    store.setPid(UID);
+    await el.updateComplete;
     expect(cart(el).url).toContain('items=phq9');
+    expect(cart(el).url).toContain(`#pid=${UID}`);
   });
 
   it('reorder event from the cart reorders the store selection', async () => {
@@ -66,14 +74,16 @@ describe('composer-app', () => {
     expect(el.shadowRoot.querySelector('.warnings')).not.toBeNull();
   });
 
-  it('copy writes the URL to the clipboard and flips the copied flag', async () => {
+  it('copy writes the URL to the clipboard, flips the copied flag and remembers the uid', async () => {
     const { el, store } = await mount([entry('phq9')]);
-    store.toggle('phq9');
+    store.toggle('phq9'); store.setPid(UID);
     await el.updateComplete;
     cart(el).dispatchEvent(new CustomEvent('copy', { bubbles: true, composed: true }));
     await Promise.resolve();
     expect(navigator.clipboard.writeText).toHaveBeenCalledWith(store.url());
     expect(store.copied).toBe(true);
+    await el.updateComplete;                  // recentUids is reactive state → next render
+    expect(cart(el).recentUids).toEqual([UID]);
   });
 
   it('reset clears the selection', async () => {
@@ -86,7 +96,7 @@ describe('composer-app', () => {
 
   it('open dispatches window.open with the generated URL', async () => {
     const { el, store } = await mount([entry('phq9')]);
-    store.toggle('phq9');
+    store.toggle('phq9'); store.setPid(UID);
     await el.updateComplete;
     const spy = vi.spyOn(window, 'open').mockImplementation(() => null);
     cart(el).dispatchEvent(new CustomEvent('open', { bubbles: true, composed: true }));

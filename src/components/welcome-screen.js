@@ -79,6 +79,17 @@ export class WelcomeScreen extends LitElement {
       margin-block-end: var(--space-xl);
     }
 
+    /* Remote deployment: the disclosure is a requirement (REMOTE_SPEC §8.1). */
+    .disclosure {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+      line-height: var(--line-height);
+      margin-block-start: calc(-1 * var(--space-lg));
+      margin-block-end: var(--space-xl);
+      padding-inline-start: var(--space-sm);
+      border-inline-start: 3px solid var(--color-border-focus);
+    }
+
     /* ── Name field ─────────────────────────────────────────────────── */
 
     .field {
@@ -176,7 +187,7 @@ export class WelcomeScreen extends LitElement {
   render() {
     return html`
       <div class="card">
-        <span class="app-name">מדד</span>
+        <span class="app-name">מדד · CTR</span>
         <span class="app-tagline">הערכה קלינית דיגיטלית</span>
 
         ${this.batteryTitle ? html`
@@ -185,6 +196,9 @@ export class WelcomeScreen extends LitElement {
 
         <p class="intro">
           התשובות שלך יעזרו לצוות המטפל להבין אותך טוב יותר.
+        </p>
+        <p class="disclosure">
+          התשובות והציונים — ללא שם וללא פרטים מזהים — יישלחו ישירות למטפל/ת שלך.
         </p>
 
         ${this.collectName ? html`
