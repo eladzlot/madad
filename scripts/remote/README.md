@@ -5,6 +5,10 @@ Everything the operator does by hand for the trial instance
 
 ## One-time bring-up (spec §12.5 stage 8)
 
+`wrangler login` is interactive — run it in a terminal of your own (an agent
+session cannot complete the browser handshake). Everything else below is
+scriptable once the login exists.
+
 ```bash
 npx wrangler login                                   # interactive, once per machine
 npx wrangler pages project create madad-remote --production-branch remote
@@ -52,6 +56,9 @@ operator's record. **Keep `minted/` out of git** (it is gitignored).
 | Restore drill | `npx wrangler d1 create madad-remote-drill && npx wrangler d1 execute madad-remote-drill --remote --file backup.sql` |
 
 ## Local full-stack run
+
+One-time: npm blocks workerd's postinstall (the local Workers runtime) until
+you approve it — `npm approve-scripts workerd`, then `npm install` once more.
 
 ```bash
 cp .dev.vars.example .dev.vars    # fill HMAC_SECRET, IP_SALT (EMAIL_* may stay empty: email logs a failure, submissions still succeed)
