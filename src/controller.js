@@ -1,4 +1,6 @@
 import { generateReport } from './pdf/report.js';
+import { buildEnvelope } from '../shared/pdf/envelope-schema.js';
+import { submitSession } from './remote/api.js';
 import { score } from './engine/scoring.js';
 import { evaluateAlerts } from './engine/alerts.js';
 import { tagForType, canAdvance, autoAdvances, ratedTextTextKey } from '../shared/config/item-types.js';
@@ -21,6 +23,21 @@ import { resolveItemOptions } from '../shared/config/options.js';
 //   This keeps the history stack in sync at all times.
 
 const ADVANCE_DELAY_MS = 150;
+
+// Remote deployment (REMOTE_SPEC §8.1): post-first. Inlined from package.json
+// at build time via Vite `define`, same as report.js.
+const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'dev';
+
+const SEND_STATUS = {
+  sending: () => ({ kind: 'info', message: 'שולח את התוצאות למטפל/ת…' }),
+  sent:    () => ({ kind: 'success', message: 'התוצאות נשלחו למטפל/ת שלך.',
+                    detail: 'אין צורך לעשות דבר נוסף. אפשר גם להוריד עותק PDF לעצמך.' }),
+  failed:  (retry) => ({ kind: 'error', message: 'לא הצלחנו לשלוח את התוצאות.',
+                    detail: 'נסו שוב, או הורידו את דוח ה-PDF ושלחו אותו למטפל/ת בעצמכם.',
+                    action: { label: 'נסו לשלוח שוב', onClick: retry } }),
+  refused: () => ({ kind: 'error', message: 'לא ניתן לשלוח את התוצאות דרך קישור זה.',
+                    detail: 'הורידו את דוח ה-PDF ושלחו אותו למטפל/ת, ובקשו קישור חדש.' }),
+};
 
 // ── Item resolution ───────────────────────────────────────────────────────────
 
@@ -47,6 +64,7 @@ export function createController(container, router) {
   let _advanceTimer  = null;
   let _session       = null;
   let _sessionState  = null;  // saved when onSessionComplete fires; used by showResults
+  let _send          = { answersJson: null, state: null };   // remote submission memo
 
   // ── Shell setup ──────────────────────────────────────────────────────────
 
@@ -264,9 +282,9 @@ export function createController(container, router) {
       };
     });
 
-    // Show share button if the browser has Web Share API.
-    // Note: navigator.share is only available over HTTPS — on HTTP it is undefined.
-    const canShareFiles = !!(navigator.share);
+    // Remote deployment: no share button — results are sent, the PDF is a
+    // fallback (REMOTE_SPEC §8.1).
+    const canShareFiles = false;
 
     const doDownload = async () => {
       const { blob, filename } = await generateReport(_sessionState, _config, _session);
@@ -298,6 +316,37 @@ export function createController(container, router) {
     resultsEl.onDownload = doDownload;
     resultsEl.onShare    = canShareFiles ? doShare : null;
     _shellEl.appendChild(resultsEl);
+
+    sendResults();
+  }
+
+  // ── Remote submission (REMOTE_SPEC §4.2, §8.1) ────────────────────────────
+  // Post-first: every completion is sent. Going back to change answers and
+  // completing again sends again (the therapist sees the latest); returning
+  // to the results screen with unchanged answers does not resend. The status
+  // is memoised in _send so a remounted results screen shows the right thing
+  // even while a request is in flight.
+
+  function setSendStatus(state) {
+    _send.state = state;
+    const el = _shellEl?.querySelector('results-screen');
+    if (!el) return;
+    el.status = state === 'failed' ? SEND_STATUS.failed(() => sendResults({ force: true })) : SEND_STATUS[state]();
+  }
+
+  async function sendResults({ force = false } = {}) {
+    if (!_session?.pid) return;                               // nothing to attribute (unit-test sessions)
+    const answersJson = JSON.stringify(_sessionState?.answers ?? {});
+    if (!force && answersJson === _send.answersJson && _send.state !== 'failed') {
+      setSendStatus(_send.state);
+      return;
+    }
+    _send.answersJson = answersJson;
+    setSendStatus('sending');
+    const envelope = buildEnvelope({ sessionState: _sessionState, config: _config, session: _session, appVersion: APP_VERSION });
+    const result = await submitSession({ uid: _session.pid, envelope });
+    if (answersJson !== _send.answersJson) return;          // superseded by a newer completion
+    setSendStatus(result.ok ? 'sent' : (result.error ? 'refused' : 'failed'));
   }
 
 

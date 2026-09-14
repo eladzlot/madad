@@ -177,8 +177,12 @@ questions in §10. Migrations live in `server/db/migrations/`.
 ## 4. Endpoints
 
 All under `/api/v1/` on the trial origin. Responses are JSON or 204, with
-`Cache-Control: no-store`. Errors are generic — no message distinguishes
-causes beyond the status code. All requests are written to `access_log`.
+`Cache-Control: no-store`. Refusals carry a one-word JSON body
+(`{ "error": "unknown_uid" | "invalid" | "forbidden" | "too_large" |
+"rate_limited" }`) so the client can tell an API refusal from a bare 404 off
+a static host — that is what lets the patient app fail open when no API is
+deployed (D-9). Nothing else is disclosed. All requests are written to
+`access_log`.
 
 ### 4.1 `GET /api/v1/uids/<uid>` — session-start check
 
@@ -358,16 +362,20 @@ authentication, server-side identity, token revocation lists.
 
 - `src/app.js`: the pid is **required** and must pass `isValidUid()`
   (`shared/remote/uid.js`); missing/invalid → the existing error screen.
-  Then `src/remote/uid-check.js` (§4.1). Then the no-text guard (§5.3).
-  Welcome screen mounts with `collectName=false`.
+  The registry check (`src/remote/api.js` `checkUid`, §4.1) runs in
+  parallel with the config load; only a definitive `unknown_uid` refusal
+  blocks — a bare 404, 5xx, timeout or network error fails open. Then the
+  no-text guard (§5.3). Welcome screen mounts with `collectName=false`.
 - Welcome screen shows a one-line disclosure: התוצאות (ללא פרטים מזהים)
   יישלחו למטפל/ת שלך. This is a **requirement**, not a nicety; the help
   page's "nothing leaves the device" copy is rewritten in the same commit.
-- `src/controller.js`: on completion, `src/remote/submit.js` POSTs the
-  envelope (one automatic retry, then a manual retry button). The results
-  screen's status block shows sending / sent ✓ / failed → "download the
-  PDF and send it to your therapist". No share button (`canShare=false`);
-  the PDF button is secondary.
+- `src/controller.js`: on completion, `src/remote/api.js` `submitSession`
+  POSTs the envelope (one automatic retry on network/5xx; API refusals are
+  not retried). The results screen's status block shows sending / sent ✓ /
+  failed with a retry button / refused → "download the PDF and send it to
+  your therapist". Re-completing after changing answers sends again;
+  revisiting the results screen with unchanged answers does not. No share
+  button (`canShare=false`).
 - Offline persistence of an unsent envelope (retry on next open) is v1.1.
 
 ### 8.2 Composer

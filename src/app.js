@@ -32,6 +32,7 @@ import { createRouter } from './router.js';
 import { preloadPdf } from './pdf/report.js';
 import { formatUid } from '../shared/remote/uid.js';
 import { textInstrumentsIn } from '../shared/remote/no-text-rule.js';
+import { checkUid } from './remote/api.js';
 import './components/item-select.js';
 import './components/item-binary.js';
 import './components/item-instructions.js';
@@ -175,6 +176,12 @@ async function main() {
 
   showLoading(container);
 
+  // Remote deployment (REMOTE_SPEC §4.1, D-9): ask the registry whether this
+  // uid exists, in parallel with the config load. Only a definitive "unknown"
+  // blocks the session; an unreachable API fails open (the submit fallback
+  // covers it).
+  const uidCheck = checkUid(pid);
+
   // Load config(s)
   let config;
   try {
@@ -213,6 +220,11 @@ async function main() {
       'אנא פנה למטפל שלך לקבלת קישור חדש.',
     );
     console.error('remote: refusing instruments with text items:', textInstruments.map(q => q.id));
+    return;
+  }
+
+  if ((await uidCheck) === 'unknown') {
+    showError(container, 'הקישור אינו בתוקף.', 'המזהה שבקישור אינו רשום. אנא פנה למטפל שלך לקבלת קישור חדש.');
     return;
   }
 

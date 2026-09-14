@@ -28,6 +28,10 @@ const NO_STORE = { 'Cache-Control': 'no-store' };
 export const empty = (status) => new Response(null, { status, headers: NO_STORE });
 export const json = (body, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { ...NO_STORE, 'Content-Type': 'application/json; charset=utf-8' } });
+// Refusals carry a small JSON body so the client can tell an API refusal
+// from a bare 404 off a static host with no API (it then fails open).
+export const ERRORS = { 400: 'invalid', 403: 'forbidden', 404: 'unknown_uid', 413: 'too_large', 429: 'rate_limited' };
+export const refuse = (status) => json({ error: ERRORS[status] ?? 'error' }, status);
 
 const iso = (d) => d.toISOString();
 const hoursAgo = (now, h) => iso(new Date(now.getTime() - h * 3600_000));
@@ -43,13 +47,13 @@ export async function checkUid(rawUid, deps) {
     const failed = await deps.db.countAccessSince({ kind: 'check', ipHash: deps.ipHash, ok: false, sinceIso: hoursAgo(now, 1) });
     if (failed >= deps.limits.failedChecksPerIpPerHour) {
       await deps.db.logAccess({ kind: 'check', uid, ok: false, ipHash: deps.ipHash, ts: iso(now) });
-      return empty(429);
+      return refuse(429);
     }
   }
 
   const row = uid ? await deps.db.findRegistry(uid) : null;
   await deps.db.logAccess({ kind: 'check', uid, ok: !!row, ipHash: deps.ipHash, ts: iso(now) });
-  return empty(row ? 204 : 404);
+  return row ? empty(204) : refuse(404);
 }
 
 // ── 4.2 POST /api/v1/sessions ────────────────────────────────────────────────
@@ -60,35 +64,35 @@ export async function submitSession(rawBody, deps) {
 
   if (typeof rawBody !== 'string' || new TextEncoder().encode(rawBody).length > (deps.limits.maxBodyBytes ?? MAX_BODY_BYTES)) {
     await log(null, false);
-    return empty(413);
+    return refuse(413);
   }
   let body;
-  try { body = JSON.parse(rawBody); } catch { await log(null, false); return empty(400); }
-  if (!body || typeof body !== 'object' || !isValidUid(body.uid)) { await log(null, false); return empty(400); }
+  try { body = JSON.parse(rawBody); } catch { await log(null, false); return refuse(400); }
+  if (!body || typeof body !== 'object' || !isValidUid(body.uid)) { await log(null, false); return refuse(400); }
   const uid = normalizeUid(body.uid);
 
   const row = await deps.db.findRegistry(uid);
-  if (!row) { await log(uid, false); return empty(404); }
+  if (!row) { await log(uid, false); return refuse(404); }
 
   const envelope = body.envelope;
   const { valid } = validateEnvelope(envelope);
-  if (!valid) { await log(uid, false); return empty(400); }
+  if (!valid) { await log(uid, false); return refuse(400); }
 
   // D-2 defence in depth: the envelope's identity fields must be the uid and
   // nothing else — no name (the app emits '' when it collects none), and a
   // pid that is this uid.
   if ((envelope.name ?? '') !== '' || !isValidUid(envelope.pid) || normalizeUid(envelope.pid) !== uid) {
-    await log(uid, false); return empty(400);
+    await log(uid, false); return refuse(400);
   }
 
   // §5.3 no-text rule, server side: every instrument must exist in this
   // deployment and no answer may belong to a text item.
-  if (!(await answersAreTextFree(envelope, deps.loadConfig))) { await log(uid, false); return empty(400); }
+  if (!(await answersAreTextFree(envelope, deps.loadConfig))) { await log(uid, false); return refuse(400); }
 
   // §7 per-uid daily cap.
   const cap = deps.limits.submissionsPerUidPerDay;
   if (cap > 0 && (await deps.db.countSessionsSince(uid, hoursAgo(now, 24))) >= cap) {
-    await log(uid, false); return empty(429);
+    await log(uid, false); return refuse(429);
   }
 
   await deps.db.insertSession(uid, JSON.stringify(envelope), iso(now));
@@ -136,7 +140,7 @@ export async function readSessions({ uid: rawUid, exp, sig }, deps) {
   const uid = isValidUid(rawUid) ? normalizeUid(rawUid) : null;
   const ok = uid !== null && await verifyLink(deps.secret, uid, exp, sig, Math.floor(now.getTime() / 1000));
   await deps.db.logAccess({ kind: 'read', uid, ok, ipHash: deps.ipHash, ts: iso(now) });
-  if (!ok) return empty(403);
+  if (!ok) return refuse(403);
   const sessions = await deps.db.listSessions(uid);
   return json({ uid: formatUid(uid), sessions });
 }

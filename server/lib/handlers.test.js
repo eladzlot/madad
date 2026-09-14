@@ -45,7 +45,9 @@ describe('checkUid (§4.1)', () => {
 
   it('204 for a registered uid in any spelling; 404 otherwise; both logged', async () => {
     expect((await checkUid(UID.toLowerCase(), deps)).status).toBe(204);
-    expect((await checkUid(OTHER, deps)).status).toBe(404);
+    const r = await checkUid(OTHER, deps);
+    expect(r.status).toBe(404);
+    expect(await r.json()).toEqual({ error: 'unknown_uid' });
     expect((await checkUid('garbage', deps)).status).toBe(404);
     expect(deps.db.tables.access_log.map(a => [a.kind, a.uid, a.ok])).toEqual([
       ['check', NUID, 1], ['check', normalizeUid(OTHER), 0], ['check', null, 0],
@@ -83,8 +85,10 @@ describe('submitSession (§4.2)', () => {
     expect(read.status).toBe(200);
   });
 
-  it('404 for an unregistered uid, 400 for malformed bodies', async () => {
-    expect((await post({ uid: OTHER, envelope: phq9Envelope() })).status).toBe(404);
+  it('404 for an unregistered uid (with a JSON body — the client keys on it), 400 for malformed bodies', async () => {
+    const r = await post({ uid: OTHER, envelope: phq9Envelope() });
+    expect(r.status).toBe(404);
+    expect(await r.json()).toEqual({ error: 'unknown_uid' });
     expect((await post('{nope')).status).toBe(400);
     expect((await post({ uid: 'x', envelope: {} })).status).toBe(400);
     expect((await post({ uid: UID, envelope: { schemaVersion: 1 } })).status).toBe(400);
