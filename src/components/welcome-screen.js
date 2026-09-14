@@ -32,12 +32,15 @@ export class WelcomeScreen extends LitElement {
       align-items: center;
       justify-content: center;
       background: var(--color-bg);
-      padding-inline: var(--space-md);
+      /* No padding on :host — main.css's universal reset targets the host
+         element from the document scope, and outer-scope rules beat :host
+         rules regardless of specificity. The gutter lives on .card. */
     }
 
     .card {
       width: 100%;
       max-width: var(--content-max-width);
+      padding-inline: var(--space-md);
       display: flex;
       flex-direction: column;
     }
