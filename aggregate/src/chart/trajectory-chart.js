@@ -144,7 +144,7 @@ export class TrajectoryChart extends LitElement {
     }
 
     .marker:focus {
-      stroke: #115e59;
+      stroke: var(--clin-focus-stroke, #115e59);
       stroke-width: 3;
     }
 
@@ -219,7 +219,7 @@ export class TrajectoryChart extends LitElement {
       border-radius: 4px;
       font-variant-numeric: tabular-nums;
       /* Fixed dark ink: cell fills are light pastels in both color schemes. */
-      color: #162232;
+      color: var(--clin-heatmap-ink, #162232);
     }
 
     table.heatmap td.cell.empty {

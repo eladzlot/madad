@@ -67,8 +67,7 @@ export class CatalogControls extends LitElement {
     .reset-btn:hover { color: var(--color-no, #8B3A3A); }
     .reset-btn:focus-visible { outline: 2px solid var(--color-border-focus, #2BB3C0); outline-offset: 2px; }
     /* ↺ is coloured by default (deep terracotta), matching the legacy toolbar. */
-    .reset-icon { color: #B03A10; font-size: 16px; }
-    @media (prefers-color-scheme: dark) { .reset-icon { color: #E07060; } }
+    .reset-icon { color: var(--clin-reset-icon, #B03A10); font-size: 16px; }
 
     /* Filter caret — a chevron beside the tabs that expands the chip rows, so it
        reads as "filter these categories" rather than a stray button. */
@@ -132,8 +131,8 @@ export class CatalogControls extends LitElement {
        as a distinct control. */
     @media (prefers-color-scheme: dark) {
       input[type='search'] {
-        background: #1e2733;
-        border-color: #3a4656;
+        background: var(--clin-search-bg, #1e2733);
+        border-color: var(--clin-search-border, #3a4656);
       }
     }
 

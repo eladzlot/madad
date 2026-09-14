@@ -44,45 +44,46 @@ export class SelectionCart extends LitElement {
       padding: var(--space-lg, 24px) 20px;
     }
 
-    /* The output rail is theme-independent dark navy chrome; its fields carry
-       the original slate palette (composer.css legacy .c-output.*) so they hold
-       in both light and dark mode. */
+    /* The output rail is theme-independent dark navy chrome. Its palette is
+       the --clin-rail-* block in clinician-styles.js (one place to re-hue the
+       whole shell); the literals here are only fallbacks for that block. Tints
+       are derived with color-mix so they track the base colour. */
     .section-label {
       font-size: var(--font-size-xs, 12px);
       font-weight: var(--font-weight-bold, 600);
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: #7AABBD;
+      color: var(--clin-rail-label, #7AABBD);
       margin-block-end: var(--space-xs, 4px);
     }
     .hint {
       font-size: var(--font-size-xs, 12px);
-      color: #6898B0;
+      color: var(--clin-rail-hint, #6898B0);
       margin-block-end: var(--space-sm, 8px);
     }
 
     .url-box {
       font-family: ui-monospace, monospace;
       font-size: var(--font-size-xs, 12px);
-      background: #2A3D52;
-      border: var(--border-width, 1px) solid #2A3D52;
-      color: #A8CFDF;
+      background: var(--clin-rail-field, #2A3D52);
+      border: var(--border-width, 1px) solid var(--clin-rail-field, #2A3D52);
+      color: var(--clin-rail-text, #A8CFDF);
       border-radius: var(--radius-sm, 6px);
       padding: var(--space-sm, 8px);
       word-break: break-all;
       max-block-size: 84px;
       overflow-y: auto;
     }
-    .url-box.empty { color: rgba(168, 207, 223, 0.6); }
+    .url-box.empty { color: color-mix(in srgb, var(--clin-rail-text, #A8CFDF) 60%, transparent); }
 
     .btn-row { display: flex; gap: var(--space-sm, 8px); margin-block-start: var(--space-sm, 8px); }
     .c-btn--grow { flex: 1; }
 
     /* Secondary actions (↗ open, שתף share) sit on the dark rail, not the page. */
     .c-btn--secondary {
-      background: #2A3D52;
-      border-color: #304860;
-      color: #A8CFDF;
+      background: var(--clin-rail-field, #2A3D52);
+      border-color: var(--clin-rail-border, #304860);
+      color: var(--clin-rail-text, #A8CFDF);
     }
     .c-btn--secondary:not(:disabled):hover {
       border-color: var(--color-accent, #2BB3C0);
@@ -93,14 +94,14 @@ export class SelectionCart extends LitElement {
       inline-size: 100%;
       min-block-size: var(--item-min-touch, 44px);
       padding-inline: var(--space-md, 16px);
-      border: var(--border-width, 1px) solid #304860;
+      border: var(--border-width, 1px) solid var(--clin-rail-border, #304860);
       border-radius: var(--radius-sm, 6px);
-      background: #2A3D52;
-      color: #C0D4E4;
+      background: var(--clin-rail-field, #2A3D52);
+      color: var(--clin-rail-text-strong, #C0D4E4);
       font-family: inherit;
       font-size: var(--font-size-md, 16px);
     }
-    input.pid::placeholder { color: rgba(168, 207, 223, 0.5); }
+    input.pid::placeholder { color: color-mix(in srgb, var(--clin-rail-text, #A8CFDF) 50%, transparent); }
     input.pid:focus { outline: none; border-color: var(--color-accent, #2BB3C0); }
 
     ol { list-style: none; display: flex; flex-direction: column; gap: 6px; }
@@ -108,8 +109,8 @@ export class SelectionCart extends LitElement {
       display: flex;
       align-items: center;
       gap: 2px;
-      background: #2A3D52;
-      border: var(--border-width, 1px) solid #304860;
+      background: var(--clin-rail-field, #2A3D52);
+      border: var(--border-width, 1px) solid var(--clin-rail-border, #304860);
       border-radius: var(--radius-sm, 6px);
       padding-inline: var(--space-sm, 8px);
       padding-block: 5px;
@@ -133,7 +134,7 @@ export class SelectionCart extends LitElement {
       flex: 1;
       min-inline-size: 0;
       font-size: var(--font-size-sm, 14px);
-      color: #C0D4E4;
+      color: var(--clin-rail-text-strong, #C0D4E4);
       /* One line, ellipsis — overrides the reset's overflow-wrap so long titles
          don't wrap and buckle the row (the reference truncates too). */
       white-space: nowrap;
@@ -146,7 +147,7 @@ export class SelectionCart extends LitElement {
       background: none;
       border: none;
       cursor: pointer;
-      color: rgba(168, 207, 223, 0.7);
+      color: color-mix(in srgb, var(--clin-rail-text, #A8CFDF) 70%, transparent);
       font-size: 14px;
       line-height: 1;
       padding: 3px;
@@ -158,10 +159,10 @@ export class SelectionCart extends LitElement {
 
     .empty-cart {
       font-size: var(--font-size-sm, 14px);
-      color: #7AABBD;
+      color: var(--clin-rail-label, #7AABBD);
     }
-    .empty-cart .help-link { color: #A8CFDF; text-decoration: underline; }
-    .empty-cart .help-link:hover { color: #C0D4E4; }
+    .empty-cart .help-link { color: var(--clin-rail-text, #A8CFDF); text-decoration: underline; }
+    .empty-cart .help-link:hover { color: var(--clin-rail-text-strong, #C0D4E4); }
     .empty-cart .help-link:focus-visible {
       outline: 2px solid var(--color-border-focus, #2BB3C0);
       outline-offset: 2px;

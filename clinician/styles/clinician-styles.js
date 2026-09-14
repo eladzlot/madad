@@ -19,7 +19,23 @@
 
 export const clinicianCss = /* css */ `
   :root {
-    --clin-header-bg: #1B3148;
+    /* ── Chrome (theme-independent) ─────────────────────────────────────────
+       The clinician header and the composer's output rail: dark navy panels
+       that hold in both colour schemes. Every chrome colour lives here so a
+       deployment can re-hue the whole clinician shell from one block; the
+       derived tints below (color-mix) follow automatically. */
+    --clin-header-bg:        #1B3148;
+    --clin-rail-bg:          #3A5068;   /* rail panel — a lighter navy than the header */
+    --clin-rail-field:       #2A3D52;   /* fields, list rows, secondary buttons on the rail */
+    --clin-rail-border:      #304860;
+    --clin-rail-text:        #A8CFDF;   /* body text on the rail */
+    --clin-rail-text-strong: #C0D4E4;   /* input values, item titles */
+    --clin-rail-label:       #7AABBD;   /* section labels, empty-state copy */
+    --clin-rail-hint:        #6898B0;
+    --clin-reset-icon:       #B03A10;   /* the ↺ glyph in the catalog toolbar */
+    --clin-focus-stroke:     #115e59;   /* chart marker keyboard focus ring */
+    --clin-heatmap-ink:      #162232;   /* fixed dark ink over pastel heatmap cells */
+
     --clin-card-bg:   #FFFFFF;
     --clin-grid:      #00000014;
     --clin-cutoff:    #B45309;
@@ -27,6 +43,10 @@ export const clinicianCss = /* css */ `
 
   @media (prefers-color-scheme: dark) {
     :root {
+      --clin-reset-icon:    #E07060;
+      --clin-search-bg:     #1e2733;   /* lifts the catalog search field off the dark surface */
+      --clin-search-border: #3a4656;
+
       --clin-card-bg: #161b22;
       --clin-grid:    #ffffff1f;
       --clin-cutoff:  #E8A33D;
