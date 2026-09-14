@@ -1,0 +1,47 @@
+{
+  "id": "course_up",
+  "version": "1.0.0",
+  "questionnaires": [],
+  "batteries": [
+    {
+      "id": "course_up",
+      "meta": {
+        "domains": [
+          "anxiety",
+          "depression"
+        ],
+        "populations": [
+          "adult"
+        ],
+        "tags": [
+          "course"
+        ],
+        "featured": true
+      },
+      "title": "סוללת ההכשרה — הפרוטוקול המאוחד",
+      "description": "המדדים המחייבים במסלול הפרוטוקול המאוחד (Unified Protocol): שאלון חומרת חרדה ופגיעה תפקודית (OASIS) ושאלון דיכאון (PHQ-9). אפשר להוסיף שאלונים נוספים לקישור לפי הצורך.",
+      "keywords": [
+        "הכשרה",
+        "פרוטוקול מאוחד",
+        "OASIS",
+        "PHQ-9",
+        "מסלול",
+        "course",
+        "unified protocol",
+        "UP"
+      ],
+      "sequence": [
+        {
+          "questionnaireId": "oasis"
+        },
+        {
+          "questionnaireId": "phq9"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    "configs/prod/oasis.json",
+    "configs/prod/phq9.json"
+  ]
+}

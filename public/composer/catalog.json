@@ -178,6 +178,66 @@
       "featured": true
     },
     {
+      "id": "course_trauma",
+      "kind": "battery",
+      "title": "סוללת ההכשרה — טראומה",
+      "description": "המדדים המחייבים במסלול הטראומה: שאלון פוסט-טראומה (PCL-5) ושאלון הקוגניציות הפוסט-טראומטיות המקוצר (PTCI-9). אפשר להוסיף שאלונים נוספים…",
+      "keywords": [
+        "הכשרה",
+        "טראומה",
+        "PCL-5",
+        "PTCI-9",
+        "מסלול",
+        "course",
+        "trauma"
+      ],
+      "itemCount": 29,
+      "estMinutes": 4,
+      "hasConditional": false,
+      "domains": [
+        "trauma"
+      ],
+      "type": null,
+      "populations": [
+        "adult"
+      ],
+      "tags": [
+        "course"
+      ],
+      "featured": true
+    },
+    {
+      "id": "course_up",
+      "kind": "battery",
+      "title": "סוללת ההכשרה — הפרוטוקול המאוחד",
+      "description": "המדדים המחייבים במסלול הפרוטוקול המאוחד (Unified Protocol): שאלון חומרת חרדה ופגיעה תפקודית (OASIS) ושאלון דיכאון (PHQ-9). אפשר להוסיף…",
+      "keywords": [
+        "הכשרה",
+        "פרוטוקול מאוחד",
+        "OASIS",
+        "PHQ-9",
+        "מסלול",
+        "course",
+        "unified protocol",
+        "UP"
+      ],
+      "itemCount": 14,
+      "estMinutes": 2,
+      "hasConditional": false,
+      "domains": [
+        "anxiety",
+        "depression"
+      ],
+      "type": null,
+      "populations": [
+        "adult"
+      ],
+      "tags": [
+        "course"
+      ],
+      "featured": true
+    },
+    {
       "id": "dar5",
       "kind": "questionnaire",
       "title": "שאלון תגובות כעס (DAR-5)",

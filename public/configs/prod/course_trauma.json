@@ -1,0 +1,45 @@
+{
+  "id": "course_trauma",
+  "version": "1.0.0",
+  "questionnaires": [],
+  "batteries": [
+    {
+      "id": "course_trauma",
+      "meta": {
+        "domains": [
+          "trauma"
+        ],
+        "populations": [
+          "adult"
+        ],
+        "tags": [
+          "course"
+        ],
+        "featured": true
+      },
+      "title": "סוללת ההכשרה — טראומה",
+      "description": "המדדים המחייבים במסלול הטראומה: שאלון פוסט-טראומה (PCL-5) ושאלון הקוגניציות הפוסט-טראומטיות המקוצר (PTCI-9). אפשר להוסיף שאלונים נוספים לקישור לפי הצורך.",
+      "keywords": [
+        "הכשרה",
+        "טראומה",
+        "PCL-5",
+        "PTCI-9",
+        "מסלול",
+        "course",
+        "trauma"
+      ],
+      "sequence": [
+        {
+          "questionnaireId": "pcl5"
+        },
+        {
+          "questionnaireId": "ptci9"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    "configs/prod/pcl5.json",
+    "configs/prod/ptci9.json"
+  ]
+}
