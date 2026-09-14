@@ -310,9 +310,11 @@ export class SessionDetail extends LitElement {
         })}
       </ol>
 
-      <a class="download" href=${this._downloadUrl()} download=${fileName}>
-        הורדת ה-PDF המקורי
-      </a>
+      ${this.session.file ? html`
+        <a class="download" href=${this._downloadUrl()} download=${fileName}>
+          הורדת ה-PDF המקורי
+        </a>
+      ` : ''}
     `;
   }
 }

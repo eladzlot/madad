@@ -544,7 +544,7 @@ requires updating this section.
 | `index.html`, `composer/index.html`, `aggregate/index.html`, `help/index.html` | `<title>`; help privacy copy |
 | `composer/src/composer-store.js`, `composer/src/components/selection-cart.js`, `composer/src/components/mobile-bar.js`, `composer/src/components/composer-app.js` | uid validation, link withheld, label/placeholder/datalist, remembered uids |
 | `shared/config/loader.js` | one line: carries a file's `dev` flag onto its questionnaires so the runtime no-text guard can exempt fixtures |
-| `aggregate/src/aggregate.js`, `aggregate/src/store.js` | fetch mode; `addEnvelopes` |
+| `aggregate/src/aggregate.js`, `aggregate/src/store.js`, `aggregate/src/components/session-detail.js` | fetch mode; `addEnvelopes`; PDF download hidden for server rows |
 | `shared/styles/tokens.css`, `public/favicon.svg` | palette, favicon |
 | `scripts/validate-configs.mjs`, `scripts/build-catalog.mjs` | no-text rule wiring |
 | `public/composer/catalog.json` | regenerated (excluded instruments absent) |

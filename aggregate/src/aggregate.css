@@ -61,3 +61,11 @@ body {
   color: var(--color-text-muted);
   padding: var(--space-lg);
 }
+
+/* Remote deployment (REMOTE_SPEC §5.2): the fetch-mode header line. */
+.a-remote {
+  font-size: var(--font-size-md, 16px);
+  color: var(--color-text-muted, #6B6360);
+  margin: 0 0 var(--space-md, 16px);
+}
+.a-remote bdi { font-weight: var(--font-weight-bold, 600); color: var(--color-text, #26211F); }

@@ -328,3 +328,24 @@ describe('configFiles', () => {
     expect(store.configFiles()).toEqual(['ocd_q']);
   });
 });
+
+// ── addEnvelopes (remote deployment) ──────────────────────────────────────────
+
+describe('addEnvelopes', () => {
+  it('adds server-fetched sessions with no file and feeds the same derivations', () => {
+    const store = createStore();
+    const env = (pid, iso) => ({
+      schemaVersion: 1, generatedAt: iso, pid, name: null,
+      instruments: [{ questionnaireId: 'phq9', title: 'PHQ-9', configFile: 'configs/prod/phq9.json' }],
+      sessionState: { answers: { phq9: { 1: 1 } }, scores: { phq9: { total: 5 } }, alerts: {}, questionnaireIds: {} },
+    });
+    store.addEnvelopes([{ envelope: env('ABCD-EFGH', '2026-09-01T00:00:00Z'), createdAt: 'x' }, { envelope: env('ABCD-EFGH', '2026-09-08T00:00:00Z') }]);
+    expect(store.sessionCount).toBe(2);
+    expect(store.files).toEqual([]);
+    expect(store.getSession(0)).toMatchObject({ id: 0, fileName: null });
+    expect(store.getSession(0).file).toBeUndefined();
+    expect(store.series()[0].points).toHaveLength(2);
+    expect(store.pids()).toEqual(['ABCD-EFGH']);
+    expect(store.configFiles()).toEqual(['phq9']);
+  });
+});

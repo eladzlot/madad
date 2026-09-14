@@ -39,6 +39,20 @@ export function createStore() {
       notify();
     },
 
+    /**
+     * Remote deployment (REMOTE_SPEC §5.2): sessions fetched from the server
+     * instead of parsed from PDFs. No file, no fileName — the detail panel
+     * offers no PDF download for these rows. Everything downstream (series,
+     * pid filter, heatmap, detail) is unchanged.
+     * @param {Array<{envelope: object, createdAt?: string}>} list
+     */
+    addEnvelopes(list) {
+      for (const { envelope } of list) {
+        sessions.push({ id: sessions.length, envelope, fileName: null });
+      }
+      notify();
+    },
+
     /** Session lookup for the detail panel. */
     getSession(id) {
       return sessions[id] ?? null;

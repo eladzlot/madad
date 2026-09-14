@@ -21,6 +21,10 @@ import './components/upload-list.js';
 import './components/pid-filter.js';
 import './components/raw-data-list.js';
 import './components/session-detail.js';
+// Remote deployment (REMOTE_SPEC §5.2): fetch mode when the URL is a signed link.
+import { readLinkParams, fetchSessions, requestFreshLink } from './remote/fetch-sessions.js';
+import './remote/link-form.js';
+import { formatUid } from '../../shared/remote/uid.js';
 
 adoptClinicianStyles();
 
@@ -37,6 +41,31 @@ let loadedConfigKey = '';
 // or null. Scoped to a single questionnaire — the panel opens from a chart
 // point, and a point belongs to one instrument.
 let selected = null;
+
+// Fetch mode state: null on the PDF-drop surface; otherwise
+// { uid, status: 'loading' | 'ok' | 'expired' | 'error', count, form: 'idle' | 'sending' | 'sent' }.
+const link = readLinkParams(location);
+let remote = link ? { uid: formatUid(link.uid) ?? link.uid, status: 'loading', count: 0, form: 'idle' } : null;
+
+async function loadRemote() {
+  const result = await fetchSessions(link);
+  if (result.status === 'ok') {
+    remote = { ...remote, status: 'ok', uid: formatUid(result.uid) ?? remote.uid, count: result.sessions.length };
+    store.addEnvelopes(result.sessions);   // notifies → update(); overlays follow
+    refreshConfigs();
+  } else {
+    remote = { ...remote, status: result.status };
+    update();
+  }
+}
+
+async function handleLinkRequest(uid) {
+  remote = { ...remote, form: 'sending' };
+  update();
+  await requestFreshLink(uid);              // always "sent": the API never discloses registration
+  remote = { ...remote, form: 'sent' };
+  update();
+}
 
 async function handleFiles(files) {
   const parsed = await Promise.all(
@@ -76,13 +105,30 @@ function template() {
   return html`
     <clinician-nav
       page="aggregate"
-      subtitle="הקבצים נטענים בדפדפן שלך בלבד. סגירת הכרטיסייה מוחקת אותם."
+      subtitle=${remote
+        ? 'המפגשים נטענים מהשרת עבור המזהה שבקישור. סגירת הכרטיסייה לא מוחקת דבר מהשרת.'
+        : 'הקבצים נטענים בדפדפן שלך בלבד. סגירת הכרטיסייה מוחקת אותם.'}
     ></clinician-nav>
     <div class="a-container">
-      <upload-list
-        .files=${store.files}
-        @files-selected=${(e) => handleFiles(e.detail.files)}
-      ></upload-list>
+      ${remote ? html`
+        ${remote.status === 'loading' ? html`<p class="a-remote a-empty">טוען את מפגשי המטופל <bdi>${remote.uid}</bdi>…</p>` : ''}
+        ${remote.status === 'ok' ? html`
+          <p class="a-remote">מטופל <bdi>${remote.uid}</bdi> — ${remote.count === 1 ? 'מפגש אחד' : `${remote.count} מפגשים`}</p>
+        ` : ''}
+        ${remote.status === 'expired' || remote.status === 'error' ? html`
+          <link-form
+            .uid=${remote.uid}
+            .reason=${remote.status}
+            .state=${remote.form}
+            @link-request=${(e) => handleLinkRequest(e.detail.uid)}
+          ></link-form>
+        ` : ''}
+      ` : html`
+        <upload-list
+          .files=${store.files}
+          @files-selected=${(e) => handleFiles(e.detail.files)}
+        ></upload-list>
+      `}
 
       ${showFilter ? html`
         <pid-filter
@@ -137,3 +183,4 @@ function update() {
 
 store.subscribe(update);
 update();
+if (remote) loadRemote();
