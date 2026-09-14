@@ -20,7 +20,9 @@ const PAGES = [
 
 // Brand → landing. Cross-origin landing origin injected at build time; empty ⇒
 // the relative '../landing/' that resolves under any single-origin base path.
-const LANDING_HREF = __LANDING_ORIGIN__ ? `${__LANDING_ORIGIN__}/` : '../landing/';
+// Remote deployment: there is no landing page on the trial origin; the brand
+// goes to the help page instead.
+const LANDING_HREF = '../help/';
 
 export class ClinicianNav extends LitElement {
   static properties = {

@@ -5,6 +5,16 @@
 **Status:** Living document — update whenever the system state changes
 **Purpose:** Everything a developer (human or AI) needs to understand the project, work safely within it, and expand it without breaking things.
 
+> **Branch note — you are on `remote`.** This branch is the server-backed
+> trial instance for the MOH training (מדד · CTR). Everything below
+> describes the public app as built from `main`; the differences — mandatory
+> uid, no name, no free-text instruments, post-first submission to Pages
+> Functions + D1, therapist email links, the burgundy identity, and the
+> `server/`, `functions/`, `scripts/remote/` trees — are specified in
+> `docs/REMOTE_SPEC.md`, whose §12.2 lists every `main` file this branch
+> edits. Rebase onto `main` after every `main` merge; never merge this
+> branch back. Operator runbook: `scripts/remote/README.md`.
+
 > Scope note: this document describes the system as it *is*. The backlog — what
 > is next, what is blocked, and why past decisions were made — lives in
 > `docs/TODO.md`. Completed-work history lives in `docs/TODO.md` §5 (Task

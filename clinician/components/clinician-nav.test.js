@@ -20,7 +20,7 @@ describe('clinician-nav', () => {
     expect(links.map((a) => a.textContent.trim())).toEqual(['מחולל קישורים', 'סיכום מטופל', 'עזרה']);
     // Relative one-level-up hrefs work under any deploy base path.
     expect(links.map((a) => a.getAttribute('href'))).toEqual(['../composer/', '../aggregate/', '../help/']);
-    expect(el.shadowRoot.querySelector('.brand').getAttribute('href')).toBe('../landing/');
+    expect(el.shadowRoot.querySelector('.brand').getAttribute('href')).toBe('../help/');
   });
 
   it('marks only the current page with aria-current', async () => {

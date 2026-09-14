@@ -1,0 +1,96 @@
+name: Deploy remote (trial)
+
+# Deploys the `remote` branch — the server-backed trial instance
+# (docs/REMOTE_SPEC.md §12) — to the Cloudflare Pages project madad-remote,
+# Functions included (wrangler bundles functions/ from the repo root; the
+# output dir comes from wrangler.toml). The public app is deployed from
+# `main` by deploy-cloudflare.yml and never from here.
+#
+# Same self-contained gate as the public deploy: a broken bundle never ships.
+# Requires the same two repo secrets (CLOUDFLARE_API_TOKEN scoped to Pages:Edit
+# + D1:Edit, CLOUDFLARE_ACCOUNT_ID). Runtime secrets (HMAC_SECRET, IP_SALT,
+# EMAIL_API_TOKEN) are set once with `wrangler pages secret put` — see
+# scripts/remote/README.md — and are not touched by this workflow.
+
+on:
+  push:
+    branches: [remote]
+  workflow_dispatch:
+
+concurrency:
+  group: cloudflare-deploy-remote
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Gate, build, migrate, deploy (trial)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # ── Gate ──────────────────────────────────────────────────────────────
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit tests (incl. server handlers)
+        run: npm test
+
+      - name: Validate configs
+        run: npm run validate:configs
+
+      - name: Validate catalog (no-text rule applied)
+        run: npm run validate:catalog
+
+      - name: Build (gate)
+        run: npm run build
+
+      - name: Check bundle size
+        run: npm run size
+
+      - name: Functions bundle compiles
+        run: npx wrangler pages functions build --outdir=/tmp/fnbuild
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E (dev + dist-smoke incl. remote suites)
+        run: npm run e2e
+
+      - name: Upload E2E report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-remote
+          path: playwright-report/
+          retention-days: 7
+
+      # ── Production build, migrate, deploy ─────────────────────────────────
+      - name: Production build
+        env:
+          MADAD_BASE: /
+        run: npm run build
+
+      - name: Apply D1 migrations
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: d1 migrations apply madad-remote --remote
+
+      - name: Deploy → madad-remote (dist + functions)
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy --branch=remote
