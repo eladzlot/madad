@@ -19,9 +19,14 @@ export default [
       globals: { ...globals.browser, __APP_VERSION__: 'readonly', __LANDING_ORIGIN__: 'readonly' },
     },
   },
+  // Remote deployment server side (branch `remote`): Workers runtime globals.
+  {
+    files: ['server/**/*.js', 'functions/**/*.js'],
+    languageOptions: { globals: { ...globals.serviceworker } },
+  },
   // Test files — both browser (happy-dom) and vitest globals
   {
-    files: ['src/**/*.test.js', 'shared/**/*.test.js', 'clinician/**/*.test.js', 'aggregate/src/**/*.test.js', 'tests/**/*.js'],
+    files: ['src/**/*.test.js', 'shared/**/*.test.js', 'clinician/**/*.test.js', 'aggregate/src/**/*.test.js', 'tests/**/*.js', 'server/**/*.test.js'],
     languageOptions: {
       globals: { ...globals.browser, ...globals.node },
     },

@@ -94,8 +94,11 @@ origin.** Rationale:
 - Same origin ⇒ the existing CSP (`connect-src 'self'`) needs **zero
   changes**, and there is no CORS.
 - The account, API token and deploy pattern already exist
-  (`deploy-cloudflare.yml`). Functions live in `functions/` on the branch,
-  versioned and reviewed like everything else.
+  (`deploy-cloudflare.yml`). Route files live in `functions/api/v1/` and
+  all logic in `server/lib/` — pure handlers `(input, deps) → Response`
+  with the D1, email, config and clock dependencies injected, unit-tested
+  against in-memory fakes (`server/lib/db-memory.js`). `functions/` holds
+  only glue because Pages treats every file under it as a route.
 - Portable by design: plain HTTP endpoints, one SQL schema, HMAC tokens.
   Nothing Cloudflare-specific leaks into the contract, so a mandated move is
   a re-deploy, not a re-design.
@@ -133,9 +136,10 @@ CREATE INDEX access_log_uid_ts ON access_log(uid, ts);
 
 No `patients` table, no `therapists` table beyond the email column, no
 names anywhere. The registry is edited by the operator (D-5) with
-`scripts/remote/mint-uids.mjs` + `wrangler d1 execute`; a therapist-facing
-management UI is out of scope (§9). `access_log` serves both the security
-posture (§7) and the usage questions in §10.
+`scripts/remote/mint-uids.mjs` + `wrangler d1 execute` (runbook:
+`scripts/remote/README.md`); a therapist-facing management UI is out of
+scope (§9). `access_log` serves both the security posture (§7) and the usage
+questions in §10. Migrations live in `server/db/migrations/`.
 
 ---
 
@@ -303,7 +307,7 @@ rejected as unnecessary for the trial (D-12).
 ## 6. Notification email
 
 Sent on every accepted submission via a provider behind one seam
-(`functions/lib/email.js`): Cloudflare Email Service first; Resend/Postmark
+(`server/lib/email.js`): Cloudflare Email Service first; Resend/Postmark
 are drop-in alternatives.
 
 **Body contains, exhaustively:** the uid, the completion date, and a signed
@@ -515,7 +519,8 @@ that mis-flips ships submission code to the public app. A branch cannot.
   tokenisation of the hardcoded chrome colours so the palette is one file.
 - **Prefer new files.** Remote code lives in `src/remote/`,
   `composer/src/remote/`, `aggregate/src/remote/`, `shared/remote/`,
-  `functions/`, `scripts/remote/`, and this document.
+  `server/`, `functions/`, `scripts/remote/`, `wrangler.toml`, and this
+  document.
 
 ### 12.2 The drift budget
 
@@ -539,7 +544,8 @@ requires updating this section.
 | `.github/workflows/ci.yml` | branch added to triggers |
 | `tests/e2e/*` | uid in URL constants; composer tests fill the uid; text-instrument cases repointed |
 | `*.test.js` beside the files above | expectations updated for the uid, brand string and withheld link |
-| `package.json` | `dev:remote`, `deploy:remote` scripts; wrangler dev dependency |
+| `package.json`, `package-lock.json` | `dev:remote`, `deploy:remote` scripts; lint globs; wrangler dev dependency |
+| `vitest.config.js`, `eslint.config.js`, `.gitignore` | `server/**` and `functions/**` covered; `.dev.vars`, `.wrangler/`, `minted/` ignored |
 
 ### 12.3 Artifacts
 
@@ -549,7 +555,7 @@ requires updating this section.
 | Build | `vite build` | `vite.landing.config.js` | `vite build` (same config) |
 | Pages project | `madad-app` | `madad-landing` | `madad-remote` |
 | Domain | `app.ezmadad.com` | `ezmadad.com` | TBD (§10.1) |
-| Server side | none | none | Pages Functions (`functions/`) + D1 + secrets |
+| Server side | none | none | Pages Functions (`functions/` + `server/`) + D1 + secrets |
 | Landing | — | yes | none (robots disallow; help page only) |
 
 The API is deployed **only** with the trial project; the public origin has
@@ -574,8 +580,8 @@ Tracked in the session plan; summarised here so the order survives.
    catalog `exclude`; behaviour-neutral, dist-smoke proves it.
 3. **Trial identity on the branch** — uid module, mandatory uid, no name,
    disclosure, no-text rule, course batteries, branding, new palette.
-4. **Server** — `functions/api/v1/*`, D1 migrations, email seam, rate
-   limiting, operator scripts, `dev:remote`.
+4. **Server** — `functions/api/v1/*` + `server/lib/*`, D1 migrations, email
+   seam, rate limiting, operator scripts + runbook, `dev:remote`.
 5. **Client remote path** — uid check, submit, results status, e2e.
 6. **Aggregate fetch mode.**
 7. **CI/deploy** — branch CI trigger, `deploy-remote.yml`, secrets.

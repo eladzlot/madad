@@ -1,0 +1,4 @@
+# Copy to .dev.vars (gitignored) for `npm run dev:remote`.
+HMAC_SECRET=local-dev-secret-change-me
+IP_SALT=local-dev-salt
+EMAIL_API_TOKEN=

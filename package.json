@@ -9,6 +9,8 @@
     "build:catalog": "node scripts/build-catalog.mjs",
     "build": "npm run build:validator && npm run build:catalog && vite build && vite build --config vite.landing.config.js",
     "preview": "vite preview",
+    "dev:remote": "npm run build && wrangler d1 migrations apply madad-remote --local && wrangler pages dev dist --port 8788",
+    "deploy:remote": "npm run build && wrangler pages deploy dist --project-name madad-remote",
     "preview:landing": "vite preview --outDir dist-landing --port 4174 --strictPort --base=/",
     "test": "npm run build:validator && vitest run",
     "test:watch": "vitest",
@@ -16,8 +18,8 @@
     "e2e": "playwright test",
     "e2e:ui": "playwright test --ui",
     "e2e:dist": "npm run build && playwright test --project=dist-smoke",
-    "lint": "eslint src tests scripts composer/src shared aggregate/src clinician help/src",
-    "lint:fix": "eslint src tests scripts composer/src shared aggregate/src clinician help/src --fix",
+    "lint": "eslint src tests scripts composer/src shared aggregate/src clinician help/src server functions",
+    "lint:fix": "eslint src tests scripts composer/src shared aggregate/src clinician help/src server functions --fix",
     "validate:configs": "node scripts/validate-configs.mjs",
     "validate:catalog": "node scripts/build-catalog.mjs --check",
     "demo": "vite-node scripts/generate-test-pdfs.mjs --out demo/out",
@@ -48,6 +50,7 @@
     "prettier": "^3.8.1",
     "vite": "^7.3.1",
     "vite-node": "^6.0.0",
-    "vitest": "^4.0.18"
+    "vitest": "^4.0.18",
+    "wrangler": "^4.131.2"
   }
 }

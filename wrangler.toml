@@ -1,0 +1,30 @@
+# wrangler.toml — the remote deployment (Cloudflare Pages + Functions + D1).
+#
+# This file exists only on the `remote` branch (docs/REMOTE_SPEC.md §12). The
+# public app is deployed from `main` by deploy-cloudflare.yml and has no
+# server side at all.
+#
+# Bindings and vars below are what functions/api/v1/* read from `env`.
+# Secrets are NOT here — set them with `wrangler pages secret put` (and in
+# .dev.vars for local runs; that file is gitignored):
+#   HMAC_SECRET       — signs therapist links (§4.5); rotating it revokes all
+#   EMAIL_API_TOKEN   — Cloudflare API token with Email Sending permission
+#   IP_SALT           — salts the hashed client IP in access_log (§7)
+
+name = "madad-remote"
+pages_build_output_dir = "dist"
+compatibility_date = "2026-09-01"
+
+[vars]
+EMAIL_FROM = "madad@ezmadad.com"          # must be a domain onboarded to Email Sending
+EMAIL_FROM_NAME = "מדד · CTR"
+CF_ACCOUNT_ID = ""                          # filled at bring-up (spec §12.5 stage 8)
+LINK_TTL_DAYS = "7"                         # §4.5 — revisited with access_log data
+SUBMISSIONS_PER_UID_PER_DAY = "20"          # §7 per-uid cap
+FAILED_CHECKS_PER_IP_PER_HOUR = "30"        # §7 per-IP cap on the uid check
+
+[[d1_databases]]
+binding = "DB"
+database_name = "madad-remote"
+database_id = "00000000-0000-0000-0000-000000000000"   # replaced at bring-up
+migrations_dir = "server/db/migrations"

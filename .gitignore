@@ -18,3 +18,8 @@ tests/fixtures/pdfs/
 demo/scenarios/
 demo/out/
 demo/notes/
+
+# Remote deployment (branch remote): local secrets and wrangler state
+.dev.vars
+.wrangler/
+minted/
