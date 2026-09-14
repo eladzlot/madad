@@ -91,3 +91,35 @@ describe('reactivity', () => {
     expect(el.shadowRoot.querySelector('.battery-title').textContent).toBe('שני');
   });
 });
+
+// ─── collectName ──────────────────────────────────────────────────────────────
+
+describe('collectName', () => {
+  it('renders the name field by default', async () => {
+    const el = await makeEl();
+    expect(el.collectName).toBe(true);
+    expect(el.shadowRoot.querySelector('#patient-name')).not.toBeNull();
+  });
+
+  it('omits the name field when collectName is false', async () => {
+    const el = await makeEl({ collectName: false });
+    expect(el.shadowRoot.querySelector('#patient-name')).toBeNull();
+    expect(el.shadowRoot.querySelector('.field')).toBeNull();
+    expect(el.shadowRoot.querySelector('.begin-btn')).not.toBeNull();
+  });
+
+  it('fires begin with an empty name when collectName is false, even if a name was typed earlier', async () => {
+    const el = await makeEl();
+    const input = el.shadowRoot.querySelector('input');
+    input.value = 'ישראל ישראלי';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    await el.updateComplete;
+    el.collectName = false;
+    await el.updateComplete;
+    const handler = vi.fn();
+    el.addEventListener('begin', handler);
+    el.shadowRoot.querySelector('.begin-btn').click();
+    expect(handler).toHaveBeenCalledOnce();
+    expect(handler.mock.calls[0][0].detail).toEqual({ name: '' });
+  });
+});

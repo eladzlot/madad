@@ -8,7 +8,11 @@ import { resetCSS } from '../styles/reset.js';
  * 'begin' when the patient is ready.
  *
  * Properties:
- *   batteryTitle  {string}  — title of the battery about to be administered
+ *   batteryTitle  {string}   — title of the battery about to be administered
+ *   collectName   {boolean}  — render the name field (default true). When
+ *                              false the field is absent and `begin` carries
+ *                              name: '' — for deployments that identify the
+ *                              patient by the link alone.
  *
  * Events:
  *   begin  CustomEvent({ detail: { name: string } })
@@ -16,6 +20,7 @@ import { resetCSS } from '../styles/reset.js';
 export class WelcomeScreen extends LitElement {
   static properties = {
     batteryTitle: { type: String },
+    collectName:  { type: Boolean },
     _name: { type: String, state: true },
   };
 
@@ -139,6 +144,7 @@ export class WelcomeScreen extends LitElement {
   constructor() {
     super();
     this.batteryTitle = '';
+    this.collectName = true;
     this._name = '';
   }
 
@@ -154,7 +160,9 @@ export class WelcomeScreen extends LitElement {
   _begin() {
     // Strip Unicode BiDi control characters before emitting the name.
     // These can cause misleading visual rendering in PDF documents.
-    const safeName = this._name.trim().replace(/[\u200E\u200F\u202A-\u202E\u2066-\u2069]/g, '');
+    const safeName = this.collectName
+      ? this._name.trim().replace(/[\u200E\u200F\u202A-\u202E\u2066-\u2069]/g, '')
+      : '';
     this.dispatchEvent(new CustomEvent('begin', {
       detail: { name: safeName },
       bubbles: true,
@@ -176,18 +184,20 @@ export class WelcomeScreen extends LitElement {
           התשובות שלך יעזרו לצוות המטפל להבין אותך טוב יותר.
         </p>
 
-        <div class="field">
-          <label for="patient-name">שמך</label>
-          <input
-            id="patient-name"
-            type="text"
-            placeholder="שמך המלא"
-            .value=${this._name}
-            @input=${this._onInput}
-            @keydown=${this._onKeyDown}
-            autocomplete="name"
-          />
-        </div>
+        ${this.collectName ? html`
+          <div class="field">
+            <label for="patient-name">שמך</label>
+            <input
+              id="patient-name"
+              type="text"
+              placeholder="שמך המלא"
+              .value=${this._name}
+              @input=${this._onInput}
+              @keydown=${this._onKeyDown}
+              autocomplete="name"
+            />
+          </div>
+        ` : ''}
 
         <button class="begin-btn" @click=${this._begin}>
           התחל

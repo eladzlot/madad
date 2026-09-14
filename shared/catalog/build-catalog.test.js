@@ -167,3 +167,37 @@ describe('serializeCatalog', () => {
     expect(a.endsWith('\n')).toBe(true);
   });
 });
+
+// ── exclude ───────────────────────────────────────────────────────────────────
+
+describe('exclude option', () => {
+  it('excludes nothing by default', () => {
+    const cat = buildCatalog([qConfig('q1'), batConfig('b1', ['q1'])]);
+    expect(cat.entries.map(e => e.id)).toEqual(['q1', 'b1']);
+  });
+
+  it('drops entities the predicate returns true for, and is called with entity, kind and config', () => {
+    const exclude = vi.fn((entity, kind) => kind === 'questionnaire' && entity.id === 'q2');
+    const cat = buildCatalog([qConfig('q1'), qConfig('q2'), batConfig('b1', ['q1', 'q2'])], { exclude });
+    expect(cat.entries.map(e => e.id)).toEqual(['q1', 'b1']);
+    expect(exclude).toHaveBeenCalledTimes(3);
+    const [entity, kind, config] = exclude.mock.calls[1];
+    expect(entity.id).toBe('q2');
+    expect(kind).toBe('questionnaire');
+    expect(config.id).toBe('q2');
+  });
+
+  it('can exclude a battery independently of its questionnaires', () => {
+    const cat = buildCatalog(
+      [qConfig('q1'), batConfig('b1', ['q1'])],
+      { exclude: (_e, kind) => kind === 'battery' },
+    );
+    expect(cat.entries.map(e => e.id)).toEqual(['q1']);
+  });
+
+  it('does not warn about missing meta on excluded entities', () => {
+    const warn = vi.fn();
+    buildCatalog([qConfig('q1', { meta: undefined })], { warn, exclude: () => true });
+    expect(warn).not.toHaveBeenCalled();
+  });
+});

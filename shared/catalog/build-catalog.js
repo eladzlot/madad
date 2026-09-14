@@ -126,16 +126,24 @@ function metaFields(meta) {
  * @param {object[]} configs     parsed config files, in the order their
  *                               entries should appear (CLI passes sorted
  *                               filename order)
- * @param {object} [options]     {warn: (msg) => void}
+ * @param {object} [options]     {warn: (msg) => void,
+ *                                exclude: (entity, kind, config) => boolean}
  * @returns {object} catalog     {catalogVersion, entries}
  *
  * - a config's `dev: true` flag passes through onto its entries; the
  *   composer filters at runtime by DEV mode
+ * - `exclude` (optional) is asked once per battery/questionnaire with the
+ *   entity, its kind ('battery' | 'questionnaire') and the config it came
+ *   from; a truthy return leaves it out of the catalog entirely. Default:
+ *   nothing is excluded. Deployments that must not offer certain
+ *   instruments (e.g. ones with free-text items) hook in here without
+ *   touching the config files.
  * - battery item counts resolve questionnaire refs across all given configs
  *   (batteries live in their own files and reference other files' content)
  */
 export function buildCatalog(configs, options = {}) {
   const warn = options.warn ?? (() => {});
+  const exclude = options.exclude ?? (() => false);
   const entries = [];
 
   // First pass: cross-config questionnaire map for battery counting.
@@ -155,6 +163,7 @@ export function buildCatalog(configs, options = {}) {
     };
 
     for (const b of config.batteries ?? []) {
+      if (exclude(b, 'battery', config)) continue;
       if (!b.meta) missingMeta('battery', b.id);
       const counts = countBattery(b.sequence, questionnaireById, warn, `${config.id}/${b.id}`);
       entries.push({
@@ -171,6 +180,7 @@ export function buildCatalog(configs, options = {}) {
       });
     }
     for (const q of config.questionnaires ?? []) {
+      if (exclude(q, 'questionnaire', config)) continue;
       if (!q.meta) missingMeta('questionnaire', q.id);
       const counts = countItems(q.items);
       entries.push({

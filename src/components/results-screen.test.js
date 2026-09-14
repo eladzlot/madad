@@ -255,3 +255,54 @@ describe('PDF error state', () => {
     expect(el.shadowRoot.querySelector('.pdf-error')).toBeNull();
   });
 });
+
+// ─── status block ─────────────────────────────────────────────────────────────
+
+describe('status block', () => {
+  it('renders nothing when status is null (default)', async () => {
+    const el = await makeEl({ results: sampleResults });
+    expect(el.status).toBeNull();
+    expect(el.shadowRoot.querySelector('.status')).toBeNull();
+  });
+
+  it('renders message and detail with the kind class and a status role', async () => {
+    const el = await makeEl({
+      results: sampleResults,
+      status: { kind: 'success', message: 'נשלח', detail: 'פרטים' },
+    });
+    const box = el.shadowRoot.querySelector('.status');
+    expect(box.classList.contains('status--success')).toBe(true);
+    expect(box.getAttribute('role')).toBe('status');
+    expect(box.querySelector('.status__msg').textContent.trim()).toBe('נשלח');
+    expect(box.querySelector('.status__detail').textContent.trim()).toBe('פרטים');
+    expect(box.querySelector('.status__action')).toBeNull();
+  });
+
+  it('uses role=alert for errors and wires the action button', async () => {
+    const onClick = vi.fn();
+    const el = await makeEl({
+      results: sampleResults,
+      status: { kind: 'error', message: 'נכשל', action: { label: 'נסה שוב', onClick } },
+    });
+    const box = el.shadowRoot.querySelector('.status');
+    expect(box.classList.contains('status--error')).toBe(true);
+    expect(box.getAttribute('role')).toBe('alert');
+    const btn = box.querySelector('.status__action');
+    expect(btn.textContent.trim()).toBe('נסה שוב');
+    btn.click();
+    expect(onClick).toHaveBeenCalledOnce();
+  });
+
+  it('defaults kind to info and leaves the PDF actions untouched', async () => {
+    const el = await makeEl({ results: sampleResults, status: { message: 'שולח…' } });
+    expect(el.shadowRoot.querySelector('.status--info')).not.toBeNull();
+    expect(el.shadowRoot.querySelectorAll('.actions .pdf-btn')).toHaveLength(1);
+  });
+
+  it('disappears again when status is set back to null', async () => {
+    const el = await makeEl({ results: sampleResults, status: { message: 'x' } });
+    el.status = null;
+    await el.updateComplete;
+    expect(el.shadowRoot.querySelector('.status')).toBeNull();
+  });
+});

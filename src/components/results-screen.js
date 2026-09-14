@@ -8,6 +8,10 @@ import { resetCSS } from '../styles/reset.js';
  *
  * Properties:
  *   results  {Array<{ title: string, total: number|null, category: string|null }>}
+ *   status   {null | { kind: 'info'|'success'|'error', message: string,
+ *             detail?: string, action?: { label: string, onClick: Function } }}
+ *            — optional status block rendered above the actions (e.g. the
+ *            outcome of sending the session somewhere). Null renders nothing.
  *
  * Events:
  *   download-pdf  CustomEvent  — patient taps download (not yet implemented)
@@ -15,6 +19,7 @@ import { resetCSS } from '../styles/reset.js';
 export class ResultsScreen extends LitElement {
   static properties = {
     results:    { type: Array },
+    status:     { type: Object },
     canShare:   { type: Boolean },
     loading:    { type: Boolean, state: true },
     _pdfError:  { type: Boolean, state: true },
@@ -115,6 +120,31 @@ export class ResultsScreen extends LitElement {
       font-weight: var(--font-weight-normal);
     }
 
+    /* ── Status block (optional, above the actions) ───────────────────── */
+
+    .status {
+      border: var(--border-width) solid var(--color-border);
+      border-inline-start: 4px solid var(--color-border-focus);
+      border-radius: var(--radius-md);
+      background: var(--color-surface);
+      padding: var(--space-md);
+      margin-block-end: var(--space-lg);
+    }
+    .status--success { border-inline-start-color: var(--color-yes); background: var(--color-yes-bg); }
+    .status--error   { border-inline-start-color: var(--color-no);  background: var(--color-no-bg); }
+
+    .status__msg {
+      font-size: var(--font-size-md);
+      font-weight: var(--font-weight-medium);
+      color: var(--color-text);
+    }
+    .status__detail {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-muted);
+      margin-block-start: var(--space-xs);
+    }
+    .status__action { margin-block-start: var(--space-sm); }
+
     /* ── Action buttons ──────────────────────────────────────────────── */
 
     .actions {
@@ -187,6 +217,7 @@ export class ResultsScreen extends LitElement {
   constructor() {
     super();
     this.results    = [];
+    this.status     = null;
     this.canShare   = false;
     this.loading    = false;
     this._pdfError  = false;
@@ -218,6 +249,18 @@ export class ResultsScreen extends LitElement {
           </div>
         `)}
       </div>
+
+      ${this.status ? html`
+        <div class="status status--${this.status.kind ?? 'info'}"
+             role=${this.status.kind === 'error' ? 'alert' : 'status'}>
+          <p class="status__msg">${this.status.message}</p>
+          ${this.status.detail ? html`<p class="status__detail">${this.status.detail}</p>` : ''}
+          ${this.status.action ? html`
+            <button class="pdf-btn pdf-btn--secondary status__action"
+                    @click=${this.status.action.onClick}>${this.status.action.label}</button>
+          ` : ''}
+        </div>
+      ` : ''}
 
       <div class="actions">
         ${this._pdfError ? html`
