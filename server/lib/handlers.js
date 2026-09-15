@@ -36,6 +36,20 @@ export const refuse = (status) => json({ error: ERRORS[status] ?? 'error' }, sta
 const iso = (d) => d.toISOString();
 const hoursAgo = (now, h) => iso(new Date(now.getTime() - h * 3600_000));
 
+/**
+ * Send one message and record the attempt (§6, §7). Every send writes an
+ * access_log row — kind 'email', ok 1 or 0 — so lost notifications are
+ * queryable instead of invisible in a console log. No ip_hash: the row that
+ * triggered this send already logged the caller's IP at the same timestamp,
+ * and a therapist's email event should not carry a patient's IP.
+ */
+async function sendAndLog(deps, { uid, to, msg, now }) {
+  const sent = await deps.email.send({ to, ...msg });
+  await deps.db.logAccess({ kind: 'email', uid, ok: sent.ok, ipHash: null, ts: iso(now) });
+  if (!sent.ok) deps.onEmailFailure?.({ uid, reason: sent.reason ?? sent.status });
+  return sent;
+}
+
 // ── 4.1 GET /api/v1/uids/<uid> ───────────────────────────────────────────────
 
 export async function checkUid(rawUid, deps) {
@@ -98,11 +112,20 @@ export async function submitSession(rawBody, deps) {
   await deps.db.insertSession(uid, JSON.stringify(envelope), iso(now));
   await log(uid, true);
 
-  // §6 doorbell. Failure is logged by the caller's runtime, never surfaced.
-  const link = await buildLink({ secret: deps.secret, origin: deps.origin, uid, ttlDays: deps.limits.linkTtlDays, now });
-  const msg = doorbellEmail({ uid: formatUid(uid), link, date: now });
-  const sent = await deps.email.send({ to: row.therapist_email, ...msg });
-  if (!sent.ok) deps.onEmailFailure?.({ uid, reason: sent.reason ?? sent.status });
+  // §6 doorbell, at most one per uid per window. The patient app re-submits
+  // whenever answers change after a completion, so one sitting can produce
+  // several submissions; without this a therapist gets an email for each and
+  // the account's daily sending quota is spent on duplicates. Nothing is lost
+  // by suppressing: the link sent earlier is valid for days and always shows
+  // every session for the uid, including the ones that arrive after it.
+  // Email failure never fails a submission — the data is already stored.
+  const windowHours = deps.limits.doorbellWindowHours;
+  const alreadyNotified = windowHours > 0
+    && (await deps.db.countEmailsSince(uid, hoursAgo(now, windowHours))) > 0;
+  if (!alreadyNotified) {
+    const link = await buildLink({ secret: deps.secret, origin: deps.origin, uid, ttlDays: deps.limits.linkTtlDays, now });
+    await sendAndLog(deps, { uid, to: row.therapist_email, msg: doorbellEmail({ uid: formatUid(uid), link, date: now }), now });
+  }
 
   return empty(204);
 }
@@ -154,10 +177,11 @@ export async function requestLink(rawBody, deps) {
   const uid = body && isValidUid(body.uid) ? normalizeUid(body.uid) : null;
   const row = uid ? await deps.db.findRegistry(uid) : null;
   await deps.db.logAccess({ kind: 'link', uid, ok: !!row, ipHash: deps.ipHash, ts: iso(now) });
+  // Never suppressed: this send is the therapist's own explicit request, and
+  // withholding it would strand someone whose link has expired.
   if (row) {
     const link = await buildLink({ secret: deps.secret, origin: deps.origin, uid, ttlDays: deps.limits.linkTtlDays, now });
-    const sent = await deps.email.send({ to: row.therapist_email, ...freshLinkEmail({ uid: formatUid(uid), link }) });
-    if (!sent.ok) deps.onEmailFailure?.({ uid, reason: sent.reason ?? sent.status });
+    await sendAndLog(deps, { uid, to: row.therapist_email, msg: freshLinkEmail({ uid: formatUid(uid), link }), now });
   }
   return empty(204);   // never an oracle
 }

@@ -19,6 +19,13 @@ export function createD1Db(d1) {
     async countSessionsSince(uid, sinceIso) {
       return d1.prepare('SELECT COUNT(*) AS n FROM sessions WHERE uid = ? AND created_at >= ?').bind(uid, sinceIso).first('n');
     },
+    // Successful doorbells for one uid in a window — the suppression check
+    // (§6). Only ok=1 counts: a failed send means the therapist was never
+    // told, so the next submission should try again rather than suppress.
+    async countEmailsSince(uid, sinceIso) {
+      return d1.prepare("SELECT COUNT(*) AS n FROM access_log WHERE kind = 'email' AND uid = ? AND ok = 1 AND ts >= ?")
+        .bind(uid, sinceIso).first('n');
+    },
     async countAccessSince({ kind, ipHash, ok, sinceIso }) {
       return d1.prepare('SELECT COUNT(*) AS n FROM access_log WHERE kind = ? AND ip_hash = ? AND ok = ? AND ts >= ?')
         .bind(kind, ipHash, ok ? 1 : 0, sinceIso).first('n');

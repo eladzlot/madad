@@ -41,15 +41,18 @@ Do this **in the dashboard**: Compute & AI → Email Service → Email Sending �
 Onboard Domain → `ezmadad.com` → Add records and onboard. It writes the SPF
 and DKIM records into the zone for you.
 
-The CLI equivalent (`npx wrangler email sending enable ezmadad.com`) is an
-open-beta command and currently fails against this account with
-`Unauthorized [code: 2036]` on `/zones/<id>/email/sending/subdomains`. It is
-not a scope typo: the same zone endpoint refuses a plain **read**
-(`email sending dns get`) identically, while the zone lookup that precedes it
-succeeds, and `wrangler whoami` lists `email_sending (write)`. The OAuth
-grant wrangler issues does not carry zone-level email authority. Use the
-dashboard, or mint a token with **Zone · Email Sending · Edit** on
-ezmadad.com and re-run the command with `CLOUDFLARE_API_TOKEN` exported.
+**Email Sending requires the Workers Paid plan** (\$5/month minimum). Until
+the account is upgraded, both the dashboard and the CLI refuse: `wrangler
+email sending enable ezmadad.com` fails with `Unauthorized [code: 2036]` on
+`/zones/<id>/email/sending/subdomains`, and a plain read
+(`email sending dns get`) fails identically, which is what distinguishes a
+plan gate from a missing permission. Upgrade first, then onboard.
+
+The plan buys email and nothing else here: D1 usage at trial scale (roughly
+a thousand writes a day) sits far inside the free tier either way. Staying on
+Cloudflare also keeps the processor list at one — a third-party email vendor
+would receive therapist addresses and patient uids, which is a new
+sub-processor to disclose (`docs/LEGAL_QUESTIONS.md`).
 
 Then set `CF_ACCOUNT_ID` and `EMAIL_FROM` in `wrangler.toml` `[vars]`
 (`moh@ezmadad.com`; the sending domain is `ezmadad.com`, so the `moh`
@@ -80,6 +83,29 @@ npx wrangler d1 execute madad-remote --remote --file=minted/2026-10-course-a/reg
 uids, with an empty column they fill in privately). `summary.csv` is the
 operator's record. **Keep `minted/` out of git** (it is gitignored).
 
+## Sending quota — before the wave
+
+Cloudflare starts new accounts on a conservative daily quota and raises it as
+sending history builds. At trial scale — 250 therapists, roughly weekly
+measurement — expect on the order of 200–360 doorbells a day, which may
+exceed a fresh account's default.
+
+1. Read the real number once sending is enabled:
+   `GET /accounts/<id>/email/sending/limits` (or the Email Service analytics
+   tab). Do not plan against a guess.
+2. File the limit-increase request with the actual arithmetic: therapist
+   count, cadence, transactional-only, recipients are named professionals in
+   a ministry programme, so bounce and complaint risk is near zero. Do this
+   **weeks** before the first wave.
+3. Ramp: bring up one course before all eight, so reputation builds ahead of
+   the volume.
+4. Watch the two queries in the table below.
+
+If the quota still binds, the escalation is a daily digest per therapist
+(one email listing the day's uids) instead of a per-session doorbell — it
+caps volume at the therapist count rather than the patient count, at the
+cost of a cron trigger and a rewrite of spec §6.
+
 ## Routine operations
 
 | Task | Command |
@@ -88,6 +114,8 @@ operator's record. **Keep `minted/` out of git** (it is gitignored).
 | Link usage (spec §10.3) | `… --command "SELECT kind, ok, COUNT(*) FROM access_log WHERE ts >= date('now','-7 days') GROUP BY kind, ok"` |
 | Delete a patient's data on request (D-6) | `… --command "DELETE FROM sessions WHERE uid = 'ABCDEFGH'"` (uid without hyphen) |
 | Retire a uid | `… --command "DELETE FROM registry WHERE uid = 'ABCDEFGH'"` (after deleting its sessions) |
+| **Notifications lost yesterday** | `… --command "SELECT uid, ts FROM access_log WHERE kind='email' AND ok=0 AND ts >= date('now','-1 day')"` — a non-empty result usually means the sending quota, not a bug |
+| Emails sent per day (quota headroom) | `… --command "SELECT substr(ts,1,10) AS day, COUNT(*) FROM access_log WHERE kind='email' AND ok=1 GROUP BY day ORDER BY day DESC LIMIT 14"` |
 | Revoke every outstanding therapist link | rotate `HMAC_SECRET` (`wrangler pages secret put`); fresh links arrive on the next submission or via the form |
 | Backup | `npx wrangler d1 export madad-remote --remote --output backup-$(date +%F).sql` (also D1 Time Travel) |
 | Restore drill | `npx wrangler d1 create madad-remote-drill && npx wrangler d1 execute madad-remote-drill --remote --file backup.sql` |

@@ -25,6 +25,9 @@ export function createMemoryDb({ registry = [] } = {}) {
     async countSessionsSince(uid, sinceIso) {
       return tables.sessions.filter(s => s.uid === uid && s.created_at >= sinceIso).length;
     },
+    async countEmailsSince(uid, sinceIso) {
+      return tables.access_log.filter(a => a.kind === 'email' && a.uid === uid && a.ok === 1 && a.ts >= sinceIso).length;
+    },
     async countAccessSince({ kind, ipHash, ok, sinceIso }) {
       return tables.access_log.filter(a => a.kind === kind && a.ip_hash === ipHash && a.ok === (ok ? 1 : 0) && a.ts >= sinceIso).length;
     },

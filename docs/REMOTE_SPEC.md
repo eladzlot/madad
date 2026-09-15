@@ -125,7 +125,7 @@ CREATE INDEX sessions_uid ON sessions(uid);
 
 CREATE TABLE access_log (
   id      INTEGER PRIMARY KEY AUTOINCREMENT,
-  kind    TEXT NOT NULL,              -- 'check' | 'submit' | 'read' | 'link'
+  kind    TEXT NOT NULL,              -- 'check' | 'submit' | 'read' | 'link' | 'email'
   uid     TEXT,                       -- as supplied, may be unregistered
   ok      INTEGER NOT NULL,           -- 1 success, 0 refused
   ip_hash TEXT,                       -- salted SHA-256 of the client IP
@@ -310,9 +310,25 @@ rejected as unnecessary for the trial (D-12).
 
 ## 6. Notification email
 
-Sent on every accepted submission via a provider behind one seam
+Sent on an accepted submission via a provider behind one seam
 (`server/lib/email.js`): Cloudflare Email Service first; Resend/Postmark
 are drop-in alternatives.
+
+**At most one doorbell per uid per `DOORBELL_WINDOW_HOURS` (default 1).**
+The patient app re-submits whenever answers change after a completion, so a
+single sitting can produce several submissions; without suppression the
+therapist receives an email for each and the account's daily sending quota
+is spent on duplicates. Suppression loses nothing: a link is valid for days
+and always returns every session for its uid, including ones that arrive
+after it was sent. Only a *successful* send suppresses, so a failed doorbell
+is retried by the next submission. The fresh-link request (§4.4) is never
+suppressed — it is the therapist's own explicit ask.
+
+**Every send is logged** to `access_log` as kind `email` with `ok` 1 or 0
+(no `ip_hash`: the request that triggered it already logged the caller's IP
+at the same timestamp, and a therapist's email event should not carry a
+patient's IP). Lost notifications are therefore queryable rather than
+console-only — the operator query is in `scripts/remote/README.md`.
 
 **Why REST and not a binding.** Pages Functions cannot bind `send_email` —
 that binding is Workers-only, and Pages supports only KV, D1, R2, Durable
@@ -346,7 +362,8 @@ clinical-governance decision, not a code decision.
 | Enumeration | Accepted at §4.1 and §4.2 (below); §4.3 uniform 403; §4.4 always 204 |
 | Stored data | Pseudonymous by construction (D-2, §5.3); D1 encrypted at rest; Time Travel / backup restore drill required before launch |
 | Injected content | Aggregate treats server envelopes as untrusted: same Lit templating + `textContent` discipline as the PDF read path |
-| Logging | `access_log` per request (kind, uid, ok, salted IP hash, timestamp); no clinical content in logs; failed checks are visible so a probe can be spotted |
+| Logging | `access_log` per request and per email send (kind, uid, ok, salted IP hash, timestamp); no clinical content in logs; failed checks are visible so a probe can be spotted, and failed sends so a quota block is visible |
+| Sending quota | Doorbell suppressed to one per uid per window (§6), so re-submissions cannot multiply into the account's daily send limit |
 
 **On enumeration (D-9, D-10).** The registry check reveals whether a uid
 exists. That oracle is unavoidable if the patient is to get an honest

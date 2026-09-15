@@ -20,6 +20,7 @@ EMAIL_FROM = "moh@ezmadad.com"            # the domain (ezmadad.com) must be onb
 EMAIL_FROM_NAME = "מדד · CTR"
 CF_ACCOUNT_ID = ""                          # filled at bring-up (spec §12.5 stage 8)
 LINK_TTL_DAYS = "7"                         # §4.5 — revisited with access_log data
+DOORBELL_WINDOW_HOURS = "1"                 # §6 — at most one doorbell per uid per window
 SUBMISSIONS_PER_UID_PER_DAY = "20"          # §7 per-uid cap
 FAILED_CHECKS_PER_IP_PER_HOUR = "30"        # §7 per-IP cap on the uid check
 

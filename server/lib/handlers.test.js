@@ -33,7 +33,7 @@ function makeDeps(overrides = {}) {
   return {
     db, email, loadConfig, secret: SECRET, origin: 'https://trial.example', ipHash: 'iphash-a',
     now: () => NOW,
-    limits: { linkTtlDays: 7, submissionsPerUidPerDay: 3, failedChecksPerIpPerHour: 3, maxBodyBytes: 256 * 1024 },
+    limits: { linkTtlDays: 7, submissionsPerUidPerDay: 3, failedChecksPerIpPerHour: 3, doorbellWindowHours: 1, maxBodyBytes: 256 * 1024 },
     onEmailFailure: vi.fn(),
     ...overrides,
   };
@@ -74,7 +74,8 @@ describe('submitSession (§4.2)', () => {
     expect(deps.db.tables.sessions).toHaveLength(1);
     expect(JSON.parse(deps.db.tables.sessions[0].envelope)).toEqual(env);
     expect(deps.db.tables.sessions[0].uid).toBe(NUID);
-    expect(deps.db.tables.access_log.at(-1)).toMatchObject({ kind: 'submit', uid: NUID, ok: 1 });
+    expect(deps.db.tables.access_log.filter(a => a.kind === 'submit')).toEqual([expect.objectContaining({ uid: NUID, ok: 1 })]);
+    expect(deps.db.tables.access_log.filter(a => a.kind === 'email')).toEqual([expect.objectContaining({ uid: NUID, ok: 1, ip_hash: null })]);
 
     expect(deps.email.send).toHaveBeenCalledOnce();
     const msg = deps.email.send.mock.calls[0][0];
@@ -125,13 +126,45 @@ describe('submitSession (§4.2)', () => {
     for (let i = 0; i < 3; i++) expect((await post({ uid: UID, envelope: phq9Envelope() })).status).toBe(204);
     expect((await post({ uid: UID, envelope: phq9Envelope() })).status).toBe(429);
     expect(deps.db.tables.sessions).toHaveLength(3);
+    expect(deps.email.send).toHaveBeenCalledOnce();          // three sittings, one doorbell (§6)
   });
 
-  it('email failure does not fail the submission; it is reported', async () => {
+  it('email failure does not fail the submission, is logged, and does not suppress the next attempt', async () => {
     deps.email.send = vi.fn(async () => ({ ok: false, status: 500 }));
     expect((await post({ uid: UID, envelope: phq9Envelope() })).status).toBe(204);
     expect(deps.db.tables.sessions).toHaveLength(1);
     expect(deps.onEmailFailure).toHaveBeenCalledWith(expect.objectContaining({ uid: NUID }));
+    // The loss is queryable rather than console-only.
+    expect(deps.db.tables.access_log.filter(a => a.kind === 'email')).toEqual([expect.objectContaining({ uid: NUID, ok: 0 })]);
+    // Nobody was told, so the next submission must try again.
+    deps.email.send = vi.fn(async () => ({ ok: true, status: 200 }));
+    expect((await post({ uid: UID, envelope: phq9Envelope() })).status).toBe(204);
+    expect(deps.email.send).toHaveBeenCalledOnce();
+  });
+
+  it('suppresses a repeat doorbell within the window and sends again after it', async () => {
+    // The app re-submits whenever answers change after a completion. Two
+    // sittings here, leaving room under the per-uid daily cap (3) for the
+    // post-window submission below.
+    for (let i = 0; i < 2; i++) expect((await post({ uid: UID, envelope: phq9Envelope() })).status).toBe(204);
+    expect(deps.db.tables.sessions).toHaveLength(2);
+    expect(deps.email.send).toHaveBeenCalledOnce();
+
+    // A different patient of the same therapist is never suppressed.
+    deps.db.tables.registry.push({ uid: normalizeUid(OTHER), therapist_email: 't@clinic.example', course: 'c1' });
+    expect((await post({ uid: OTHER, envelope: phq9Envelope({ session: { name: '', pid: OTHER } }) })).status).toBe(204);
+    expect(deps.email.send).toHaveBeenCalledTimes(2);
+
+    // Past the window, the same uid notifies again.
+    const later = makeDeps({ db: deps.db, email: deps.email, now: () => new Date(NOW.getTime() + 2 * 3600_000) });
+    expect((await submitSession(JSON.stringify({ uid: UID, envelope: phq9Envelope() }), later)).status).toBe(204);
+    expect(deps.email.send).toHaveBeenCalledTimes(3);
+  });
+
+  it('a window of 0 disables suppression', async () => {
+    const always = makeDeps({ limits: { ...deps.limits, doorbellWindowHours: 0 } });
+    for (let i = 0; i < 2; i++) await submitSession(JSON.stringify({ uid: UID, envelope: phq9Envelope() }), always);
+    expect(always.email.send).toHaveBeenCalledTimes(2);
   });
 });
 
@@ -173,6 +206,13 @@ describe('requestLink (§4.4)', () => {
     const link = new URL(msg.text.match(/https:\/\/\S+/)[0]);
     const exp = Number(link.searchParams.get('exp'));
     expect(await signLink(SECRET, NUID, exp)).toBe(link.searchParams.get('sig'));
-    expect(deps.db.tables.access_log.map(a => [a.kind, a.ok])).toEqual([['link', 0], ['link', 0], ['link', 1]]);
+    expect(deps.db.tables.access_log.map(a => [a.kind, a.ok])).toEqual([['link', 0], ['link', 0], ['link', 1], ['email', 1]]);
+  });
+
+  it('is never suppressed — a therapist asking twice gets two links', async () => {
+    const deps = makeDeps();
+    await requestLink(JSON.stringify({ uid: UID }), deps);
+    await requestLink(JSON.stringify({ uid: UID }), deps);
+    expect(deps.email.send).toHaveBeenCalledTimes(2);
   });
 });
