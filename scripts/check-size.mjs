@@ -35,6 +35,7 @@ const BUDGETS = [
   { pattern: /^main/,            limit:  30 * KB, label: 'main        (app + Lit + engine)' },
   { pattern: /^composer/,        limit:  30 * KB, label: 'composer    (browse UI + Lit)' },
   { pattern: /^preview-dialog/,  limit:   8 * KB, label: 'preview     (dialog + model — lazy)' },
+  { pattern: /^qrcode/,          limit:  14 * KB, label: 'qrcode      (QR encoder — lazy)' },
   { pattern: /^aggregate/,       limit:  40 * KB, label: 'aggregate   (charts + parser + Lit)' },
   { pattern: /^help/,            limit:  20 * KB, label: 'help        (static page + nav + Lit)' },
 ];
