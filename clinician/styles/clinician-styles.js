@@ -30,8 +30,8 @@ export const clinicianCss = /* css */ `
     --clin-rail-border:      #304860;
     --clin-rail-text:        #A8CFDF;   /* body text on the rail */
     --clin-rail-text-strong: #C0D4E4;   /* input values, item titles */
-    --clin-rail-label:       #7AABBD;   /* section labels, empty-state copy */
-    --clin-rail-hint:        #6898B0;
+    --clin-rail-label:       #bad5e9;   /* section labels, empty-state copy */
+    --clin-rail-hint:        #aec8dc;
     --clin-reset-icon:       #B03A10;   /* the ↺ glyph in the catalog toolbar */
     --clin-focus-stroke:     #115e59;   /* chart marker keyboard focus ring */
     --clin-heatmap-ink:      #162232;   /* fixed dark ink over pastel heatmap cells */
@@ -97,7 +97,7 @@ export const clinicianCss = /* css */ `
   }
   .c-btn--secondary:not(:disabled):hover {
     border-color: var(--color-primary, #1A9FAD);
-    color: var(--color-primary, #1A9FAD);
+    color: var(--color-primary-ink, #00717b);
   }
 
   .c-btn--ghost {
@@ -109,7 +109,7 @@ export const clinicianCss = /* css */ `
   .c-btn--active {
     background: var(--color-selected-bg, #E4F6F8);
     border-color: var(--color-selected-border, #2BB3C0);
-    color: var(--color-accent, #2BB3C0);
+    color: var(--color-primary-ink, #00717b);
   }
 
   .c-btn--copied { background: var(--color-yes, #276749); color: #fff; }
@@ -150,7 +150,7 @@ export const clinicianCss = /* css */ `
 
   .c-seg button[aria-pressed='true'] {
     background: var(--color-selected-bg, #E4F6F8);
-    color: var(--color-accent, #2BB3C0);
+    color: var(--color-primary-ink, #00717b);
     font-weight: var(--font-weight-medium, 500);
   }
 

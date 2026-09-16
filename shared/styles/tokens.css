@@ -1,6 +1,15 @@
 /* Design tokens — all visual values live here.
    Components reference these via var(--token).
-   Replace values here to retheme without touching components. */
+   Replace values here to retheme without touching components.
+
+   The brand colour has two forms. --color-primary sits at L* 64, which makes
+   it a good FILL and a bad INK: as small text it reaches only 2.66:1 on
+   --color-surface. Use --color-primary for fills, borders, large text
+   (≥ 24px, or ≥ 18.66px at weight 700 — note --font-weight-bold is 600, which
+   WCAG does not count as bold) and the wordmark; use --color-primary-ink for
+   brand-coloured small text and icons, where it clears 4.5:1 on every light
+   ground. In dark mode the primary is already light enough to be ink, so the
+   two are the same value there. */
 
 :root {
   /* Colour */
@@ -9,10 +18,11 @@
   --color-border:          #D5DAE2;
   --color-border-focus:    #2BB3C0;
   --color-text:            #162232;
-  --color-text-muted:      #5E7080;
+  --color-text-muted:      #546675;
   --color-primary:         #1A9FAD;
-  --color-primary-hover:   #148090;
-  --color-primary-text:    #ffffff;
+  --color-primary-hover:   #57b5c0;
+  --color-primary-text:    #162232;
+  --color-primary-ink:     #00717b;
   --color-accent:          #2BB3C0;
   --color-accent-hover:    #5BC0BE;
   --color-selected-bg:     #E4F6F8;
@@ -74,7 +84,8 @@
     --color-text-muted:      #8b949e;
     --color-primary:         #4BA3D4;
     --color-primary-hover:   #5BC0BE;
-    --color-primary-text:    #ffffff;
+    --color-primary-text:    #0d1117;
+    --color-primary-ink:     #4BA3D4;
     --color-accent:          #5BC0BE;
     --color-accent-hover:    #2BB3C0;
     --color-selected-bg:     #0d2a3a;

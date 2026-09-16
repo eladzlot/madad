@@ -150,7 +150,7 @@ export class ItemSlider extends LitElement {
       text-align: center;
       font-size: var(--font-size-lg);
       font-weight: var(--font-weight-bold);
-      color: var(--color-primary);
+      color: var(--color-primary-ink);
     }
 
     .value-display.untouched {

@@ -89,10 +89,10 @@ export class CatalogControls extends LitElement {
       cursor: pointer;
       transition: all var(--transition-fast, 120ms ease);
     }
-    .filter-caret:hover { color: var(--color-primary, #1A9FAD); }
+    .filter-caret:hover { color: var(--color-primary-ink, #00717b); }
     .filter-caret[aria-expanded='true'],
     .filter-caret.has-active {
-      color: var(--color-accent, #2BB3C0);
+      color: var(--color-primary-ink, #00717b);
       border-color: var(--color-selected-border, #2BB3C0);
       background: var(--color-selected-bg, #E4F6F8);
     }
@@ -163,7 +163,7 @@ export class CatalogControls extends LitElement {
     .chip[aria-pressed='true'] {
       background: var(--color-selected-bg, #E4F6F8);
       border-color: var(--color-selected-border, #2BB3C0);
-      color: var(--color-accent, #2BB3C0);
+      color: var(--color-primary-ink, #00717b);
     }
     .chip:focus-visible {
       outline: 2px solid var(--color-border-focus, #2BB3C0);

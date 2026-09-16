@@ -85,7 +85,7 @@ export class CatalogList extends LitElement {
     }
     .empty p { margin-block-end: var(--space-sm, 8px); }
     .help-hint { margin-block-start: var(--space-md, 16px); font-size: var(--font-size-sm, 14px); }
-    .help-hint a { color: var(--color-primary, #1A9FAD); }
+    .help-hint a { color: var(--color-primary-ink, #00717b); }
 
     .cross-tab {
       margin-block-start: var(--space-md, 16px);
@@ -97,7 +97,7 @@ export class CatalogList extends LitElement {
     .link-btn {
       background: none;
       border: none;
-      color: var(--color-primary, #1A9FAD);
+      color: var(--color-primary-ink, #00717b);
       font-family: inherit;
       font-size: var(--font-size-sm, 14px);
       cursor: pointer;

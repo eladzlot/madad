@@ -133,6 +133,15 @@ body {
   animation: item-enter 220ms ease-out both;
 }
 
+/* tokens.css zeroes the transition tokens under prefers-reduced-motion, but
+   this is a keyframe animation and was not covered by that: every question
+   still slid and faded in for people who asked the OS for less motion. */
+@media (prefers-reduced-motion: reduce) {
+  .item-entering {
+    animation: none;
+  }
+}
+
 /* Utility: visually hidden but accessible */
 .sr-only {
   position: absolute;

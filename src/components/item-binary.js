@@ -67,7 +67,7 @@ export class ItemBinary extends LitElement {
 
     .opt-btn {
       background: var(--color-selected-bg);
-      color: var(--color-primary);
+      color: var(--color-primary-ink);
       border-color: var(--color-selected-border);
     }
     .opt-btn:hover,

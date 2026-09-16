@@ -220,7 +220,7 @@ export class ItemMultiselect extends LitElement {
           const index = i + 1;  // 1-based
           const isChecked = this._checked.includes(index);
           return html`
-            <li>
+            <li role="presentation">
               <button
                 class=${classMap({ option: true, 'is-checked': isChecked })}
                 role="checkbox"

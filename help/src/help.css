@@ -71,8 +71,8 @@ h2 {
 
 p { margin-block-end: var(--space-sm); }
 
-a { color: var(--color-primary); }
-a:hover { color: var(--color-primary-hover); }
+a { color: var(--color-primary-ink); }
+a:hover { color: var(--color-primary); }
 
 /* ── Workflow steps ───────────────────────────────────────────────────────── */
 
@@ -135,7 +135,7 @@ a:hover { color: var(--color-primary-hover); }
 .faq summary::-webkit-details-marker { display: none; }
 .faq summary::before {
   content: '＋';
-  color: var(--color-primary);
+  color: var(--color-primary-ink);
   font-weight: var(--font-weight-bold);
   margin-inline-end: var(--space-sm);
 }

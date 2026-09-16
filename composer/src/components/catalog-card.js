@@ -105,7 +105,7 @@ export class CatalogCard extends LitElement {
       border-radius: var(--radius-pill, 999px);
       border: var(--border-width, 1px) solid var(--color-selected-border, #2BB3C0);
       background: transparent;
-      color: var(--color-accent, #2BB3C0);
+      color: var(--color-primary-ink, #00717b);
       white-space: nowrap;
     }
 
@@ -138,12 +138,12 @@ export class CatalogCard extends LitElement {
       transition: background var(--transition-fast, 120ms ease), color var(--transition-fast, 120ms ease);
     }
     .icon-btn svg { inline-size: 18px; block-size: 18px; display: block; }
-    .icon-btn:hover { background: var(--color-selected-bg, #E4F6F8); color: var(--color-primary, #1A9FAD); }
+    .icon-btn:hover { background: var(--color-selected-bg, #E4F6F8); color: var(--color-primary-ink, #00717b); }
     .icon-btn:focus-visible { outline: 2px solid var(--color-border-focus, #2BB3C0); outline-offset: 2px; }
 
     /* A pinned card shows a filled teal pin (the system accent) so "in your
        recommended set" reads at a glance and stays on-palette. */
-    .pin-btn.on { color: var(--color-primary, #1A9FAD); }
+    .pin-btn.on { color: var(--color-primary-ink, #00717b); }
   `];
 
   // Mirror the entry id onto the host as a stable hook for e2e selectors

@@ -49,6 +49,11 @@ export class ClinicianNav extends LitElement {
       display: flex;
       align-items: baseline;
       gap: var(--space-lg, 24px);
+      /* Without this the brand and the links cannot break onto separate lines
+         and the bar overflows the viewport at 320px — which is what 1280px
+         looks like at 400% zoom (WCAG 1.4.10 Reflow). The app is RTL, so the
+         overflow runs off the left edge and is easy to miss. */
+      flex-wrap: wrap;
     }
 
     .brand {

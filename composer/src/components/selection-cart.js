@@ -74,7 +74,7 @@ export class SelectionCart extends LitElement {
       max-block-size: 84px;
       overflow-y: auto;
     }
-    .url-box.empty { color: color-mix(in srgb, var(--clin-rail-text, #A8CFDF) 60%, transparent); }
+    .url-box.empty { color: color-mix(in srgb, var(--clin-rail-text, #A8CFDF) 85%, transparent); }
 
     .btn-row { display: flex; gap: var(--space-sm, 8px); margin-block-start: var(--space-sm, 8px); }
     .c-btn--grow { flex: 1; }
@@ -101,7 +101,7 @@ export class SelectionCart extends LitElement {
       font-family: inherit;
       font-size: var(--font-size-md, 16px);
     }
-    input.pid::placeholder { color: color-mix(in srgb, var(--clin-rail-text, #A8CFDF) 50%, transparent); }
+    input.pid::placeholder { color: color-mix(in srgb, var(--clin-rail-text, #A8CFDF) 85%, transparent); }
     input.pid:focus { outline: none; border-color: var(--color-accent, #2BB3C0); }
 
     ol { list-style: none; display: flex; flex-direction: column; gap: 6px; }
@@ -147,7 +147,7 @@ export class SelectionCart extends LitElement {
       background: none;
       border: none;
       cursor: pointer;
-      color: color-mix(in srgb, var(--clin-rail-text, #A8CFDF) 70%, transparent);
+      color: color-mix(in srgb, var(--clin-rail-text, #A8CFDF) 85%, transparent);
       font-size: 14px;
       line-height: 1;
       padding: 3px;

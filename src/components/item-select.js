@@ -205,7 +205,7 @@ export class ItemSelect extends LitElement {
         ${options.map((opt, i) => {
           const isSelected = opt.value === this.selected;
           return html`
-            <li>
+            <li role="presentation">
               <button
                 class=${classMap({ option: true, 'is-selected': isSelected })}
                 role="radio"

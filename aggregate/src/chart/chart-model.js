@@ -32,7 +32,15 @@ export const X_INSET = 16;
 // Warm severity ramp, lowest → highest (lifted from the PDF's palette
 // family). Bands sample this ramp evenly by index; the item heatmap reuses
 // it so cell colors and band colors speak the same language.
-export const SEVERITY_RAMP = ['#F4F7F4', '#FDFBEF', '#FDF3DF', '#FCE9E1', '#FBE0E0'];
+//
+// The ramp descends in LIGHTNESS as well as travelling green → red, so the
+// sequence stays readable without hue perception. The previous ramp was flat
+// (all five steps within L* 96–98) and leaned entirely on the red–green axis:
+// adjacent steps sat ΔE 1.9–4.1 apart for *normal* vision, and closer still
+// under deuteranopia. Adjacent steps now clear ΔE 8.6 under protanopia and
+// deuteranopia. The heatmap prints each cell's value on top, so colour is a
+// redundant cue there — except in compact mode, where the cell is blank.
+export const SEVERITY_RAMP = ['#EBF7ED', '#E8E6BE', '#F6CA98', '#F6AD96', '#E99794'];
 
 // Default date label: day.month in local time, year appended when the
 // visible points span more than one year. Injectable for tests (UTC).

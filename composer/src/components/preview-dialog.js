@@ -94,7 +94,7 @@ export class PreviewDialog extends LitElement {
       font-size: var(--font-size-xs, 12px);
       font-weight: var(--font-weight-bold, 600);
       letter-spacing: 0.07em;
-      color: var(--color-accent, #2BB3C0);
+      color: var(--color-primary-ink, #00717b);
       text-transform: uppercase;
     }
     .title {
@@ -117,7 +117,7 @@ export class PreviewDialog extends LitElement {
       font-family: inherit;
       transition: background 120ms ease, color 120ms ease;
     }
-    .icon-btn:hover { background: var(--color-selected-bg, #E4F6F8); color: var(--color-primary, #1A9FAD); }
+    .icon-btn:hover { background: var(--color-selected-bg, #E4F6F8); color: var(--color-primary-ink, #00717b); }
     .icon-btn:focus-visible { outline: 2px solid var(--color-border-focus, #2BB3C0); outline-offset: 2px; }
     .icon-btn svg { inline-size: 18px; block-size: 18px; }
 
@@ -133,12 +133,12 @@ export class PreviewDialog extends LitElement {
       cursor: pointer;
       transition: border-color 120ms ease, background 120ms ease, color 120ms ease;
     }
-    .mech-btn:hover { border-color: var(--color-primary, #1A9FAD); color: var(--color-primary, #1A9FAD); }
+    .mech-btn:hover { border-color: var(--color-primary, #1A9FAD); color: var(--color-primary-ink, #00717b); }
     .mech-btn:focus-visible { outline: 2px solid var(--color-border-focus, #2BB3C0); outline-offset: 2px; }
     .mech-btn[aria-pressed="true"] {
       background: var(--color-selected-bg, #E4F6F8);
       border-color: var(--color-selected-border, #2BB3C0);
-      color: var(--color-primary, #1A9FAD);
+      color: var(--color-primary-ink, #00717b);
     }
     .mech-btn svg { inline-size: 15px; block-size: 15px; }
 
@@ -151,7 +151,7 @@ export class PreviewDialog extends LitElement {
       font-weight: var(--font-weight-bold, 600);
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: var(--color-accent, #2BB3C0);
+      color: var(--color-primary-ink, #00717b);
       margin-block-end: var(--space-md, 16px);
     }
     .desc { line-height: var(--line-height-base, 1.65); }
@@ -172,7 +172,7 @@ export class PreviewDialog extends LitElement {
       color: var(--color-text-muted, #5E7080);
       white-space: nowrap;
     }
-    .badge.accent { border-color: var(--color-selected-border, #2BB3C0); color: var(--color-primary, #1A9FAD); }
+    .badge.accent { border-color: var(--color-selected-border, #2BB3C0); color: var(--color-primary-ink, #00717b); }
 
     /* ── scoring ── plain content, hairline-ruled ladder ── */
     .panel { display: flex; flex-direction: column; gap: var(--space-xs, 6px); }
@@ -222,7 +222,7 @@ export class PreviewDialog extends LitElement {
     .item-type {
       font-size: var(--font-size-xs, 11px); font-weight: var(--font-weight-bold, 600);
       letter-spacing: 0.03em;
-      color: var(--color-primary, #1A9FAD);
+      color: var(--color-primary-ink, #00717b);
       background: var(--color-selected-bg, #E4F6F8);
       padding: 2px 9px; border-radius: var(--radius-pill, 999px);
       flex-shrink: 0;
@@ -250,7 +250,7 @@ export class PreviewDialog extends LitElement {
       background: var(--color-bg, #F2F4F7);
       color: var(--color-text, #162232);
     }
-    .opt .glyph { color: var(--color-accent, #2BB3C0); flex-shrink: 0; font-size: 12px; }
+    .opt .glyph { color: var(--color-primary-ink, #00717b); flex-shrink: 0; font-size: 12px; }
     .opt-label { flex: 1; min-inline-size: 0; }
     .opt .val { color: var(--color-text-muted, #5E7080); font-size: var(--font-size-xs, 12px); white-space: nowrap; }
 
@@ -284,7 +284,7 @@ export class PreviewDialog extends LitElement {
       background: transparent;
       border: var(--border-width, 1px) solid var(--color-border, #D5DAE2);
     }
-    .divider.if .chip { color: var(--color-primary, #1A9FAD); border-color: var(--color-selected-border, #2BB3C0); background: var(--color-selected-bg, #E4F6F8); }
+    .divider.if .chip { color: var(--color-primary-ink, #00717b); border-color: var(--color-selected-border, #2BB3C0); background: var(--color-selected-bg, #E4F6F8); }
     .divider .line { flex: 1; height: 1px; background: var(--color-border, #D5DAE2); }
 
     /* battery accordion — hairline-separated rows, no boxes */
@@ -297,12 +297,12 @@ export class PreviewDialog extends LitElement {
       display: flex; align-items: center; gap: var(--space-sm, 8px); flex-wrap: wrap;
     }
     details.step > summary::-webkit-details-marker { display: none; }
-    details.step > summary .caret { color: var(--color-accent, #2BB3C0); transition: transform 120ms ease; display: inline-block; }
+    details.step > summary .caret { color: var(--color-primary-ink, #00717b); transition: transform 120ms ease; display: inline-block; }
     details.step[open] > summary .caret { transform: rotate(-90deg); }
     .step-title { font-weight: var(--font-weight-medium, 500); }
     .step-count { font-size: var(--font-size-xs, 12px); color: var(--color-text-muted, #5E7080); }
     .step-cond {
-      font-size: var(--font-size-xs, 12px); color: var(--color-primary, #1A9FAD);
+      font-size: var(--font-size-xs, 12px); color: var(--color-primary-ink, #00717b);
       background: var(--color-selected-bg, #E4F6F8); border-radius: var(--radius-pill, 999px);
       padding: 2px 10px; display: inline-flex; align-items: center; gap: 6px;
     }

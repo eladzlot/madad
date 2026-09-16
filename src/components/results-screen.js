@@ -44,7 +44,7 @@ export class ResultsScreen extends LitElement {
     .eyebrow {
       font-size: var(--font-size-sm);
       font-weight: var(--font-weight-bold);
-      color: var(--color-accent);
+      color: var(--color-primary-ink);
       letter-spacing: 0.06em;
       text-transform: uppercase;
       margin-block-end: var(--space-xs);
@@ -108,7 +108,7 @@ export class ResultsScreen extends LitElement {
     .score-value {
       font-size: var(--font-size-xl);
       font-weight: var(--font-weight-bold);
-      color: var(--color-primary);
+      color: var(--color-primary-ink);
       flex-shrink: 0;
       min-inline-size: 2.5ch;
       text-align: center;
@@ -180,7 +180,7 @@ export class ResultsScreen extends LitElement {
 
     .pdf-btn--secondary {
       background: transparent;
-      color: var(--color-primary);
+      color: var(--color-primary-ink);
       border: var(--border-width) solid var(--color-primary);
     }
 

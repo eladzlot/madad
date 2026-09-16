@@ -50,7 +50,7 @@ export class WelcomeScreen extends LitElement {
     .app-name {
       font-size: var(--font-size-xl);
       font-weight: var(--font-weight-bold);
-      color: var(--color-primary);
+      color: var(--color-primary-ink);
       line-height: 1;
       margin-block-end: var(--space-xs);
       letter-spacing: -0.02em;
