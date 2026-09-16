@@ -15,6 +15,7 @@
 import { LitElement, html, css, unsafeCSS, nothing } from 'lit';
 import { clinicianCss } from '../../../clinician/styles/clinician-styles.js';
 import { resetCSS } from '../ui-reset.js';
+import './qr-code.js';
 
 export class MobileBar extends LitElement {
   static properties = {
@@ -125,6 +126,13 @@ export class MobileBar extends LitElement {
     .icon-btn:disabled { opacity: 0.3; }
     .btn-row { display: flex; gap: var(--space-sm, 8px); }
     .c-btn--grow { flex: 1; }
+    .qr-row {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md, 16px);
+      margin-block-start: var(--space-sm, 8px);
+    }
+    .qr-row .hint { flex: 1; font-size: var(--font-size-xs, 12px); color: var(--color-text-muted, #5E7080); }
   `];
 
   _emit(type, detail = {}) {
@@ -199,6 +207,12 @@ export class MobileBar extends LitElement {
           <div>
             <div class="section-label">קישור</div>
             <div class="url-box" dir="ltr">${hasUrl ? this.url : (count > 0 ? 'יש להזין מזהה מטופל תקין' : 'לא נבחרו שאלונים')}</div>
+            ${hasUrl ? html`
+              <div class="qr-row">
+                <qr-code .url=${this.url} size="104" expandable></qr-code>
+                <p class="hint">סרקו עם מצלמת הטלפון, או לחצו על הקוד להגדלה ולהורדה.</p>
+              </div>
+            ` : nothing}
             <div class="btn-row" style="margin-block-start: var(--space-sm, 8px)">
               <button class="c-btn c-btn--primary c-btn--grow ${this.copied ? 'c-btn--copied' : ''}"
                 ?disabled=${!hasUrl} @click=${() => this._emit('copy')}>

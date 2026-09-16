@@ -8,7 +8,7 @@ It allows a clinician to:
 - Select questionnaires or pre-built batteries for a patient
 - Optionally add a patient identifier
 - Reorder selected items by drag-and-drop
-- Generate, copy, or share the patient-ready URL
+- Generate, copy, or share the patient-ready URL, and show it as a QR code
 
 The Composer **does not create or edit configuration files**. It only constructs a valid launch URL for the existing questionnaire runtime.
 
@@ -173,6 +173,12 @@ Optional text input in the sidebar. The identifier appears in the PDF report and
 
 Read-only display of the generated URL. Shows placeholder text when nothing is selected.
 
+### QR code
+
+Below the URL box, the same link as a QR code (`<qr-code>`, `composer/src/components/qr-code.js`). It re-encodes on every URL change, so the patient ID rides along in the code exactly as in the link. Clicking the tile opens a native `<dialog>` with the code large enough to scan across a desk, the link spelled out under it, and a **הורד PNG** button (canvas → PNG, filename `madad-qr.png`).
+
+The encoder (`qrcode-generator`, MIT) is a lazy dynamic import from `composer/src/qr.js` — it lands in its own chunk (budgeted in `scripts/check-size.mjs`) and is fetched only once a link exists. Error correction is M; the quiet zone is 4 modules and is drawn inside the SVG so the tile is always white regardless of theme or rail colour. If the chunk cannot be loaded (offline), the tile is replaced by a one-line notice and the link keeps working.
+
 ### Action buttons
 
 | Button | Condition | Behaviour |
@@ -180,9 +186,10 @@ Read-only display of the generated URL. Shows placeholder text when nothing is s
 | **העתק קישור** | Always visible | Copies URL to clipboard; falls back to manual selection if clipboard API unavailable |
 | **שתף** | HTTPS only | Opens native Web Share sheet |
 | **פתח לבדיקה** | Always visible | Opens URL in a new tab |
+| **QR tile** | When a URL exists | Opens the enlarged QR dialog (scan / download PNG) |
 | **איפוס** | Always visible | Clears selection, PID, and query |
 
-**Mobile bar**: on small screens, a sticky bottom bar shows copy + share buttons for one-handed access.
+**Mobile bar**: on small screens, a sticky bottom bar shows copy + share buttons for one-handed access; the expanded sheet carries the URL box and the same QR tile.
 
 ### Dark mode
 

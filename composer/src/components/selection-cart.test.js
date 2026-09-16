@@ -26,6 +26,18 @@ describe('selection-cart', () => {
     const el = await makeEl({ url: null, entries: [] });
     expect(el.shadowRoot.querySelector('.url-box').textContent).toContain('לא נבחרו');
     expect(el.shadowRoot.textContent).toContain('בחרו שאלונים');
+    expect(el.shadowRoot.querySelector('qr-code')).toBeNull();
+  });
+
+  it('shows an expandable QR code for the same link beside the URL box', async () => {
+    const el = await makeEl();
+    const qr = el.shadowRoot.querySelector('.qr-row qr-code');
+    expect(qr).not.toBeNull();
+    expect(qr.url).toBe('http://x/?items=phq9,gad7');
+    expect(qr.expandable).toBe(true);
+    el.url = 'http://x/?items=gad7#pid=A1';
+    await el.updateComplete;
+    expect(qr.url).toBe('http://x/?items=gad7#pid=A1');
   });
 
   it('lists selected entries in order with 1-based order badges', async () => {

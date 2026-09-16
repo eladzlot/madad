@@ -42,6 +42,9 @@ describe('mobile-bar', () => {
     expect(sheet.textContent).toContain('דיכאון');
     expect(sheet.querySelector('input.pid')).not.toBeNull();
     expect(sheet.querySelector('.url-box').textContent).toContain('items=phq9');
+    const qr = sheet.querySelector('qr-code');
+    expect(qr.url).toBe(el.url);
+    expect(qr.expandable).toBe(true);
 
     el.shadowRoot.querySelector('.backdrop').click();
     await el.updateComplete;

@@ -1,8 +1,9 @@
 // <selection-cart> — the desktop sidebar: the ordered selection plus output.
 //
 // Holds the picked instruments in session order (mixed questionnaires /
-// batteries / worksheets in one list), the generated patient URL, the copy /
-// open / share actions, the optional patient-ID field, and reset. Reordering is
+// batteries / worksheets in one list), the generated patient URL and its QR
+// code, the copy / open / share actions, the optional patient-ID field, and
+// reset. Reordering is
 // available two ways — drag for the mouse, ↑/↓ buttons for the keyboard — both
 // emitting the same `reorder` { from, to }. Every action leaves as an event; the
 // component performs no clipboard/share/navigation side effects itself, so it
@@ -13,6 +14,7 @@
 import { LitElement, html, css, unsafeCSS, nothing } from 'lit';
 import { clinicianCss } from '../../../clinician/styles/clinician-styles.js';
 import { resetCSS } from '../ui-reset.js';
+import './qr-code.js';
 
 export class SelectionCart extends LitElement {
   static properties = {
@@ -77,6 +79,15 @@ export class SelectionCart extends LitElement {
       overflow-y: auto;
     }
     .url-box.empty { color: color-mix(in srgb, var(--clin-rail-text, #dbc9b9) 85%, transparent); }
+
+    /* QR tile beside a short hint — the same link, for a phone camera. */
+    .qr-row {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md, 16px);
+      margin-block-start: var(--space-sm, 8px);
+    }
+    .qr-row .hint { margin: 0; flex: 1; min-inline-size: 0; }
 
     .btn-row { display: flex; gap: var(--space-sm, 8px); margin-block-start: var(--space-sm, 8px); }
     .c-btn--grow { flex: 1; }
@@ -218,6 +229,12 @@ export class SelectionCart extends LitElement {
         <div class="url-box ${hasUrl ? '' : 'empty'}" dir="ltr" aria-label="קישור שנוצר">
           ${hasUrl ? this.url : (count > 0 ? 'יש להזין מזהה מטופל תקין' : 'לא נבחרו שאלונים')}
         </div>
+        ${hasUrl ? html`
+          <div class="qr-row">
+            <qr-code .url=${this.url} size="104" expandable></qr-code>
+            <p class="hint">סרקו עם מצלמת הטלפון, או לחצו על הקוד להגדלה ולהורדה.</p>
+          </div>
+        ` : nothing}
         <div class="btn-row">
           <button class="c-btn c-btn--primary c-btn--grow ${this.copied ? 'c-btn--copied' : ''}"
             ?disabled=${!hasUrl} @click=${() => this._emit('copy')}>

@@ -209,7 +209,6 @@ The following are explicitly excluded from the current version:
 - Clinician-adjustable thresholds per patient or session
 - Narrative clinical summaries in the PDF
 - Severity tier rendering in the PDF (data model is ready; rendering is not implemented)
-- QR code generation in the Composer
 - Patient name in the URL
 - Languages other than Hebrew
 - Randomised item ordering (node type is defined in schema; execution throws `NotImplementedError`)
