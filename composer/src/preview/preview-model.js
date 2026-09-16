@@ -22,14 +22,18 @@ import { resolveItemOptions } from '../../../shared/config/options.js';
 // ── DSL cosmetics ─────────────────────────────────────────────────────────────
 // Operator prettify only — item references (item.<id>) are left verbatim; the
 // item ids shown on each rendered item make them legible without resolution.
-export function prettifyCondition(condition) {
+// `connectives` are the words for || and && in the clinician's language
+// (Hebrew by default — the composer passes t('preview.or') / t('preview.and')).
+export const HEBREW_CONNECTIVES = Object.freeze({ or: 'או', and: 'וגם' });
+
+export function prettifyCondition(condition, connectives = HEBREW_CONNECTIVES) {
   return String(condition ?? '')
     .replaceAll('>=', '≥')
     .replaceAll('<=', '≤')
     .replaceAll('!=', '≠')
     .replaceAll('==', '=')
-    .replaceAll('||', ' או ')
-    .replaceAll('&&', ' וגם ')
+    .replaceAll('||', ` ${connectives.or} `)
+    .replaceAll('&&', ` ${connectives.and} `)
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -70,20 +74,20 @@ function buildItemEntry(item, questionnaire, depth) {
 }
 
 // ── Item sequence walk (item-level if / randomize) ────────────────────────────
-function walkItems(items, questionnaire, depth, out) {
+function walkItems(items, questionnaire, depth, out, connectives) {
   for (const node of items ?? []) {
     if (node.type === 'if') {
-      out.push({ kind: 'condition', variant: 'if', label: prettifyCondition(node.condition), depth });
-      walkItems(node.then, questionnaire, depth + 1, out);
+      out.push({ kind: 'condition', variant: 'if', label: prettifyCondition(node.condition, connectives), depth });
+      walkItems(node.then, questionnaire, depth + 1, out, connectives);
       if (node.else?.length) {
         out.push({ kind: 'condition', variant: 'else', depth });
-        walkItems(node.else, questionnaire, depth + 1, out);
+        walkItems(node.else, questionnaire, depth + 1, out, connectives);
       }
       continue;
     }
     if (node.type === 'randomize') {
       out.push({ kind: 'condition', variant: 'randomize', depth });
-      walkItems(node.ids, questionnaire, depth + 1, out);
+      walkItems(node.ids, questionnaire, depth + 1, out, connectives);
       continue;
     }
     out.push(buildItemEntry(node, questionnaire, depth));
@@ -123,18 +127,18 @@ function buildSubscales(questionnaire) {
   }));
 }
 
-function buildAlerts(questionnaire) {
+function buildAlerts(questionnaire, connectives) {
   return (questionnaire.alerts ?? []).map(a => ({
     severity:  a.severity,
     message:   a.message,
-    condition: prettifyCondition(a.condition),
+    condition: prettifyCondition(a.condition, connectives),
   }));
 }
 
 // ── Questionnaire model ───────────────────────────────────────────────────────
-function buildQuestionnaireModel(questionnaire) {
+function buildQuestionnaireModel(questionnaire, connectives = HEBREW_CONNECTIVES) {
   const nodes = [];
-  walkItems(questionnaire.items, questionnaire, 0, nodes);
+  walkItems(questionnaire.items, questionnaire, 0, nodes, connectives);
   return {
     kind:            'questionnaire',
     summary:         buildSummary(questionnaire, 'questionnaire', nodes),
@@ -142,7 +146,7 @@ function buildQuestionnaireModel(questionnaire) {
     subscales:       buildSubscales(questionnaire),
     interpretations: questionnaire.interpretations ?? null,
     psychometrics:   questionnaire.psychometrics ?? null,
-    alerts:          buildAlerts(questionnaire),
+    alerts:          buildAlerts(questionnaire, connectives),
     nodes,
   };
 }
@@ -151,7 +155,7 @@ function buildQuestionnaireModel(questionnaire) {
 function walkSequence(sequence, findQuestionnaire, ctx, out) {
   for (const node of sequence ?? []) {
     if (node.type === 'if') {
-      const condition = prettifyCondition(node.condition);
+      const condition = prettifyCondition(node.condition, ctx.connectives);
       walkSequence(node.then, findQuestionnaire, { ...ctx, condition, branch: 'then' }, out);
       if (node.else?.length) {
         walkSequence(node.else, findQuestionnaire, { ...ctx, condition, branch: 'else' }, out);
@@ -163,7 +167,7 @@ function walkSequence(sequence, findQuestionnaire, ctx, out) {
       continue;
     }
     const q = findQuestionnaire(node.questionnaireId);
-    const sub = q ? buildQuestionnaireModel(q) : null;
+    const sub = q ? buildQuestionnaireModel(q, ctx.connectives) : null;
     out.push({
       questionnaireId: node.questionnaireId,
       instanceId:      node.instanceId,
@@ -179,10 +183,10 @@ function walkSequence(sequence, findQuestionnaire, ctx, out) {
 }
 
 // ── Battery model ─────────────────────────────────────────────────────────────
-function buildBatteryModel(battery, config) {
+function buildBatteryModel(battery, config, connectives = HEBREW_CONNECTIVES) {
   const byId = new Map((config.questionnaires ?? []).map(q => [q.id, q]));
   const steps = [];
-  walkSequence(battery.sequence, id => byId.get(id), {}, steps);
+  walkSequence(battery.sequence, id => byId.get(id), { connectives }, steps);
   return {
     kind:    'battery',
     summary: buildSummary(battery, 'battery', null),
@@ -191,12 +195,12 @@ function buildBatteryModel(battery, config) {
 }
 
 // ── Public entry ──────────────────────────────────────────────────────────────
-export function buildPreviewModel(config, entryId) {
+export function buildPreviewModel(config, entryId, { connectives = HEBREW_CONNECTIVES } = {}) {
   const battery = (config.batteries ?? []).find(b => b.id === entryId);
-  if (battery) return buildBatteryModel(battery, config);
+  if (battery) return buildBatteryModel(battery, config, connectives);
 
   const questionnaire = (config.questionnaires ?? []).find(q => q.id === entryId);
-  if (questionnaire) return buildQuestionnaireModel(questionnaire);
+  if (questionnaire) return buildQuestionnaireModel(questionnaire, connectives);
 
   return null;
 }

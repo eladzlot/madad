@@ -51,3 +51,14 @@ describe('clinician-nav', () => {
     expect(without.shadowRoot.querySelector('.subtitle')).toBeNull();
   });
 });
+
+describe('clinician-nav language switch', () => {
+  it('offers every language, marks the current one, and stamps lang on the buttons', async () => {
+    const el = await makeEl();
+    const btns = [...el.shadowRoot.querySelectorAll('.lang button')];
+    expect(btns.map(b => b.getAttribute('lang'))).toEqual(['he', 'en']);
+    expect(btns.map(b => b.textContent.trim())).toEqual(['עברית', 'English']);
+    expect(btns.map(b => b.getAttribute('aria-pressed'))).toEqual(['true', 'false']);
+    expect(el.shadowRoot.querySelector('.lang').getAttribute('aria-label')).toBe('שפת הממשק');
+  });
+});

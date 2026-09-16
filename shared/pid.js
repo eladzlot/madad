@@ -15,9 +15,11 @@
 //   sanitizePid(raw) → string | null
 //                     Returns the PID if valid, null otherwise.
 //                     Use this when reading from an untrusted URL parameter.
-//   pidWarning(raw) → string | null
-//                     Returns a Hebrew warning message if the PID is non-empty
-//                     but invalid; null otherwise. Use this for live UI feedback.
+//   pidWarning(raw) → 'too-long' | 'invalid-chars' | null
+//                     Returns a warning *code* if the PID is non-empty but
+//                     invalid; null otherwise. The composer maps the code to a
+//                     message in the clinician's language (`pid.<code>` in
+//                     clinician/i18n).
 
 export const PID_PATTERN = /^[a-zA-Z0-9\u0590-\u05FF_-]{1,64}$/;
 
@@ -29,10 +31,8 @@ export function sanitizePid(raw) {
 export function pidWarning(raw) {
   if (!raw) return null;
   if (!PID_PATTERN.test(raw)) {
-    if (raw.length > 64) {
-      return 'המזהה ארוך מדי. הגבל ל-64 תווים.';
-    }
-    return 'המזהה מכיל תווים לא מומלצים. השתמש באותיות, ספרות, מקף או קו תחתון.';
+    if (raw.length > 64) return 'too-long';
+    return 'invalid-chars';
   }
   return null;
 }

@@ -54,6 +54,15 @@ describe('buildUrl', () => {
   it('url-encodes pid values', () => {
     expect(buildUrl({ selected: ['phq9'], pid: 'a b' }, ORIGIN)).toContain('pid=a%20b');
   });
+
+  it('keeps Hebrew implicit and appends lang= for other languages', () => {
+    expect(buildUrl({ selected: ['phq9'], lang: 'he' }, ORIGIN)).not.toContain('lang=');
+    expect(buildUrl({ selected: ['phq9'] }, ORIGIN)).not.toContain('lang=');
+    const url = new URL(buildUrl({ selected: ['phq9', 'gad7'], pid: 'P1', lang: 'en' }, ORIGIN));
+    expect(url.searchParams.get('items')).toBe('phq9,gad7');
+    expect(url.searchParams.get('lang')).toBe('en');
+    expect(url.hash).toBe('#pid=P1');
+  });
 });
 
 // ── getAppRoot ──────────────────────────────────────────────────────────────

@@ -14,6 +14,8 @@ import { LitElement, html, css, unsafeCSS, nothing } from 'lit';
 import { clinicianCss } from '../../../clinician/styles/clinician-styles.js';
 import { resetCSS } from '../ui-reset.js';
 import { buildUrl } from '../composer-state.js';
+import { t } from '../../../clinician/i18n/index.js';
+import { configBaseFor } from '../../../shared/i18n/core.js';
 import '../../../clinician/components/clinician-nav.js';
 import './catalog-controls.js';
 import './catalog-list.js';
@@ -126,7 +128,7 @@ export class ComposerApp extends LitElement {
   async _share() {
     const url = this.store.url();
     if (!url || !this._canShare) return;
-    try { await navigator.share({ url, title: 'קישור לשאלון הערכה' }); } catch { /* cancelled */ }
+    try { await navigator.share({ url, title: t('composer.shareTitle') }); } catch { /* cancelled */ }
   }
   _open() {
     const url = this.store.url();
@@ -144,16 +146,20 @@ export class ComposerApp extends LitElement {
         import('../preview/preview-model.js'),
         import('./preview-dialog.js'),
       ]);
-      let config = this._configCache.get(id);
+      // The preview shows what the *patient* will see: the config in the
+      // patient language (the picker only lists entries that have it).
+      const lang = this.store.patientLang;
+      const cacheKey = `${lang}:${id}`;
+      let config = this._configCache.get(cacheKey);
       if (!config) {
         // A battery's referenced questionnaires arrive via declared dependencies.
-        config = await loadConfig([id], { loadDependencies: true });
-        this._configCache.set(id, config);
+        config = await loadConfig([id], { loadDependencies: true, configBase: configBaseFor(lang) });
+        this._configCache.set(cacheKey, config);
       }
-      const model = buildPreviewModel(config, id);
+      const model = buildPreviewModel(config, id, { connectives: { or: t('preview.or'), and: t('preview.and') } });
       if (!model) return;
       this._previewModel = model;
-      this._previewLiveUrl = buildUrl({ selected: [id] });
+      this._previewLiveUrl = buildUrl({ selected: [id], lang });
       this._previewOpen = true;
     } catch {
       // A failed fetch/validation just leaves the dialog closed — the browse
@@ -175,7 +181,7 @@ export class ComposerApp extends LitElement {
     const url = s.url();
 
     return html`
-      <clinician-nav .page=${'composer'} .subtitle=${'בחר שאלונים, הוסף מזהה מטופל, העתק קישור.'}></clinician-nav>
+      <clinician-nav .page=${'composer'} .subtitle=${t('composer.subtitle')}></clinician-nav>
 
       ${warnings.length ? html`
         <div class="warnings" role="alert">
@@ -198,6 +204,8 @@ export class ComposerApp extends LitElement {
         @reorder=${(e) => s.reorder(e.detail.from, e.detail.to)}
         @remove=${(e) => s.toggle(e.detail.id)}
         @pid-change=${(e) => s.setPid(e.detail.pid)}
+        @patient-lang-change=${(e) => s.setPatientLang(e.detail.lang)}
+        @dropped-dismiss=${() => s.clearDropped()}
         @copy=${() => this._copy()}
         @share=${() => this._share()}
         @open=${() => this._open()}
@@ -232,6 +240,9 @@ export class ComposerApp extends LitElement {
             .pid=${s.pid}
             .copied=${s.copied}
             .canShare=${this._canShare}
+            .patientLang=${s.patientLang}
+            .langs=${s.patientLangs()}
+            .dropped=${s.dropped}
           ></selection-cart>
         </div>
       </div>
@@ -240,6 +251,7 @@ export class ComposerApp extends LitElement {
         @reorder=${(e) => s.reorder(e.detail.from, e.detail.to)}
         @remove=${(e) => s.toggle(e.detail.id)}
         @pid-change=${(e) => s.setPid(e.detail.pid)}
+        @patient-lang-change=${(e) => s.setPatientLang(e.detail.lang)}
         @copy=${() => this._copy()}
         @share=${() => this._share()}
         @open=${() => this._open()}
@@ -249,6 +261,8 @@ export class ComposerApp extends LitElement {
         .pid=${s.pid}
         .copied=${s.copied}
         .canShare=${this._canShare}
+        .patientLang=${s.patientLang}
+        .langs=${s.patientLangs()}
       ></mobile-bar>
 
       ${this._previewModel ? html`

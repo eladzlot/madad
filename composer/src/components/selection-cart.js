@@ -13,6 +13,8 @@
 import { LitElement, html, css, unsafeCSS, nothing } from 'lit';
 import { clinicianCss } from '../../../clinician/styles/clinician-styles.js';
 import { resetCSS } from '../ui-reset.js';
+import { t } from '../../../clinician/i18n/index.js';
+import { LANGS, DEFAULT_LANG } from '../../../shared/i18n/core.js';
 
 export class SelectionCart extends LitElement {
   static properties = {
@@ -21,6 +23,9 @@ export class SelectionCart extends LitElement {
     pid:      { type: String },
     copied:   { type: Boolean },
     canShare: { type: Boolean },
+    patientLang: { type: String },   // language the link opens in
+    langs:    { type: Array },       // selectable patient languages (codes)
+    dropped:  { type: Array },       // ids dropped by the last language switch
     _dragIndex: { type: Number, state: true },
   };
 
@@ -31,6 +36,9 @@ export class SelectionCart extends LitElement {
     this.pid = '';
     this.copied = false;
     this.canShare = false;
+    this.patientLang = DEFAULT_LANG;
+    this.langs = [DEFAULT_LANG];
+    this.dropped = [];
     this._dragIndex = -1;
   }
 
@@ -167,7 +175,53 @@ export class SelectionCart extends LitElement {
       outline: 2px solid var(--color-border-focus, #2BB3C0);
       outline-offset: 2px;
     }
+
+    /* Patient-language switch — a segmented pair on the dark rail. */
+    .lang-seg { display: inline-flex; gap: 2px; padding: 2px;
+      border: var(--border-width, 1px) solid var(--clin-rail-border, #304860);
+      border-radius: var(--radius-pill, 999px); background: var(--clin-rail-field, #2A3D52); }
+    .lang-seg button {
+      border: none; background: transparent; color: var(--clin-rail-text, #A8CFDF);
+      font-family: inherit; font-size: var(--font-size-sm, 14px); line-height: 1;
+      padding: 6px 12px; border-radius: var(--radius-pill, 999px); cursor: pointer;
+    }
+    .lang-seg button[aria-pressed='true'] {
+      background: var(--color-primary, #1A9FAD); color: var(--color-primary-text, #fff); cursor: default;
+    }
+    .lang-seg button:focus-visible { outline: 2px solid var(--color-border-focus, #2BB3C0); outline-offset: 1px; }
+    .dropped {
+      display: flex; align-items: baseline; gap: var(--space-sm, 8px);
+      margin-block-start: var(--space-sm, 8px);
+      font-size: var(--font-size-xs, 12px); color: var(--clin-rail-text-strong, #C0D4E4);
+    }
+    .dropped button { background: none; border: none; color: inherit; text-decoration: underline;
+      font-family: inherit; font-size: inherit; cursor: pointer; padding: 0; }
   `];
+
+  _renderLangSwitch(id) {
+    const langs = this.langs?.length ? this.langs : [DEFAULT_LANG];
+    const dropped = this.dropped?.length ?? 0;
+    return html`
+      <div class="output-section">
+        <div class="section-label" id=${id}>${t('cart.patientLang')}</div>
+        <p class="hint">${t('cart.patientLangHint')}</p>
+        <div class="lang-seg" role="group" aria-labelledby=${id}>
+          ${langs.map(code => html`
+            <button type="button" lang=${code} aria-pressed=${code === this.patientLang ? 'true' : 'false'}
+              @click=${() => code !== this.patientLang && this._emit('patient-lang-change', { lang: code })}>
+              ${LANGS[code]?.label ?? code}
+            </button>
+          `)}
+        </div>
+        ${dropped ? html`
+          <p class="dropped" role="status">
+            <span>${t('cart.dropped', { n: dropped, lang: LANGS[this.patientLang]?.label ?? this.patientLang })}</span>
+            <button type="button" @click=${() => this._emit('dropped-dismiss')}>${t('cart.dismiss')}</button>
+          </p>
+        ` : nothing}
+      </div>
+    `;
+  }
 
   _emit(type, detail = {}) {
     this.dispatchEvent(new CustomEvent(type, { detail, bubbles: true, composed: true }));
@@ -196,11 +250,11 @@ export class SelectionCart extends LitElement {
       >
         <span class="order-num" aria-hidden="true">${i + 1}</span>
         <span class="item-title" title=${entry.title ?? entry.id}>${entry.title ?? entry.id}</span>
-        <button class="icon-btn" type="button" aria-label="הזז מעלה"
+        <button class="icon-btn" type="button" aria-label=${t('cart.moveUp')}
           ?disabled=${i === 0} @click=${() => this._emit('reorder', { from: i, to: i - 1 })}>↑</button>
-        <button class="icon-btn" type="button" aria-label="הזז מטה"
+        <button class="icon-btn" type="button" aria-label=${t('cart.moveDown')}
           ?disabled=${i === count - 1} @click=${() => this._emit('reorder', { from: i, to: i + 1 })}>↓</button>
-        <button class="icon-btn" type="button" aria-label="הסר"
+        <button class="icon-btn" type="button" aria-label=${t('cart.remove')}
           @click=${() => this._emit('remove', { id: entry.id })}>✕</button>
       </li>
     `;
@@ -212,40 +266,42 @@ export class SelectionCart extends LitElement {
 
     return html`
       <div class="output-section">
-        <div class="section-label">קישור למטופל</div>
-        <div class="url-box ${hasUrl ? '' : 'empty'}" dir="ltr" aria-label="קישור שנוצר">
-          ${hasUrl ? this.url : 'לא נבחרו שאלונים'}
+        <div class="section-label">${t('cart.link')}</div>
+        <div class="url-box ${hasUrl ? '' : 'empty'}" dir="ltr" aria-label=${t('cart.linkAria')}>
+          ${hasUrl ? this.url : t('cart.noSelection')}
         </div>
         <div class="btn-row">
           <button class="c-btn c-btn--primary c-btn--grow ${this.copied ? 'c-btn--copied' : ''}"
             ?disabled=${!hasUrl} @click=${() => this._emit('copy')}>
-            ${this.copied ? 'הועתק ✓' : 'העתק קישור'}
+            ${this.copied ? t('cart.copied') : t('cart.copy')}
           </button>
-          <button class="c-btn c-btn--secondary c-btn--sm" title="פתח קישור"
+          <button class="c-btn c-btn--secondary c-btn--sm" title=${t('cart.open')}
             ?disabled=${!hasUrl} @click=${() => this._emit('open')}>↗</button>
           ${this.canShare ? html`
             <button class="c-btn c-btn--secondary c-btn--sm"
-              ?disabled=${!hasUrl} @click=${() => this._emit('share')}>שתף</button>
+              ?disabled=${!hasUrl} @click=${() => this._emit('share')}>${t('cart.share')}</button>
           ` : nothing}
         </div>
       </div>
 
+      ${this._renderLangSwitch('cart-lang-label')}
+
       <div class="output-section">
-        <label class="section-label" for="cart-pid">מזהה מטופל</label>
-        <p class="hint">אופציונלי — יופיע בדוח PDF בלבד</p>
+        <label class="section-label" for="cart-pid">${t('cart.pid')}</label>
+        <p class="hint">${t('cart.pidHint')}</p>
         <input class="pid" id="cart-pid" type="text" dir="ltr"
           placeholder="TRC-2025-000123" .value=${this.pid ?? ''}
-          aria-label="מזהה מטופל" autocomplete="off" spellcheck="false" @input=${this._onPid} />
+          aria-label=${t('cart.pid')} autocomplete="off" spellcheck="false" @input=${this._onPid} />
       </div>
 
       <div class="output-section">
-        <div class="section-label">נבחרו ${count > 0 ? `(${count})` : ''}</div>
+        <div class="section-label">${t('cart.selected')} ${count > 0 ? `(${count})` : ''}</div>
         ${count > 0 ? html`
-          <p class="hint">גרור או השתמש ב-↑↓ לשינוי הסדר</p>
+          <p class="hint">${t('cart.reorderHint')}</p>
           <ol>${this.entries.map((e, i) => this._renderItem(e, i, count))}</ol>
         ` : html`
-          <p class="empty-cart">בחרו שאלונים כדי לבנות קישור.</p>
-          <p class="empty-cart"><a class="help-link" href="../help/">איך זה עובד?</a></p>
+          <p class="empty-cart">${t('cart.emptyHint')}</p>
+          <p class="empty-cart"><a class="help-link" href="../help/">${t('cart.howItWorks')}</a></p>
         `}
       </div>
     `;

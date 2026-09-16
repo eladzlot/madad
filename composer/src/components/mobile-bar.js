@@ -15,6 +15,8 @@
 import { LitElement, html, css, unsafeCSS, nothing } from 'lit';
 import { clinicianCss } from '../../../clinician/styles/clinician-styles.js';
 import { resetCSS } from '../ui-reset.js';
+import { t } from '../../../clinician/i18n/index.js';
+import { LANGS, DEFAULT_LANG } from '../../../shared/i18n/core.js';
 
 export class MobileBar extends LitElement {
   static properties = {
@@ -23,6 +25,8 @@ export class MobileBar extends LitElement {
     pid:      { type: String },
     copied:   { type: Boolean },
     canShare: { type: Boolean },
+    patientLang: { type: String },
+    langs:    { type: Array },
     _open:    { type: Boolean, state: true },
   };
 
@@ -33,6 +37,8 @@ export class MobileBar extends LitElement {
     this.pid = '';
     this.copied = false;
     this.canShare = false;
+    this.patientLang = DEFAULT_LANG;
+    this.langs = [DEFAULT_LANG];
     this._open = false;
   }
 
@@ -123,6 +129,17 @@ export class MobileBar extends LitElement {
     .icon-btn:disabled { opacity: 0.3; }
     .btn-row { display: flex; gap: var(--space-sm, 8px); }
     .c-btn--grow { flex: 1; }
+    .lang-seg { display: inline-flex; gap: 2px; padding: 2px;
+      border: var(--border-width, 1px) solid var(--color-border, #D5DAE2);
+      border-radius: var(--radius-pill, 999px); }
+    .lang-seg button {
+      border: none; background: transparent; color: var(--color-text-muted, #5E7080);
+      font-family: inherit; font-size: var(--font-size-sm, 14px); line-height: 1;
+      padding: 6px 12px; border-radius: var(--radius-pill, 999px); cursor: pointer;
+    }
+    .lang-seg button[aria-pressed='true'] {
+      background: var(--color-primary, #1A9FAD); color: var(--color-primary-text, #fff);
+    }
   `];
 
   _emit(type, detail = {}) {
@@ -136,22 +153,22 @@ export class MobileBar extends LitElement {
     const hasUrl = !!this.url;
     if (this.canShare) {
       return html`<button class="c-btn c-btn--primary c-btn--sm" ?disabled=${!hasUrl}
-        @click=${() => this._emit('share')}>שתף</button>`;
+        @click=${() => this._emit('share')}>${t('cart.share')}</button>`;
     }
     return html`<button class="c-btn c-btn--primary c-btn--sm ${this.copied ? 'c-btn--copied' : ''}"
       ?disabled=${!hasUrl} @click=${() => this._emit('copy')}>
-      ${this.copied ? 'הועתק ✓' : 'העתק קישור'}</button>`;
+      ${this.copied ? t('cart.copied') : t('cart.copy')}</button>`;
   }
 
   _renderItem(entry, i, count) {
     return html`
       <li class="item">
         <span class="item-title">${entry.title ?? entry.id}</span>
-        <button class="icon-btn" type="button" aria-label="הזז מעלה"
+        <button class="icon-btn" type="button" aria-label=${t('cart.moveUp')}
           ?disabled=${i === 0} @click=${() => this._emit('reorder', { from: i, to: i - 1 })}>↑</button>
-        <button class="icon-btn" type="button" aria-label="הזז מטה"
+        <button class="icon-btn" type="button" aria-label=${t('cart.moveDown')}
           ?disabled=${i === count - 1} @click=${() => this._emit('reorder', { from: i, to: i + 1 })}>↓</button>
-        <button class="icon-btn" type="button" aria-label="הסר"
+        <button class="icon-btn" type="button" aria-label=${t('cart.remove')}
           @click=${() => this._emit('remove', { id: entry.id })}>✕</button>
       </li>
     `;
@@ -164,44 +181,56 @@ export class MobileBar extends LitElement {
     return html`
       <div class="bar">
         <span class="count ${count ? '' : 'muted'}">
-          ${count ? `נבחרו ${count}` : 'טרם נבחרו שאלונים'}
+          ${count ? t('mobile.selectedCount', { n: count }) : t('mobile.none')}
         </span>
         <button class="c-btn c-btn--secondary c-btn--sm" ?disabled=${!count}
-          @click=${this._openSheet}>פרטים</button>
+          @click=${this._openSheet}>${t('mobile.details')}</button>
         ${this._primary()}
       </div>
 
       ${this._open ? html`
         <div class="backdrop" @click=${this._closeSheet}></div>
-        <div class="sheet" role="dialog" aria-label="הקישור למטופל" aria-modal="true">
+        <div class="sheet" role="dialog" aria-label=${t('mobile.sheetTitle')} aria-modal="true">
           <div class="sheet-header">
-            <span class="sheet-title">הקישור למטופל</span>
-            <button class="icon-btn" type="button" aria-label="סגור" @click=${this._closeSheet}>✕</button>
+            <span class="sheet-title">${t('mobile.sheetTitle')}</span>
+            <button class="icon-btn" type="button" aria-label=${t('mobile.close')} @click=${this._closeSheet}>✕</button>
           </div>
 
           <div>
-            <div class="section-label">נבחרו (${count})</div>
+            <div class="section-label">${t('cart.selected')} (${count})</div>
             <ol>${this.entries.map((e, i) => this._renderItem(e, i, count))}</ol>
           </div>
 
           <div>
-            <label class="section-label" for="sheet-pid">מזהה מטופל (אופציונלי)</label>
+            <div class="section-label" id="sheet-lang-label">${t('cart.patientLang')}</div>
+            <div class="lang-seg" role="group" aria-labelledby="sheet-lang-label">
+              ${(this.langs?.length ? this.langs : [DEFAULT_LANG]).map(code => html`
+                <button type="button" lang=${code} aria-pressed=${code === this.patientLang ? 'true' : 'false'}
+                  @click=${() => code !== this.patientLang && this._emit('patient-lang-change', { lang: code })}>
+                  ${LANGS[code]?.label ?? code}
+                </button>
+              `)}
+            </div>
+          </div>
+
+          <div>
+            <label class="section-label" for="sheet-pid">${t('mobile.pidOptional')}</label>
             <input class="pid" id="sheet-pid" type="text" dir="ltr" placeholder="TRC-2025-000123"
               .value=${this.pid ?? ''} autocomplete="off" spellcheck="false" @input=${this._onPid} />
           </div>
 
           <div>
-            <div class="section-label">קישור</div>
-            <div class="url-box" dir="ltr">${hasUrl ? this.url : 'לא נבחרו שאלונים'}</div>
+            <div class="section-label">${t('mobile.link')}</div>
+            <div class="url-box" dir="ltr">${hasUrl ? this.url : t('cart.noSelection')}</div>
             <div class="btn-row" style="margin-block-start: var(--space-sm, 8px)">
               <button class="c-btn c-btn--primary c-btn--grow ${this.copied ? 'c-btn--copied' : ''}"
                 ?disabled=${!hasUrl} @click=${() => this._emit('copy')}>
-                ${this.copied ? 'הועתק ✓' : 'העתק קישור'}</button>
+                ${this.copied ? t('cart.copied') : t('cart.copy')}</button>
               <button class="c-btn c-btn--secondary c-btn--sm" ?disabled=${!hasUrl}
                 @click=${() => this._emit('open')}>↗</button>
             </div>
             <div class="btn-row" style="margin-block-start: var(--space-sm, 8px)">
-              <button class="c-btn c-btn--ghost c-btn--sm" @click=${() => this._emit('reset')}>↺ איפוס</button>
+              <button class="c-btn c-btn--ghost c-btn--sm" @click=${() => this._emit('reset')}>${t('mobile.reset')}</button>
             </div>
           </div>
         </div>

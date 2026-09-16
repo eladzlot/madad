@@ -12,6 +12,7 @@
 import { LitElement, html, css, unsafeCSS, nothing } from 'lit';
 import { clinicianCss } from '../../../clinician/styles/clinician-styles.js';
 import { resetCSS } from '../ui-reset.js';
+import { t } from '../../../clinician/i18n/index.js';
 import { tabLabel, domainLabel, populationLabel, ALL_TAB } from '../taxonomy.js';
 
 export class CatalogControls extends LitElement {
@@ -236,8 +237,8 @@ export class CatalogControls extends LitElement {
         <input
           type="search"
           .value=${this.query ?? ''}
-          placeholder="חיפוש שאלונים, דפי עבודה…"
-          aria-label="חיפוש בקטלוג"
+          placeholder=${t('controls.searchPlaceholder')}
+          aria-label=${t('controls.searchAria')}
           autocomplete="off"
           spellcheck="false"
           @input=${this._onInput}
@@ -250,19 +251,19 @@ export class CatalogControls extends LitElement {
             aria-expanded=${this._filtersOpen ? 'true' : 'false'}
             @click=${this._toggleFilters}
           >
-            סינון
+            ${t('controls.filter')}
             ${activeCount ? html`<span class="filter-count">${activeCount}</span>` : nothing}
             <span class="caret ${this._filtersOpen ? 'open' : ''}" aria-hidden="true">▾</span>
           </button>
         ` : nothing}
         <button class="reset-btn" type="button" @click=${() => this._emit('reset', {})}>
-          <span class="reset-icon" aria-hidden="true">↺</span> איפוס
+          <span class="reset-icon" aria-hidden="true">↺</span> ${t('controls.reset')}
         </button>
       </div>
 
       ${this._filtersOpen && showTabs ? html`
         <div class="tabs">
-          <div class="c-seg" role="tablist" aria-label="קטגוריות">
+          <div class="c-seg" role="tablist" aria-label=${t('controls.tabsAria')}>
             ${this.tabs.map(t => html`
               <button
                 role="tab"
@@ -277,14 +278,14 @@ export class CatalogControls extends LitElement {
 
       ${this._filtersOpen && this.domains?.length ? html`
         <div class="chip-row">
-          <span class="chip-group-label">תחום:</span>
+          <span class="chip-group-label">${t('controls.domain')}</span>
           ${this.domains.map(d => this._chip('domain', d, domainLabel(d)))}
         </div>
       ` : nothing}
 
       ${this._filtersOpen && this.populations?.length > 1 ? html`
         <div class="chip-row">
-          <span class="chip-group-label">אוכלוסייה:</span>
+          <span class="chip-group-label">${t('controls.population')}</span>
           ${this.populations.map(p => this._chip('population', p, populationLabel(p)))}
         </div>
       ` : nothing}
