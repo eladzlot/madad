@@ -25,6 +25,7 @@ import './components/session-detail.js';
 import { readLinkParams, fetchSessions, requestFreshLink } from './remote/fetch-sessions.js';
 import './remote/link-form.js';
 import { formatUid } from '../../shared/remote/uid.js';
+import { loadRecentUids, rememberUid } from '../../shared/remote/uid-memory.js';
 
 adoptClinicianStyles();
 
@@ -54,6 +55,13 @@ let remote = link
   ? { uid: formatUid(link.uid) ?? link.uid, status: 'loading', count: 0, form: 'idle' }
   : { uid: '', status: 'request', count: 0, form: 'idle' };
 
+// Typing assistance only (shared/remote/uid-memory.js): a uid means nothing
+// without the therapist's own records, so this cannot pick a patient for them.
+// It saves retyping an 8-character code — which is exactly where the check
+// symbol catches a typo but cannot repair it. Shared with the composer, since
+// localStorage is per-origin and both surfaces live on the same host.
+let recentUids = loadRecentUids();
+
 async function loadRemote() {
   const result = await fetchSessions(link);
   if (result.status === 'ok') {
@@ -70,6 +78,9 @@ async function handleLinkRequest(uid) {
   remote = { ...remote, form: 'sending' };
   update();
   await requestFreshLink(uid);              // always "sent": the API never discloses registration
+  // Remember it whether or not it was registered — the API never says, and a
+  // uid the therapist typed is one they will likely type again.
+  recentUids = rememberUid(uid);
   remote = { ...remote, form: 'sent' };
   update();
 }
@@ -126,6 +137,7 @@ function template() {
           .uid=${remote.uid}
           .reason=${remote.status}
           .state=${remote.form}
+          .recentUids=${recentUids}
           @link-request=${(e) => handleLinkRequest(e.detail.uid)}
         ></link-form>
       ` : ''}

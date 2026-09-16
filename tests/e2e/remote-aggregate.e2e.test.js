@@ -105,4 +105,18 @@ test.describe('aggregate fetch mode', () => {
     await expect(form).toContainText('אם המזהה רשום');
     expect(calls.link).toEqual([{ uid: UID }]);
   });
+
+  test('a uid used here is remembered and offered on the next visit', async ({ page }) => {
+    await mockApi(page);
+    await page.goto('/aggregate/');
+    await expect(page.locator('link-form datalist option')).toHaveCount(0);
+
+    await page.locator('link-form input').fill(UID);
+    await page.locator('link-form button[type="submit"]').click();
+    await expect(page.locator('link-form')).toContainText('אם המזהה רשום');
+
+    await page.reload();
+    await expect(page.locator('link-form datalist option')).toHaveCount(1);
+    await expect(page.locator('link-form datalist option')).toHaveAttribute('value', UID);
+  });
 });

@@ -23,10 +23,11 @@ import { isValidUid, formatUid, uidWarning } from '../../../shared/remote/uid.js
 
 export class LinkForm extends LitElement {
   static properties = {
-    uid:    { type: String },                 // prefilled from the expired link
-    state:  { type: String },                 // 'idle' | 'sending' | 'sent'
-    reason: { type: String },                 // 'expired' | 'error'
-    _value: { state: true },
+    uid:        { type: String },             // prefilled from the expired link
+    state:      { type: String },             // 'idle' | 'sending' | 'sent'
+    reason:     { type: String },             // 'request' | 'expired' | 'error'
+    recentUids: { type: Array },              // uids this browser has used (uid-memory.js)
+    _value:     { state: true },
   };
 
   static styles = [unsafeCSS(clinicianCss), css`
@@ -61,6 +62,7 @@ export class LinkForm extends LitElement {
     this.uid = '';
     this.state = 'idle';
     this.reason = 'request';
+    this.recentUids = [];
     this._value = null;
   }
 
@@ -101,7 +103,11 @@ export class LinkForm extends LitElement {
           <p>${copy.intro}</p>
           <form @submit=${this._submit}>
             <input type="text" .value=${this._current} @input=${(e) => { this._value = e.target.value; }}
+              list="lf-uid-memory"
               placeholder="XXXX-XXXX" maxlength="9" aria-label="מזהה מטופל" autocomplete="off" spellcheck="false" />
+            <datalist id="lf-uid-memory">
+              ${(this.recentUids ?? []).map(u => html`<option value=${u}></option>`)}
+            </datalist>
             <button class="c-btn c-btn--primary" type="submit" ?disabled=${!isValidUid(this._current) || this.state === 'sending'}>
               ${this.state === 'sending' ? 'שולח…' : copy.button}
             </button>

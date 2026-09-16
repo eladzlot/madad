@@ -18,7 +18,7 @@ import '../../../clinician/components/clinician-nav.js';
 import './catalog-controls.js';
 import './catalog-list.js';
 import './selection-cart.js';
-import { loadRecentUids, rememberUid } from '../remote/uid-memory.js';
+import { loadRecentUids, rememberUid } from '../../../shared/remote/uid-memory.js';
 import './mobile-bar.js';
 
 export class ComposerApp extends LitElement {

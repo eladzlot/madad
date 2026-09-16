@@ -40,6 +40,31 @@ describe('reason modes', () => {
   });
 });
 
+describe('remembered uids', () => {
+  it('offers them as a datalist bound to the input', async () => {
+    const el = await makeEl({ recentUids: ['AAAA-AAAA', 'BBBB-BBBB'] });
+    const input = el.shadowRoot.querySelector('input');
+    const list = el.shadowRoot.querySelector('datalist');
+    expect(input.getAttribute('list')).toBe(list.id);          // same shadow root, so it resolves
+    expect([...list.querySelectorAll('option')].map(o => o.value)).toEqual(['AAAA-AAAA', 'BBBB-BBBB']);
+  });
+
+  it('renders an empty list rather than breaking when there are none', async () => {
+    const el = await makeEl();
+    expect(el.recentUids).toEqual([]);
+    expect(el.shadowRoot.querySelectorAll('datalist option')).toHaveLength(0);
+  });
+
+  it('suggestions never replace what the therapist typed', async () => {
+    const el = await makeEl({ recentUids: ['AAAA-AAAA'] });
+    const input = el.shadowRoot.querySelector('input');
+    input.value = 'CCCC';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    await el.updateComplete;
+    expect(el.shadowRoot.querySelector('input').value).toBe('CCCC');
+  });
+});
+
 describe('submission', () => {
   it('emits the canonical uid and only when valid', async () => {
     const el = await makeEl();

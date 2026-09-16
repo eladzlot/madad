@@ -1,13 +1,19 @@
-// uid-memory.js — the composer remembers which uids this browser has used.
+// uid-memory.js — which uids this browser has used, shared by both clinician
+// surfaces (composer and aggregate). It lives in shared/ because lint forbids
+// one surface importing another, and localStorage is per-origin, so the two
+// genuinely see the same list.
 //
-// A therapist composes links for the same handful of patients week after
-// week; with 8-character uids that is a lot of careful retyping. The store
-// here keeps the uids that have actually produced a link (copy / open /
-// share), most recent first, in localStorage, and the uid field offers them
-// as a <datalist>. Local to the browser, never transmitted, and a uid is not
-// a person — nothing identifying is stored (REMOTE_SPEC §8.2).
+// What it is for: a uid is meaningless without the therapist's own records —
+// that is the whole design (D-2) — so this is NOT patient selection. It is
+// typing assistance. You glance at your handout, type two characters, and the
+// rest completes, which avoids retyping an 8-character code and the typos the
+// check symbol catches but cannot repair.
+//
+// Written when a uid actually gets used: a link composed in the composer, or a
+// viewing link requested from the aggregate. Local to the browser, never
+// transmitted, nothing identifying stored (REMOTE_SPEC §8.2).
 
-import { formatUid } from '../../../shared/remote/uid.js';
+import { formatUid } from './uid.js';
 
 export const STORAGE_KEY = 'madad.remote.recentUids';
 export const MAX_REMEMBERED = 50;

@@ -448,9 +448,20 @@ authentication, server-side identity, token revocation lists.
 - The patient-id field becomes the uid field: label, placeholder
   `XXXX-XXXX`, live format + check-symbol validation; the link is withheld
   until the uid is valid.
-- `composer/src/remote/uid-memory.js` remembers uids used in this browser
-  (localStorage) and offers them in a `<datalist>`. Local only; nothing
-  identifying is stored (a uid is not a person).
+- `shared/remote/uid-memory.js` remembers uids this browser has used and
+  offers them in a `<datalist>`, in **both** clinician surfaces: the composer
+  when a link is copied, opened or shared, and the aggregate when a viewing
+  link is requested (§4.4). It lives in `shared/` because lint forbids one
+  surface importing another, and localStorage is per-origin so the two see
+  one list. Local only; nothing identifying is stored.
+
+  This is **typing assistance, not patient selection**. A uid is meaningless
+  without the therapist's own records — that is D-2 — so a list of codes
+  cannot tell them which patient is which. What it saves is retyping an
+  8-character code, which is exactly where the check symbol catches a typo
+  but cannot repair it. Storing a local uid→name mapping would make it a
+  patient picker, and would put the one mapping the design keeps out of the
+  system into every clinic browser; that is a separate decision, not taken.
 - Course batteries appear as featured (§5.4).
 
 ### 8.3 Aggregate

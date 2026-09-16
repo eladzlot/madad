@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { loadRecentUids, rememberUid, forgetUid, STORAGE_KEY, MAX_REMEMBERED } from './uid-memory.js';
-import { generateUid } from '../../../shared/remote/uid.js';
+import { generateUid } from './uid.js';
 
 function memStorage(initial = {}) {
   const m = new Map(Object.entries(initial));
