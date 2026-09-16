@@ -356,8 +356,30 @@ REST API with a scoped account token (`EMAIL_API_TOKEN`), the single
 credential the Functions hold. If the trial ever moves off Pages to a
 Worker, the seam collapses to `env.EMAIL.send()` and the token disappears.
 
-**Body contains, exhaustively:** the uid, the completion date, and a signed
-link (§4.5). Subject: `מדד — מטופל <uid> השלים שאלון`.
+**Body contains, exhaustively:** the uid, the completion date, a signed link
+(§4.5), and a short statement of why the recipient received it and what the
+mail does not contain. Subject: `<uid> — מטופל השלים שאלון`.
+
+**Bidi.** A mail subject carries no direction metadata, so each client
+guesses — some first-strong, some LTR outright — and a Latin uid buried
+inside a Hebrew sentence lands somewhere different in each. Two defences,
+structure first: the uid **leads** the subject so there is a single direction
+boundary with one trailing Hebrew run, and LRM (U+200E) anchors the neutrals
+around every LTR token in the subject and in the plain-text body, which has
+no markup to lean on. LRM rather than the newer isolates (U+2066/U+2069)
+because older clients render isolates as visible garbage. The HTML part uses
+`dir="rtl"` and `<bdi>` instead, markup being the right mechanism where it
+exists. Dates get the same treatment: digit clusters are weak-direction and
+reorder too.
+
+**Deliverability.** SPF, DKIM and DMARC (`p=reject`) are live on the sending
+domain. Beyond that: a one-line mail wrapped around a single link is the
+shape of a phishing message, so the body states who is writing and why, which
+also keeps the text-to-link ratio out of filter range. `madad@ctrmadad.com`
+forwards to a real mailbox via Email Routing, because replies that vanish
+hurt both sender reputation and the therapist. **No `List-Unsubscribe`**: a
+therapist cannot opt out of being told their own patient submitted, so the
+header would be untrue; replies are the pressure valve instead.
 
 **Never in the email:** scores, instrument names, alerts, patient identity
 of any kind (D-3). Instrument names are excluded too — "completed PCL-5"
