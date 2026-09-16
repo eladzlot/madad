@@ -42,10 +42,17 @@ let loadedConfigKey = '';
 // point, and a point belongs to one instrument.
 let selected = null;
 
-// Fetch mode state: null on the PDF-drop surface; otherwise
-// { uid, status: 'loading' | 'ok' | 'expired' | 'error', count, form: 'idle' | 'sending' | 'sent' }.
+// Remote state, always present on this deployment:
+//   status 'request'  no link in the URL — offer to email one (the primary way
+//                     in; a therapist who never received the doorbell, deleted
+//                     it, or bookmarked this page instead of the link)
+//   status 'loading' | 'ok'                 a link was supplied and is being used
+//   status 'expired' | 'error'              the server refused it or the fetch failed
+// form: 'idle' | 'sending' | 'sent'.
 const link = readLinkParams(location);
-let remote = link ? { uid: formatUid(link.uid) ?? link.uid, status: 'loading', count: 0, form: 'idle' } : null;
+let remote = link
+  ? { uid: formatUid(link.uid) ?? link.uid, status: 'loading', count: 0, form: 'idle' }
+  : { uid: '', status: 'request', count: 0, form: 'idle' };
 
 async function loadRemote() {
   const result = await fetchSessions(link);
@@ -105,30 +112,31 @@ function template() {
   return html`
     <clinician-nav
       page="aggregate"
-      subtitle=${remote
-        ? 'המפגשים נטענים מהשרת עבור המזהה שבקישור. סגירת הכרטיסייה לא מוחקת דבר מהשרת.'
-        : 'הקבצים נטענים בדפדפן שלך בלבד. סגירת הכרטיסייה מוחקת אותם.'}
+      subtitle=${remote.status === 'request'
+        ? 'הזינו מזהה מטופל כדי לקבל קישור לצפייה בסיכום, או טענו דוחות PDF שקיבלתם.'
+        : 'המפגשים נטענים מהשרת עבור המזהה שבקישור. סגירת הכרטיסייה לא מוחקת דבר מהשרת.'}
     ></clinician-nav>
     <div class="a-container">
-      ${remote ? html`
-        ${remote.status === 'loading' ? html`<p class="a-remote a-empty">טוען את מפגשי המטופל <bdi>${remote.uid}</bdi>…</p>` : ''}
-        ${remote.status === 'ok' ? html`
-          <p class="a-remote">מטופל <bdi>${remote.uid}</bdi> — ${remote.count === 1 ? 'מפגש אחד' : `${remote.count} מפגשים`}</p>
-        ` : ''}
-        ${remote.status === 'expired' || remote.status === 'error' ? html`
-          <link-form
-            .uid=${remote.uid}
-            .reason=${remote.status}
-            .state=${remote.form}
-            @link-request=${(e) => handleLinkRequest(e.detail.uid)}
-          ></link-form>
-        ` : ''}
-      ` : html`
+      ${remote.status === 'loading' ? html`<p class="a-remote a-empty">טוען את מפגשי המטופל <bdi>${remote.uid}</bdi>…</p>` : ''}
+      ${remote.status === 'ok' ? html`
+        <p class="a-remote">מטופל <bdi>${remote.uid}</bdi> — ${remote.count === 1 ? 'מפגש אחד' : `${remote.count} מפגשים`}</p>
+      ` : ''}
+      ${remote.status === 'request' || remote.status === 'expired' || remote.status === 'error' ? html`
+        <link-form
+          .uid=${remote.uid}
+          .reason=${remote.status}
+          .state=${remote.form}
+          @link-request=${(e) => handleLinkRequest(e.detail.uid)}
+        ></link-form>
+      ` : ''}
+      ${remote.status === 'request' ? html`
+        <!-- Secondary on this deployment: therapists normally arrive by link,
+             but a patient may still have sent them a downloaded PDF. -->
         <upload-list
           .files=${store.files}
           @files-selected=${(e) => handleFiles(e.detail.files)}
         ></upload-list>
-      `}
+      ` : ''}
 
       ${showFilter ? html`
         <pid-filter
@@ -183,4 +191,4 @@ function update() {
 
 store.subscribe(update);
 update();
-if (remote) loadRemote();
+if (link) loadRemote();

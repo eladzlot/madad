@@ -1,4 +1,19 @@
-// <link-form> — the "link expired?" recovery form (REMOTE_SPEC §4.4).
+// <link-form> — request a viewing link by email (REMOTE_SPEC §4.4).
+//
+// Three entry points, one component, selected by `reason`:
+//   'request'  the therapist arrived with no link at all — the primary way in
+//              on a bare /aggregate/. This is the common case: the doorbell
+//              went to spam, was deleted, or they bookmarked the page instead
+//              of the link.
+//   'expired'  they clicked a link the server refused (expired, tampered, or
+//              signed with a rotated secret — indistinguishable by design).
+//   'error'    the fetch failed for some other reason.
+//
+// It sends a link rather than showing data on the spot, and that is the whole
+// security model: there are no accounts, so controlling the registered mailbox
+// is the only thing separating a uid from a patient's scores. Never make this
+// render results directly.
+//
 // Emits `link-request` { uid }; the composition root does the POST and sets
 // `state` to 'sent'. The copy never says whether the uid is registered.
 
@@ -45,7 +60,7 @@ export class LinkForm extends LitElement {
     super();
     this.uid = '';
     this.state = 'idle';
-    this.reason = 'expired';
+    this.reason = 'request';
     this._value = null;
   }
 
@@ -59,19 +74,36 @@ export class LinkForm extends LitElement {
 
   render() {
     const warn = uidWarning(this._current);
-    const title = this.reason === 'error' ? 'לא הצלחנו לטעון את המפגשים' : 'הקישור פג או אינו תקין';
+    const COPY = {
+      request: {
+        title: 'צפייה בסיכום מטופל',
+        intro: 'הזינו את מזהה המטופל ונשלח קישור לצפייה בסיכום לכתובת המייל הרשומה במערכת.',
+        button: 'שלחו לי קישור',
+      },
+      expired: {
+        title: 'הקישור פג או אינו תקין',
+        intro: 'הזינו את מזהה המטופל ונשלח קישור חדש לכתובת המייל הרשומה במערכת.',
+        button: 'שלחו לי קישור חדש',
+      },
+      error: {
+        title: 'לא הצלחנו לטעון את המפגשים',
+        intro: 'הזינו את מזהה המטופל ונשלח קישור חדש לכתובת המייל הרשומה במערכת.',
+        button: 'שלחו לי קישור חדש',
+      },
+    };
+    const copy = COPY[this.reason] ?? COPY.request;
     return html`
       <section class="box" aria-labelledby="lf-title">
-        <h2 id="lf-title">${title}</h2>
+        <h2 id="lf-title">${copy.title}</h2>
         ${this.state === 'sent' ? html`
-          <p class="sent">אם המזהה רשום, קישור חדש נשלח לכתובת המייל הרשומה. הקישור תקף שבעה ימים.</p>
+          <p class="sent">אם המזהה רשום, קישור נשלח לכתובת המייל הרשומה. הקישור תקף שבעה ימים.</p>
         ` : html`
-          <p>הזינו את מזהה המטופל ונשלח קישור חדש לכתובת המייל הרשומה במערכת.</p>
+          <p>${copy.intro}</p>
           <form @submit=${this._submit}>
             <input type="text" .value=${this._current} @input=${(e) => { this._value = e.target.value; }}
               placeholder="XXXX-XXXX" maxlength="9" aria-label="מזהה מטופל" autocomplete="off" spellcheck="false" />
             <button class="c-btn c-btn--primary" type="submit" ?disabled=${!isValidUid(this._current) || this.state === 'sending'}>
-              ${this.state === 'sending' ? 'שולח…' : 'שלחו לי קישור חדש'}
+              ${this.state === 'sending' ? 'שולח…' : copy.button}
             </button>
             ${warn ? html`<p class="warn">${warn}</p>` : ''}
           </form>

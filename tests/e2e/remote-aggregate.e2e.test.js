@@ -80,13 +80,29 @@ test.describe('aggregate fetch mode', () => {
     expect(calls.link).toEqual([{ uid: UID }]);
   });
 
-  test('a server error shows the form with an error heading; without link params the page is the PDF surface', async ({ page }) => {
+  test('a server error shows the form with an error heading', async ({ page }) => {
     await mockApi(page, { read: () => ({ status: 500 }) });
     await page.goto(LINK);
     await expect(page.locator('link-form')).toContainText('לא הצלחנו');
+  });
 
+  // The common arrival: no link at all. The doorbell went to spam, was deleted,
+  // or the therapist bookmarked this page instead of the link.
+  test('a bare page leads with the link request and keeps the PDF drop below it', async ({ page }) => {
+    const calls = await mockApi(page);
     await page.goto('/aggregate/');
-    await expect(page.locator('upload-list')).toBeVisible();
-    await expect(page.locator('link-form')).toHaveCount(0);
+
+    const form = page.locator('link-form');
+    await expect(form).toBeVisible();
+    await expect(form).toContainText('צפייה בסיכום מטופל');
+    await expect(form.locator('input')).toHaveValue('');
+    await expect(page.locator('upload-list')).toBeVisible();      // still there, secondary
+    expect(calls.read).toHaveLength(0);                            // nothing fetched without a link
+
+    // Requesting a link works from here, and the reply never discloses registration.
+    await form.locator('input').fill(UID);
+    await form.locator('button[type="submit"]').click();
+    await expect(form).toContainText('אם המזהה רשום');
+    expect(calls.link).toEqual([{ uid: UID }]);
   });
 });

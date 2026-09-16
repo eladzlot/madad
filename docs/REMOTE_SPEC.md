@@ -266,10 +266,28 @@ it gains `addEnvelopes(list)` (fileName null, no PDF blob — the detail
 panel's "download PDF" affordance is absent for server rows). Charts, pid
 filter, heatmap, table, detail panel: unchanged.
 
-When `/aggregate/` loads with `uid`+`exp`+`sig` params it enters **fetch
-mode**: it calls §4.3, populates the store, and hides the PDF-drop zone
-(mixing sources in one view is v2, §9). A 403 shows the fresh-link form
-(§4.4). Without those params it behaves exactly as today.
+`/aggregate/` has three modes, all served by the same `<link-form>`:
+
+| URL | Mode | Shows |
+|---|---|---|
+| `?uid&exp&sig`, server accepts | fetch | the uid's charts; PDF-drop hidden (mixing sources is v2, §9) |
+| `?uid&exp&sig`, server refuses (403) or the fetch fails | expired / error | the form, prefilled with the uid from the dead link |
+| no params | **request** | the form (primary), with the PDF-drop kept below it |
+
+The **request** mode is the common arrival and was missing from the first
+implementation, which only offered the form after a failure. A therapist
+reaches a bare `/aggregate/` whenever the doorbell went to spam, was
+deleted, is on a phone while they work on a desktop, or — most likely —
+they bookmarked this page instead of the link. Those are precisely the
+people who need recovery, so the form leads and the PDF-drop follows;
+therapists on this deployment do not normally hold PDFs, though a patient
+may have sent one.
+
+The form always **sends a link** and never renders results directly. That is
+the security model: there are no accounts, so control of the registered
+mailbox is the only thing between a uid and a patient's scores. The reply is
+unconditional ("if the id is registered, a link has been sent") so the form
+is not an enumeration oracle (§4.4).
 
 ### 5.3 The no-identifying-data rule (D-2) — no text items
 
