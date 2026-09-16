@@ -16,7 +16,7 @@
 # Copied verbatim into the landing artifact by landingAssetsPlugin
 # (vite.landing.config.js) so both surfaces are protected identically.
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' blob:; worker-src blob:; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' blob:; font-src 'self' blob:; worker-src blob:; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
   Referrer-Policy: no-referrer

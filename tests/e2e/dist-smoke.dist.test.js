@@ -150,6 +150,54 @@ test.describe('dist smoke — production bundle at production base', () => {
     expect(realErrors, 'No CSP violations or runtime errors on aggregate load').toEqual([]);
   });
 
+  test('the built CSP permits the chart export rasterization', async ({ page }) => {
+    // Chart export (AGGREGATE_SPEC §6) turns the SVG into a blob: URL and
+    // draws it through an <img> onto a canvas — for both the PNG download and
+    // the clipboard copy. That load is governed by img-src, and img-src has no
+    // default: absent, it falls back to default-src 'self', which blocks blob:
+    // and silently breaks both. It shipped that way once.
+    //
+    // The export logic itself is covered against the dev server
+    // (aggregate.e2e.test.js), where no CSP is injected at all — so this is
+    // the only place the rasterization meets a real policy. It exercises the
+    // primitive rather than the module because what is under test is the
+    // served CSP, not the drawing code.
+    const consoleErrors = watchForConsoleErrors(page);
+    await page.goto('aggregate/');
+    await expect(page.locator('upload-list')).toBeVisible({ timeout: 10_000 });
+
+    const result = await page.evaluate(async () => {
+      const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="80" height="40">'
+        + '<rect width="80" height="40" fill="#1A9FAD"></rect></svg>';
+      const url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml;charset=utf-8' }));
+      try {
+        const img = await new Promise((resolve, reject) => {
+          const el = new Image();
+          el.onload = () => resolve(el);
+          el.onerror = () => reject(new Error('blob: SVG blocked — check img-src'));
+          el.src = url;
+        });
+        const canvas = document.createElement('canvas');
+        canvas.width = 160;
+        canvas.height = 80;
+        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+        // toBlob throws on a tainted canvas, so this also proves the blob: SVG
+        // did not taint it — the assumption export-image.js is built on.
+        const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+        return { ok: blob?.type === 'image/png' && blob.size > 0 };
+      } catch (err) {
+        return { ok: false, error: String(err) };
+      } finally {
+        URL.revokeObjectURL(url);
+      }
+    });
+
+    expect(result, 'blob: SVG must rasterize to a PNG under the built CSP').toEqual({ ok: true });
+
+    const realErrors = consoleErrors.filter(e => !/favicon/i.test(e));
+    expect(realErrors, 'No CSP violations while rasterizing').toEqual([]);
+  });
+
   test('help page loads without 404s or errors', async ({ page, baseURL }) => {
     const origin = new URL(baseURL).origin;
     const badResponses = watchForBadResponses(page, origin);

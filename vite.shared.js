@@ -4,20 +4,27 @@
 // policy and the landing URL rewrites must stay identical, so they live here as
 // one source of truth. See docs/CLOUDFLARE_MIGRATION.md.
 
+// The policy, one directive per entry. public/_headers repeats it at the HTTP
+// layer (plus the header-only directives a meta tag cannot carry); the two are
+// enforced as an intersection, so a directive tightened in one place and not
+// the other still blocks. scripts/csp.test.js pins them together.
+export const CSP_DIRECTIVES = [
+  "default-src 'self'",
+  "script-src 'self'",
+  "style-src 'self' 'unsafe-inline'",  // Lit uses adoptedStyleSheets
+  "img-src 'self' blob:",              // chart export draws an SVG blob: URL through <img> (aggregate/src/chart/export-image.js)
+  "font-src 'self' blob:",             // pdfmake loads fonts via blob: URLs
+  "worker-src blob:",                  // pdfmake may use blob: workers
+  "connect-src 'self'",                // config fetches are same-origin by default
+  "object-src 'none'",
+  "base-uri 'self'",
+];
+
 // Injects a Content-Security-Policy <meta> tag into every built HTML page.
 // Not applied in dev — Vite's HMR client needs inline scripts / ws: connections
 // that this policy would block.
 export function cspPlugin() {
-  const CSP = [
-    "default-src 'self'",
-    "script-src 'self'",
-    "style-src 'self' 'unsafe-inline'",  // Lit uses adoptedStyleSheets
-    "font-src 'self' blob:",              // pdfmake loads fonts via blob: URLs
-    "worker-src blob:",                   // pdfmake may use blob: workers
-    "connect-src 'self'",                 // config fetches are same-origin by default
-    "object-src 'none'",
-    "base-uri 'self'",
-  ].join('; ');
+  const CSP = CSP_DIRECTIVES.join('; ');
 
   return {
     name: 'inject-csp',
