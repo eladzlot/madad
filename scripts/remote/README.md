@@ -105,6 +105,12 @@ Pushing to `remote` runs the full gate as one job. If it passes, a second job
 the run page on GitHub (or the notification) and it deploys; ignore it and
 nothing happens.
 
+A newer push supersedes an older one: if a run is still waiting for approval
+when the next push arrives, the old one is cancelled rather than queued, so
+you are only ever asked about the newest commit. Without that, an unapproved
+run holds the concurrency group and later runs sit `pending` with no jobs and
+no explanation.
+
 The two-job split is the point: with `environment:` on a single job GitHub
 holds the whole thing, so you would be approving before a single test had
 run. That is worse than no gate, because it teaches you to click through. The

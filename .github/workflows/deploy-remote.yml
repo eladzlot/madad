@@ -31,9 +31,16 @@ on:
     branches: [remote]
   workflow_dispatch:
 
+# A newer commit supersedes an older one. The public deploy uses
+# cancel-in-progress: false, which is right there — two sequential deploys
+# should not cut each other off mid-flight. Here it combines badly with the
+# approval gate: an unapproved run holds the group indefinitely and every later
+# run queues behind it, showing as `pending` with no jobs and no explanation.
+# Cancelling supersedes the stale approval request instead, so the only thing
+# ever put in front of a reviewer is the newest commit.
 concurrency:
   group: cloudflare-deploy-remote
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   # The gate runs unconditionally and asks nobody for anything. Approval belongs
