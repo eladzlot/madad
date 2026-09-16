@@ -104,6 +104,9 @@ export const en = {
   'input.number':         'number',
   'input.email':          'email',
 
+  'help.title':           'Madad — help',
+  'help.subtitle':        'A short guide to working with Madad',
+
   'aggregate.title':      'Madad — patient summary',
   'aggregate.subtitle':   'Files are loaded in your browser only. Closing the tab discards them.',
   'aggregate.empty':      'No sessions to show for the current filter.',

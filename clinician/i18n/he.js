@@ -116,6 +116,10 @@ export const he = {
   'input.number':         'מספר',
   'input.email':          'דוא"ל',
 
+  // ── help ──
+  'help.title':           'מדד — עזרה',
+  'help.subtitle':        'מדריך קצר לעבודה עם מדד',
+
   // ── aggregate ──
   'aggregate.title':      'מדד — סיכום מטופל',
   'aggregate.subtitle':   'הקבצים נטענים בדפדפן שלך בלבד. סגירת הכרטיסייה מוחקת אותם.',
