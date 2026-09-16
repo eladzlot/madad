@@ -342,6 +342,12 @@ after it was sent. Only a *successful* send suppresses, so a failed doorbell
 is retried by the next submission. The fresh-link request (§4.4) is never
 suppressed — it is the therapist's own explicit ask.
 
+The doorbell **says so in the message**: the suppression window is invisible
+from the therapist's side and a second submission inside the hour looks
+exactly like a lost notification. It states both halves — no separate
+message, and the link they already hold keeps showing whatever arrives after
+it — so the behaviour is explained where the question actually occurs.
+
 **Every send is logged** to `access_log` as kind `email` with `ok` 1 or 0
 (no `ip_hash`: the request that triggered it already logged the caller's IP
 at the same timestamp, and a therapist's email event should not carry a

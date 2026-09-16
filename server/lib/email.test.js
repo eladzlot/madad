@@ -35,6 +35,14 @@ describe('doorbellEmail (D-3, §6)', () => {
     expect(msg.html).not.toContain(LRM);
   });
 
+  it('explains the suppression window, which is invisible from the therapist side', () => {
+    // Without this, a second submission inside the hour looks like a lost email.
+    for (const part of [msg.text, msg.html]) {
+      expect(part).toContain('לא תישלח הודעה נפרדת');
+      expect(part).toContain('כולל כאלה שיגיעו אחרי ההודעה הזו');
+    }
+  });
+
   it('explains why the recipient got it, which keeps it out of the one-link phishing shape', () => {
     expect(msg.text).toContain('תוכנית ההכשרה');
     expect(msg.text).toContain('אפשר להשיב');

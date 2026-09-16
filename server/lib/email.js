@@ -34,6 +34,15 @@ const ltr = (s) => `${LRM}${s}${LRM}`;
 // cannot opt out of being told their own patient submitted, so the header would
 // be a lie. Replies are the pressure valve instead, which is why madad@ has to
 // be a real mailbox.
+// The suppression window (§6) is invisible from the therapist's side and looks
+// exactly like a lost notification, so the doorbell explains it rather than
+// leaving them to wonder. Both halves matter: no duplicate message, and the
+// link they already hold keeps showing whatever arrives later.
+const CUMULATIVE_AND_SUPPRESSED = [
+  'הקישור מציג את כל מפגשי המטופל, כולל כאלה שיגיעו אחרי ההודעה הזו.',
+  'אם המטופל ישלים שאלון נוסף בשעה הקרובה לא תישלח הודעה נפרדת — הוא פשוט יופיע שם.',
+];
+
 const WHY_YOU_GOT_THIS = [
   'הודעה זו נשלחה אליכם כמטפלים במסגרת תוכנית ההכשרה.',
   'היא אינה מכילה תוצאות, שמות או פרטים מזהים — רק המזהה שהקצתם למטופל.',
@@ -50,13 +59,14 @@ export function doorbellEmail({ uid, link, date }) {
       `לצפייה בסיכום המטופל: ${link}`,
       '',
       'הקישור תקף שבעה ימים. אם פג, אפשר לבקש קישור חדש בעמוד הסיכום.',
+      ...CUMULATIVE_AND_SUPPRESSED,
       '',
       ...WHY_YOU_GOT_THIS,
     ].join('\n'),
     html: [
       `<p dir="rtl">מטופל <bdi>${uid}</bdi> השלים שאלון בתאריך <bdi>${when}</bdi>.</p>`,
       `<p dir="rtl"><a href="${link}">לצפייה בסיכום המטופל</a></p>`,
-      '<p dir="rtl">הקישור תקף שבעה ימים. אם פג, אפשר לבקש קישור חדש בעמוד הסיכום.</p>',
+      `<p dir="rtl">הקישור תקף שבעה ימים. אם פג, אפשר לבקש קישור חדש בעמוד הסיכום.<br>${CUMULATIVE_AND_SUPPRESSED.join('<br>')}</p>`,
       `<p dir="rtl" style="color:#666">${WHY_YOU_GOT_THIS.join('<br>')}</p>`,
     ].join('\n'),
   };
