@@ -22,6 +22,7 @@ export class MobileBar extends LitElement {
     entries:  { type: Array },
     url:      { type: String },
     pid:      { type: String },
+    pidWarning: { type: String },
     copied:   { type: Boolean },
     canShare: { type: Boolean },
     recentUids: { type: Array },
@@ -34,6 +35,7 @@ export class MobileBar extends LitElement {
     this.recentUids = [];
     this.url = null;
     this.pid = '';
+    this.pidWarning = null;
     this.copied = false;
     this.canShare = false;
     this._open = false;
@@ -109,6 +111,13 @@ export class MobileBar extends LitElement {
       font-family: inherit; font-size: var(--font-size-md, 16px);
     }
     input.pid:focus { outline: none; border-color: var(--color-border-focus, #da924f); }
+    input.pid[aria-invalid="true"] { border-color: var(--color-no, #8B3A3A); }
+    .pid-warning {
+      margin-block-start: var(--space-xs, 4px);
+      font-size: var(--font-size-xs, 12px);
+      line-height: var(--line-height-normal, 1.45);
+      color: var(--color-no, #8B3A3A);
+    }
 
     ol { list-style: none; display: flex; flex-direction: column; gap: 6px; }
     li.item {
@@ -198,10 +207,14 @@ export class MobileBar extends LitElement {
             <label class="section-label" for="sheet-pid">מזהה מטופל (חובה, <bdi dir="ltr">XXXX-XXXX</bdi>)</label>
             <input class="pid" id="sheet-pid" type="text" dir="ltr" placeholder="XXXX-XXXX"
               list="sheet-uid-memory" maxlength="9"
-              .value=${this.pid ?? ''} autocomplete="off" spellcheck="false" @input=${this._onPid} />
+              .value=${this.pid ?? ''} autocomplete="off" spellcheck="false" @input=${this._onPid}
+              aria-invalid=${this.pidWarning ? 'true' : 'false'} aria-describedby="sheet-pid-warning" />
             <datalist id="sheet-uid-memory">
               ${(this.recentUids ?? []).map(u => html`<option value=${u}></option>`)}
             </datalist>
+            <p class="pid-warning" id="sheet-pid-warning" role="alert">
+              ${this.pidWarning ? html`⚠ ${this.pidWarning}` : nothing}
+            </p>
           </div>
 
           <div>

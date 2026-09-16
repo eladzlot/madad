@@ -101,6 +101,19 @@ describe('selection-cart', () => {
     expect(detail).toEqual({ pid: 'TRC-1' });
   });
 
+  it('shows the uid warning under the field and marks the input invalid', async () => {
+    const el = await makeEl({ pid: 'TRC-1', pidWarning: 'המזהה צריך להיות בן 8 תווים' });
+    const input = el.shadowRoot.querySelector('input.pid');
+    expect(input.getAttribute('aria-invalid')).toBe('true');
+    const msg = el.shadowRoot.querySelector('.pid-warning');
+    expect(msg.textContent).toContain('8 תווים');
+    expect(input.getAttribute('aria-describedby')).toBe(msg.id);
+    el.pidWarning = null;
+    await el.updateComplete;
+    expect(input.getAttribute('aria-invalid')).toBe('false');
+    expect(el.shadowRoot.querySelector('.pid-warning').textContent.trim()).toBe('');
+  });
+
   it('shows the copied state on the copy button', async () => {
     const el = await makeEl({ copied: true });
     expect(el.shadowRoot.textContent).toContain('הועתק');

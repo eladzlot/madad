@@ -245,6 +245,7 @@ export class ComposerApp extends LitElement {
             .entries=${selectedEntries}
             .url=${url}
             .pid=${s.pid}
+            .pidWarning=${s.pidWarn()}
             .recentUids=${this._recentUids}
             .copied=${s.copied}
             .canShare=${this._canShare}
@@ -263,6 +264,7 @@ export class ComposerApp extends LitElement {
         .entries=${selectedEntries}
         .url=${url}
         .pid=${s.pid}
+        .pidWarning=${s.pidWarn()}
         .recentUids=${this._recentUids}
         .copied=${s.copied}
         .canShare=${this._canShare}

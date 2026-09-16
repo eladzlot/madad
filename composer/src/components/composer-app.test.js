@@ -67,11 +67,16 @@ describe('composer-app', () => {
     expect(store.selected).toEqual(['b', 'a']);
   });
 
-  it('a pid warning surfaces in the warnings banner', async () => {
+  it('an invalid uid is explained under the field in the cart and the sheet, not in the banner', async () => {
     const { el, store } = await mount([entry('phq9')]);
     store.setPid('bad id');
     await el.updateComplete;
-    expect(el.shadowRoot.querySelector('.warnings')).not.toBeNull();
+    expect(el.shadowRoot.querySelector('.warnings')).toBeNull();
+    expect(cart(el).pidWarning).toContain('XXXX-XXXX');
+    expect(el.shadowRoot.querySelector('mobile-bar').pidWarning).toContain('XXXX-XXXX');
+    store.setPid(UID);
+    await el.updateComplete;
+    expect(cart(el).pidWarning).toBeNull();
   });
 
   it('copy writes the URL to the clipboard, flips the copied flag and remembers the uid', async () => {

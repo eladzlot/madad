@@ -277,11 +277,10 @@ export function createStore({ storage = safeLocalStorage() } = {}) {
     },
     uidValid() { return formatUid(state.pid) !== null; },
     pidWarn() { return uidWarning(state.pid); },
-    // Load warnings plus a non-blocking uid warning (mirrors the old header).
-    warnings() {
-      const w = state.pid ? uidWarning(state.pid) : null;
-      return w ? [...state.warnings, w] : state.warnings.slice();
-    },
+    // Load-time warnings only. The uid message is not in this banner: it is
+    // rendered by the cart / sheet directly under the field (pidWarn), where
+    // the therapist is looking while typing.
+    warnings() { return state.warnings.slice(); },
   };
 }
 

@@ -281,11 +281,16 @@ describe('url / warnings / reset', () => {
     expect(store.uidValid()).toBe(false);
   });
 
-  it('warnings include a non-blocking pid warning', () => {
+  it('an invalid uid yields a field message, not a banner warning', () => {
     const store = seeded([entry('phq9')]);
+    expect(store.pidWarn()).toBeNull();
     store.setPid('bad id');
-    expect(store.warnings().some(w => typeof w === 'string')).toBe(true);
-    expect(store.warnings().length).toBe(1);
+    expect(store.pidWarn()).toContain('XXXX-XXXX');
+    expect(store.warnings()).toEqual([]);
+    store.setPid('CMPS-001K');                      // right shape, wrong check symbol
+    expect(store.pidWarn()).toContain('טעות הקלדה');
+    store.setPid('CMPS-001J');
+    expect(store.pidWarn()).toBeNull();
   });
 
   it('reset clears selection, pid, query, filters and curation', () => {

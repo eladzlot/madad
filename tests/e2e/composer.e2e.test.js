@@ -141,7 +141,8 @@ test.describe('patient ID field', () => {
     await selectItem(page, 'phq9');
     await page.locator('#cart-pid').fill('TRC-2025-001');
     await expect(urlBox(page)).toContainText('יש להזין מזהה');
-    await expect(page.locator('composer-app .warnings')).toContainText('XXXX-XXXX');
+    await expect(page.locator('selection-cart .pid-warning')).toContainText('XXXX-XXXX');
+    await expect(page.locator('#cart-pid')).toHaveAttribute('aria-invalid', 'true');
     await expect(page.locator('selection-cart .btn-row .c-btn--primary')).toBeDisabled();
   });
 });

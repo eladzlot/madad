@@ -49,6 +49,7 @@ export const clinicianCss = /* css */ `
     --clin-rail-text-strong: #f1e6dc;   /* input values, item titles — 8.61:1 */
     --clin-rail-label:       #c8af9b;   /* section labels, empty-state copy — 5.07:1 */
     --clin-rail-hint:        #bea590;   /* 4.52:1 */
+    --clin-rail-alert:       #f2a99f;   /* uid error line + field border on the rail — 5.5:1 */
     --clin-reset-icon:       #da924f;   /* the ↺ glyph in the catalog toolbar — 4.13:1 */
     --clin-focus-stroke:     #392a1e;   /* chart marker keyboard focus ring */
     --clin-heatmap-ink:      #311c08;   /* fixed dark ink over pastel heatmap cells */

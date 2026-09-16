@@ -21,6 +21,7 @@ export class SelectionCart extends LitElement {
     entries:  { type: Array },     // [{ id, title }] in order
     url:      { type: String },
     pid:      { type: String },
+    pidWarning: { type: String },  // why the typed uid is not valid (null when fine)
     recentUids: { type: Array },   // remembered uids for the datalist (uid-memory.js)
     copied:   { type: Boolean },
     canShare: { type: Boolean },
@@ -32,6 +33,7 @@ export class SelectionCart extends LitElement {
     this.entries = [];
     this.url = null;
     this.pid = '';
+    this.pidWarning = null;
     this.recentUids = [];
     this.copied = false;
     this.canShare = false;
@@ -116,6 +118,15 @@ export class SelectionCart extends LitElement {
     }
     input.pid::placeholder { color: color-mix(in srgb, var(--clin-rail-text, #dbc9b9) 85%, transparent); }
     input.pid:focus { outline: none; border-color: var(--color-accent, #da924f); }
+    /* Invalid uid: the field and a line under it turn the rail's alert tint.
+       --color-no is too dark to read on the rail, so this is a lighter literal. */
+    input.pid[aria-invalid="true"] { border-color: var(--clin-rail-alert, #f2a99f); }
+    .pid-warning {
+      margin-block-start: var(--space-xs, 4px);
+      font-size: var(--font-size-xs, 12px);
+      line-height: var(--line-height-normal, 1.45);
+      color: var(--clin-rail-alert, #f2a99f);
+    }
 
     ol { list-style: none; display: flex; flex-direction: column; gap: 6px; }
     li.item {
@@ -254,10 +265,14 @@ export class SelectionCart extends LitElement {
         <p class="hint">חובה — המזהה שהוקצה למטופל, בפורמט <bdi dir="ltr">XXXX-XXXX</bdi></p>
         <input class="pid" id="cart-pid" type="text" dir="ltr" list="cart-uid-memory"
           placeholder="XXXX-XXXX" .value=${this.pid ?? ''} maxlength="9"
-          aria-label="מזהה מטופל" autocomplete="off" spellcheck="false" @input=${this._onPid} />
+          aria-label="מזהה מטופל" autocomplete="off" spellcheck="false" @input=${this._onPid}
+          aria-invalid=${this.pidWarning ? 'true' : 'false'} aria-describedby="cart-pid-warning" />
         <datalist id="cart-uid-memory">
           ${(this.recentUids ?? []).map(u => html`<option value=${u}></option>`)}
         </datalist>
+        <p class="pid-warning" id="cart-pid-warning" role="alert">
+          ${this.pidWarning ? html`⚠ ${this.pidWarning}` : nothing}
+        </p>
       </div>
 
       <div class="output-section">

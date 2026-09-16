@@ -703,7 +703,7 @@ requires updating this section.
 | `src/controller.js` | one guarded submit call; status feed; `canShare=false` |
 | `src/components/welcome-screen.js`, `clinician/components/clinician-nav.js`, `src/pdf/report.js` | wordmark string; the nav brand links to `../help/` (no landing on the trial) |
 | `index.html`, `composer/index.html`, `aggregate/index.html`, `help/index.html` | `<title>`; help privacy copy |
-| `composer/src/composer-store.js`, `composer/src/components/selection-cart.js`, `composer/src/components/mobile-bar.js`, `composer/src/components/composer-app.js` | uid validation, link withheld, label/placeholder/datalist, remembered uids |
+| `composer/src/composer-store.js`, `composer/src/components/selection-cart.js`, `composer/src/components/mobile-bar.js`, `composer/src/components/composer-app.js` | uid validation, link withheld, label/placeholder/datalist, remembered uids, uid error line under the field (`pidWarning`) instead of the top banner |
 | `shared/config/loader.js` | one line: carries a file's `dev` flag onto its questionnaires so the runtime no-text guard can exempt fixtures |
 | `aggregate/src/aggregate.js`, `aggregate/src/store.js`, `aggregate/src/components/session-detail.js` | fetch mode; `addEnvelopes`; PDF download hidden for server rows |
 | `shared/styles/tokens.css`, `clinician/styles/clinician-styles.js` | palette: the two token blocks (§8.4) |

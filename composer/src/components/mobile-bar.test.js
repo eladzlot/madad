@@ -41,6 +41,11 @@ describe('mobile-bar', () => {
     expect(sheet).not.toBeNull();
     expect(sheet.textContent).toContain('דיכאון');
     expect(sheet.querySelector('input.pid')).not.toBeNull();
+    expect(sheet.querySelector('input.pid').getAttribute('aria-invalid')).toBe('false');
+    el.pidWarning = 'נראה שיש טעות הקלדה במזהה';
+    await el.updateComplete;
+    expect(sheet.querySelector('input.pid').getAttribute('aria-invalid')).toBe('true');
+    expect(sheet.querySelector('.pid-warning').textContent).toContain('טעות הקלדה');
     expect(sheet.querySelector('.url-box').textContent).toContain('items=phq9');
     const qr = sheet.querySelector('qr-code');
     expect(qr.url).toBe(el.url);
