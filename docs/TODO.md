@@ -53,9 +53,9 @@ The phrase **"Continue with TODO"** means: do the above, then pick up the curren
 
 ## 1. Status
 
-**Currently working on:** idle. `AGG-7` landed 2026-08-22 (archive A-15) and `AGG-9` was filed the same day. The `CONT` band is cleared — CONT-1/2/3 all landed 2026-08-21 (archive A-12/A-13/A-14, decision D-18). Before that, the same day, a documentation pass refreshed `HANDOVER.md` and the specs against the tree. If the idiographic stream is picked up next, `IDIO-0` is the decision gate everything else waits behind.
+**Currently working on:** idle. Multi-language phase 1 (`I18N-1..7`, Hebrew + English) landed on branch `i18n` on 2026-09-17 (archive A-16, decision D-19) — **not yet merged to `main` or pushed; merge needs the user's approval.** Before that: `AGG-7` landed 2026-08-22 (archive A-15) and `AGG-9` was filed the same day (its capture side landed with I18N-1). The `CONT` band is cleared — CONT-1/2/3 all landed 2026-08-21 (archive A-12/A-13/A-14, decision D-18). Before that, the same day, a documentation pass refreshed `HANDOVER.md` and the specs against the tree. If the idiographic stream is picked up next, `IDIO-0` is the decision gate everything else waits behind.
 
-**Last session ended:** 2026-08-21 — docs refresh (`40046a2`) + the CONT band (`84799f4`). State on `main`: working tree clean, `npm test` green at **1421 tests across 54 files**, `validate:configs` 51/51. **Local `main` is ahead of `origin/main` by three commits — not yet pushed.**
+**Last session ended:** 2026-09-17 — seven `i18n(N)` commits on branch `i18n`. State on that branch: working tree clean, `npm test` green at **1580 tests across 61 files**, `validate:configs` 60/60, all Playwright projects green. Previous: 2026-08-21 — docs refresh (`40046a2`) + the CONT band (`84799f4`).
 
 **Content watch-outs from this session:** `scq` and `ptci` both changed scoring meaning (see A-12/A-13). Nothing in the PDF envelope records which config version produced a score, so an aggregate trajectory spanning the change will show an artificial step. Consider whether the envelope should carry the config `version` — not filed as a task yet.
 
@@ -107,7 +107,18 @@ Build slices per D-11. Slice 1 goes to pilot therapists before later slices are 
 | AGG-P | Psychometrics content: reliability/SD/source per instrument | todo | **User-owned clinical workstream** — can start now; long pole for AGG-4 |
 | AGG-7 | Sort questionnaires in the aggregate by number of applications | done | See archive A-15. |
 | AGG-8 | Capture and report time spent answering | todo | **Spans three layers.** (1) Capture: nothing times anything today — no `Date.now()` in orchestrator/engine/controller. Decide the grain (per item / per questionnaire / per session) and how to handle a patient who leaves the tab open. (2) Carry: new envelope field; `validateEnvelope` already tolerates unknown extra fields (forward-compatible by design), so this is **additive — no `ENVELOPE_VERSION` bump** — but every historical PDF lacks it, so readers must handle absence. (3) Report: PDF and/or aggregate. Purpose per user: see response burden on patients, so per-questionnaire is probably the useful grain. Privacy note: duration is behavioural data about the patient — decide deliberately whether it belongs in the PDF the patient sees. |
-| AGG-9 | Record the config version in the envelope | todo | **Small, additive.** Nothing in `data.json` says which config version produced a score, so a trajectory spanning a scoring change shows an artificial step the chart cannot detect — `scq` (1–5 → 0–4) and `ptci` (item text + filler exclusion) both changed meaning on 2026-08-21 and every PDF on either side looks identical to the reader. Write the config's top-level `version` (and the questionnaire id it belongs to) next to each instrument in the envelope; `validateEnvelope` already tolerates unknown fields, so this is **additive — no `ENVELOPE_VERSION` bump** — but every historical PDF lacks it, so the aggregate must treat absence as "unknown", never as "same". Open, and the only part needing a call: what the aggregate *does* when two points on one chart disagree — annotate the boundary, split the series, or just tooltip it. Suggest starting with the capture side (envelope + `report.js`), which is useful on its own and decides nothing.
+| AGG-9 | Record the config version in the envelope | partial | **Capture side done 2026-09-16 (I18N-1):** `instruments[].configVersion` is written by `buildEnvelope` and validated as optional. Display side still open — what the aggregate *does* when two points disagree. Original note: **Small, additive.** Nothing in `data.json` says which config version produced a score, so a trajectory spanning a scoring change shows an artificial step the chart cannot detect — `scq` (1–5 → 0–4) and `ptci` (item text + filler exclusion) both changed meaning on 2026-08-21 and every PDF on either side looks identical to the reader. Write the config's top-level `version` (and the questionnaire id it belongs to) next to each instrument in the envelope; `validateEnvelope` already tolerates unknown fields, so this is **additive — no `ENVELOPE_VERSION` bump** — but every historical PDF lacks it, so the aggregate must treat absence as "unknown", never as "same". Open, and the only part needing a call: what the aggregate *does* when two points on one chart disagree — annotate the boundary, split the series, or just tooltip it. Suggest starting with the capture side (envelope + `report.js`), which is useful on its own and decides nothing.
+
+### I18N — Multi-language (docs/I18N_SPEC.md)
+
+Phase 1 (Hebrew + English) landed on branch `i18n`, 2026-09-17 (archive A-16, decision D-19). Later phases:
+
+| ID | Title | Status | Notes |
+|---|---|---|---|
+| I18N-1..7 | Foundation · patient app + PDF · English starter set · Composer + nav · Aggregate · Help + Landing · docs | done | See A-16. |
+| I18N-8 | Russian (phase 2) | todo | Translation pass by an external translator: `ru` row in `shared/i18n/core.js` LANGS; `ru.js` in `src/i18n` and `clinician/i18n` (key parity is tested); `public/configs/prod/ru/` from published translations via `scripts/scaffold-translation.mjs`; a Cyrillic web font with `unicode-range` at the four `@font-face` sites and a `fontFor('ru')` family in `src/pdf/report.js` `_load()` (Noto Sans Hebrew has no Cyrillic); `shared/pid.js` regex + `\u0400-\u04FF`; decimal comma via `Intl.NumberFormat`. Plurals already handled by `makeT`. Watch the 30-char `alert.message` and 140-char catalog description caps. |
+| I18N-9 | Arabic (phase 3) | todo | RTL layout and bidi classification (`AL`) already work; needs an Arabic font and a check that pdfkit/fontkit glyph shaping survives `bidiNodes()`'s per-character mirroring and NBSP fusing (joining forms may break) — an investigation before content. |
+| I18N-10 | More English instruments | todo | Any public-domain original: `node scripts/scaffold-translation.mjs en <id>`, transcribe, cite in `meta.source`, `npm run validate:configs && npm run build:catalog`. |
 
 ### IDIO — Idiographic / personalized measures (docs/IDIOGRAPHIC_PLAN.md)
 
@@ -355,7 +366,23 @@ Append-only. Date format: YYYY-MM-DD.
 
 ---
 
+### D-19 — Multi-language: one link, one language; full translated files; UI language per browser
+**Date:** 2026-09-16
+**Context:** Offer Madad to non-Hebrew clinicians and patients. English first, Russian (external translator) second, Arabic later. Eleven choices were made with the user in one session; they are recorded in full in `docs/I18N_SPEC.md` (L-1..L-11) and summarised here so they bind.
+**Decision:** (L-1) The Composer chooses the patient language; the link carries `lang=`; absent ⇒ Hebrew forever; unknown ⇒ malformed link, never a fallback. (L-2) The whole PDF is in the patient's language. (L-3) All four clinician surfaces get English in phase 1; Russian is phase 2. (L-4) Instrument translations only from published/validated sources, cited in `meta.source`. (L-5) A translation is a full sibling file `public/configs/prod/<lang>/<id>.json`, same id and structure; CI proves structural parity. (L-6) Starter set: phq9, gad7, pc_ptsd5, pcl5, ptci, trauma_eval, dass21, cpt_abc, demographics. (L-7) Clinician UI language: `?lang=` > stored preference > browser language > Hebrew, with a nav toggle; landing has a static `/en/`. (L-8) Instruments without the chosen patient language are hidden from the picker. (L-9) One additive schema field, `meta.source`. (L-10) Envelope gains `lang` and `instruments[].configVersion`, additive. (L-11) Switching the UI language writes `?lang=` and reloads; the Composer cart is lost.
+**Rejected alternatives:** patient-side language switcher; a bilingual PDF (chrome in the clinician's language, items in the patient's); strings-only overlay files merged at runtime; multilingual fields inside one config; path-based (`/en/composer/`) clinician surfaces; live re-render on switch. Reasons in `docs/I18N_SPEC.md`.
+**Scope impact:** New URL parameter (`lang`), catalog v2, `shared/i18n`, `src/i18n`, `clinician/i18n`, PDF direction layout, Playwright browser locale pinned to `he-IL`.
+
+---
+
 ## 5. Task Archive
+
+### A-16 — I18N-1..7 Multi-language phase 1 (Hebrew + English)
+**Completed:** 2026-09-17 (branch `i18n`)
+**Summary:** Language core (`shared/i18n/core.js`), translated-config layout with CI structural parity (`shared/config/translation-parity.js`, `validate-configs.mjs`), `meta.source` provenance field, catalog v2 (`languages`, `i18n`), envelope `lang` + `configVersion`. Patient app and PDF in English via `lang=` (string tables in `src/i18n`, `layoutFor(lang)` in `report.js` — Hebrew output unchanged). Nine English configs under `public/configs/prod/en/`, `scripts/scaffold-translation.mjs`. Composer: UI language (`bootLang`), patient-language switch, availability filtering, `lang=` links, UI-language titles and search. Aggregate: UI-language configs with Hebrew fallback, direction-aware charts and exports, report-language badge. Help dual `<main>`, landing `/en/` with shared `landing.css`. Playwright browser locale `he-IL` so Hebrew suites keep their assumption; English suites pass `?lang=en`.
+**Files:** see the seven `i18n(N)` commits on branch `i18n`.
+**Decisions referenced:** D-19.
+**Test delta:** 1532 → 1580 unit; chromium e2e 63 → 78; landing-smoke 1 → 2.
 
 ### A-15 — AGG-7 Aggregate instruments ordered by administration count
 **Completed:** 2026-08-22

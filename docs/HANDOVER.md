@@ -32,7 +32,9 @@ A static web application for clinical psychological assessment. No backend, no d
 | Composer | `https://app.ezmadad.com/composer/` | clinician |
 | Aggregate (סיכום מטופל) | `https://app.ezmadad.com/aggregate/` | clinician |
 | Help | `https://app.ezmadad.com/help/` | clinician |
-| Landing page | `https://ezmadad.com/` | prospective clinicians |
+| Landing page | `https://ezmadad.com/` (Hebrew), `https://ezmadad.com/en/` (English) | prospective clinicians |
+
+**Languages:** Hebrew (canonical) and English. The patient language rides in the link (`lang=`); the clinician UI language is a per-browser preference with a nav toggle. Design and decisions: `docs/I18N_SPEC.md`.
 
 Hosting: Cloudflare Pages — projects `madad-app` (app entry points) and `madad-landing` (landing).
 **Legacy:** `https://eladzlot.github.io/madad/` serves a redirect shim to the new domains (removal pending — migration Stage 9, `docs/CLOUDFLARE_MIGRATION.md`).
@@ -129,9 +131,10 @@ Clinician drops Madad PDFs in and gets per-instrument trajectory charts. Statele
 
 ### Other surfaces
 
-- Help page at `/help/` — static Hebrew/RTL content, shares the clinician nav and design vocabulary
-- Landing page at `/landing/` — direction 5 (radical simplicity), RTL, Hebrew, built separately into `dist-landing/`
-- Favicon: SVG `מ` on teal at `public/favicon.svg`; Hebrew `<title>` on all pages
+- Help page at `/help/` — static content, one `<main>` per language, shares the clinician nav and design vocabulary
+- Landing page at `/landing/` (+ `/landing/en/`) — direction 5 (radical simplicity), Hebrew RTL and English LTR pages sharing `landing/landing.css`, built separately into `dist-landing/`
+- Favicon: SVG `מ` on teal at `public/favicon.svg`; `<title>` set per language at boot on every JS surface
+- Multi-language: `shared/i18n/core.js` (LANGS, `configBaseFor`, `makeT`, clinician-language resolution), string tables in `src/i18n/` (patient + PDF) and `clinician/i18n/` (nav, Composer, Aggregate), translated configs under `public/configs/prod/<lang>/` with CI structural parity, catalog v2 `languages`/`i18n`, envelope `lang` — `docs/I18N_SPEC.md`
 
 ### Build, test, CI
 
@@ -448,7 +451,7 @@ A config marked `"dev": true` at the top level is skipped in production builds (
 Multi-config dependencies: if a config references instruments defined in another file, declare it in the config's `"dependencies"` array. The patient app's `loadConfig` auto-fetches declared dependencies at runtime (BFS walk), so generated URLs name only the selected items' configs.
 
 ### URL design
-Patient URLs carry `?items=<id>,<id>` plus the pid in the fragment (`#pid=<pid>`; legacy `?pid=` is still read). **Item IDs are addresses**: the app expands each token to `configs/prod/<id>.json` (one entity per file, filename = id — enforced by `validate:configs`). A legacy `configs=` parameter from bundle-era URLs is ignored; those URLs' items still resolve, so old links keep working. Item IDs are the stable external contract — never rename or delete a prod config file (see `docs/COMPOSER_SPEC.md`).
+Patient URLs carry `?items=<id>,<id>`, optionally `&lang=<code>` (absent ⇒ Hebrew; the loader then reads `configs/prod/<lang>/<id>.json`), plus the pid in the fragment (`#pid=<pid>`; legacy `?pid=` is still read). **Item IDs are addresses**: the app expands each token to `configs/prod/<id>.json` (one entity per file, filename = id — enforced by `validate:configs`). A legacy `configs=` parameter from bundle-era URLs is ignored; those URLs' items still resolve, so old links keep working. Item IDs are the stable external contract — never rename or delete a prod config file (see `docs/COMPOSER_SPEC.md`).
 
 The loader (`shared/config/loader.js`) accepts short names, full paths, and root-relative paths; all normalise to the same canonical URL internally (visited-set dedupes).
 
@@ -559,3 +562,6 @@ To add a new instrument: `public/configs/CONTRIBUTING.md`.
 - **`allowedOrigins` default in `loadConfig`** — defaults to `location.origin` (same-origin only). Making this default permissive re-opens the external config injection vulnerability. The correct pattern for future external-config support is an explicit `allowedOrigins` set at the call site in `src/app.js`.
 - **`config-validation.js` binary-item options check** — binary items must have explicit options (inline, via `optionSetId`, or via the questionnaire's `defaultOptionSetId`). The validator rejects bare binary items with an actionable error message including a copy-pasteable fix. Do not loosen this — explicit per-questionnaire labels are clinically safer than a hardcoded global default. The component contains no fallback labels.
 - **`public/configs/prod/<id>.json` filenames** — item IDs are the external contract carried in every link a clinician has already sent and every PDF already generated. Never rename or delete one.
+- **`public/configs/prod/<lang>/<id>.json` translations** — the same id and structure as the Hebrew file with only text changed; `validate:configs` proves it (`shared/config/translation-parity.js`). A structural change to a Hebrew file must be mirrored in every translation, or CI fails. Hebrew never lives under a language directory. Language codes come only from `shared/i18n/core.js` `LANGS`.
+- **`lang=` in patient links** — absent means Hebrew forever; an unknown code is a malformed link, never a silent fallback (the patient must get the language the clinician chose). String tables must keep key parity with `he` (tested); `makeT` never throws or returns blank on a missing key.
+- **`src/pdf/report.js` — direction layout** — builders are authored in RTL visual order and read `L` (`layoutFor(lang)`); new builders must go through `L.align` / `L.cols` / `L.text`, never a literal `'right'` or a bare `bidiNodes()` call, or the English PDF breaks.

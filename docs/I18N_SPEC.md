@@ -1,6 +1,6 @@
 # I18N_SPEC — multi-language support
 
-**Status:** living spec. Decisions L-1..L-11 were locked with the user on 2026-09-16; implementation lands in slices I18N-1..7 on branch `i18n` (progress in `docs/TODO.md`). Sections describe the target design; where a slice has not landed yet, the code is behind this document.
+**Status:** living spec. Decisions L-1..L-11 were locked with the user on 2026-09-16 (recorded as D-19 in `docs/TODO.md`); slices I18N-1..7 landed on branch `i18n` on 2026-09-17. Phase 1 (Hebrew + English) is complete; §14 describes what Russian and Arabic still need.
 
 ## Context
 
