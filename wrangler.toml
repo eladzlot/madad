@@ -11,14 +11,29 @@
 #   EMAIL_API_TOKEN   — Cloudflare API token with Email Sending permission
 #   IP_SALT           — salts the hashed client IP in access_log (§7)
 
+# The trial runs in its own institutional Cloudflare account
+# (Traumacenter@mail.huji.ac.il's), separate from the personal account holding
+# ezmadad.com and the public app.
+#
+# The account CANNOT be pinned here: wrangler rejects `account_id` in a Pages
+# configuration file ("Configuration file for Pages projects does not support
+# account_id"), and it breaks every `wrangler pages` command. It is pinned in
+# the npm scripts and in .env instead — see scripts/remote/README.md. This
+# matters: with an unpinned account and a login that can see two, wrangler
+# picks one silently, which on 2026-09-14 created this project and its
+# database in the WRONG account.
 name = "madad-remote"
 pages_build_output_dir = "dist"
 compatibility_date = "2026-09-01"
 
 [vars]
-EMAIL_FROM = "moh@ezmadad.com"            # the domain (ezmadad.com) must be onboarded to Email Sending
+# The sending domain must belong to the account that sends. ctrmadad.com is a
+# zone in this (CTR) account and was onboarded 2026-09-15: SPF, DKIM and DMARC
+# (p=reject) are live. Replies to this address go nowhere unless Email Routing
+# is set up to forward them.
+EMAIL_FROM = "madad@ctrmadad.com"
 EMAIL_FROM_NAME = "מדד · CTR"
-CF_ACCOUNT_ID = ""                          # filled at bring-up (spec §12.5 stage 8)
+CF_ACCOUNT_ID = "69e0a4dee15d6dd1a9955d86b37bfe6a"   # the send endpoint is account-scoped
 LINK_TTL_DAYS = "7"                         # §4.5 — revisited with access_log data
 DOORBELL_WINDOW_HOURS = "1"                 # §6 — at most one doorbell per uid per window
 SUBMISSIONS_PER_UID_PER_DAY = "20"          # §7 per-uid cap
@@ -27,5 +42,9 @@ FAILED_CHECKS_PER_IP_PER_HOUR = "30"        # §7 per-IP cap on the uid check
 [[d1_databases]]
 binding = "DB"
 database_name = "madad-remote"
-database_id = "f58baf06-cfc3-486d-b968-3b4e75630f3c"
+database_id = "c7fa7964-5944-40db-870e-3b7abb9a64e7"
+# Jurisdiction "eu" — set at creation and immutable. A location hint is only
+# best-effort; the jurisdiction constrains where the database runs and persists
+# data, which is what makes "the data stays in the EU" a statement we can give
+# the lawyer (docs/LEGAL_QUESTIONS.md, data-location question).
 migrations_dir = "server/db/migrations"

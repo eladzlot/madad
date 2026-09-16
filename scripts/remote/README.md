@@ -35,41 +35,57 @@ R2, Durable Objects, Queues, Hyperdrive, Vectorize, Workers AI, Analytics
 Engine, service bindings, vars and secrets, and nothing else), so §6's
 provider seam talks to the Email Sending REST API instead.
 
-### Onboarding the sending domain
+### Onboarding the sending domain — DONE 2026-09-15
 
-Do this **in the dashboard**: Compute & AI → Email Service → Email Sending →
-Onboard Domain → `ezmadad.com` → Add records and onboard. It writes the SPF
-and DKIM records into the zone for you.
+`ctrmadad.com` is a zone in the CTR account and is onboarded for Email
+Sending. SPF, DKIM and DMARC (`p=reject`) are live; verify any time with
+`npx wrangler email sending dns get ctrmadad.com`.
 
-**Email Sending requires the Workers Paid plan** (\$5/month minimum). Until
-the account is upgraded, both the dashboard and the CLI refuse: `wrangler
-email sending enable ezmadad.com` fails with `Unauthorized [code: 2036]` on
-`/zones/<id>/email/sending/subdomains`, and a plain read
-(`email sending dns get`) fails identically, which is what distinguishes a
-plan gate from a missing permission. Upgrade first, then onboard.
+The sending domain must belong to the account that sends, which is why this
+is `ctrmadad.com` and not a name on the personal account's zone.
 
-The plan buys email and nothing else here: D1 usage at trial scale (roughly
-a thousand writes a day) sits far inside the free tier either way. Staying on
-Cloudflare also keeps the processor list at one — a third-party email vendor
-would receive therapist addresses and patient uids, which is a new
-sub-processor to disclose (`docs/LEGAL_QUESTIONS.md`).
-
-Then set `CF_ACCOUNT_ID` and `EMAIL_FROM` in `wrangler.toml` `[vars]`
-(`moh@ezmadad.com`; the sending domain is `ezmadad.com`, so the `moh`
-subdomain needs no separate onboarding).
+Historical note, in case it resurfaces on another account: before the Workers
+Paid upgrade, `wrangler email sending enable` failed with `Unauthorized
+[code: 2036]`. That is a plan gate, not a permissions problem — the tell is
+that a plain read (`email sending dns get`) fails identically, which a
+missing permission would not do.
 
 Then in the dashboard:
 
 - **Custom domain:** Workers & Pages → madad-remote → Custom domains → add
-  `moh.ezmadad.com`. The zone is on Cloudflare, so the CNAME is created for
-  you and the certificate follows within minutes.
-- A DMARC record on ezmadad.com if there is none yet, and the WAF
-  rate-limiting rule below (on the zone, scoped to the `moh` host).
+  `ctrmadad.com`. The zone is in this account, so the record and the
+  certificate are created for you. Wrangler has no command for this, so it
+  is a dashboard step.
+- The WAF rate-limiting rule below.
 
 **WAF rate limit (per IP, spec §7):** Security → WAF → Rate limiting rules →
-`(http.host eq "moh.ezmadad.com" and http.request.uri.path starts_with "/api/v1/")`,
+`(http.host eq "ctrmadad.com" and http.request.uri.path starts_with "/api/v1/")`,
 60 requests / 1 minute per IP, action Block for 10 minutes. The per-uid caps
 live in the Functions.
+
+### Replies — Email Routing (done 2026-09-16)
+
+Mail to `madad@ctrmadad.com` forwards to a verified destination address.
+Replies that vanish hurt both sender reputation and the therapist, so the
+From address has to be a real mailbox.
+
+```bash
+npx wrangler email routing enable ctrmadad.com
+npx wrangler email routing addresses create '<destination>'   # sends a verification mail
+# the recipient must click that link before the next command is accepted
+npx wrangler email routing rules create ctrmadad.com --name "madad replies" \
+  --match-type literal --match-field to --match-value 'madad@ctrmadad.com' \
+  --action-type forward --action-value '<destination>'
+npx wrangler email routing rules list ctrmadad.com
+```
+
+Routing adds MX and SPF records at the apex; Email Sending's records live
+under `cf-bounce`, so the two coexist — verified after enabling.
+
+**The catch-all is disabled with a `drop` action**, so mail to any other
+address at the domain is discarded silently. A deliberate default (a typo
+does not become somebody else's problem), but it means only `madad@` is
+reachable.
 
 ## Minting uids for a course
 

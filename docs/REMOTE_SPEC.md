@@ -454,12 +454,18 @@ Revisiting requires updating this document.
 
 ## 10. Open questions
 
-1. **Trial name.** Working name "מדד · CTR", to confirm. The origin is
-   decided: **`moh.ezmadad.com`** (Pages project `madad-remote`, custom
-   domain on the ezmadad.com zone). Nothing in the code depends on the
-   host — links and API calls derive from the request origin — so the
-   only host-bearing strings are the Open Graph metas, the PDF's
-   non-browser fallback origin and the sender address.
+1. **Trial name.** Working name "מדד · CTR", to confirm. Settled
+   2026-09-15: the origin is **`ctrmadad.com`**, registered into the
+   trial's own Cloudflare account. Chosen over a subdomain of ezmadad.com
+   because that zone lives in the personal account, and both an apex custom
+   domain and the email sender address must belong to the account that runs
+   the project. Nothing in the code depends on the host — links and API
+   calls derive from the request origin — so the only host-bearing strings
+   are the Open Graph metas, the PDF's non-browser fallback origin and the
+   sender address. A university name may be added later as a second front
+   door; sending would move with it only if they delegate the name rather
+   than aliasing it, since a CNAME cannot carry the SPF record a sender
+   address needs.
 2. **Legal.** The questions for the lawyer are in `LEGAL_QUESTIONS.md`.
    Answers may change retention (D-6), logging (§7) and the disclosure
    wording (§8.1). The design assumes sensitive-tier obligations regardless.
@@ -590,8 +596,9 @@ requires updating this section.
 |---|---|---|---|
 | Branch | `main` | `main` | `remote` |
 | Build | `vite build` | `vite.landing.config.js` | `vite build` (same config) |
+| Cloudflare account | personal | personal | **CTR (institutional)** |
 | Pages project | `madad-app` | `madad-landing` | `madad-remote` |
-| Domain | `app.ezmadad.com` | `ezmadad.com` | `moh.ezmadad.com` |
+| Domain | `app.ezmadad.com` | `ezmadad.com` | `ctrmadad.com` |
 | Server side | none | none | Pages Functions (`functions/` + `server/`) + D1 + secrets |
 | Landing | — | yes | none (robots disallow; help page only) |
 
