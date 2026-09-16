@@ -134,7 +134,7 @@ Aggregate (`aggregate/src/`):
 - `uiLang` resolved at boot; `applyDocumentLang`; all chrome via `t`; the five `Intl.DateTimeFormat('he-IL')` sites and `localeCompare(…, 'he')` use `LANGS[uiLang].locale`.
 - `refreshConfigs()` loads each instrument's config from `configBaseFor(uiLang)` with per-file fallback to Hebrew (`Promise.allSettled`). `store.titleFor` prefers the loaded config's title over the envelope's; severity bands/cutoff labels therefore follow the UI language when a translation exists.
 - Chart text: `chart-model.js` anchors and the `direction="rtl"` on band/cutoff labels in `trajectory-chart.js` and `export-svg.js` are derived from `LANGS[uiLang].dir` (the time axis stays LTR per D-10).
-- Session detail shows the PDF's `lang` as a small badge when it differs from the UI language.
+- Session detail shows the PDF's `lang` as a small badge when it differs from the UI language. Scored answers are stored as values and resolve to option labels through the loaded (UI-language) config, so a Hebrew-answered PHQ-9 reads in English for an English clinician; structural parity (§4) guarantees the value means the same option in every language. Free-text answers stay in the patient's language.
 
 ### 9. Composer
 

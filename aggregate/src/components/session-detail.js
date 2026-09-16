@@ -14,6 +14,8 @@
 // Non-modal: the charts stay usable behind it. Escape or the close button
 // dismisses; the host page owns open/close via `session` + 'panel-closed'.
 
+import { t, currentLang } from '../../../clinician/i18n/index.js';
+import { LANGS, DEFAULT_LANG } from '../../../shared/i18n/core.js';
 import { LitElement, html, css } from 'lit';
 
 export class SessionDetail extends LitElement {
@@ -39,8 +41,16 @@ export class SessionDetail extends LitElement {
       padding: var(--space-md, 1rem);
       overflow-y: auto;
       z-index: 10;
-      direction: rtl;
       color: var(--color-text, #1c1917);
+    }
+    .lang-badge {
+      display: inline-block;
+      margin-inline-start: var(--space-sm, .5rem);
+      padding: 1px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--color-border, #e7e5e4);
+      font-size: var(--font-size-xs, .75rem);
+      color: var(--color-text-muted, #78716c);
     }
 
     header {
@@ -252,13 +262,20 @@ export class SessionDetail extends LitElement {
     const qId = ss.questionnaireIds?.[key] ?? this.questionnaireId ?? key;
     const questionnaire = this.questionnaires?.get?.(qId);
 
-    const title = envelope.instruments.find(i => i.questionnaireId === qId)?.title
-      ?? questionnaire?.title ?? qId;
+    // Title in the clinician's language (the loaded config) over the envelope's
+    // (the patient's language); the badge names the report language when it
+    // differs from the UI's — the answers below are in that language.
+    const title = questionnaire?.title
+      ?? envelope.instruments.find(i => i.questionnaireId === qId)?.title ?? qId;
+    const reportLang = envelope.lang ?? DEFAULT_LANG;
+    const langBadge = reportLang !== currentLang()
+      ? html`<span class="lang-badge" lang=${reportLang}>${t('detail.lang', { lang: LANGS[reportLang]?.label ?? reportLang })}</span>`
+      : '';
     const score = ss.scores?.[key];
     const alerts = ss.alerts?.[key] ?? [];
     const answers = ss.answers?.[key] ?? {};
 
-    const date = new Intl.DateTimeFormat('he-IL', {
+    const date = new Intl.DateTimeFormat(LANGS[currentLang()].locale, {
       day: 'numeric', month: 'long', year: 'numeric',
     }).format(new Date(envelope.generatedAt));
 
@@ -271,9 +288,10 @@ export class SessionDetail extends LitElement {
           <div class="meta">
             ${date}
             ${envelope.pid ? html` · <span class="pid">${envelope.pid}</span>` : ''}
+            ${langBadge}
           </div>
         </div>
-        <button class="close" @click=${this._close} aria-label="סגירה">✕</button>
+        <button class="close" @click=${this._close} aria-label=${t('detail.close')}>✕</button>
       </header>
 
       <div class="score-line">
@@ -294,7 +312,7 @@ export class SessionDetail extends LitElement {
 
       ${alerts.map(a => html`<div class="alert">⚠ ${a.message}</div>`)}
 
-      <h4>תשובות</h4>
+      <h4>${t('detail.answers')}</h4>
       <ol class="items">
         ${Object.entries(answers).map(([itemId, answer]) => {
           const item = items.get(itemId);
@@ -311,7 +329,7 @@ export class SessionDetail extends LitElement {
       </ol>
 
       <a class="download" href=${this._downloadUrl()} download=${fileName}>
-        הורדת ה-PDF המקורי
+        ${t('detail.download')}
       </a>
     `;
   }

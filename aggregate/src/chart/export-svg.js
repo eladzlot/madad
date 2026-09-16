@@ -16,6 +16,8 @@
 //
 // Rasterization to PNG is a separate browser step (export-image.js).
 
+import { t, currentLang } from '../../../clinician/i18n/index.js';
+import { LANGS } from '../../../shared/i18n/core.js';
 import { buildChartModel } from './chart-model.js';
 
 // Logical size 800×500 → PNG 1600×1000 at 2× density (§6).
@@ -45,10 +47,13 @@ const esc = (s) => String(s)
   .replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
   .replaceAll('"', '&quot;');
 
-const shortDate = new Intl.DateTimeFormat('he-IL', { day: 'numeric', month: 'numeric', year: 'numeric' });
-const stampFmt = new Intl.DateTimeFormat('he-IL', {
+// Formatters follow the clinician's UI language (the export is read by the
+// clinician, in whichever language they run the surface).
+const locale = () => LANGS[currentLang()].locale;
+const shortDate = (d) => new Intl.DateTimeFormat(locale(), { day: 'numeric', month: 'numeric', year: 'numeric' }).format(d);
+const stampFmt = (d) => new Intl.DateTimeFormat(locale(), {
   day: 'numeric', month: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit',
-});
+}).format(d);
 
 /**
  * The pid to offer for export: the single pid shared by *every* point, or
@@ -81,40 +86,47 @@ export function exportFilename(questionnaireId, now, ext) {
  */
 export function buildExportSvg({ series, questionnaire, domain, pid = null, now = new Date() }) {
   const { width, height } = EXPORT_DIMS;
+  const dir = LANGS[currentLang()].dir;
   const m = buildChartModel({
     points: series.points,
     interpretations: questionnaire?.interpretations,
     domain,
     dims: CHART_DIMS,
+    dir,
   });
 
   const dates = series.points.map(p => p.date);
   const range = dates.length < 2
-    ? shortDate.format(dates[0])
-    : `${shortDate.format(dates[0])} – ${shortDate.format(dates[dates.length - 1])}`;
+    ? shortDate(dates[0])
+    : `${shortDate(dates[0])} – ${shortDate(dates[dates.length - 1])}`;
 
-  // rtl text-anchor semantics (same as the live chart): 'start' puts the
-  // text's RIGHT edge at x (extends leftward) — used for right-aligned
-  // Hebrew; 'end' extends rightward — used for left-aligned.
+  // Direction-relative text-anchor semantics (same as the live chart): with
+  // direction=rtl 'start' puts the text's RIGHT edge at x (extends leftward)
+  // and 'end' extends rightward; ltr mirrors both. So the reading-start edge
+  // is the right margin in rtl and the left margin in ltr, and 'start'/'end'
+  // keep meaning "reading start / reading end" in both.
+  const rtl = dir === 'rtl';
+  const startX = rtl ? width - PAD_X : PAD_X;
+  const endX   = rtl ? PAD_X : width - PAD_X;
   const header = [
-    `<text x="${width - PAD_X}" y="28" direction="rtl" text-anchor="start" font-size="17" font-weight="700" fill="${C.text}">${esc(series.title)}</text>`,
-    `<text x="${width - PAD_X}" y="48" direction="rtl" text-anchor="start" font-size="11" fill="${C.muted}">${esc(range)}</text>`,
+    `<text x="${startX}" y="28" direction="${dir}" text-anchor="start" font-size="17" font-weight="700" fill="${C.text}">${esc(series.title)}</text>`,
+    `<text x="${startX}" y="48" direction="${dir}" text-anchor="start" font-size="11" fill="${C.muted}">${esc(range)}</text>`,
   ];
 
   const footerY = height - 15;
   const footer = [
     `<line x1="${PAD_X}" y1="${height - FOOTER_H + 6}" x2="${width - PAD_X}" y2="${height - FOOTER_H + 6}" stroke="${C.grid}" stroke-width="1"></line>`,
-    `<text x="${width - PAD_X}" y="${footerY}" direction="rtl" text-anchor="start" font-size="13" font-weight="700" fill="${C.primary}">מדד</text>`,
-    `<text x="${PAD_X}" y="${footerY}" direction="rtl" text-anchor="end" font-size="10" fill="${C.muted}">הופק ${esc(stampFmt.format(now))}</text>`,
+    `<text x="${startX}" y="${footerY}" direction="${dir}" text-anchor="start" font-size="13" font-weight="700" fill="${C.primary}">${esc(t('export.brand'))}</text>`,
+    `<text x="${endX}" y="${footerY}" direction="${dir}" text-anchor="end" font-size="10" fill="${C.muted}">${esc(t('export.generated', { stamp: stampFmt(now) }))}</text>`,
   ];
   if (pid != null) {
-    footer.push(`<text x="${width / 2}" y="${footerY}" direction="rtl" text-anchor="middle" font-size="10" fill="${C.muted}">מזהה: ${esc(pid)}</text>`);
+    footer.push(`<text x="${width / 2}" y="${footerY}" direction="${dir}" text-anchor="middle" font-size="10" fill="${C.muted}">${esc(t('export.pid', { pid }))}</text>`);
   }
 
   const chart = [
     ...m.bands.map(b => [
       `<rect x="${m.plot.x}" y="${b.y}" width="${m.plot.w}" height="${b.h}" fill="${b.fill}"></rect>`,
-      `<text x="${b.labelX}" y="${b.y + 11}" text-anchor="${b.labelAnchor}" direction="rtl" font-size="9" fill="${C.muted}">${esc(b.label)}</text>`,
+      `<text x="${b.labelX}" y="${b.y + 11}" text-anchor="${b.labelAnchor}" direction="${dir}" font-size="9" fill="${C.muted}">${esc(b.label)}</text>`,
     ].join('')),
     ...m.yTicks.map(t => [
       `<line x1="${m.plot.x}" y1="${t.y}" x2="${m.plot.x + m.plot.w}" y2="${t.y}" stroke="${C.grid}" stroke-width="1"></line>`,
@@ -122,7 +134,7 @@ export function buildExportSvg({ series, questionnaire, domain, pid = null, now 
     ].join('')),
     ...m.cutoffs.map(c => [
       `<line x1="${m.plot.x}" y1="${c.y}" x2="${m.plot.x + m.plot.w}" y2="${c.y}" stroke="${C.cutoff}" stroke-width="1.5"></line>`,
-      c.label ? `<text x="${c.labelX}" y="${c.y - 4}" text-anchor="${c.labelAnchor}" direction="rtl" font-size="9" fill="${C.cutoff}">${esc(c.label)}</text>` : '',
+      c.label ? `<text x="${c.labelX}" y="${c.y - 4}" text-anchor="${c.labelAnchor}" direction="${dir}" font-size="9" fill="${C.cutoff}">${esc(c.label)}</text>` : '',
     ].join('')),
     m.linePath
       ? `<path d="${m.linePath}" fill="none" stroke="${C.primary}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"></path>`

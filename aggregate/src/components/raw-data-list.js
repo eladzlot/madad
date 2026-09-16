@@ -4,6 +4,8 @@
 // this list makes them visible rather than silently dropped. Per-session
 // detail view arrives with the slice-2 detail panel.
 
+import { t, currentLang } from '../../../clinician/i18n/index.js';
+import { LANGS } from '../../../shared/i18n/core.js';
 import { LitElement, html, css } from 'lit';
 
 export class RawDataList extends LitElement {
@@ -59,13 +61,13 @@ export class RawDataList extends LitElement {
 
   render() {
     if (!this.instruments?.length) return html``;
-    const fmt = new Intl.DateTimeFormat('he-IL', { day: 'numeric', month: 'numeric', year: 'numeric' });
+    const fmt = new Intl.DateTimeFormat(LANGS[currentLang()].locale, { day: 'numeric', month: 'numeric', year: 'numeric' });
     return html`
-      <h2>נתונים ללא ציון מספרי (לא מוצגים בגרף)</h2>
+      <h2>${t('raw.title')}</h2>
       ${this.instruments.map(inst => html`
         <div class="card">
           <h3>${inst.title}</h3>
-          <p class="hint">התשובות המלאות זמינות בקובצי ה-PDF עצמם.</p>
+          <p class="hint">${t('raw.hint')}</p>
           <ul>
             ${inst.sessions.map(s => html`
               <li>
