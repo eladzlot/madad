@@ -9,7 +9,7 @@ name: Deploy remote (trial)
 # Same self-contained gate as the public deploy: a broken bundle never ships.
 #
 # The trial lives in its OWN Cloudflare account, so its credentials live in the
-# `trial` GitHub Environment rather than at repository level. Three consequences:
+# `moh-remote` GitHub Environment rather than at repository level. Three consequences:
 #   • the job only sees them after the environment's rules pass — a required
 #     reviewer, so nothing reaches a system real therapists use without a human
 #     saying so, and only the `remote` branch may deploy to it;
@@ -103,7 +103,7 @@ jobs:
       - name: Upload the tested bundle
         uses: actions/upload-artifact@v4
         with:
-          name: dist-trial
+          name: dist-moh-remote
           path: dist/
           retention-days: 1
 
@@ -111,7 +111,7 @@ jobs:
     name: Deploy (trial)
     needs: gate
     runs-on: ubuntu-latest
-    environment: trial
+    environment: moh-remote
 
     steps:
       # Checkout supplies functions/, server/ and wrangler.toml. No npm install:
@@ -123,7 +123,7 @@ jobs:
       - name: Download the tested bundle
         uses: actions/download-artifact@v4
         with:
-          name: dist-trial
+          name: dist-moh-remote
           path: dist/
 
       # Migrations are applied by hand from the runbook, not from here. They run

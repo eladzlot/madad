@@ -50,11 +50,33 @@ async function sendAndLog(deps, { uid, to, msg, now }) {
   return sent;
 }
 
+/**
+ * Plain per-IP request cap across every endpoint (§7). Cloudflare's rate
+ * limiting is effectively unavailable below a paid zone plan — one rule, a
+ * 10-second window, and no host field — so this is the control that actually
+ * runs, and it keeps running if the zone plan ever changes.
+ *
+ * Counts every logged request from the IP, successes included, unlike the
+ * failed-check cap which only counts refusals. Returns true when the caller
+ * should be refused.
+ */
+async function ipFlooding(deps, now) {
+  const cap = deps.limits.requestsPerIpPerMinute;
+  if (!deps.ipHash || !cap || cap <= 0) return false;
+  const since = iso(new Date(now.getTime() - 60_000));
+  return (await deps.db.countRequestsFromIpSince(deps.ipHash, since)) >= cap;
+}
+
 // ── 4.1 GET /api/v1/uids/<uid> ───────────────────────────────────────────────
 
 export async function checkUid(rawUid, deps) {
   const now = deps.now();
   const uid = isValidUid(rawUid) ? normalizeUid(rawUid) : null;
+
+  if (await ipFlooding(deps, now)) {
+    await deps.db.logAccess({ kind: 'check', uid, ok: false, ipHash: deps.ipHash, ts: iso(now) });
+    return refuse(429);
+  }
 
   // Per-IP cap on failed checks: a guesser shows up here and gets slowed.
   if (deps.ipHash && deps.limits.failedChecksPerIpPerHour > 0) {
@@ -75,6 +97,8 @@ export async function checkUid(rawUid, deps) {
 export async function submitSession(rawBody, deps) {
   const now = deps.now();
   const log = (uid, ok) => deps.db.logAccess({ kind: 'submit', uid, ok, ipHash: deps.ipHash, ts: iso(now) });
+
+  if (await ipFlooding(deps, now)) { await log(null, false); return refuse(429); }
 
   if (typeof rawBody !== 'string' || new TextEncoder().encode(rawBody).length > (deps.limits.maxBodyBytes ?? MAX_BODY_BYTES)) {
     await log(null, false);
@@ -161,6 +185,10 @@ async function answersAreTextFree(envelope, loadConfig) {
 export async function readSessions({ uid: rawUid, exp, sig }, deps) {
   const now = deps.now();
   const uid = isValidUid(rawUid) ? normalizeUid(rawUid) : null;
+  if (await ipFlooding(deps, now)) {
+    await deps.db.logAccess({ kind: 'read', uid, ok: false, ipHash: deps.ipHash, ts: iso(now) });
+    return refuse(429);
+  }
   const ok = uid !== null && await verifyLink(deps.secret, uid, exp, sig, Math.floor(now.getTime() / 1000));
   await deps.db.logAccess({ kind: 'read', uid, ok, ipHash: deps.ipHash, ts: iso(now) });
   if (!ok) return refuse(403);
@@ -175,11 +203,29 @@ export async function requestLink(rawBody, deps) {
   let body = null;
   try { body = JSON.parse(rawBody); } catch { /* fall through: always 204 */ }
   const uid = body && isValidUid(body.uid) ? normalizeUid(body.uid) : null;
+
+  if (await ipFlooding(deps, now)) {
+    await deps.db.logAccess({ kind: 'link', uid, ok: false, ipHash: deps.ipHash, ts: iso(now) });
+    return refuse(429);
+  }
+
   const row = uid ? await deps.db.findRegistry(uid) : null;
   await deps.db.logAccess({ kind: 'link', uid, ok: !!row, ipHash: deps.ipHash, ts: iso(now) });
-  // Never suppressed: this send is the therapist's own explicit request, and
-  // withholding it would strand someone whose link has expired.
-  if (row) {
+
+  // This send is the therapist's own explicit request, so the FIRST one always
+  // goes out — withholding it would strand somebody whose link has expired.
+  // But it was previously unlimited, which made the endpoint a way to flood a
+  // therapist's inbox and burn the account's sending quota: anyone knowing a
+  // valid uid, or a therapist clicking impatiently, could trigger any number
+  // of emails. Right for the first request, wrong for the fiftieth.
+  //
+  // The response stays a flat 204 whether or not we actually send, so the cap
+  // discloses nothing that the endpoint did not already disclose (§4.4).
+  const perHour = deps.limits.linkEmailsPerUidPerHour;
+  const recent = uid && perHour > 0
+    ? await deps.db.countEmailsSince(uid, hoursAgo(now, 1))
+    : 0;
+  if (row && (perHour <= 0 || recent < perHour)) {
     const link = await buildLink({ secret: deps.secret, origin: deps.origin, uid, ttlDays: deps.limits.linkTtlDays, now });
     await sendAndLog(deps, { uid, to: row.therapist_email, msg: freshLinkEmail({ uid: formatUid(uid), link }), now });
   }

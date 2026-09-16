@@ -296,7 +296,20 @@ export class TrajectoryChart extends LitElement {
   }
 
   willUpdate(changed) {
-    if (changed.has('series')) this._tooltip = null;
+    // Drop the tooltip only when the point it describes is actually gone.
+    //
+    // It used to clear on ANY reassignment of `series`, which looks harmless
+    // because the composition root re-renders the whole template and hands
+    // over fresh objects each time. But the aggregate loads instrument configs
+    // asynchronously and re-renders when they arrive, so a tooltip opened just
+    // before that resolved was wiped for no reason — visible to a clinician as
+    // a tooltip that blinks out on its own, and to CI as a keyboard test that
+    // failed only under load, when the fetch happened to land after the focus.
+    if (!changed.has('series')) return;
+    const id = this._tooltip?.marker?.sessionId;
+    if (id == null) { this._tooltip = null; return; }
+    const stillThere = (this.series?.points ?? []).some(p => p.sessionId === id);
+    if (!stillThere) this._tooltip = null;
   }
 
   // ── Tooltip ────────────────────────────────────────────────────────────────

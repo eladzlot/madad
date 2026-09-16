@@ -29,6 +29,8 @@ export async function depsFrom(context) {
     limits: {
       linkTtlDays: num(env.LINK_TTL_DAYS, 7),
       doorbellWindowHours: num(env.DOORBELL_WINDOW_HOURS, 1),
+      linkEmailsPerUidPerHour: num(env.LINK_EMAILS_PER_UID_PER_HOUR, 3),
+      requestsPerIpPerMinute: num(env.REQUESTS_PER_IP_PER_MINUTE, 60),
       submissionsPerUidPerDay: num(env.SUBMISSIONS_PER_UID_PER_DAY, 20),
       failedChecksPerIpPerHour: num(env.FAILED_CHECKS_PER_IP_PER_HOUR, 30),
       maxBodyBytes: MAX_BODY_BYTES,

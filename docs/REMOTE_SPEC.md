@@ -403,7 +403,9 @@ clinical-governance decision, not a code decision.
 | Control | Mechanism |
 |---|---|
 | Transport | HTTPS only (platform-enforced); CSP unchanged (`connect-src 'self'`) |
-| Write abuse | Registry check on every request; 256 KB payload cap; `validateEnvelope()` + no-text rule server-side; per-uid daily submission cap (D1 counter); per-IP rate limit on `/api/v1/*` via a Cloudflare WAF rate-limiting rule (documented in `scripts/remote/README.md`) |
+| Write abuse | Registry check on every request; 256 KB payload cap; `validateEnvelope()` + no-text rule server-side; per-uid daily submission cap |
+| Flooding | Per-IP cap across every endpoint (`REQUESTS_PER_IP_PER_MINUTE`, default 60), counted from `access_log`. **Not** a Cloudflare WAF rule: rate limiting is effectively unavailable below a paid zone plan — one rule, a 10-second window, no host field — so the control lives in the Functions, where it runs regardless of plan. A Free-plan WAF rule is still worth adding as a cheap outer layer, but expect little of it. |
+| Email flooding | Fresh-link emails capped per uid per hour (`LINK_EMAILS_PER_UID_PER_HOUR`, default 3). §4.4 was previously unlimited: anyone knowing a valid uid, or a therapist clicking impatiently, could fill an inbox and burn the account's sending quota. The first request always sends, so nobody is stranded, and the response stays a flat 204 either way so the cap discloses nothing. |
 | Read access | HMAC-signed, 7-day-expiring, uid-scoped links; constant-time verification; secret in `wrangler secret`, rotation = global revocation |
 | Enumeration | Accepted at §4.1 and §4.2 (below); §4.3 uniform 403; §4.4 always 204 |
 | Stored data | Pseudonymous by construction (D-2, §5.3); D1 encrypted at rest; Time Travel / backup restore drill required before launch |

@@ -332,3 +332,54 @@ describe('trajectory-chart — view as table', () => {
     expect(events[1]).toEqual({ sessionId: 0, sessionKey: 'phq9', questionnaireId: 'phq9' });
   });
 });
+
+// ── tooltip survival across re-render ────────────────────────────────────────
+
+describe('tooltip persistence (willUpdate)', () => {
+  const seriesOf = (ids) => ({
+    questionnaireId: 'phq9',
+    title: 'PHQ-9',
+    points: ids.map((id, i) => ({ sessionId: id, date: new Date(2026, 0, i + 1), value: 10 + i, alerts: [], answers: {} })),
+  });
+
+  // A tooltip marker must be complete enough for _renderTooltip: it reads
+  // label, total, category, subscales, alerts and baseline.
+  const markerFor = (id) => ({
+    sessionId: id, label: `1.${id + 1}.2026`, total: 10 + id, category: null,
+    subscales: {}, alerts: [], baseline: false,
+  });
+
+  async function withTooltip(ids) {
+    const el = await fixture(testHtml`<trajectory-chart></trajectory-chart>`);
+    el.series = seriesOf(ids);
+    await el.updateComplete;
+    // Simulate focusing the first marker: this is all _showTip stores.
+    el._tooltip = { marker: markerFor(ids[0]), x: 10, y: 10 };
+    await el.updateComplete;
+    return el;
+  }
+
+  it('survives a re-render that merely hands over equivalent data', async () => {
+    // The aggregate loads configs asynchronously and re-renders when they
+    // arrive, handing over fresh objects with identical contents.
+    const el = await withTooltip([0, 1]);
+    el.series = seriesOf([0, 1]);
+    await el.updateComplete;
+    expect(el._tooltip).not.toBeNull();
+  });
+
+  it('clears when its own point is gone', async () => {
+    const el = await withTooltip([0, 1]);
+    el.series = seriesOf([1, 2]);            // session 0 filtered out
+    await el.updateComplete;
+    expect(el._tooltip).toBeNull();
+  });
+
+  it('clears when the tooltip has no session to anchor to', async () => {
+    const el = await withTooltip([0]);
+    el._tooltip = { marker: { ...markerFor(0), sessionId: null }, x: 0, y: 0 };
+    el.series = seriesOf([0]);
+    await el.updateComplete;
+    expect(el._tooltip).toBeNull();
+  });
+});

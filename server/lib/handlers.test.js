@@ -33,7 +33,8 @@ function makeDeps(overrides = {}) {
   return {
     db, email, loadConfig, secret: SECRET, origin: 'https://trial.example', ipHash: 'iphash-a',
     now: () => NOW,
-    limits: { linkTtlDays: 7, submissionsPerUidPerDay: 3, failedChecksPerIpPerHour: 3, doorbellWindowHours: 1, maxBodyBytes: 256 * 1024 },
+    limits: { linkTtlDays: 7, submissionsPerUidPerDay: 3, failedChecksPerIpPerHour: 3, doorbellWindowHours: 1,
+              linkEmailsPerUidPerHour: 2, requestsPerIpPerMinute: 0, maxBodyBytes: 256 * 1024 },
     onEmailFailure: vi.fn(),
     ...overrides,
   };
@@ -192,6 +193,40 @@ describe('readSessions (§4.3)', () => {
   });
 });
 
+describe('per-IP request cap (§7)', () => {
+  // Cloudflare's own rate limiting is effectively unavailable below a paid zone
+  // plan, so this is the control that actually runs.
+  const flooded = () => makeDeps({ limits: { linkTtlDays: 7, submissionsPerUidPerDay: 99, failedChecksPerIpPerHour: 0,
+                                             doorbellWindowHours: 1, linkEmailsPerUidPerHour: 9,
+                                             requestsPerIpPerMinute: 3, maxBodyBytes: 256 * 1024 } });
+
+  it('refuses every endpoint once one IP exceeds the minute budget', async () => {
+    const deps = flooded();
+    for (let i = 0; i < 3; i++) expect((await checkUid(UID, deps)).status).toBe(204);
+    expect((await checkUid(UID, deps)).status).toBe(429);
+    expect((await submitSession(JSON.stringify({ uid: UID, envelope: phq9Envelope() }), deps)).status).toBe(429);
+    expect((await requestLink(JSON.stringify({ uid: UID }), deps)).status).toBe(429);
+    expect((await readSessions({ uid: UID, exp: '1', sig: 'x' }, deps)).status).toBe(429);
+    expect(deps.email.send).not.toHaveBeenCalled();
+    expect(deps.db.tables.sessions).toHaveLength(0);
+  });
+
+  it('counts per IP, so another caller is unaffected', async () => {
+    const deps = flooded();
+    for (let i = 0; i < 4; i++) await checkUid(UID, deps);
+    const other = makeDeps({ db: deps.db, ipHash: 'iphash-other',
+                             limits: { ...deps.limits } });
+    expect((await checkUid(UID, other)).status).toBe(204);
+  });
+
+  it('is off when the cap is zero or the IP is unknown', async () => {
+    const off = makeDeps();                                   // requestsPerIpPerMinute: 0
+    for (let i = 0; i < 10; i++) expect((await checkUid(UID, off)).status).toBe(204);
+    const noIp = makeDeps({ ipHash: null, limits: { ...flooded().limits } });
+    for (let i = 0; i < 10; i++) expect((await checkUid(UID, noIp)).status).toBe(204);
+  });
+});
+
 describe('requestLink (§4.4)', () => {
   it('always 204; emails a fresh link only for registered uids', async () => {
     const deps = makeDeps();
@@ -209,10 +244,27 @@ describe('requestLink (§4.4)', () => {
     expect(deps.db.tables.access_log.map(a => [a.kind, a.ok])).toEqual([['link', 0], ['link', 0], ['link', 1], ['email', 1]]);
   });
 
-  it('is never suppressed — a therapist asking twice gets two links', async () => {
+  it('the first request always sends, but repeats are capped per hour', async () => {
+    // Unlimited before: anyone knowing a valid uid, or a therapist clicking
+    // impatiently, could flood the inbox and burn the sending quota.
+    const deps = makeDeps();                                   // cap of 2/hour
+    for (let i = 0; i < 5; i++) {
+      expect((await requestLink(JSON.stringify({ uid: UID }), deps)).status).toBe(204);
+    }
+    expect(deps.email.send).toHaveBeenCalledTimes(2);          // capped, not silent-failed
+
+    // Past the hour it sends again.
+    const later = makeDeps({ db: deps.db, email: deps.email, now: () => new Date(NOW.getTime() + 2 * 3600_000) });
+    expect((await requestLink(JSON.stringify({ uid: UID }), later)).status).toBe(204);
+    expect(deps.email.send).toHaveBeenCalledTimes(3);
+  });
+
+  it('a capped request still answers 204, disclosing nothing', async () => {
     const deps = makeDeps();
-    await requestLink(JSON.stringify({ uid: UID }), deps);
-    await requestLink(JSON.stringify({ uid: UID }), deps);
-    expect(deps.email.send).toHaveBeenCalledTimes(2);
+    for (let i = 0; i < 5; i++) await requestLink(JSON.stringify({ uid: UID }), deps);
+    const capped = await requestLink(JSON.stringify({ uid: UID }), deps);
+    const unregistered = await requestLink(JSON.stringify({ uid: OTHER }), deps);
+    expect(capped.status).toBe(unregistered.status);           // indistinguishable
+    expect(capped.status).toBe(204);
   });
 });

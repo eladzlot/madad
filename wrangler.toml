@@ -38,6 +38,8 @@ LINK_TTL_DAYS = "7"                         # §4.5 — revisited with access_lo
 DOORBELL_WINDOW_HOURS = "1"                 # §6 — at most one doorbell per uid per window
 SUBMISSIONS_PER_UID_PER_DAY = "20"          # §7 per-uid cap
 FAILED_CHECKS_PER_IP_PER_HOUR = "30"        # §7 per-IP cap on the uid check
+LINK_EMAILS_PER_UID_PER_HOUR = "3"          # §7 fresh-link emails per uid per hour
+REQUESTS_PER_IP_PER_MINUTE = "60"           # §7 per-IP cap across every endpoint        # §7 per-IP cap on the uid check
 
 [[d1_databases]]
 binding = "DB"

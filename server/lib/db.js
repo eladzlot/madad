@@ -26,6 +26,13 @@ export function createD1Db(d1) {
       return d1.prepare("SELECT COUNT(*) AS n FROM access_log WHERE kind = 'email' AND uid = ? AND ok = 1 AND ts >= ?")
         .bind(uid, sinceIso).first('n');
     },
+    // Every API call from one IP in a window — the plan-independent per-IP
+    // limit (§7). Cloudflare's own rate limiting is a paid feature beyond a
+    // 10-second window, so this is the control that actually runs.
+    async countRequestsFromIpSince(ipHash, sinceIso) {
+      return d1.prepare('SELECT COUNT(*) AS n FROM access_log WHERE ip_hash = ? AND ts >= ?')
+        .bind(ipHash, sinceIso).first('n');
+    },
     async countAccessSince({ kind, ipHash, ok, sinceIso }) {
       return d1.prepare('SELECT COUNT(*) AS n FROM access_log WHERE kind = ? AND ip_hash = ? AND ok = ? AND ts >= ?')
         .bind(kind, ipHash, ok ? 1 : 0, sinceIso).first('n');

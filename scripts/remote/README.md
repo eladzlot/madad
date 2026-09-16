@@ -58,6 +58,17 @@ Then in the dashboard:
   is a dashboard step.
 - The WAF rate-limiting rule below.
 
+**Rate limiting lives in the Functions, not in Cloudflare.** The zone is on the
+Free plan, where rate limiting rules are one rule with a 10-second window, a
+10-second block, and no host field — my original rule cannot even be expressed.
+The real controls are `REQUESTS_PER_IP_PER_MINUTE` (60) and
+`LINK_EMAILS_PER_UID_PER_HOUR` (3) in `wrangler.toml`, which run whatever the
+zone plan is. Upgrading to Pro for a slightly better version of a control that
+is not the one protecting you is not worth \$20/month.
+
+A Free-plan rule is still worth adding as a cheap outer layer — path starts
+with `/api/v1/`, whatever rate the plan allows, block for its maximum:
+
 **WAF rate limit (per IP, spec §7):** Security → WAF → Rate limiting rules →
 `(http.host eq "ctrmadad.com" and http.request.uri.path starts_with "/api/v1/")`,
 60 requests / 1 minute per IP, action Block for 10 minutes. The per-uid caps
@@ -100,18 +111,18 @@ run. That is worse than no gate, because it teaches you to click through. The
 deploy job also ships the **artifact the gate built**, not a rebuild, so what
 goes live is the exact bundle that was tested.
 
-That gate is the `trial` GitHub Environment. It holds the Cloudflare
+That gate is the `moh-remote` GitHub Environment. It holds the Cloudflare
 credentials for the CTR account — `CLOUDFLARE_API_TOKEN_REMOTE` and
 `CLOUDFLARE_ACCOUNT_ID_REMOTE` — which the job can only read once the rules
 pass, and it restricts deployment to the `remote` branch. The `_REMOTE`
 suffix is redundant with the environment on purpose: if the job ever loses
-its `environment: trial` line, the secrets resolve empty and it fails loudly
+its `environment: moh-remote` line, the secrets resolve empty and it fails loudly
 rather than quietly using the personal account's repository secrets.
 
 The deploy token is minted like any other: Profile → API Tokens → Create
 Custom Token, with **Account · Cloudflare Pages · Edit** and **Account · D1 ·
 Edit**, scoped to the CTR account only. Store it with
-`gh secret set CLOUDFLARE_API_TOKEN_REMOTE --env trial`.
+`gh secret set CLOUDFLARE_API_TOKEN_REMOTE --env moh-remote`.
 
 **Migrations are not applied by the workflow.** They run against the database
 holding patient data, and a bad one would reach it with nothing in between.
