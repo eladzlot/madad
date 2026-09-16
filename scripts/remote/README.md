@@ -89,9 +89,16 @@ reachable.
 
 ## Deploys
 
-Pushing to `remote` runs the full gate, then **pauses for approval** before
-anything reaches the live site. Approve it from the run page on GitHub (or
-the notification) and it deploys; ignore it and nothing happens.
+Pushing to `remote` runs the full gate as one job. If it passes, a second job
+**pauses for approval** before anything reaches the live site. Approve it from
+the run page on GitHub (or the notification) and it deploys; ignore it and
+nothing happens.
+
+The two-job split is the point: with `environment:` on a single job GitHub
+holds the whole thing, so you would be approving before a single test had
+run. That is worse than no gate, because it teaches you to click through. The
+deploy job also ships the **artifact the gate built**, not a rebuild, so what
+goes live is the exact bundle that was tested.
 
 That gate is the `trial` GitHub Environment. It holds the Cloudflare
 credentials for the CTR account — `CLOUDFLARE_API_TOKEN_REMOTE` and

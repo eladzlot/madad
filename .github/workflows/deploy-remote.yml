@@ -36,10 +36,13 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  deploy:
-    name: Gate, build, deploy (trial)
+  # The gate runs unconditionally and asks nobody for anything. Approval belongs
+  # after it, not before: with `environment:` on a single job GitHub holds the
+  # whole thing, so the reviewer would be approving before a single test had
+  # run, which is worse than no gate at all — it trains you to click through.
+  gate:
+    name: Gate
     runs-on: ubuntu-latest
-    environment: trial
 
     steps:
       - name: Checkout
@@ -54,7 +57,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # ── Gate ──────────────────────────────────────────────────────────────
       - name: Lint
         run: npm run lint
 
@@ -90,11 +92,39 @@ jobs:
           path: playwright-report/
           retention-days: 7
 
-      # ── Production build, migrate, deploy ─────────────────────────────────
+      # Production build with the real base, kept as an artifact so the deploy
+      # ships the exact bytes the gate just tested rather than a rebuild that
+      # merely ought to match.
       - name: Production build
         env:
           MADAD_BASE: /
         run: npm run build
+
+      - name: Upload the tested bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-trial
+          path: dist/
+          retention-days: 1
+
+  deploy:
+    name: Deploy (trial)
+    needs: gate
+    runs-on: ubuntu-latest
+    environment: trial
+
+    steps:
+      # Checkout supplies functions/, server/ and wrangler.toml. No npm install:
+      # the Functions have no npm dependencies (they import only shared/ and
+      # server/), and wrangler-action brings its own wrangler.
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download the tested bundle
+        uses: actions/download-artifact@v4
+        with:
+          name: dist-trial
+          path: dist/
 
       # Migrations are applied by hand from the runbook, not from here. They run
       # against the database holding patient data, and a bad one would reach it
