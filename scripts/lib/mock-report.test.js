@@ -81,6 +81,18 @@ describe('normalizeScenario', () => {
     );
   });
 
+  it('defaults lang to Hebrew and accepts a patient-level or wrapper-level lang', () => {
+    expect(normalizeScenario({ pid: 'A', sessions: [session] })[0].lang).toBe('he');
+    expect(normalizeScenario({ pid: 'A', lang: 'en', sessions: [session] })[0].lang).toBe('en');
+    const mixed = normalizeScenario({ lang: 'en', patients: [{ pid: 'A', sessions: [session] }, { pid: 'B', lang: 'he', sessions: [session] }] });
+    expect(mixed.map((p) => p.lang)).toEqual(['en', 'he']);
+  });
+
+  it('rejects an unknown lang', () => {
+    expect(() => normalizeScenario({ pid: 'A', lang: 'xx', sessions: [session] })).toThrow(/"lang" must be one of/);
+    expect(() => normalizeScenario({ lang: 'xx', patients: [{ pid: 'A', sessions: [session] }] })).toThrow(/"lang" must be one of/);
+  });
+
   it('collects every problem in one throw', () => {
     let err;
     try {

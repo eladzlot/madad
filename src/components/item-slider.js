@@ -1,5 +1,6 @@
 import { LitElement, html, css } from 'lit';
 import { resetCSS } from '../styles/reset.js';
+import { t } from '../i18n/index.js';
 
 /**
  * <item-slider>
@@ -61,7 +62,12 @@ export class ItemSlider extends LitElement {
       background: transparent;
       margin: 0;
       padding: 0;
-      transform: scaleX(-1);  /* visual RTL flip — value logic unaffected */
+    }
+
+    /* The native range runs left→right; mirror it visually in RTL documents
+       so the track fills from the reading-start edge. Value logic unaffected. */
+    :host(:dir(rtl)) input[type="range"] {
+      transform: scaleX(-1);
     }
 
     /* ── Track ── */
@@ -278,7 +284,7 @@ export class ItemSlider extends LitElement {
           </span>
         </div>
         ${!this._touched ? html`
-          <p class="drag-hint">גרור כדי לבחור ערך</p>
+          <p class="drag-hint">${t('item.dragHint')}</p>
         ` : ''}
         ${(labels?.min || labels?.max) ? html`
           <div class="labels-row">
@@ -292,7 +298,7 @@ export class ItemSlider extends LitElement {
         ?disabled=${!this._touched}
         @click=${this._submit}
       >
-        המשך
+        ${t('item.continue')}
       </button>
     `;
   }

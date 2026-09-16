@@ -1,11 +1,15 @@
 // app.js — entry point.
 //
 // URL model:
-//   ?items=<id>,<id>&pid=<pid>
+//   ?items=<id>,<id>&lang=<lang>#pid=<pid>
 //
 //   items    — comma-separated ordered list of questionnaire IDs or battery IDs.
 //              Required. Error shown if absent.
-//   pid      — optional patient identifier.
+//   lang     — optional patient language (shared/i18n/core.js LANGS). Absent
+//              ⇒ Hebrew. Selects the config directory (configs/prod/<lang>/),
+//              the UI strings, <html lang/dir>, and the PDF's language.
+//              Unknown values are a malformed link (docs/I18N_SPEC.md §3).
+//   pid      — optional patient identifier (fragment; legacy query form read too).
 //
 // Item IDs are addresses: every questionnaire/battery lives in its own config
 // file at configs/prod/<id>.json, so the config sources ARE the item tokens.
@@ -31,6 +35,8 @@ import { createOrchestrator } from './engine/orchestrator.js';
 import { createRouter } from './router.js';
 import { preloadPdf } from './pdf/report.js';
 import { sanitizePid } from '../shared/pid.js';
+import { isLang, DEFAULT_LANG, configBaseFor, applyDocumentLang } from '../shared/i18n/core.js';
+import { t, loadStrings } from './i18n/index.js';
 import './components/item-select.js';
 import './components/item-binary.js';
 import './components/item-instructions.js';
@@ -47,7 +53,7 @@ import './components/results-screen.js';
 
 export function showLoading(container) {
   container.innerHTML = `
-    <div class="boot-screen" role="status" aria-label="טוען שאלון">
+    <div class="boot-screen" role="status" aria-label="${t('boot.loadingAria')}">
       <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true">
         <circle cx="20" cy="20" r="16"
           fill="none" stroke="var(--color-border)" stroke-width="3"/>
@@ -59,7 +65,7 @@ export function showLoading(container) {
             from="0" to="360" dur="0.9s" repeatCount="indefinite"/>
         </circle>
       </svg>
-      <p class="boot-screen__message">טוען שאלון…</p>
+      <p class="boot-screen__message">${t('boot.loading')}</p>
     </div>
   `;
 }
@@ -92,7 +98,7 @@ function errorIcon() {
 }
 
 export function showError(container, message, detail = '', { retryable = false } = {}) {
-  const hintText = detail || 'אנא פנה למטפל שלך לקבלת קישור חדש.';
+  const hintText = detail || t('error.contactTherapist');
 
   // Built entirely with DOM APIs. `message` and `detail` reach the page only
   // via textContent, so crafted URL parameters can never inject markup even if
@@ -116,7 +122,7 @@ export function showError(container, message, detail = '', { retryable = false }
     const btn = document.createElement('button');
     btn.className = 'boot-screen__retry';
     btn.dataset.action = 'retry';
-    btn.textContent = 'נסה שוב';
+    btn.textContent = t('error.retry');
     btn.addEventListener('click', () => location.reload());
     wrap.appendChild(btn);
   }
@@ -138,6 +144,16 @@ export function readPid(loc = location) {
   return new URLSearchParams(loc.search).get('pid');
 }
 
+// Reads the patient language from the query string. Absent ⇒ Hebrew; an
+// unknown code returns null so the caller can show the malformed-link screen
+// (never a silent fallback — the patient must get the language the clinician
+// chose, see docs/I18N_SPEC.md L-1).
+export function readLang(loc = location) {
+  const raw = new URLSearchParams(loc.search).get('lang');
+  if (raw === null || raw === '') return DEFAULT_LANG;
+  return isLang(raw) ? raw : null;
+}
+
 async function main() {
   const params = new URLSearchParams(location.search);
 
@@ -149,16 +165,35 @@ async function main() {
 
   const container = document.getElementById('app');
 
+  // Language first: every screen below, including the error screens, renders
+  // through t(). Hebrew needs no fetch; other languages load one small chunk.
+  const lang = readLang();
+  if (lang !== null && lang !== DEFAULT_LANG) {
+    try {
+      await loadStrings(lang);
+    } catch (err) {
+      console.error(err);
+      showError(container, t('error.cannotLoad'), t('error.network'), { retryable: true });
+      return;
+    }
+  }
+  applyDocumentLang(lang ?? DEFAULT_LANG, { title: t('app.title') });
+
+  if (lang === null) {
+    showError(container, t('error.badLink'), t('error.contactTherapist'));
+    return;
+  }
+
   // `items` is required — show error before welcome screen if missing
   if (!itemsParam) {
-    showError(container, 'לא נבחרו שאלונים.', 'יש לפתוח את הקישור שקיבלת מהמטפל.');
+    showError(container, t('error.noItems'), t('error.noItemsHint'));
     return;
   }
 
   const itemTokens = itemsParam.split(',').map(s => s.trim()).filter(Boolean);
 
   if (itemTokens.length === 0) {
-    showError(container, 'לא נבחרו שאלונים.', 'יש לפתוח את הקישור שקיבלת מהמטפל.');
+    showError(container, t('error.noItems'), t('error.noItemsHint'));
     return;
   }
 
@@ -171,7 +206,7 @@ async function main() {
   // Load config(s)
   let config;
   try {
-    config = await loadConfig(configSources);
+    config = await loadConfig(configSources, { configBase: configBaseFor(lang) });
   } catch (err) {
     // Three failure modes, three messages:
     //   • timeout                  → connection issue, suggest retry
@@ -180,15 +215,15 @@ async function main() {
     // The previous code conflated all three into "check your internet", which
     // sent patients hunting for a connection problem when the real cause was
     // a broken URL — which they cannot fix and their therapist needs to know about.
-    let title = 'לא ניתן לטעון את השאלון.';
+    let title = t('error.cannotLoad');
     let detail;
     if (err instanceof ConfigFetchError && err.timedOut) {
-      detail = 'הבקשה ארכה זמן רב מדי. בדוק את חיבור האינטרנט ונסה שנית.';
+      detail = t('error.timeout');
     } else if (err instanceof ConfigFetchError && err.httpStatus !== null) {
-      title  = 'הקישור שגוי או שאינו זמין.';
-      detail = 'אנא פנה למטפל שלך לקבלת קישור חדש.';
+      title  = t('error.badLink');
+      detail = t('error.contactTherapist');
     } else {
-      detail = 'בדוק את חיבור האינטרנט ונסה שנית, או פנה למטפל לקבלת קישור חדש.';
+      detail = t('error.network');
     }
     showError(container, title, detail, { retryable: true });
     console.error(err);
@@ -200,11 +235,7 @@ async function main() {
   try {
     sequence = resolveItems(itemTokens, config);
   } catch (err) {
-    showError(
-      container,
-      'הקישור שגוי או פג תוקף.',
-      'אנא פנה למטפל שלך לקבלת קישור חדש.',
-    );
+    showError(container, t('error.expiredLink'), t('error.contactTherapist'));
     console.error(err);
     return;
   }

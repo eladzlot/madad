@@ -102,9 +102,12 @@ export class ItemBinary extends LitElement {
   }
 
   firstUpdated() {
+    // Option 0 sits on the reading-start side: right in RTL, left in LTR.
+    // A swipe toward a side selects the option on that side.
+    const startIdx = () => this._isRtl() ? 0 : 1;
     this._detachSwipe = attachSwipe(this, {
-      onSwipeRight: () => this._selectByIndex(0),
-      onSwipeLeft:  () => this._selectByIndex(1),
+      onSwipeRight: () => this._selectByIndex(startIdx()),
+      onSwipeLeft:  () => this._selectByIndex(1 - startIdx()),
       onDrag: ({ dx, phase }) => {
         this._dragDx    = dx;
         this._dragPhase = phase;
@@ -116,6 +119,15 @@ export class ItemBinary extends LitElement {
     super.disconnectedCallback();
     this._detachSwipe?.();
     this._detachSwipe = null;
+  }
+
+  // Direction comes from the nearest dir= ancestor (app.js stamps <html dir>
+  // from the link's lang=). Attribute, not computed style: cheap, and the
+  // happy-dom test environment does not compute `direction`. Anything but an
+  // explicit "ltr" is RTL — the Hebrew default.
+  _isRtl() {
+    const scope = this.closest('[dir]') ?? this.ownerDocument?.documentElement;
+    return scope?.getAttribute('dir') !== 'ltr';
   }
 
   _selectByIndex(index) {
@@ -145,8 +157,11 @@ export class ItemBinary extends LitElement {
     const dragging      = this._dragPhase === 'move';
     const width         = this.offsetWidth || 300;
     const commitThresh  = width * SWIPE_THRESHOLD;
-    const dragRight     = dragging && this._dragDx > commitThresh;
-    const dragLeft      = dragging && this._dragDx < -commitThresh;
+    // "Toward option 0" / "toward option 1" in screen terms, per direction.
+    const rtl           = this._isRtl();
+    const dx            = rtl ? this._dragDx : -this._dragDx;
+    const dragRight     = dragging && dx > commitThresh;   // toward option 0
+    const dragLeft      = dragging && dx < -commitThresh;  // toward option 1
 
     const cardStyle = dragging && this._dragDx !== 0
       ? `transform: translateX(${this._dragDx}px) rotate(${clamp(this._dragDx * 0.04, -12, 12)}deg);`
@@ -164,7 +179,7 @@ export class ItemBinary extends LitElement {
             class="opt-btn
               ${this.selected === opt0?.value ? 'selected' : ''}
               ${dragRight ? 'drag-commit' : ''}
-              ${dragging && !dragRight && this._dragDx > 10 ? 'drag-target' : ''}"
+              ${dragging && !dragRight && dx > 10 ? 'drag-target' : ''}"
             aria-pressed=${this.selected === opt0?.value ? 'true' : 'false'}
             @click=${() => opt0 && this._select(opt0.value)}
           >${opt0?.label}</button>
@@ -172,7 +187,7 @@ export class ItemBinary extends LitElement {
             class="opt-btn
               ${this.selected === opt1?.value ? 'selected' : ''}
               ${dragLeft ? 'drag-commit' : ''}
-              ${dragging && !dragLeft && this._dragDx < -10 ? 'drag-target' : ''}"
+              ${dragging && !dragLeft && dx < -10 ? 'drag-target' : ''}"
             aria-pressed=${this.selected === opt1?.value ? 'true' : 'false'}
             @click=${() => opt1 && this._select(opt1.value)}
           >${opt1?.label}</button>

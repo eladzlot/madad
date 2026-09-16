@@ -1,5 +1,6 @@
 import { LitElement, html, css } from 'lit';
 import { resetCSS } from '../styles/reset.js';
+import { t } from '../i18n/index.js';
 
 /**
  * <item-instructions>
@@ -118,7 +119,7 @@ export class ItemInstructions extends LitElement {
         class="continue-btn"
         @click=${this._advance}
       >
-        המשך
+        ${t('item.continue')}
       </button>
     `;
   }

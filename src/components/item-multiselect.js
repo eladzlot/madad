@@ -1,5 +1,6 @@
 import { LitElement, html, css } from 'lit';
 import { resetCSS } from '../styles/reset.js';
+import { t } from '../i18n/index.js';
 import { classMap } from 'lit/directives/class-map.js';
 
 /**
@@ -26,6 +27,19 @@ export class ItemMultiselect extends LitElement {
   };
 
   static styles = [resetCSS, css`
+    /* Selected/hover options nudge toward the reading-start edge and carry an
+       accent bar on it: +x/right in RTL, −x/left in LTR. */
+    :host {
+      --nudge-hover: 2px;
+      --nudge-selected: 3px;
+      --nudge-shadow: -3px;
+    }
+    :host(:dir(ltr)) {
+      --nudge-hover: -2px;
+      --nudge-selected: -3px;
+      --nudge-shadow: 3px;
+    }
+
     :host {
       display: block;
     }
@@ -73,7 +87,7 @@ export class ItemMultiselect extends LitElement {
     .option:hover {
       background: var(--color-selected-bg);
       border-color: var(--color-border-focus);
-      transform: translateX(2px);
+      transform: translateX(var(--nudge-hover));
     }
 
     .option:focus-visible {
@@ -86,8 +100,8 @@ export class ItemMultiselect extends LitElement {
       border-color: var(--color-selected-border);
       border-width: 2px;
       font-weight: var(--font-weight-medium);
-      transform: translateX(3px);
-      box-shadow: -3px 0 0 0 var(--color-accent);
+      transform: translateX(var(--nudge-selected));
+      box-shadow: var(--nudge-shadow) 0 0 0 var(--color-accent);
     }
 
     .option__check {
@@ -238,7 +252,7 @@ export class ItemMultiselect extends LitElement {
         })}
       </ul>
       <button class="submit-btn" @click=${this._submit}>
-        ${this._checked.length > 0 ? 'המשך' : 'המשך ללא בחירה'}
+        ${this._checked.length > 0 ? t('item.continue') : t('item.continueNoSelection')}
       </button>
     `;
   }

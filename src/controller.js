@@ -1,3 +1,4 @@
+import { t } from './i18n/index.js';
 import { generateReport } from './pdf/report.js';
 import { score } from './engine/scoring.js';
 import { evaluateAlerts } from './engine/alerts.js';
@@ -350,9 +351,9 @@ export function createController(container, router) {
 
   function onError(err) {
     const wrap = document.createElement('div');
-    wrap.style.cssText = 'padding: var(--space-lg); direction: rtl; color: var(--color-no)';
+    wrap.style.cssText = 'padding: var(--space-lg); color: var(--color-no)';
     const msg = document.createElement('p');
-    msg.textContent = 'אירעה שגיאה: ' + err.message;
+    msg.textContent = t('error.generic', { message: err.message });
     wrap.appendChild(msg);
     container.innerHTML = '';
     container.appendChild(wrap);
