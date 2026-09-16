@@ -23,11 +23,20 @@ browsing and **must be regenerated** whenever you add or change a config
 
 ## Hard rules
 
-- **Hebrew only.** All patient-facing text (titles, instructions, items, option labels,
-  interpretation labels, alert messages) **and the composer-facing `description`** must be
-  in Hebrew. English appears only in the parenthesised instrument initials of the title
-  (e.g. `שאלון דיכאון (PHQ-9)`) and in subscale label parentheses. (`keywords` may mix
-  Hebrew and English to aid search.)
+- **Hebrew in the canonical file.** All patient-facing text (titles, instructions, items,
+  option labels, interpretation labels, alert messages) **and the composer-facing
+  `description`** in `public/configs/prod/<id>.json` must be in Hebrew. English appears
+  only in the parenthesised instrument initials of the title (e.g. `שאלון דיכאון (PHQ-9)`)
+  and in subscale label parentheses. (`keywords` may mix Hebrew and English to aid search.)
+- **Other languages are separate files.** A request to *translate* an existing instrument
+  (e.g. "add the English PHQ-9", "add Russian GAD-7") means
+  `public/configs/prod/<lang>/<id>.json`, never a new id. Run
+  `node scripts/scaffold-translation.mjs <lang> <id>`, replace every `TODO:` value with the
+  **published original or official/validated translation**, cite it in `meta.source`
+  (required), keep everything non-text byte-identical, then `npm run validate:configs`
+  (structural parity check) and `npm run build:catalog`. Full procedure:
+  `public/configs/CONTRIBUTING.md` §"Translating an instrument"; design: `docs/I18N_SPEC.md`.
+  A translated *battery* needs every questionnaire it sequences translated too.
 - **License gate.** Add any instrument that is free to use for non-commercial
   (research/clinical) purposes — whether public-domain/open-license (e.g. PHQ-9, PCL-5) or
   copyrighted but distributed free for clinical use (e.g. the STSS, `© Brian E. Bride`).

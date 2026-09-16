@@ -255,8 +255,23 @@
       ],
       "featured": false,
       "languages": [
-        "he"
-      ]
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "ABC Worksheet (CPT)",
+          "description": "CPT worksheet that breaks an experience into three parts — Activating event, Belief and Consequence (ABC) — and takes a first look at the…",
+          "keywords": [
+            "CPT",
+            "ABC",
+            "worksheet",
+            "stuck point",
+            "belief",
+            "activating event"
+          ]
+        }
+      }
     },
     {
       "id": "cpt_alternative",
@@ -408,8 +423,22 @@
       "tags": [],
       "featured": true,
       "languages": [
-        "he"
-      ]
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Depression, Anxiety and Stress Scales (DASS-21)",
+          "description": "A 21-item measure of depression, anxiety and stress over the past week.",
+          "keywords": [
+            "DASS",
+            "DASS-21",
+            "depression",
+            "anxiety",
+            "stress"
+          ]
+        }
+      }
     },
     {
       "id": "demographics",
@@ -434,8 +463,20 @@
       "tags": [],
       "featured": false,
       "languages": [
-        "he"
-      ]
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Personal details",
+          "description": "Personal details and a short description of the referral.",
+          "keywords": [
+            "demographics",
+            "intake",
+            "personal"
+          ]
+        }
+      }
     },
     {
       "id": "ders",
@@ -549,8 +590,23 @@
       "tags": [],
       "featured": true,
       "languages": [
-        "he"
-      ]
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Generalized Anxiety Disorder scale (GAD-7)",
+          "description": "Generalized anxiety symptom severity over the last two weeks (Generalized Anxiety Disorder, GAD-7)",
+          "keywords": [
+            "anxiety",
+            "GAD",
+            "GAD-7",
+            "generalized anxiety",
+            "worry",
+            "screening"
+          ]
+        }
+      }
     },
     {
       "id": "hai",
@@ -783,8 +839,22 @@
       "tags": [],
       "featured": true,
       "languages": [
-        "he"
-      ]
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Primary Care PTSD Screen (PC-PTSD-5)",
+          "description": "Five-item screen for post-traumatic stress disorder. A score of 4 or more indicates probable PTSD.",
+          "keywords": [
+            "trauma",
+            "PTSD",
+            "screen",
+            "screening",
+            "primary care"
+          ]
+        }
+      }
     },
     {
       "id": "pcl5",
@@ -810,8 +880,21 @@
       "tags": [],
       "featured": true,
       "languages": [
-        "he"
-      ]
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "PTSD Checklist for DSM-5 (PCL-5)",
+          "description": "PTSD symptom severity over the past week (PTSD, Trauma, PCL-5)",
+          "keywords": [
+            "PTSD",
+            "trauma",
+            "PCL-5",
+            "checklist"
+          ]
+        }
+      }
     },
     {
       "id": "pcl5_4",
@@ -1096,8 +1179,23 @@
       ],
       "featured": false,
       "languages": [
-        "he"
-      ]
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Posttraumatic Cognitions Inventory (PTCI)",
+          "description": "A 36-item (33 scored) measure of trauma-related thoughts and beliefs in three subscales: negative cognitions about the self, negative…",
+          "keywords": [
+            "PTSD",
+            "trauma",
+            "cognitions",
+            "PTCI",
+            "beliefs",
+            "full version"
+          ]
+        }
+      }
     },
     {
       "id": "ptci9",
@@ -1448,8 +1546,23 @@
       "tags": [],
       "featured": true,
       "languages": [
-        "he"
-      ]
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Initial trauma assessment",
+          "description": "Brief trauma screen (PC-PTSD-5). If positive — in-depth assessment with the PCL-5 and the Posttraumatic Cognitions Inventory (PTCI).",
+          "keywords": [
+            "trauma",
+            "PTSD",
+            "PCL-5",
+            "PTCI",
+            "assessment",
+            "screening"
+          ]
+        }
+      }
     },
     {
       "id": "wai6",
