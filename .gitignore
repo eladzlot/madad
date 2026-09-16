@@ -18,3 +18,13 @@ tests/fixtures/pdfs/
 demo/scenarios/
 demo/out/
 demo/notes/
+
+# Local environment — credentials and account ids. The committed templates are
+# .dev.vars.example (Worker secrets) and, for anything new, add it there too.
+.env
+.env.*
+!.env.example
+
+# Minted pilot material — participant briefs, handouts and the link registry,
+# keyed by real email address. Same rule as demo/: personal data, never in git.
+minted/
