@@ -7,10 +7,24 @@ name: Deploy remote (trial)
 # `main` by deploy-cloudflare.yml and never from here.
 #
 # Same self-contained gate as the public deploy: a broken bundle never ships.
-# Requires the same two repo secrets (CLOUDFLARE_API_TOKEN scoped to Pages:Edit
-# + D1:Edit, CLOUDFLARE_ACCOUNT_ID). Runtime secrets (HMAC_SECRET, IP_SALT,
-# EMAIL_API_TOKEN) are set once with `wrangler pages secret put` — see
-# scripts/remote/README.md — and are not touched by this workflow.
+#
+# The trial lives in its OWN Cloudflare account, so its credentials live in the
+# `trial` GitHub Environment rather than at repository level. Three consequences:
+#   • the job only sees them after the environment's rules pass — a required
+#     reviewer, so nothing reaches a system real therapists use without a human
+#     saying so, and only the `remote` branch may deploy to it;
+#   • the names carry a _REMOTE suffix even though the environment already
+#     scopes them. Deliberate: if this job ever loses its `environment:` line
+#     the secrets resolve empty and it fails loudly, rather than silently
+#     falling back to the personal account's repo secrets. That exact silent
+#     fallback created a project and database in the wrong account on
+#     2026-09-14;
+#   • GitHub records who approved each deployment — a free audit trail.
+#
+# D1 migrations are deliberately NOT run here; see the note by the deploy step.
+# Runtime secrets (HMAC_SECRET, IP_SALT, EMAIL_API_TOKEN) are set once with
+# `wrangler pages secret put` — see scripts/remote/README.md — and are not
+# touched by this workflow.
 
 on:
   push:
@@ -23,8 +37,9 @@ concurrency:
 
 jobs:
   deploy:
-    name: Gate, build, migrate, deploy (trial)
+    name: Gate, build, deploy (trial)
     runs-on: ubuntu-latest
+    environment: trial
 
     steps:
       - name: Checkout
@@ -81,16 +96,15 @@ jobs:
           MADAD_BASE: /
         run: npm run build
 
-      - name: Apply D1 migrations
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: d1 migrations apply madad-remote --remote
-
+      # Migrations are applied by hand from the runbook, not from here. They run
+      # against the database holding patient data, and a bad one would reach it
+      # with nothing in between. `d1 migrations apply` is idempotent, so the
+      # risk is not re-running — it is an untested migration shipping on a push.
+      # Applying it deliberately costs one command and makes whoever runs it
+      # read the migration first.
       - name: Deploy → madad-remote (dist + functions)
         uses: cloudflare/wrangler-action@v3
         with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN_REMOTE }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID_REMOTE }}
           command: pages deploy --branch=remote

@@ -87,6 +87,40 @@ address at the domain is discarded silently. A deliberate default (a typo
 does not become somebody else's problem), but it means only `madad@` is
 reachable.
 
+## Deploys
+
+Pushing to `remote` runs the full gate, then **pauses for approval** before
+anything reaches the live site. Approve it from the run page on GitHub (or
+the notification) and it deploys; ignore it and nothing happens.
+
+That gate is the `trial` GitHub Environment. It holds the Cloudflare
+credentials for the CTR account — `CLOUDFLARE_API_TOKEN_REMOTE` and
+`CLOUDFLARE_ACCOUNT_ID_REMOTE` — which the job can only read once the rules
+pass, and it restricts deployment to the `remote` branch. The `_REMOTE`
+suffix is redundant with the environment on purpose: if the job ever loses
+its `environment: trial` line, the secrets resolve empty and it fails loudly
+rather than quietly using the personal account's repository secrets.
+
+The deploy token is minted like any other: Profile → API Tokens → Create
+Custom Token, with **Account · Cloudflare Pages · Edit** and **Account · D1 ·
+Edit**, scoped to the CTR account only. Store it with
+`gh secret set CLOUDFLARE_API_TOKEN_REMOTE --env trial`.
+
+**Migrations are not applied by the workflow.** They run against the database
+holding patient data, and a bad one would reach it with nothing in between.
+Apply them deliberately, having read what they do:
+
+```bash
+npx wrangler d1 migrations apply madad-remote --remote
+```
+
+Deploying by hand still works and needs no approval, which is the fallback if
+GitHub is down or an urgent fix cannot wait:
+
+```bash
+npm run deploy:remote
+```
+
 ## Minting uids for a course
 
 ```bash

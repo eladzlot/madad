@@ -49,6 +49,9 @@ test.describe('remote dist smoke', () => {
     page.on('request', (req) => { if (req.url().includes('/api/v1/')) apiRequests.push(new URL(req.url()).pathname); });
     await page.goto('aggregate/?uid=DSMK001E&exp=1&sig=x');
     await expect(page.locator('link-form')).toBeVisible({ timeout: 10_000 });   // no API → error → recovery form
-    expect(apiRequests).toContain('/api/v1/sessions');
+    // Base-agnostic: this project also runs at a deep base path, where the call
+    // correctly becomes <base>/api/v1/sessions. Asserting the rooted path would
+    // be asserting that the base was ignored, which is the bug this job hunts.
+    expect(apiRequests.some(p => p.endsWith('/api/v1/sessions'))).toBe(true);
   });
 });
