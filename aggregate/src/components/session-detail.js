@@ -40,7 +40,7 @@ export class SessionDetail extends LitElement {
       overflow-y: auto;
       z-index: 10;
       direction: rtl;
-      color: var(--color-text, #1c1917);
+      color: var(--color-text, #311c08);
     }
 
     header {
@@ -58,7 +58,7 @@ export class SessionDetail extends LitElement {
     }
 
     .meta {
-      color: var(--color-text-muted, #78716c);
+      color: var(--color-text-muted, #796453);
       font-size: var(--font-size-sm, .875rem);
       margin-block-start: .2rem;
     }
@@ -71,7 +71,7 @@ export class SessionDetail extends LitElement {
       font-size: 1.3rem;
       line-height: 1;
       cursor: pointer;
-      color: var(--color-text-muted, #78716c);
+      color: var(--color-text-muted, #796453);
       padding: .25rem;
     }
 
@@ -89,14 +89,14 @@ export class SessionDetail extends LitElement {
       font-variant-numeric: tabular-nums;
     }
 
-    .category { color: var(--color-text-muted, #78716c); }
+    .category { color: var(--color-text-muted, #796453); }
 
     ul.subscales {
       list-style: none;
       margin: .4rem 0 0;
       padding: 0;
       font-size: var(--font-size-sm, .875rem);
-      color: var(--color-text-muted, #78716c);
+      color: var(--color-text-muted, #796453);
     }
 
     ul.subscales li {
@@ -120,7 +120,7 @@ export class SessionDetail extends LitElement {
       padding-block-start: var(--space-sm, .75rem);
       border-block-start: 1px solid var(--color-border, #e7e5e4);
       font-size: var(--font-size-sm, .875rem);
-      color: var(--color-text, #1c1917);
+      color: var(--color-text, #311c08);
       font-weight: var(--font-weight-bold, 600);
     }
 
@@ -137,25 +137,25 @@ export class SessionDetail extends LitElement {
       font-size: var(--font-size-sm, .875rem);
     }
 
-    .q-text { color: var(--color-text-muted, #78716c); }
+    .q-text { color: var(--color-text-muted, #796453); }
 
     .q-answer {
       display: flex;
       justify-content: space-between;
       gap: var(--space-sm, .5rem);
       margin-block-start: .15rem;
-      color: var(--color-text, #1c1917);
+      color: var(--color-text, #311c08);
     }
 
-    .q-value { font-variant-numeric: tabular-nums; color: var(--color-text-muted, #78716c); }
+    .q-value { font-variant-numeric: tabular-nums; color: var(--color-text-muted, #796453); }
 
     .download {
       display: inline-block;
       margin-block-start: var(--space-md, 1rem);
       padding: .5rem 1rem;
       border-radius: var(--radius-sm, 8px);
-      background: var(--color-primary, #1A9FAD);
-      color: var(--color-primary-text, #fff);
+      background: var(--color-primary, #c37829);
+      color: var(--color-primary-text, #311c08);
       font-weight: var(--font-weight-bold, 600);
       text-decoration: none;
     }

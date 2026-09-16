@@ -2,32 +2,36 @@
    Components reference these via var(--token).
    Replace values here to retheme without touching components.
 
-   Remote deployment (מדד · CTR): muted burgundy on a neutral ground.
-   Deliberately far from the public app's teal-on-cool-grey so the two
-   instances are never confused (REMOTE_SPEC §8.4). The wine is used only
-   for chrome, primary actions, selection and the wordmark; backgrounds stay
-   neutral (warm grey in light, charcoal in dark). Semantic yes/no colours
-   are unchanged — they carry meaning in the item components.
+   Remote deployment (מדד · CTR): honey on a warm neutral ground.
+   Built on the same recipe as the public app rather than in opposition to it:
+   the primary sits at L* 64 near the sRGB chroma ceiling for its lightness,
+   and every neutral — including the ink — is tinted into the brand hue (H 62)
+   so the page reads as one family. The burgundy this replaces failed on three
+   counts at once (L* 41, ~41% of its available chroma, and yellow-cast greys
+   against a red primary); see REMOTE_SPEC §8.4. Non-confusion with
+   app.ezmadad.com is carried by hue distance: H 62 against the teal's H 206.
 
-   --color-primary-ink is the brand's form for small text and icons (see the
-   note on main). The wine is dark enough at L* 41 to serve as its own ink. */
+   Both forms of the brand apply here as on main, and the split matters more:
+   --color-primary is a fill, --color-primary-ink is for small text and icons.
+   Semantic yes/no colours are unchanged — they carry meaning in the item
+   components, and sit 37° and 93° off the brand hue. */
 
 :root {
   /* Colour */
-  --color-bg:              #F5F4F2;
-  --color-surface:         #EBE9E6;
-  --color-border:          #D9D5D0;
-  --color-border-focus:    #9A4453;
-  --color-text:            #26211F;
-  --color-text-muted:      #6B6360;
-  --color-primary:         #7A2E3B;
-  --color-primary-hover:   #632532;
-  --color-primary-text:    #ffffff;
-  --color-primary-ink:     #7A2E3B;
-  --color-accent:          #9A4453;
-  --color-accent-hover:    #B05C6A;
-  --color-selected-bg:     #F6ECEE;
-  --color-selected-border: #9A4453;
+  --color-bg:              #faf6f3;
+  --color-surface:         #f0e8e1;
+  --color-border:          #e4d6cb;
+  --color-border-focus:    #c37829;
+  --color-text:            #311c08;
+  --color-text-muted:      #796453;
+  --color-primary:         #c37829;
+  --color-primary-hover:   #d18d4e;
+  --color-primary-text:    #311c08;
+  --color-primary-ink:     #995600;
+  --color-accent:          #da924f;
+  --color-accent-hover:    #e6a973;
+  --color-selected-bg:     #ffecdd;
+  --color-selected-border: #c37829;
   --color-yes:             #276749;
   --color-yes-bg:          #F0FBF4;
   --color-no:              #8B3A3A;
@@ -77,20 +81,20 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-bg:              #161616;
-    --color-surface:         #1F1F21;
-    --color-border:          #343437;
-    --color-border-focus:    #D68B96;
-    --color-text:            #ECEAEA;
-    --color-text-muted:      #A4A1A1;
-    --color-primary:         #C9737F;
-    --color-primary-hover:   #D68B96;
-    --color-primary-text:    #1F1F21;
-    --color-primary-ink:     #C9737F;
-    --color-accent:          #D68B96;
-    --color-accent-hover:    #C9737F;
-    --color-selected-bg:     #2E2124;
-    --color-selected-border: #D68B96;
+    --color-bg:              #14110e;
+    --color-surface:         #211c17;
+    --color-border:          #382e26;
+    --color-border-focus:    #eaa76b;
+    --color-text:            #f0e6de;
+    --color-text-muted:      #a99c91;
+    --color-primary:         #e79f5c;
+    --color-primary-hover:   #f4ba87;
+    --color-primary-text:    #1a1511;
+    --color-primary-ink:     #e79f5c;
+    --color-accent:          #f3b680;
+    --color-accent-hover:    #e79f5c;
+    --color-selected-bg:     #332214;
+    --color-selected-border: #e79f5c;
     --color-yes:             #4CAF82;
     --color-yes-bg:          #0d2b1e;
     --color-no:              #E07070;

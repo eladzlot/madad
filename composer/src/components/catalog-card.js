@@ -37,26 +37,26 @@ export class CatalogCard extends LitElement {
       gap: var(--space-sm, 8px);
       text-align: start;
       padding: var(--space-sm, 8px) var(--space-md, 16px);
-      border: var(--border-width, 1px) solid var(--color-border, #D5DAE2);
+      border: var(--border-width, 1px) solid var(--color-border, #e4d6cb);
       border-radius: var(--radius-sm, 6px);
       background: var(--clin-card-bg, #fff);
-      color: var(--color-text, #162232);
+      color: var(--color-text, #311c08);
       font-family: inherit;
       cursor: pointer;
       transition: border-color var(--transition-fast, 120ms ease),
                   background var(--transition-fast, 120ms ease);
     }
 
-    button.card:hover { border-color: var(--color-primary, #1A9FAD); }
+    button.card:hover { border-color: var(--color-primary, #c37829); }
 
     button.card:focus-visible {
-      outline: 2px solid var(--color-border-focus, #2BB3C0);
+      outline: 2px solid var(--color-border-focus, #da924f);
       outline-offset: 2px;
     }
 
     :host([selected]) button.card {
-      border-color: var(--color-selected-border, #2BB3C0);
-      background: var(--color-selected-bg, #E4F6F8);
+      border-color: var(--color-selected-border, #da924f);
+      background: var(--color-selected-bg, #ffecdd);
     }
 
     /* Check mark box on the leading edge */
@@ -65,7 +65,7 @@ export class CatalogCard extends LitElement {
       inline-size: 22px;
       block-size: 22px;
       margin-block-start: 2px;
-      border: var(--border-width, 1px) solid var(--color-border, #D5DAE2);
+      border: var(--border-width, 1px) solid var(--color-border, #e4d6cb);
       border-radius: var(--radius-sm, 6px);
       display: grid;
       place-items: center;
@@ -74,8 +74,8 @@ export class CatalogCard extends LitElement {
       color: transparent;
     }
     :host([selected]) .check {
-      background: var(--color-primary, #1A9FAD);
-      border-color: var(--color-primary, #1A9FAD);
+      background: var(--color-primary, #c37829);
+      border-color: var(--color-primary, #c37829);
       color: var(--color-primary-text, #fff);
     }
 
@@ -90,7 +90,7 @@ export class CatalogCard extends LitElement {
     .name { font-weight: var(--font-weight-medium, 500); }
     .id {
       font-size: var(--font-size-xs, 12px);
-      color: var(--color-text-muted, #5E7080);
+      color: var(--color-text-muted, #796453);
       font-family: ui-monospace, monospace;
       direction: ltr;
     }
@@ -103,9 +103,9 @@ export class CatalogCard extends LitElement {
       font-size: var(--font-size-xs, 12px);
       padding: 1px 10px;
       border-radius: var(--radius-pill, 999px);
-      border: var(--border-width, 1px) solid var(--color-selected-border, #2BB3C0);
+      border: var(--border-width, 1px) solid var(--color-selected-border, #da924f);
       background: transparent;
-      color: var(--color-primary-ink, #00717b);
+      color: var(--color-primary-ink, #995600);
       white-space: nowrap;
     }
 
@@ -132,18 +132,18 @@ export class CatalogCard extends LitElement {
       border: none;
       border-radius: var(--radius-sm, 6px);
       background: transparent;
-      color: var(--color-text-muted, #5E7080);
+      color: var(--color-text-muted, #796453);
       cursor: pointer;
       font-family: inherit;
       transition: background var(--transition-fast, 120ms ease), color var(--transition-fast, 120ms ease);
     }
     .icon-btn svg { inline-size: 18px; block-size: 18px; display: block; }
-    .icon-btn:hover { background: var(--color-selected-bg, #E4F6F8); color: var(--color-primary-ink, #00717b); }
-    .icon-btn:focus-visible { outline: 2px solid var(--color-border-focus, #2BB3C0); outline-offset: 2px; }
+    .icon-btn:hover { background: var(--color-selected-bg, #ffecdd); color: var(--color-primary-ink, #995600); }
+    .icon-btn:focus-visible { outline: 2px solid var(--color-border-focus, #da924f); outline-offset: 2px; }
 
     /* A pinned card shows a filled teal pin (the system accent) so "in your
        recommended set" reads at a glance and stays on-palette. */
-    .pin-btn.on { color: var(--color-primary-ink, #00717b); }
+    .pin-btn.on { color: var(--color-primary-ink, #995600); }
   `];
 
   // Mirror the entry id onto the host as a stable hook for e2e selectors

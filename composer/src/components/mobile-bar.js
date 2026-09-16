@@ -83,14 +83,14 @@ export class MobileBar extends LitElement {
       font-weight: var(--font-weight-bold, 600);
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: var(--color-text-muted, #5E7080);
+      color: var(--color-text-muted, #796453);
       margin-block-end: var(--space-xs, 4px);
     }
 
     .url-box {
       font-family: ui-monospace, monospace;
       font-size: var(--font-size-xs, 12px);
-      background: var(--color-bg, #F2F4F7);
+      background: var(--color-bg, #faf6f3);
       border-radius: var(--radius-sm, 6px);
       padding: var(--space-sm, 8px);
       word-break: break-all;
@@ -101,25 +101,25 @@ export class MobileBar extends LitElement {
       inline-size: 100%;
       min-block-size: var(--item-min-touch, 44px);
       padding-inline: var(--space-md, 16px);
-      border: var(--border-width, 1px) solid var(--color-border, #D5DAE2);
+      border: var(--border-width, 1px) solid var(--color-border, #e4d6cb);
       border-radius: var(--radius-sm, 6px);
       background: var(--clin-card-bg, #fff);
-      color: var(--color-text, #162232);
+      color: var(--color-text, #311c08);
       font-family: inherit; font-size: var(--font-size-md, 16px);
     }
-    input.pid:focus { outline: none; border-color: var(--color-border-focus, #2BB3C0); }
+    input.pid:focus { outline: none; border-color: var(--color-border-focus, #da924f); }
 
     ol { list-style: none; display: flex; flex-direction: column; gap: 6px; }
     li.item {
       display: flex; align-items: center; gap: var(--space-xs, 4px);
-      border: var(--border-width, 1px) solid var(--color-border, #D5DAE2);
+      border: var(--border-width, 1px) solid var(--color-border, #e4d6cb);
       border-radius: var(--radius-sm, 6px);
       padding: 6px 8px;
     }
     .item-title { flex: 1; min-inline-size: 0; font-size: var(--font-size-sm, 14px); }
     .icon-btn {
       background: none; border: none; cursor: pointer;
-      color: var(--color-text-muted, #5E7080); font-size: 15px; line-height: 1;
+      color: var(--color-text-muted, #796453); font-size: 15px; line-height: 1;
       padding: 6px; border-radius: var(--radius-sm, 6px);
     }
     .icon-btn:disabled { opacity: 0.3; }

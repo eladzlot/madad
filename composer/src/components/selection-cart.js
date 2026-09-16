@@ -67,52 +67,52 @@ export class SelectionCart extends LitElement {
     .url-box {
       font-family: ui-monospace, monospace;
       font-size: var(--font-size-xs, 12px);
-      background: var(--clin-rail-field, #2A3D52);
-      border: var(--border-width, 1px) solid var(--clin-rail-field, #2A3D52);
-      color: var(--clin-rail-text, #A8CFDF);
+      background: var(--clin-rail-field, #3c2d20);
+      border: var(--border-width, 1px) solid var(--clin-rail-field, #3c2d20);
+      color: var(--clin-rail-text, #dbc9b9);
       border-radius: var(--radius-sm, 6px);
       padding: var(--space-sm, 8px);
       word-break: break-all;
       max-block-size: 84px;
       overflow-y: auto;
     }
-    .url-box.empty { color: color-mix(in srgb, var(--clin-rail-text, #A8CFDF) 85%, transparent); }
+    .url-box.empty { color: color-mix(in srgb, var(--clin-rail-text, #dbc9b9) 85%, transparent); }
 
     .btn-row { display: flex; gap: var(--space-sm, 8px); margin-block-start: var(--space-sm, 8px); }
     .c-btn--grow { flex: 1; }
 
     /* Secondary actions (↗ open, שתף share) sit on the dark rail, not the page. */
     .c-btn--secondary {
-      background: var(--clin-rail-field, #2A3D52);
-      border-color: var(--clin-rail-border, #304860);
-      color: var(--clin-rail-text, #A8CFDF);
+      background: var(--clin-rail-field, #3c2d20);
+      border-color: var(--clin-rail-border, #7b6048);
+      color: var(--clin-rail-text, #dbc9b9);
     }
     .c-btn--secondary:not(:disabled):hover {
-      border-color: var(--color-accent, #2BB3C0);
-      color: var(--color-accent, #2BB3C0);
+      border-color: var(--color-accent, #da924f);
+      color: var(--color-accent, #da924f);
     }
 
     input.pid {
       inline-size: 100%;
       min-block-size: var(--item-min-touch, 44px);
       padding-inline: var(--space-md, 16px);
-      border: var(--border-width, 1px) solid var(--clin-rail-border, #304860);
+      border: var(--border-width, 1px) solid var(--clin-rail-border, #7b6048);
       border-radius: var(--radius-sm, 6px);
-      background: var(--clin-rail-field, #2A3D52);
-      color: var(--clin-rail-text-strong, #C0D4E4);
+      background: var(--clin-rail-field, #3c2d20);
+      color: var(--clin-rail-text-strong, #f1e6dc);
       font-family: inherit;
       font-size: var(--font-size-md, 16px);
     }
-    input.pid::placeholder { color: color-mix(in srgb, var(--clin-rail-text, #A8CFDF) 85%, transparent); }
-    input.pid:focus { outline: none; border-color: var(--color-accent, #2BB3C0); }
+    input.pid::placeholder { color: color-mix(in srgb, var(--clin-rail-text, #dbc9b9) 85%, transparent); }
+    input.pid:focus { outline: none; border-color: var(--color-accent, #da924f); }
 
     ol { list-style: none; display: flex; flex-direction: column; gap: 6px; }
     li.item {
       display: flex;
       align-items: center;
       gap: 2px;
-      background: var(--clin-rail-field, #2A3D52);
-      border: var(--border-width, 1px) solid var(--clin-rail-border, #304860);
+      background: var(--clin-rail-field, #3c2d20);
+      border: var(--border-width, 1px) solid var(--clin-rail-border, #7b6048);
       border-radius: var(--radius-sm, 6px);
       padding-inline: var(--space-sm, 8px);
       padding-block: 5px;
@@ -125,7 +125,7 @@ export class SelectionCart extends LitElement {
       inline-size: 22px;
       block-size: 22px;
       border-radius: 50%;
-      background: var(--color-primary, #1A9FAD);
+      background: var(--color-primary, #c37829);
       color: var(--color-primary-text, #fff);
       font-size: var(--font-size-xs, 12px);
       display: grid;
@@ -136,7 +136,7 @@ export class SelectionCart extends LitElement {
       flex: 1;
       min-inline-size: 0;
       font-size: var(--font-size-sm, 14px);
-      color: var(--clin-rail-text-strong, #C0D4E4);
+      color: var(--clin-rail-text-strong, #f1e6dc);
       /* One line, ellipsis — overrides the reset's overflow-wrap so long titles
          don't wrap and buckle the row (the reference truncates too). */
       white-space: nowrap;
@@ -149,24 +149,24 @@ export class SelectionCart extends LitElement {
       background: none;
       border: none;
       cursor: pointer;
-      color: color-mix(in srgb, var(--clin-rail-text, #A8CFDF) 85%, transparent);
+      color: color-mix(in srgb, var(--clin-rail-text, #dbc9b9) 85%, transparent);
       font-size: 14px;
       line-height: 1;
       padding: 3px;
       border-radius: var(--radius-sm, 6px);
     }
-    .icon-btn:hover:not(:disabled) { color: var(--color-accent, #2BB3C0); }
+    .icon-btn:hover:not(:disabled) { color: var(--color-accent, #da924f); }
     .icon-btn:disabled { opacity: 0.3; cursor: default; }
-    .icon-btn:focus-visible { outline: 2px solid var(--color-border-focus, #2BB3C0); outline-offset: 1px; }
+    .icon-btn:focus-visible { outline: 2px solid var(--color-border-focus, #da924f); outline-offset: 1px; }
 
     .empty-cart {
       font-size: var(--font-size-sm, 14px);
       color: var(--clin-rail-label, #7AABBD);
     }
-    .empty-cart .help-link { color: var(--clin-rail-text, #A8CFDF); text-decoration: underline; }
-    .empty-cart .help-link:hover { color: var(--clin-rail-text-strong, #C0D4E4); }
+    .empty-cart .help-link { color: var(--clin-rail-text, #dbc9b9); text-decoration: underline; }
+    .empty-cart .help-link:hover { color: var(--clin-rail-text-strong, #f1e6dc); }
     .empty-cart .help-link:focus-visible {
-      outline: 2px solid var(--color-border-focus, #2BB3C0);
+      outline: 2px solid var(--color-border-focus, #da924f);
       outline-offset: 2px;
     }
   `];

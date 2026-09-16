@@ -479,18 +479,86 @@ fresh-link form; PDF-download affordance hidden for server rows.
 
 ### 8.4 Branding
 
-The trial instance must never be confused with `app.ezmadad.com`.
-Decided 2026-09-14 after two rounds (a plum system was rejected as generic
-"app purple"; a terracotta POC before it): **muted burgundy on a neutral
-ground** — primary `#7A2E3B`, accent `#9A4453`, chrome `#3A1F25` /
-`#4E2A32`, warm-grey light background `#F5F4F2`, charcoal dark background
-`#161616` with a rose primary `#C9737F`. The wine is used only for chrome,
-primary actions, selection and the wordmark; semantic yes/no colours are
-unchanged. It lives in two token blocks (`shared/styles/tokens.css`, the
-`--clin-*` block in `clinician/styles/clinician-styles.js`) plus the
-favicon, the PDF footer link and the chart export line. Wordmark
-"מדד · CTR" (working name, to confirm) in the welcome screen, clinician
-nav, PDF footer and page titles; `public/robots.txt` with `Disallow: /`.
+The trial instance must never be confused with `app.ezmadad.com`. That
+requirement is carried by **hue distance**, not by darkness.
+
+Decided 2026-09-16, replacing the burgundy (which had itself replaced a plum
+system rejected as generic "app purple", and a terracotta POC before that):
+**honey on a warm neutral ground** — primary `#c37829`, accent `#da924f`,
+chrome `#392a1e` / rail `#4e3b2c`, warm light background `#faf6f3`, dark
+background `#14110e` with a light-honey primary `#e79f5c`.
+
+Why the burgundy was replaced. Measured in OKLCH against `main`'s teal, it
+failed on three counts at once, and the three compounded:
+
+| | `main` teal | burgundy | honey |
+|---|---|---|---|
+| primary lightness | L\* 64 | **L\* 41** | L\* 64 |
+| chroma vs. the sRGB ceiling at that lightness | 96% | **~41%** | ~88% |
+| neutrals | tinted to the brand hue (H 258) | **greys at H 74–85 against a primary at H 13** | tinted to the brand hue (H 62) |
+| chrome | none | **L\* 20 / L\* 27** | L\* 30 / L\* 37 |
+
+The clinician chrome keeps the header darker than the rail — the header is the
+outer frame, the rail a panel inside it — and holds both at the same share of
+the sRGB chroma ceiling (~42%) for their own lightness. A fixed *absolute*
+chroma does not work: the ceiling falls as a colour darkens, so the darker
+surface ends up proportionally more saturated and reads as a different, redder
+material.
+
+A primary at L\* 41 is a hole punched in an L\* 97 page rather than a colour
+on it; "muted" was the literal design intent and the literal fault; and warm
+greys carrying no chroma read as dirty rather than warm. The honey is built
+from `main`'s recipe instead of in opposition to it — same lightness, same
+share of the available gamut, neutrals and ink tinted into the brand hue —
+and separates from `app.ezmadad.com` by 144° of hue.
+
+Because the primary is a mid-light warm colour, **`--color-primary-text` is
+a deep ink (`#311c08`), not white**: dark-on-honey clears AA at 4.64:1 where
+white on the same fill reaches only 3.48:1. Every filled-primary surface in
+the app takes its text from that one token, so this needed no component
+changes.
+
+Colour-vision deficiency. Protanopia and deuteranopia (~8% of men) collapse
+the red–green axis but keep blue, so nothing in the UI may rely on warm-hue
+separation alone:
+
+- **The chart threshold is deliberately cool** (`--clin-cutoff`, `#32618e`
+  light / `#82b1ed` dark). The old amber sat ΔE 3.1 from the alert red, and
+  in dark mode `#E8A33D` was ΔE 1.0 from the new primary — indistinguishable.
+  Slate clears every mark beside it by ΔE ≥ 18 under all three dichromacies.
+- **`SEVERITY_RAMP` descends in lightness** as well as travelling green → red,
+  so the sequence survives without hue perception. This one is not branch-only —
+  it was flat on `main` too and was fixed there; the branch inherits it.
+- `--color-yes` / `--color-no` are unchanged. They are never a side-by-side
+  discrimination task — each appears alone in a status block that carries
+  text — and each clears 6:1 against its own ground.
+- The PDF's critical/elevated pills already carry `'!!'` vs `'!'` as a
+  non-colour cue and were left alone.
+
+Known gap: the item heatmap's **compact mode** blanks the cell value, leaving
+the ramp fill as the only encoding. Colour is redundant in normal mode, where
+the value is printed on the cell.
+
+The palette lives in two token blocks (`shared/styles/tokens.css`, the
+`--clin-*` block in `clinician/styles/clinician-styles.js`) plus the favicon,
+the OG cards, the PDF footer link and the chart export line. The same pass
+retired the stale `var(--token, …)` fallbacks across the clinician, composer
+and aggregate components so they carry the branch's own values.
+
+The **structure** this palette needs — the `--color-primary-ink` token, the
+brand-as-text call sites, the `<li role="presentation">` fixes, the wrapping
+nav group, the lightness-descending `SEVERITY_RAMP`, and the
+`tests/e2e/a11y.e2e.test.js` audit — lives on `main` (§12.1: seams on main,
+values on the branch). Every one of those was a pre-existing `main` bug that
+the trial simply inherited; the contrast failures were in fact *worse* there,
+because the teal is the same lightness as the honey and its ground is lighter.
+
+Still open on `main`, not fixed here: its chart threshold `#B45309` sits ΔE 3.1
+from the alert red `#b91c1c`, and under tritanopia ΔE 3.1. Main's data line is
+teal so it does not hit the branch's threshold-vs-line collision, but the
+threshold-vs-alert pair is the same bug and wants the same cool treatment. Wordmark "מדד · CTR" (working name, to confirm) in the welcome screen,
+clinician nav, PDF footer and page titles; `public/robots.txt` with
+`Disallow: /`.
 
 ---
 
@@ -638,7 +706,10 @@ requires updating this section.
 | `composer/src/composer-store.js`, `composer/src/components/selection-cart.js`, `composer/src/components/mobile-bar.js`, `composer/src/components/composer-app.js` | uid validation, link withheld, label/placeholder/datalist, remembered uids |
 | `shared/config/loader.js` | one line: carries a file's `dev` flag onto its questionnaires so the runtime no-text guard can exempt fixtures |
 | `aggregate/src/aggregate.js`, `aggregate/src/store.js`, `aggregate/src/components/session-detail.js` | fetch mode; `addEnvelopes`; PDF download hidden for server rows |
-| `shared/styles/tokens.css`, `public/favicon.svg` | palette, favicon |
+| `shared/styles/tokens.css`, `clinician/styles/clinician-styles.js` | palette: the two token blocks (§8.4) |
+| `public/favicon.svg`, `public/og-image.svg`, `public/og-image-app.svg` + their `.png`s | brand mark and OG cards; the OG copy also had to drop "המידע נשאר אצלכם", which contradicts §8.1 |
+| `aggregate/src/chart/trajectory-chart.js`, `aggregate/src/chart/export-svg.js` | cool threshold value, tooltip tints, export brand line (§8.4) |
+| `composer/src/components/*.js`, `aggregate/src/components/*.js`, `clinician/components/clinician-nav.js` | stale `var(--token, #1A9FAD)` fallbacks retired (§8.4) — values only, no markup change |
 | `scripts/validate-configs.mjs`, `scripts/build-catalog.mjs` | no-text rule wiring |
 | `public/composer/catalog.json` | regenerated (excluded instruments absent) |
 | `public/robots.txt` | new, `Disallow: /` |

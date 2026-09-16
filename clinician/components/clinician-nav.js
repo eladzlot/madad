@@ -33,7 +33,7 @@ export class ClinicianNav extends LitElement {
   static styles = css`
     :host {
       display: block;
-      background: var(--clin-header-bg, #1b3148);
+      background: var(--clin-header-bg, #392a1e);
     }
 
     .inner {
@@ -87,12 +87,12 @@ export class ClinicianNav extends LitElement {
     .link[aria-current='page'] {
       color: #ffffff;
       font-weight: var(--font-weight-medium, 500);
-      border-block-end-color: var(--color-accent, #2bb3c0);
+      border-block-end-color: var(--color-accent, #da924f);
     }
 
     .link:focus-visible,
     .brand:focus-visible {
-      outline: 2px solid var(--color-accent, #2bb3c0);
+      outline: 2px solid var(--color-accent, #da924f);
       outline-offset: 2px;
     }
 

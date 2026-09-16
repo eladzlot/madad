@@ -97,7 +97,9 @@ describe('buildExportSvg — chart content', () => {
     expect(svg).toContain('קל');
     expect(svg).toContain('חמור');
     expect(svg).toContain('סף קליני');
-    expect(svg).toContain('stroke="#b45309"');   // cutoff line
+    // Cool, not amber: the threshold has to stay apart from the warm data line
+    // and the alert red under red–green colour blindness (REMOTE_SPEC §8.4).
+    expect(svg).toContain('stroke="#32618e"');   // cutoff line
   });
 
   it('marks alert sessions with an alert ring', () => {

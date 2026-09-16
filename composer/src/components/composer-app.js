@@ -70,11 +70,11 @@ export class ComposerApp extends LitElement {
         inline-size: 300px;
         flex-shrink: 0;
         min-block-size: 0;
-        border-inline-start: var(--border-width, 1px) solid var(--color-border, #D5DAE2);
+        border-inline-start: var(--border-width, 1px) solid var(--color-border, #e4d6cb);
         /* A lighter navy than the header so the output rail reads as its own
            panel. Theme-independent dark chrome (like the header) — the fields
            inside carry their own slate colours, so it holds in dark mode too. */
-        background: var(--clin-rail-bg, #3A5068);
+        background: var(--clin-rail-bg, #4e3b2c);
       }
       mobile-bar { display: none; }
     }

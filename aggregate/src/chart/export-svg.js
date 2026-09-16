@@ -33,11 +33,11 @@ const PAD_X = 18;   // matches the chart's horizontal margins
 // fallbacks resolve to, so the export matches what the clinician sees.
 const C = {
   bg:      '#ffffff',
-  text:    '#1c1917',
-  muted:   '#78716c',
+  text:    '#311c08',
+  muted:   '#796453',
   grid:    '#00000014',
-  primary: '#7A2E3B',
-  cutoff:  '#b45309',
+  primary: '#c37829',
+  cutoff:  '#32618e',
   alert:   '#b91c1c',
 };
 

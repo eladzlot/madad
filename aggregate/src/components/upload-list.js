@@ -34,7 +34,7 @@ export class UploadList extends LitElement {
       align-items: center;
       gap: var(--space-sm, .5rem);
       padding: var(--space-lg, 1.5rem);
-      border: 2px dashed var(--color-border, #D5DAE2);
+      border: 2px dashed var(--color-border, #e4d6cb);
       border-radius: var(--radius-md, 12px);
       background: var(--clin-card-bg, #fff);
       text-align: center;
@@ -42,13 +42,13 @@ export class UploadList extends LitElement {
     }
 
     .zone.over {
-      border-color: var(--color-selected-border, #2BB3C0);
-      background: var(--color-selected-bg, #E4F6F8);
+      border-color: var(--color-selected-border, #da924f);
+      background: var(--color-selected-bg, #ffecdd);
     }
 
     .zone p {
       margin: 0;
-      color: var(--color-text-muted, #5E7080);
+      color: var(--color-text-muted, #796453);
       font-size: var(--font-size-sm, .875rem);
     }
 
@@ -56,15 +56,15 @@ export class UploadList extends LitElement {
       display: inline-block;
       padding: .5rem 1.25rem;
       border-radius: var(--radius-sm, 6px);
-      background: var(--color-primary, #1A9FAD);
-      color: var(--color-primary-text, #fff);
+      background: var(--color-primary, #c37829);
+      color: var(--color-primary-text, #311c08);
       font-weight: var(--font-weight-bold, 600);
       cursor: pointer;
       transition: background var(--transition-fast, .15s);
     }
 
     label:hover {
-      background: var(--color-primary-hover, #148090);
+      background: var(--color-primary-hover, #d18d4e);
     }
 
     input[type='file'] {
@@ -92,7 +92,7 @@ export class UploadList extends LitElement {
       border-radius: var(--radius-sm, 6px);
       font-size: var(--font-size-sm, .875rem);
       background: var(--clin-card-bg, #fff);
-      border: 1px solid var(--color-border, #D5DAE2);
+      border: 1px solid var(--color-border, #e4d6cb);
     }
 
     li .name {
@@ -112,7 +112,7 @@ export class UploadList extends LitElement {
     details.ok-summary {
       margin-block-start: var(--space-sm, .5rem);
       font-size: var(--font-size-sm, .875rem);
-      color: var(--color-text-muted, #5E7080);
+      color: var(--color-text-muted, #796453);
     }
 
     details.ok-summary summary {

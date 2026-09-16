@@ -14,72 +14,44 @@
     </style>
   </defs>
 
-  <!-- Background -->
-  <rect width="1200" height="630" fill="#1A2E35"/>
+  <!-- Background: the dark end of the brand hue -->
+  <rect width="1200" height="630" fill="#241705"/>
 
-  <!-- Teal accent bar — right edge (dominant side in RTL) -->
-  <rect x="1192" y="0" width="8" height="630" fill="#1E9BAA"/>
+  <!-- Honey accent bar — right edge (dominant side in RTL) -->
+  <rect x="1192" y="0" width="8" height="630" fill="#c37829"/>
 
-  <!-- Logo top-right: anchor right at x=1152, flows left -->
+  <!-- Wordmark top-right -->
   <text x="1152" y="96"
     font-family="NotoHebrew, sans-serif" font-weight="700" font-size="44"
-    fill="#ffffff" text-anchor="start" direction="rtl">מדד</text>
+    fill="#f8ece3" text-anchor="start" direction="rtl">מדד · CTR</text>
 
-  <!-- Teal rule under logo, right-aligned -->
-  <rect x="1020" y="112" width="132" height="4" rx="2" fill="#1E9BAA"/>
+  <rect x="1020" y="112" width="132" height="4" rx="2" fill="#c37829"/>
 
-  <!-- Headline line 1: מדידה -->
   <text x="1152" y="258"
     font-family="NotoHebrew, sans-serif" font-weight="700" font-size="110"
-    fill="#ffffff" text-anchor="start" direction="rtl" letter-spacing="-2">מדידה</text>
+    fill="#f8ece3" text-anchor="start" direction="rtl" letter-spacing="-2">מעקב</text>
 
-  <!-- Headline line 2: בלי חיכוך — teal -->
   <text x="1152" y="382"
     font-family="NotoHebrew, sans-serif" font-weight="700" font-size="110"
-    fill="#1E9BAA" text-anchor="start" direction="rtl" letter-spacing="-2">בלי חיכוך</text>
+    fill="#da924f" text-anchor="start" direction="rtl" letter-spacing="-2">לאורך הטיפול</text>
 
-  <!-- Subtitle -->
-  <!-- Subtitle: three-step flow with RTL arrows -->
+  <!-- The three steps of the flow -->
   <text font-family="NotoHebrew, sans-serif" text-anchor="start" direction="rtl">
-    <tspan x="1152" y="462" font-weight="400" font-size="32" fill="#7A9AA4">יוצרים קישור</tspan>
-    <tspan font-weight="700" font-size="34" fill="#1E9BAA" dy="3" letter-spacing="14"> • </tspan>
-    <tspan font-weight="400" font-size="32" fill="#7A9AA4" dy="-3">שולחים למטופל</tspan>
-    <tspan font-weight="700" font-size="34" fill="#1E9BAA" dy="3" letter-spacing="14"> • </tspan>
-    <tspan font-weight="400" font-size="32" fill="#7A9AA4" dy="-3">מקבלים PDF מסודר</tspan>
+    <tspan x="1152" y="462" font-weight="400" font-size="32" fill="#b59c87">יוצרים קישור</tspan>
+    <tspan font-weight="700" font-size="34" fill="#c37829" dy="3" letter-spacing="14"> • </tspan>
+    <tspan font-weight="400" font-size="32" fill="#b59c87" dy="-3">שולחים למטופל</tspan>
+    <tspan font-weight="700" font-size="34" fill="#c37829" dy="3" letter-spacing="14"> • </tspan>
+    <tspan font-weight="400" font-size="32" fill="#b59c87" dy="-3">רואים את המגמה</tspan>
   </text>
 
-  <!-- Divider -->
-  <line x1="72" y1="514" x2="1152" y2="514" stroke="#ffffff" stroke-opacity="0.07" stroke-width="1"/>
+  <line x1="72" y1="514" x2="1152" y2="514" stroke="#f8ece3" stroke-opacity="0.09" stroke-width="1"/>
 
-  <!-- Bottom row: trust badges right-aligned, domain left -->
-  <!-- ללא עלות — rightmost -->
   <text x="1152" y="572"
     font-family="NotoHebrew, sans-serif" font-weight="400" font-size="26"
-    fill="#4A7078" text-anchor="start" direction="rtl">ללא עלות</text>
+    fill="#8a7460" text-anchor="start" direction="rtl">המרכז להחלמה מטראומה</text>
 
-  <!-- separator dot -->
-  <text x="1020" y="572"
-    font-family="NotoHebrew, sans-serif" font-weight="400" font-size="26"
-    fill="#2D4E58" text-anchor="middle">·</text>
-
-  <!-- ללא הרשמה -->
-  <text x="988" y="572"
-    font-family="NotoHebrew, sans-serif" font-weight="400" font-size="26"
-    fill="#4A7078" text-anchor="start" direction="rtl">ללא הרשמה</text>
-
-  <!-- separator dot -->
-  <text x="796" y="572"
-    font-family="NotoHebrew, sans-serif" font-weight="400" font-size="26"
-    fill="#2D4E58" text-anchor="middle">·</text>
-
-  <!-- ללא התקנה -->
-  <text x="764" y="572"
-    font-family="NotoHebrew, sans-serif" font-weight="400" font-size="26"
-    fill="#4A7078" text-anchor="start" direction="rtl">ללא התקנה</text>
-
-  <!-- Domain — bottom left -->
   <text x="72" y="572"
     font-family="NotoHebrew, sans-serif" font-weight="400" font-size="22"
-    fill="#2D4E58" text-anchor="start">eladzlot.github.io/madad</text>
+    fill="#8a7460" text-anchor="start">ctrmadad.com</text>
 
 </svg>

@@ -23,24 +23,24 @@ export class PidFilter extends LitElement {
       font-family: var(--font-family, system-ui, sans-serif);
     }
 
-    span { color: var(--color-text-muted, #5E7080); font-size: var(--font-size-sm, .875rem); }
+    span { color: var(--color-text-muted, #796453); font-size: var(--font-size-sm, .875rem); }
 
     button {
-      border: 1px solid var(--color-border, #D5DAE2);
+      border: 1px solid var(--color-border, #e4d6cb);
       background: var(--clin-card-bg, #fff);
       border-radius: var(--radius-pill, 999px);
       padding: .25rem .8rem;
       font-size: var(--font-size-sm, .875rem);
       font-family: inherit;
       cursor: pointer;
-      color: var(--color-text, #162232);
+      color: var(--color-text, #311c08);
       transition: border-color var(--transition-fast, .15s), background var(--transition-fast, .15s);
     }
 
     button[aria-pressed='true'] {
-      background: var(--color-selected-bg, #E4F6F8);
-      border-color: var(--color-selected-border, #2BB3C0);
-      color: var(--color-text, #162232);
+      background: var(--color-selected-bg, #ffecdd);
+      border-color: var(--color-selected-border, #da924f);
+      color: var(--color-text, #311c08);
       font-weight: var(--font-weight-bold, 600);
     }
 

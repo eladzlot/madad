@@ -57,7 +57,7 @@ export class CatalogControls extends LitElement {
       gap: 4px;
       border: none;
       background: none;
-      color: var(--color-text-muted, #5E7080);
+      color: var(--color-text-muted, #796453);
       font-family: inherit;
       font-size: var(--font-size-sm, 14px);
       cursor: pointer;
@@ -65,7 +65,7 @@ export class CatalogControls extends LitElement {
       transition: color var(--transition-fast, 120ms ease);
     }
     .reset-btn:hover { color: var(--color-no, #8B3A3A); }
-    .reset-btn:focus-visible { outline: 2px solid var(--color-border-focus, #2BB3C0); outline-offset: 2px; }
+    .reset-btn:focus-visible { outline: 2px solid var(--color-border-focus, #da924f); outline-offset: 2px; }
     /* ↺ is coloured by default (deep terracotta), matching the legacy toolbar. */
     .reset-icon { color: var(--clin-reset-icon, #B03A10); font-size: 16px; }
 
@@ -80,30 +80,30 @@ export class CatalogControls extends LitElement {
       padding-inline: var(--space-md, 16px);
       /* Bordered pill so it reads as a distinct filter control — differentiates
          it from the borderless איפוס reset link and groups it with the tabs. */
-      border: var(--border-width, 1px) solid var(--color-border, #D5DAE2);
+      border: var(--border-width, 1px) solid var(--color-border, #e4d6cb);
       border-radius: var(--radius-pill, 999px);
       background: var(--clin-card-bg, #fff);
-      color: var(--color-text-muted, #5E7080);
+      color: var(--color-text-muted, #796453);
       font-family: inherit;
       font-size: var(--font-size-sm, 14px);
       cursor: pointer;
       transition: all var(--transition-fast, 120ms ease);
     }
-    .filter-caret:hover { color: var(--color-primary-ink, #00717b); }
+    .filter-caret:hover { color: var(--color-primary-ink, #995600); }
     .filter-caret[aria-expanded='true'],
     .filter-caret.has-active {
-      color: var(--color-primary-ink, #00717b);
-      border-color: var(--color-selected-border, #2BB3C0);
-      background: var(--color-selected-bg, #E4F6F8);
+      color: var(--color-primary-ink, #995600);
+      border-color: var(--color-selected-border, #da924f);
+      background: var(--color-selected-bg, #ffecdd);
     }
-    .filter-caret:focus-visible { outline: 2px solid var(--color-border-focus, #2BB3C0); outline-offset: 2px; }
+    .filter-caret:focus-visible { outline: 2px solid var(--color-border-focus, #da924f); outline-offset: 2px; }
     .caret { transition: transform var(--transition-fast, 120ms ease); font-size: 11px; }
     .caret.open { transform: rotate(180deg); }
     .filter-count {
       min-inline-size: 18px;
       padding-inline: 5px;
       border-radius: var(--radius-pill, 999px);
-      background: var(--color-primary, #1A9FAD);
+      background: var(--color-primary, #c37829);
       color: var(--color-primary-text, #fff);
       font-size: var(--font-size-xs, 12px);
       text-align: center;
@@ -114,17 +114,17 @@ export class CatalogControls extends LitElement {
       min-inline-size: 0;
       min-block-size: var(--item-min-touch, 44px);
       padding-inline: var(--space-md, 16px);
-      border: var(--border-width, 1px) solid var(--color-border, #D5DAE2);
+      border: var(--border-width, 1px) solid var(--color-border, #e4d6cb);
       border-radius: var(--radius-sm, 6px);
       background: var(--clin-card-bg, #fff);
-      color: var(--color-text, #162232);
+      color: var(--color-text, #311c08);
       font-family: inherit;
       font-size: var(--font-size-md, 16px);
       transition: border-color var(--transition-fast, 120ms ease);
     }
     input[type='search']:focus {
       outline: none;
-      border-color: var(--color-border-focus, #2BB3C0);
+      border-color: var(--color-border-focus, #da924f);
     }
     /* Dark mode: the input background (clin-card-bg) equals the .main surface, so
        the search bar disappeared. Lift it and strengthen the border so it reads
@@ -152,27 +152,27 @@ export class CatalogControls extends LitElement {
       font-size: var(--font-size-sm, 14px);
       padding: 4px 12px;
       border-radius: var(--radius-pill, 999px);
-      border: var(--border-width, 1px) solid var(--color-border, #D5DAE2);
+      border: var(--border-width, 1px) solid var(--color-border, #e4d6cb);
       background: var(--clin-card-bg, #fff);
-      color: var(--color-text-muted, #5E7080);
+      color: var(--color-text-muted, #796453);
       font-family: inherit;
       cursor: pointer;
       transition: all var(--transition-fast, 120ms ease);
     }
-    .chip:hover { border-color: var(--color-primary, #1A9FAD); }
+    .chip:hover { border-color: var(--color-primary, #c37829); }
     .chip[aria-pressed='true'] {
-      background: var(--color-selected-bg, #E4F6F8);
-      border-color: var(--color-selected-border, #2BB3C0);
-      color: var(--color-primary-ink, #00717b);
+      background: var(--color-selected-bg, #ffecdd);
+      border-color: var(--color-selected-border, #da924f);
+      color: var(--color-primary-ink, #995600);
     }
     .chip:focus-visible {
-      outline: 2px solid var(--color-border-focus, #2BB3C0);
+      outline: 2px solid var(--color-border-focus, #da924f);
       outline-offset: 2px;
     }
     .chip-group-label {
       align-self: center;
       font-size: var(--font-size-xs, 12px);
-      color: var(--color-text-muted, #5E7080);
+      color: var(--color-text-muted, #796453);
     }
   `];
 

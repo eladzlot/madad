@@ -33,8 +33,8 @@ body {
   font-family: var(--font-family, system-ui, sans-serif);
   font-size: var(--font-size-md);
   line-height: var(--line-height);
-  background: var(--color-bg, #F2F4F7);
-  color: var(--color-text, #162232);
+  background: var(--color-bg, #faf6f3);
+  color: var(--color-text, #311c08);
 }
 
 /* ── Content ─────────────────────────────────────────────────────────────── */

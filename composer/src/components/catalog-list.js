@@ -70,10 +70,10 @@ export class CatalogList extends LitElement {
       gap: var(--space-sm, 8px);
       margin-block: var(--space-sm, 8px);
       font-size: var(--font-size-sm, 14px);
-      color: var(--color-text-muted, #5E7080);
+      color: var(--color-text-muted, #796453);
     }
     .note-actions { display: flex; gap: var(--space-md, 16px); flex-shrink: 0; }
-    .confirm-prompt { color: var(--color-text, #162232); }
+    .confirm-prompt { color: var(--color-text, #311c08); }
     .link-btn.danger { color: var(--color-no, #8B3A3A); font-weight: var(--font-weight-medium, 500); }
 
     ul { list-style: none; display: flex; flex-direction: column; gap: var(--space-sm, 8px); }
@@ -81,11 +81,11 @@ export class CatalogList extends LitElement {
     .empty {
       padding: var(--space-xl, 32px) var(--space-md, 16px);
       text-align: center;
-      color: var(--color-text-muted, #5E7080);
+      color: var(--color-text-muted, #796453);
     }
     .empty p { margin-block-end: var(--space-sm, 8px); }
     .help-hint { margin-block-start: var(--space-md, 16px); font-size: var(--font-size-sm, 14px); }
-    .help-hint a { color: var(--color-primary-ink, #00717b); }
+    .help-hint a { color: var(--color-primary-ink, #995600); }
 
     .cross-tab {
       margin-block-start: var(--space-md, 16px);
@@ -97,7 +97,7 @@ export class CatalogList extends LitElement {
     .link-btn {
       background: none;
       border: none;
-      color: var(--color-primary-ink, #00717b);
+      color: var(--color-primary-ink, #995600);
       font-family: inherit;
       font-size: var(--font-size-sm, 14px);
       cursor: pointer;
@@ -105,7 +105,7 @@ export class CatalogList extends LitElement {
       padding: 4px;
     }
     .link-btn:focus-visible {
-      outline: 2px solid var(--color-border-focus, #2BB3C0);
+      outline: 2px solid var(--color-border-focus, #da924f);
       outline-offset: 2px;
     }
   `];
