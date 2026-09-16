@@ -71,8 +71,10 @@ config directories by `scripts/build-catalog.mjs`.
 ### Config file layout (build-time input)
 
 There is no manifest. The catalog script scans `public/configs/prod/*.json`
-in sorted filename order. Every config is **exactly one questionnaire or
-battery, filename = entity id = config id** (enforced by `validate:configs`).
+in sorted filename order, plus each language directory
+`public/configs/prod/<lang>/*.json` for translations. Every config is
+**exactly one questionnaire or battery, filename = entity id = config id**
+(enforced by `validate:configs`).
 Dev/test fixtures live in the same directory with `"dev": true` at the config
 top level — their entries appear only when `import.meta.env.DEV`.
 
@@ -80,14 +82,16 @@ top level — their entries appear only when `import.meta.env.DEV`.
 
 ```json
 {
-  "catalogVersion": 1,
+  "catalogVersion": 2,
   "entries": [
     {
       "id": "phq9", "kind": "questionnaire",
       "title": "שאלון דיכאון (PHQ-9)", "description": "…", "keywords": ["PHQ"],
       "itemCount": 9, "estMinutes": 1, "hasConditional": false,
       "domains": ["depression"], "type": "severity", "populations": ["adult"],
-      "tags": [], "featured": true
+      "tags": [], "featured": true,
+      "languages": ["he", "en"],
+      "i18n": { "en": { "title": "Patient Health Questionnaire (PHQ-9)", "description": "…", "keywords": ["PHQ"] } }
     }
   ]
 }
@@ -101,7 +105,13 @@ top level — their entries appear only when `import.meta.env.DEV`.
   `itemCount`/`estMinutes` (unconditional path; `hasConditional: true` means
   "may be longer"), `kind` (`questionnaire` | `battery`), and `dev: true` on
   fixture entries (shown only when `import.meta.env.DEV`).
-- `catalogVersion` mismatches produce a non-blocking warning banner.
+- `languages` lists the patient languages the instrument can be sent in
+  (Hebrew first; a battery only in languages where every questionnaire it
+  sequences exists). `title`/`description`/`keywords` stay Hebrew; `i18n[lang]`
+  carries the same three fields for each translated language, for display in
+  that clinician UI language. See `docs/I18N_SPEC.md` §5.
+- `catalogVersion` mismatches produce a non-blocking warning banner (v1 → v2:
+  `languages`/`i18n` added, 2026-09-16).
 
 ### Keeping the catalog in sync
 

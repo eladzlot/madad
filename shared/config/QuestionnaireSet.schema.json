@@ -126,6 +126,11 @@
           "type": "number",
           "exclusiveMinimum": 0,
           "description": "Estimated completion time. Overrides the catalog's computed estimate."
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Provenance of this file's text: the publication, official translation, or 'Madad original' it was transcribed from. Required by validate:configs on every non-Hebrew file (configs/prod/<lang>/); recommended on Hebrew files."
         }
       }
     },

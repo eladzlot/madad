@@ -93,13 +93,15 @@ representation. Both come from the same source data (`sessionState`,
   "schemaVersion": 1,
   "generatedAt":   "2026-04-12T08:33:00Z",
   "appVersion":    "0.9.3",
+  "lang":          "he",
   "pid":           "TRC-2025-000123",
   "name":          "...",
   "instruments":   [
     {
       "questionnaireId": "phq9",
       "title":           "שאלון דיכאון (PHQ-9)",
-      "configFile":      "standard"
+      "configFile":      "standard",
+      "configVersion":   "1.0.0"
     }
   ],
   "sessionState": {
@@ -121,11 +123,18 @@ upgrades happen via explicit migration code, not deprecation.
 `pid` and `name` are session metadata, copied from `session`. Both may be
 `null`; Aggregate treats both as opaque strings.
 
+`lang` (added 2026-09-16, additive) is the language every text in the
+PDF and in `sessionState` was rendered in — option labels, categories,
+alert messages, `instruments[].title`. Absent in older PDFs, which are all
+Hebrew; readers treat absence as `"he"`.
+
 `instruments` is metadata about which questionnaires the session
-contained — title, ID, source config file. Aggregate uses this for
-routing and labelling. There is **no per-instrument version**. The
-project treats questionnaire changes as out-of-band events handled
-manually if and when they occur.
+contained — title, ID, source config file, and (added 2026-09-16,
+additive; AGG-9 capture side) `configVersion`, the config file's top-level
+`version` at generation time. Aggregate uses this for routing and
+labelling. `configVersion` is `null`/absent in older PDFs; readers treat
+that as "unknown", never as "same". What the Aggregate *displays* when two
+points on one trajectory disagree is still open (AGG-9).
 
 `sessionState` is the unmodified state object the patient app already
 produces. Item-level answers are included because Aggregate may

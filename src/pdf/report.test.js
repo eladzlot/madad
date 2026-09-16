@@ -833,7 +833,7 @@ describe('buildDocDefinition — embedded data.json envelope', () => {
     expect(payload.name).toBe('ישראל ישראלי');
     expect(payload.generatedAt).toBe('2026-03-12T07:00:00.000Z');
     expect(payload.instruments).toEqual([
-      { questionnaireId: 'q1', title: 'בדיקה', configFile: null },
+      { questionnaireId: 'q1', title: 'בדיקה', configFile: null, configVersion: null },
     ]);
     expect(payload.sessionState.answers).toEqual(sessionState.answers);
     expect(payload.sessionState.scores).toEqual(sessionState.scores);

@@ -27,10 +27,12 @@ export const ENVELOPE_VERSION = 1;
  * @param {object} args.config       — merged QuestionnaireSet (loadConfig output)
  * @param {object} [args.session]    — { name?, pid? } from app.js
  * @param {string} [args.appVersion] — forensic only; never used for routing
+ * @param {string} [args.lang]       — language the patient answered in (BCP-47
+ *                 primary subtag, e.g. 'he' | 'en'); defaults to 'he'
  * @param {Date}   [args.now]        — timestamp source, injectable for tests
  * @returns {object} envelope (plain JSON-serializable object)
  */
-export function buildEnvelope({ sessionState, config, session = {}, appVersion = null, now = new Date() }) {
+export function buildEnvelope({ sessionState, config, session = {}, appVersion = null, lang = 'he', now = new Date() }) {
   const answers = sessionState?.answers ?? {};
 
   // One entry per completed session key, in answer order — same resolution
@@ -43,6 +45,11 @@ export function buildEnvelope({ sessionState, config, session = {}, appVersion =
       questionnaireId: qId,
       title:           q?.title ?? null,
       configFile:      q?.configFile ?? null,
+      // configVersion: the config file's top-level `version` (AGG-9 capture
+      // side). Lets a reader notice when two points on one trajectory were
+      // scored under different config versions. Additive — absent in PDFs
+      // generated before it existed, so readers treat null as "unknown".
+      configVersion:   q?.configVersion ?? null,
     };
   });
 
@@ -50,6 +57,10 @@ export function buildEnvelope({ sessionState, config, session = {}, appVersion =
     schemaVersion: ENVELOPE_VERSION,
     generatedAt:   now.toISOString(),
     appVersion,
+    // lang: the language of every text in this PDF and in sessionState
+    // (option labels, categories, alert messages). Additive — absent in PDFs
+    // generated before multi-language support, which are all Hebrew.
+    lang,
     pid:           session?.pid ?? null,
     name:          session?.name ?? null,
     instruments,
@@ -95,6 +106,9 @@ export function validateEnvelope(payload) {
   if (payload.name !== null && payload.name !== undefined && typeof payload.name !== 'string') {
     errors.push('name must be a string or null');
   }
+  if (payload.lang !== undefined && (typeof payload.lang !== 'string' || !/^[a-z]{2,3}$/.test(payload.lang))) {
+    errors.push('lang must be a two- or three-letter language code when present');
+  }
 
   if (!Array.isArray(payload.instruments)) {
     errors.push('instruments must be an array');
@@ -104,6 +118,8 @@ export function validateEnvelope(payload) {
         errors.push(`instruments[${i}] must be an object`);
       } else if (typeof inst.questionnaireId !== 'string' || inst.questionnaireId === '') {
         errors.push(`instruments[${i}].questionnaireId must be a non-empty string`);
+      } else if (inst.configVersion !== undefined && inst.configVersion !== null && typeof inst.configVersion !== 'string') {
+        errors.push(`instruments[${i}].configVersion must be a string or null when present`);
       }
     });
   }

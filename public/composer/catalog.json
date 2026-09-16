@@ -1,5 +1,5 @@
 {
-  "catalogVersion": 1,
+  "catalogVersion": 2,
   "entries": [
     {
       "id": "all_types_battery",
@@ -21,7 +21,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "all_types_q",
@@ -43,7 +46,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "anger_log",
@@ -68,7 +74,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "aq",
@@ -95,7 +104,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "asi_3",
@@ -122,7 +134,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "cape15",
@@ -149,7 +164,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "cape42",
@@ -176,7 +194,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "clinical_intake",
@@ -200,7 +221,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": true
+      "featured": true,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "cpt_abc",
@@ -229,7 +253,10 @@
         "CPT",
         "iCPT"
       ],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "cpt_alternative",
@@ -258,7 +285,10 @@
         "CPT",
         "iCPT"
       ],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "cpt_exploring",
@@ -287,7 +317,10 @@
         "CPT",
         "iCPT"
       ],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "cpt_patterns",
@@ -315,7 +348,10 @@
         "CPT",
         "iCPT"
       ],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "dar5",
@@ -341,7 +377,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": true
+      "featured": true,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "dass21",
@@ -367,7 +406,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": true
+      "featured": true,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "demographics",
@@ -390,7 +432,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "ders",
@@ -415,7 +460,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": true
+      "featured": true,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "diamond_sr",
@@ -444,7 +492,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": true
+      "featured": true,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "ecrs",
@@ -467,7 +518,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "gad7",
@@ -493,7 +547,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": true
+      "featured": true,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "hai",
@@ -518,7 +575,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "isi",
@@ -544,7 +604,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": true
+      "featured": true,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "mgh_hps",
@@ -569,7 +632,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "novaco_anger_situations",
@@ -594,7 +660,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "oasis",
@@ -621,7 +690,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "oci_r",
@@ -649,7 +721,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": true
+      "featured": true,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "ocsrs_m",
@@ -678,7 +753,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "pc_ptsd5",
@@ -703,7 +781,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": true
+      "featured": true,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "pcl5",
@@ -727,7 +808,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": true
+      "featured": true,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "pcl5_4",
@@ -758,7 +842,10 @@
         "גרסה מקוצרת",
         "screening"
       ],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "pcl5_8",
@@ -789,7 +876,10 @@
         "גרסה מקוצרת",
         "screening"
       ],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "pdss_sr",
@@ -815,7 +905,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": true
+      "featured": true,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "phq9",
@@ -842,7 +935,26 @@
         "adult"
       ],
       "tags": [],
-      "featured": true
+      "featured": true,
+      "languages": [
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Patient Health Questionnaire (PHQ-9)",
+          "description": "Depression symptom severity over the last two weeks (Depression, MDD, PHQ-9)",
+          "keywords": [
+            "depression",
+            "mood",
+            "PHQ",
+            "PHQ-9",
+            "MDD",
+            "screening",
+            "anhedonia"
+          ]
+        }
+      }
     },
     {
       "id": "phq9_intake",
@@ -863,7 +975,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "phq9_test",
@@ -885,7 +1000,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "pqb",
@@ -912,7 +1030,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "procsi",
@@ -940,7 +1061,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "ptci",
@@ -970,7 +1094,10 @@
         "PTCI",
         "גרסה מלאה"
       ],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "ptci9",
@@ -1001,7 +1128,10 @@
         "PTCI",
         "גרסה מקוצרת"
       ],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "roci",
@@ -1029,7 +1159,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "sbq",
@@ -1055,7 +1188,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "scared_child",
@@ -1081,7 +1217,10 @@
         "adolescent"
       ],
       "tags": [],
-      "featured": true
+      "featured": true,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "scared_parent",
@@ -1106,7 +1245,10 @@
         "parent"
       ],
       "tags": [],
-      "featured": true
+      "featured": true,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "scq",
@@ -1132,7 +1274,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "spin",
@@ -1159,7 +1304,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": true
+      "featured": true,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "standard_intake",
@@ -1181,7 +1329,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "stss",
@@ -1212,7 +1363,10 @@
         "secondary trauma",
         "clinicians"
       ],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "test_q",
@@ -1233,7 +1387,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "top3",
@@ -1259,7 +1416,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": true
+      "featured": true,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "trauma_eval",
@@ -1286,7 +1446,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": true
+      "featured": true,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "wai6",
@@ -1312,7 +1475,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": true
+      "featured": true,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "wsas",
@@ -1338,7 +1504,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": true
+      "featured": true,
+      "languages": [
+        "he"
+      ]
     }
   ]
 }

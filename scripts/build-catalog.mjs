@@ -4,8 +4,10 @@
  *
  * Generates public/composer/catalog.json — the composer's lightweight index
  * of every questionnaire/battery — by scanning public/configs/prod/*.json in
- * sorted filename order (deterministic output). Configs marked `dev: true`
- * (test fixtures) produce entries flagged dev, shown only in dev mode.
+ * sorted filename order (deterministic output), plus each language directory
+ * public/configs/prod/<lang>/ for translated titles and availability. Configs
+ * marked `dev: true` (test fixtures) produce entries flagged dev, shown only
+ * in dev mode.
  *
  * Run whenever a config file changes:
  *   npm run build:catalog
@@ -18,10 +20,11 @@
  * so dist/ is always fresh even if the committed copy lags.
  */
 
-import { readFileSync, writeFileSync, existsSync, readdirSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from 'fs';
 import { resolve, join } from 'path';
 import { fileURLToPath } from 'url';
 import { buildCatalog, serializeCatalog } from '../shared/catalog/build-catalog.js';
+import { isLang, DEFAULT_LANG } from '../shared/i18n/core.js';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -30,13 +33,25 @@ const PROD_DIR = join(ROOT, 'public/configs/prod');
 
 const checkMode = process.argv.includes('--check');
 
-const configs = readdirSync(PROD_DIR)
+const readDir = (dir) => readdirSync(dir)
   .filter((f) => f.endsWith('.json'))
   .sort()
-  .map((f) => JSON.parse(readFileSync(join(PROD_DIR, f), 'utf8')));
+  .map((f) => JSON.parse(readFileSync(join(dir, f), 'utf8')));
+
+const configs = readDir(PROD_DIR);
+
+// Translations: public/configs/prod/<lang>/ for every supported language.
+const translations = {};
+for (const entry of readdirSync(PROD_DIR).sort()) {
+  const full = join(PROD_DIR, entry);
+  if (statSync(full).isDirectory() && isLang(entry) && entry !== DEFAULT_LANG) {
+    translations[entry] = readDir(full);
+  }
+}
 
 let warnings = 0;
 const catalog = buildCatalog(configs, {
+  translations,
   warn: (msg) => {
     warnings++;
     console.warn(`⚠ ${msg}`);

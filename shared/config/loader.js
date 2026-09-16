@@ -240,9 +240,11 @@ function mergeConfigs(results) {
         );
       }
       seenQIds.add(q.id);
-      // Annotated post-validation: records which config file the questionnaire
-      // came from, for the PDF envelope's instruments[].configFile field.
+      // Annotated post-validation: records which config file (short name) and
+      // which config version the questionnaire came from, for the PDF
+      // envelope's instruments[].configFile / configVersion fields.
       q.configFile = configFile;
+      q.configVersion = data.version ?? null;
       questionnaires.push(q);
     }
     for (const b of data.batteries ?? []) {

@@ -37,9 +37,10 @@ describe('buildEnvelope', () => {
     expect(env.pid).toBe('TRC-2025-000123');
     expect(env.name).toBe('ישראל');
     expect(env.instruments).toEqual([
-      { questionnaireId: 'phq9', title: 'שאלון דיכאון (PHQ-9)', configFile: 'standard' },
-      { questionnaireId: 'gad7', title: 'שאלון חרדה (GAD-7)', configFile: 'standard' },
+      { questionnaireId: 'phq9', title: 'שאלון דיכאון (PHQ-9)', configFile: 'standard', configVersion: null },
+      { questionnaireId: 'gad7', title: 'שאלון חרדה (GAD-7)', configFile: 'standard', configVersion: null },
     ]);
+    expect(env.lang).toBe('he');
     expect(env.sessionState.answers).toEqual(SESSION_STATE.answers);
     expect(env.sessionState.scores).toEqual(SESSION_STATE.scores);
     expect(env.sessionState.alerts).toEqual(SESSION_STATE.alerts);
@@ -62,7 +63,7 @@ describe('buildEnvelope', () => {
     };
     const env = buildEnvelope({ sessionState: state, config: CONFIG, now: NOW });
     expect(env.instruments).toEqual([
-      { questionnaireId: 'phq9', title: 'שאלון דיכאון (PHQ-9)', configFile: 'standard' },
+      { questionnaireId: 'phq9', title: 'שאלון דיכאון (PHQ-9)', configFile: 'standard', configVersion: null },
     ]);
   });
 
@@ -70,8 +71,17 @@ describe('buildEnvelope', () => {
     const state = { answers: { mystery: {} }, scores: {}, alerts: {}, questionnaireIds: {} };
     const env = buildEnvelope({ sessionState: state, config: CONFIG, now: NOW });
     expect(env.instruments).toEqual([
-      { questionnaireId: 'mystery', title: null, configFile: null },
+      { questionnaireId: 'mystery', title: null, configFile: null, configVersion: null },
     ]);
+  });
+
+  it('records the patient language and each instrument\'s config version', () => {
+    const config = { questionnaires: [{ id: 'phq9', title: 'PHQ-9', configFile: 'phq9', configVersion: '1.2.0' }] };
+    const state = { answers: { phq9: { 1: 0 } }, scores: {}, alerts: {}, questionnaireIds: {} };
+    const env = buildEnvelope({ sessionState: state, config, lang: 'en', now: NOW });
+    expect(env.lang).toBe('en');
+    expect(env.instruments[0].configVersion).toBe('1.2.0');
+    expect(validateEnvelope(JSON.parse(JSON.stringify(env)))).toEqual({ valid: true, errors: [] });
   });
 
   it('survives a JSON round-trip and validates', () => {
@@ -136,6 +146,21 @@ describe('validateEnvelope', () => {
     expect(validateEnvelope({ ...valid(), sessionState: undefined }).valid).toBe(false);
     expect(validateEnvelope({ ...valid(), sessionState: [] }).valid).toBe(false);
     expect(validateEnvelope({ ...valid(), sessionState: { answers: {}, scores: {} } }).valid).toBe(false);
+  });
+
+  it('accepts a legacy envelope without lang or configVersion', () => {
+    const env = valid();
+    delete env.lang;
+    for (const i of env.instruments) delete i.configVersion;
+    expect(validateEnvelope(env).valid).toBe(true);
+  });
+
+  it('rejects a malformed lang or configVersion', () => {
+    expect(validateEnvelope({ ...valid(), lang: 'English' }).errors).toContainEqual(expect.stringMatching(/lang/));
+    expect(validateEnvelope({ ...valid(), lang: 7 }).errors).toContainEqual(expect.stringMatching(/lang/));
+    const env = valid();
+    env.instruments[0].configVersion = 3;
+    expect(validateEnvelope(env).errors).toContainEqual(expect.stringMatching(/configVersion/));
   });
 
   it('tolerates unknown extra fields (forward compatibility)', () => {

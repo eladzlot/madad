@@ -1,0 +1,146 @@
+{
+  "id": "phq9",
+  "version": "1.0.0",
+  "questionnaires": [
+    {
+      "id": "phq9",
+      "meta": {
+        "domains": [
+          "depression"
+        ],
+        "type": "severity",
+        "populations": [
+          "adult"
+        ],
+        "featured": true,
+        "source": "Kroenke, Spitzer & Williams (2001), J Gen Intern Med 16:606–613 — English original (PHQ-9 is free to reproduce; © Pfizer Inc.)"
+      },
+      "title": "Patient Health Questionnaire (PHQ-9)",
+      "description": "Depression symptom severity over the last two weeks (Depression, MDD, PHQ-9)",
+      "keywords": [
+        "depression",
+        "mood",
+        "PHQ",
+        "PHQ-9",
+        "MDD",
+        "screening",
+        "anhedonia"
+      ],
+      "defaultOptionSetId": "frequency_4",
+      "optionSets": {
+        "frequency_4": [
+          {
+            "label": "Not at all",
+            "value": 0
+          },
+          {
+            "label": "Several days",
+            "value": 1
+          },
+          {
+            "label": "More than half the days",
+            "value": 2
+          },
+          {
+            "label": "Nearly every day",
+            "value": 3
+          }
+        ]
+      },
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "Over the last two weeks, how often have you been bothered by any of the following problems?"
+        },
+        {
+          "id": "1",
+          "type": "select",
+          "text": "Little interest or pleasure in doing things"
+        },
+        {
+          "id": "2",
+          "type": "select",
+          "text": "Feeling down, depressed, or hopeless"
+        },
+        {
+          "id": "3",
+          "type": "select",
+          "text": "Trouble falling or staying asleep, or sleeping too much"
+        },
+        {
+          "id": "4",
+          "type": "select",
+          "text": "Feeling tired or having little energy"
+        },
+        {
+          "id": "5",
+          "type": "select",
+          "text": "Poor appetite or overeating"
+        },
+        {
+          "id": "6",
+          "type": "select",
+          "text": "Feeling bad about yourself — or that you are a failure or have let yourself or your family down"
+        },
+        {
+          "id": "7",
+          "type": "select",
+          "text": "Trouble concentrating on things, such as reading the newspaper or watching television"
+        },
+        {
+          "id": "8",
+          "type": "select",
+          "text": "Moving or speaking so slowly that other people could have noticed? Or the opposite — being so fidgety or restless that you have been moving around a lot more than usual"
+        },
+        {
+          "id": "9",
+          "type": "select",
+          "text": "Thoughts that you would be better off dead, or of hurting yourself in some way"
+        }
+      ],
+      "scoring": {
+        "method": "sum"
+      },
+      "interpretations": {
+        "target": "total",
+        "type": "severity",
+        "ranges": [
+          {
+            "min": 0,
+            "max": 4,
+            "label": "Minimal"
+          },
+          {
+            "min": 5,
+            "max": 9,
+            "label": "Mild"
+          },
+          {
+            "min": 10,
+            "max": 14,
+            "label": "Moderate"
+          },
+          {
+            "min": 15,
+            "max": 19,
+            "label": "Moderately severe"
+          },
+          {
+            "min": 20,
+            "max": 27,
+            "label": "Severe"
+          }
+        ]
+      },
+      "alerts": [
+        {
+          "id": "suicidality",
+          "condition": "item.9 >= 1",
+          "message": "Suicidality",
+          "severity": "critical"
+        }
+      ]
+    }
+  ]
+}

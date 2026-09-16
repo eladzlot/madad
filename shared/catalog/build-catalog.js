@@ -21,7 +21,12 @@
 // the catalog and byte-compares it against the committed file, so nothing
 // time- or environment-dependent may enter the output.
 
-export const CATALOG_VERSION = 1;
+import { DEFAULT_LANG, LANG_CODES } from '../i18n/core.js';
+
+// v2 (multi-language): entries carry `languages` (which patient languages the
+// instrument can be sent in) and `i18n` (clinician-facing title/description/
+// keywords per non-Hebrew language). See docs/I18N_SPEC.md §5.
+export const CATALOG_VERSION = 2;
 
 // Per-item time estimates (seconds) for the completion-time heuristic.
 // Deliberately rough — meta.durationMinutes overrides the estimate entirely.
@@ -120,16 +125,82 @@ function metaFields(meta) {
   };
 }
 
+// collectRefs lists every questionnaire id a battery sequence can reach.
+function collectRefs(sequence) {
+  const refs = [];
+  for (const node of sequence ?? []) {
+    if (node.questionnaireId !== undefined) refs.push(node.questionnaireId);
+    if (node.then) refs.push(...collectRefs(node.then));
+    if (node.else) refs.push(...collectRefs(node.else));
+    if (node.ids)  refs.push(...collectRefs(node.ids));
+  }
+  return refs;
+}
+
+// languageIndex builds, per non-Hebrew language, a map of entity id →
+// { title, description, keywords } from that language's config files, plus
+// the set of questionnaire ids it provides (for battery completeness).
+function languageIndex(translations, warn) {
+  const index = new Map();   // lang → { text: Map(id → fields), questionnaireIds: Set }
+  for (const lang of Object.keys(translations ?? {})) {
+    if (lang === DEFAULT_LANG || !LANG_CODES.includes(lang)) {
+      warn(`translations: unknown language "${lang}" ignored`);
+      continue;
+    }
+    const text = new Map();
+    const questionnaireIds = new Set();
+    for (const config of translations[lang] ?? []) {
+      for (const q of config.questionnaires ?? []) {
+        questionnaireIds.add(q.id);
+        text.set(q.id, { title: q.title, description: truncate(q.description), keywords: q.keywords ?? [], sequence: null });
+      }
+      for (const b of config.batteries ?? []) {
+        text.set(b.id, { title: b.title, description: truncate(b.description), keywords: b.keywords ?? [], sequence: b.sequence });
+      }
+    }
+    index.set(lang, { text, questionnaireIds });
+  }
+  return index;
+}
+
+// languageFields returns { languages, i18n } for one entity: Hebrew always,
+// plus every language whose files carry it (a battery only when every
+// questionnaire it sequences exists in that language too).
+function languageFields(id, kind, langIndex, warn) {
+  const languages = [DEFAULT_LANG];
+  const i18n = {};
+  for (const [lang, { text, questionnaireIds }] of langIndex) {
+    const entry = text.get(id);
+    if (!entry) continue;
+    if (kind === 'battery') {
+      const missing = collectRefs(entry.sequence).filter(ref => !questionnaireIds.has(ref));
+      if (missing.length) {
+        warn(`${lang}/${id}: battery not offered in "${lang}" — missing ${missing.join(', ')}`);
+        continue;
+      }
+    }
+    languages.push(lang);
+    i18n[lang] = { title: entry.title, description: entry.description, keywords: entry.keywords };
+  }
+  return { languages, ...(Object.keys(i18n).length && { i18n }) };
+}
+
 /**
  * buildCatalog — the pure builder.
  *
- * @param {object[]} configs     parsed config files, in the order their
- *                               entries should appear (CLI passes sorted
- *                               filename order)
+ * @param {object[]} configs     parsed Hebrew (canonical) config files, in
+ *                               the order their entries should appear (CLI
+ *                               passes sorted filename order)
  * @param {object} [options]     {warn: (msg) => void,
- *                                exclude: (entity, kind, config) => boolean}
+ *                                exclude: (entity, kind, config) => boolean,
+ *                                translations: { [lang]: object[] } — parsed
+ *                                  configs from public/configs/prod/<lang>/}
  * @returns {object} catalog     {catalogVersion, entries}
  *
+ * - every entry carries `languages` (Hebrew first, then each language that
+ *   has the instrument — for a battery, only when every questionnaire it
+ *   sequences is translated too) and, when translated, `i18n[lang]` with
+ *   the title/description/keywords the composer shows in that UI language
  * - a config's `dev: true` flag passes through onto its entries; the
  *   composer filters at runtime by DEV mode
  * - `exclude` (optional) is asked once per battery/questionnaire with the
@@ -144,6 +215,7 @@ function metaFields(meta) {
 export function buildCatalog(configs, options = {}) {
   const warn = options.warn ?? (() => {});
   const exclude = options.exclude ?? (() => false);
+  const langIndex = languageIndex(options.translations, warn);
   const entries = [];
 
   // First pass: cross-config questionnaire map for battery counting.
@@ -177,6 +249,7 @@ export function buildCatalog(configs, options = {}) {
         estMinutes: estMinutes(counts.seconds, b.meta),
         hasConditional: counts.hasConditional,
         ...metaFields(b.meta),
+        ...languageFields(b.id, 'battery', langIndex, warn),
       });
     }
     for (const q of config.questionnaires ?? []) {
@@ -194,6 +267,7 @@ export function buildCatalog(configs, options = {}) {
         estMinutes: estMinutes(counts.seconds, q.meta),
         hasConditional: counts.hasConditional,
         ...metaFields(q.meta),
+        ...languageFields(q.id, 'questionnaire', langIndex, warn),
       });
     }
   }
