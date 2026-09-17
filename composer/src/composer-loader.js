@@ -12,6 +12,7 @@
 
 import { CATALOG_URL } from './composer-state.js';
 import { CATALOG_VERSION } from '../../shared/catalog/build-catalog.js';
+import { t } from '../../clinician/i18n/index.js';
 
 export { CATALOG_VERSION, CATALOG_URL };
 
@@ -20,6 +21,6 @@ export async function loadCatalog() {
   // the server so a fresh bundle never pairs with a stale catalog. Same
   // reasoning as the config fetch in shared/config/loader.js.
   const res = await fetch(CATALOG_URL, { cache: 'no-cache' });
-  if (!res.ok) throw new Error(`שגיאה בטעינת קטלוג השאלונים: HTTP ${res.status}`);
+  if (!res.ok) throw new Error(t('composer.catalogHttp', { status: res.status }));
   return res.json();
 }

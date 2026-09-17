@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import '../../tests/setup-dom.js';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { fixture, html as testHtml } from '@open-wc/testing';
 import './item-binary.js';
 
@@ -254,5 +254,39 @@ describe('swipe gestures', () => {
     const btns = el.shadowRoot.querySelectorAll('.opt-btn');
     expect(btns[1].classList.contains('drag-commit')).toBe(true);
     expect(btns[0].classList.contains('drag-commit')).toBe(false);
+  });
+});
+
+// ─── Direction ────────────────────────────────────────────────────────────────
+// Option 0 sits on the reading-start side: right in RTL, left in LTR. A swipe
+// toward a side must select the option on that side in both directions.
+
+describe('swipe direction in LTR documents', () => {
+  afterEach(() => document.documentElement.removeAttribute('dir'));
+
+  it('swipe right selects the second option and swipe left the first', async () => {
+    document.documentElement.setAttribute('dir', 'ltr');
+    const el = await makeEl();
+    const handler = vi.fn();
+    el.addEventListener('answer', handler);
+    swipe(el, { startX: 0, endX: 200 });
+    expect(handler.mock.calls[0][0].detail).toEqual({ value: false });
+    swipe(el, { startX: 200, endX: 0 });
+    expect(handler.mock.calls[1][0].detail).toEqual({ value: true });
+  });
+
+  it('drag-commit highlights the option on the dragged-toward side', async () => {
+    document.documentElement.setAttribute('dir', 'ltr');
+    const el = await makeEl();
+    el._dragDx = 200; el._dragPhase = 'move';
+    await el.updateComplete;
+    const btns = el.shadowRoot.querySelectorAll('.opt-btn');
+    expect(btns[1].classList.contains('drag-commit')).toBe(true);
+    expect(btns[0].classList.contains('drag-commit')).toBe(false);
+  });
+
+  it('treats a missing dir attribute as RTL (the Hebrew default)', async () => {
+    const el = await makeEl();
+    expect(el._isRtl()).toBe(true);
   });
 });

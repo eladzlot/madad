@@ -13,6 +13,7 @@
 import { LitElement, html, css, svg, unsafeCSS, nothing } from 'lit';
 import { clinicianCss } from '../../../clinician/styles/clinician-styles.js';
 import { resetCSS } from '../ui-reset.js';
+import { t } from '../../../clinician/i18n/index.js';
 import { encodeQr, matrixToPath, matrixToPngBlob, fullSize } from '../qr.js';
 
 export const QR_FILENAME = 'madad-qr.png';
@@ -22,6 +23,7 @@ export class QrCode extends LitElement {
     url:        { type: String },
     size:       { type: Number },              // tile side in CSS px
     expandable: { type: Boolean },
+    tileless:   { type: Boolean },   // dialog only — the trigger lives elsewhere
     _matrix:    { state: true },
     _failed:    { state: true },
     _open:      { state: true },
@@ -32,9 +34,11 @@ export class QrCode extends LitElement {
     this.url = null;
     this.size = 120;
     this.expandable = false;
+    this.tileless = false;
     this._matrix = null;
     this._failed = false;
     this._open = false;
+    this._wantOpen = false;
     this._seq = 0;
   }
 
@@ -124,17 +128,26 @@ export class QrCode extends LitElement {
   async _encode() {
     const url = this.url;
     const seq = ++this._seq;
-    if (!url) { this._matrix = null; this._failed = false; this._open = false; return; }
+    if (!url) { this._matrix = null; this._failed = false; this._open = false; this._wantOpen = false; return; }
     try {
       const matrix = await encodeQr(url);
       if (seq !== this._seq) return;          // a newer url superseded this one
       this._matrix = matrix;
       this._failed = false;
+      if (this._wantOpen) { this._wantOpen = false; this._open = true; }
     } catch {
       if (seq !== this._seq) return;
       this._matrix = null;
       this._failed = true;                    // encoder chunk unreachable (offline)
     }
+  }
+
+  // Public: open the enlarged view from somewhere else in the UI (the output
+  // bar's QR button). Tolerates being called mid-encode — the dialog opens as
+  // soon as the matrix lands.
+  expand() {
+    if (this._matrix) this._open = true;
+    else if (this.url) this._wantOpen = true;
   }
 
   _openDialog() { if (this._matrix) this._open = true; }
@@ -154,32 +167,34 @@ export class QrCode extends LitElement {
 
   _svg(m) {
     const side = fullSize(m.size);
-    return svg`<svg viewBox="0 0 ${side} ${side}" shape-rendering="crispEdges" role="img" aria-label="קוד QR לקישור למטופל"><path d=${matrixToPath(m)}></path></svg>`;
+    return svg`<svg viewBox="0 0 ${side} ${side}" shape-rendering="crispEdges" role="img" aria-label=${t('qr.imgAlt')}><path d=${matrixToPath(m)}></path></svg>`;
   }
 
   render() {
     if (!this.url) return nothing;
-    if (this._failed) return html`<p class="unavailable">קוד QR אינו זמין כרגע</p>`;
+    if (this._failed) return html`<p class="unavailable">${t('qr.unavailable')}</p>`;
 
     const m = this._matrix;
     const tileStyle = `--qr-size:${this.size}px`;
-    const tile = m
+    const tile = this.tileless
+      ? nothing
+      : m
       ? (this.expandable
-          ? html`<button class="tile" type="button" style=${tileStyle} title="הגדל" aria-label="הצג קוד QR מוגדל" @click=${this._openDialog}>${this._svg(m)}</button>`
+          ? html`<button class="tile" type="button" style=${tileStyle} title=${t('qr.enlarge')} aria-label=${t('qr.enlargeAria')} @click=${this._openDialog}>${this._svg(m)}</button>`
           : html`<div class="tile" style=${tileStyle}>${this._svg(m)}</div>`)
       : html`<div class="tile pending" style=${tileStyle} aria-hidden="true"></div>`;
 
     return html`
       ${tile}
-      ${this.expandable && m ? html`
+      ${(this.expandable || this.tileless) && m ? html`
         <dialog @close=${this._closeDialog} @cancel=${this._closeDialog} @click=${this._onBackdropClick}>
           <div class="frame">
-            <div class="caption">סרקו עם מצלמת הטלפון</div>
+            <div class="caption">${t('qr.caption')}</div>
             <div class="big">${this._svg(m)}</div>
             <div class="link" dir="ltr">${this.url}</div>
             <div class="btn-row">
-              <button class="c-btn c-btn--primary c-btn--grow" type="button" @click=${this._download}>הורד PNG</button>
-              <button class="c-btn c-btn--secondary" type="button" @click=${this._closeDialog}>סגור</button>
+              <button class="c-btn c-btn--primary c-btn--grow" type="button" @click=${this._download}>${t('qr.download')}</button>
+              <button class="c-btn c-btn--secondary" type="button" @click=${this._closeDialog}>${t('qr.close')}</button>
             </div>
           </div>
         </dialog>

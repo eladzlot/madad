@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/svg+xml" href="../../public/favicon.svg" />
+  <link rel="shortcut icon" href="../../public/favicon.svg" />
+  <title>Madad — clinical measurement without friction</title>
+
+  <!-- SEO -->
+  <meta name="description" content="Madad — a free tool for clinical psychological assessment. Send your patient a link, get a PDF with scores and clinical alerts. PHQ-9, GAD-7, PCL-5, DASS-21 and more. No sign-up." />
+
+  <!-- Open Graph / WhatsApp -->
+  <meta property="og:title" content="Madad — clinical measurement without friction" />
+  <meta property="og:description" content="Questionnaires and worksheets in Hebrew and English. Free, no sign-up" />
+  <meta property="og:image" content="https://ezmadad.com/og-image.png" />
+  <meta property="og:url" content="https://ezmadad.com/en/" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <!-- Language variants (docs/I18N_SPEC.md §10) -->
+  <link rel="alternate" hreflang="he" href="https://ezmadad.com/" />
+  <link rel="alternate" hreflang="en" href="https://ezmadad.com/en/" />
+  <link rel="alternate" hreflang="x-default" href="https://ezmadad.com/" />
+
+  <link rel="stylesheet" href="../landing.css" />
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="./" class="nav-logo">Madad</a>
+    <div class="nav-links">
+      <a href="__APP_ORIGIN__/?items=phq9&lang=en&ref=demo" class="nav-link">Try a sample questionnaire</a>
+      <a href="__APP_ORIGIN__/aggregate/?lang=en" class="nav-link">Patient summary</a>
+      <a href="../" class="nav-link" hreflang="he" lang="he">עברית</a>
+      <a href="__APP_ORIGIN__/composer/?lang=en" class="nav-cta">Create a patient link</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ── HERO ── -->
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-inner">
+
+      <div class="hero-text">
+        <h1 class="hero-headline">Measurement<br>without friction</h1>
+        <div class="hero-rule"></div>
+        <p class="hero-hook">I kept cutting corners — because I forgot to print, because I couldn't find the file, because it took more time than I had. So I built a tool that removes that friction entirely.</p>
+        <p class="hero-sub">Send your patient a link, they fill it in on their phone and download a detailed clinical PDF — no sign-up, no cost.</p>
+        <div class="hero-btns">
+          <a href="__APP_ORIGIN__/?items=phq9&lang=en&ref=demo" class="btn-primary">Try it now</a>
+        </div>
+        <p class="hero-cta-label">Fill in a short questionnaire — and get the report your patient would download</p>
+      </div>
+
+      <!-- PDF Mock -->
+      <div class="hero-pdf-wrap">
+        <div class="hero-pdf-mock">
+          <div class="pm-header">
+            <div class="pm-header-col">
+              <span class="pm-header-label">Name</span>
+              <span class="pm-header-val">Sample patient</span>
+            </div>
+            <div class="pm-header-col" style="text-align:center">
+              <span class="pm-header-label">Patient ID</span>
+              <span class="pm-header-val">12345678</span>
+            </div>
+            <div class="pm-header-col" style="text-align:end">
+              <span class="pm-header-label">Date</span>
+              <span class="pm-header-val">24/03/2026</span>
+            </div>
+          </div>
+          <table class="pm-summary" dir="ltr" style="table-layout:auto">
+            <tbody>
+              <tr>
+                <td class="pm-sum-measure">Screening questionnaire</td>
+                <td class="pm-sum-score">Completed</td>
+                <td class="pm-sum-badge"></td>
+              </tr>
+              <tr>
+                <td class="pm-sum-measure">Depression (PHQ-9)</td>
+                <td class="pm-sum-score">4</td>
+                <td class="pm-sum-badge"></td>
+              </tr>
+              <tr>
+                <td class="pm-sum-measure">Obsessive-compulsive (OCI-R)</td>
+                <td class="pm-sum-score">28</td>
+                <td class="pm-sum-badge">
+                  <span class="pm-pill pm-pill-warn">! High</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <hr class="pm-hr">
+          <div class="pm-sec-header">
+            <span class="pm-sec-title">Obsessive-compulsive (OCI-R)</span>
+            <span class="pm-sec-score">&nbsp;28</span>
+          </div>
+          <div class="pm-subscores">
+            Washing&nbsp;<strong>4</strong>&nbsp;·&nbsp;Obsessing&nbsp;<strong>3</strong>&nbsp;·&nbsp;Hoarding&nbsp;<strong>3</strong>&nbsp;·&nbsp;Ordering&nbsp;<strong>5</strong>&nbsp;·&nbsp;Checking&nbsp;<strong>6</strong>&nbsp;·&nbsp;Neutralizing&nbsp;<strong>7</strong>
+          </div>
+          <table class="pm-table" dir="ltr" style="table-layout:fixed">
+            <colgroup><col><col style="width:40px"></colgroup>
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th style="text-align:center">Score</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="pm-row-yellow">
+                <td>I have saved up so many things that they get in the way.</td>
+                <td style="text-align:center">2</td>
+              </tr>
+              <tr class="pm-row-yellow">
+                <td>I check things more often than necessary.</td>
+                <td style="text-align:center">2</td>
+              </tr>
+              <tr class="pm-row-yellow">
+                <td>I get upset if objects are not arranged properly.</td>
+                <td style="text-align:center">2</td>
+              </tr>
+              <tr>
+                <td>I feel compelled to count while I am doing things.</td>
+                <td style="text-align:center">1</td>
+              </tr>
+              <tr class="pm-row-red">
+                <td>I find it difficult to touch an object when I know it has been touched by strangers.</td>
+                <td style="text-align:center">3</td>
+              </tr>
+              <tr class="pm-row-yellow">
+                <td>I find it difficult to control my own thoughts.</td>
+                <td style="text-align:center">2</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── HOW IT WORKS ── -->
+<section class="sec">
+  <div class="wrap">
+    <div class="steps-h">
+      <div class="step-h">
+        <span class="step-num-h">01</span>
+        <span class="step-label">Open the link builder and pick questionnaires</span>
+      </div>
+      <div class="step-h">
+        <span class="step-num-h">02</span>
+        <span class="step-label">Send the link to your patient by WhatsApp or email</span>
+      </div>
+      <div class="step-h">
+        <span class="step-num-h">03</span>
+        <span class="step-label">The patient fills it in on their phone, in their own time</span>
+      </div>
+      <div class="step-h">
+        <span class="step-num-h">04</span>
+        <span class="step-label">Receive a PDF with scores, subscales and clinical alerts</span>
+      </div>
+    </div>
+    <div class="steps-note">
+      <span>No sign-up</span>
+      <span>Nothing to install</span>
+      <span>Works with WhatsApp, email and any messaging app</span>
+      <span>No data stored on a server</span>
+    </div>
+  </div>
+</section>
+
+
+<!-- ── COMPOSER ── -->
+<section class="sec composer-sec">
+  <div class="wrap">
+    <div class="composer-inner">
+      <div class="composer-text">
+        <h2 class="sec-title">Create a link for your patient</h2>
+        <p style="font-size:15px; color:var(--muted); line-height:1.75; margin-block-end: 20px;">
+          The link builder lets you pick questionnaires, enter a patient ID, and get a link ready to send — in under a minute.
+        </p>
+
+        <!-- Questionnaire tags -->
+        <div class="lib-examples" style="margin-block-end: 6px;">
+          <span class="lib-tag">PHQ-9 depression</span>
+          <span class="lib-tag">GAD-7 anxiety</span>
+          <span class="lib-tag">PCL-5 PTSD</span>
+          <span class="lib-tag">DASS-21 stress</span>
+          <span class="lib-tag">PTCI cognitions</span>
+          <span class="lib-tag">PC-PTSD-5 screen</span>
+        </div>
+        <p style="font-size:12px; color:var(--faint); margin-block-end: 20px; line-height:1.6;">
+          And more — with scoring, subscales and clinical alerts.
+          Some come in <strong style="color:var(--muted)">smart batteries</strong> that branch on the result.
+          The library is Hebrew-first; the English set is growing.
+        </p>
+
+        <a href="__APP_ORIGIN__/composer/?lang=en" class="btn-secondary">Open the link builder →</a>
+      </div>
+
+      <!-- Composer mock — matches actual UI -->
+      <div class="composer-mock" aria-hidden="true">
+        <div class="composer-mock-header">
+          <span class="composer-mock-brand">Madad</span>
+          <span class="composer-mock-sep">|</span>
+          <span class="composer-mock-subtitle">Link builder</span>
+        </div>
+        <div class="composer-mock-toolbar">
+          <div class="composer-mock-search">anxiety</div>
+          <span class="composer-mock-tab">Details ⓘ</span>
+          <span class="composer-mock-reset">↺ Reset</span>
+        </div>
+        <div class="composer-mock-list-label">Questionnaires</div>
+        <div class="composer-mock-item composer-mock-item--checked">
+          <div class="composer-mock-checkbox composer-mock-checkbox--on">✓</div>
+          <div class="composer-mock-item-name">Anxiety Sensitivity Index (ASI-3)</div>
+          <div class="composer-mock-item-id">asi_3</div>
+        </div>
+        <div class="composer-mock-item">
+          <div class="composer-mock-checkbox"></div>
+          <div class="composer-mock-item-name">Generalized Anxiety Disorder scale (GAD-7)</div>
+          <div class="composer-mock-item-id">gad7</div>
+        </div>
+        <div class="composer-mock-item">
+          <div class="composer-mock-checkbox"></div>
+          <div class="composer-mock-item-name">Overall Anxiety Severity and Impairment Scale (OASIS)</div>
+          <div class="composer-mock-item-id">oasis</div>
+        </div>
+        <div class="composer-mock-item composer-mock-item--checked">
+          <div class="composer-mock-checkbox composer-mock-checkbox--on">✓</div>
+          <div class="composer-mock-item-name">Social Phobia Inventory (SPIN)</div>
+          <div class="composer-mock-item-id">spin</div>
+        </div>
+        <div class="composer-mock-item">
+          <div class="composer-mock-checkbox"></div>
+          <div class="composer-mock-item-name">SCARED — child report</div>
+          <div class="composer-mock-item-id">scared_child</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ── SECURITY ── -->
+<section class="sec">
+  <div class="wrap">
+    <h2 class="sec-title">What happens to the data?</h2>
+    <p class="security-body">
+      All processing happens <strong>in the patient's browser</strong> — not on our server, not in a third-party cloud.
+      The report is created on the patient's own device and stays there. We simply never see the data, because it never passes through us.
+    </p>
+    <div class="security-tradeoff">
+      <strong>What this means in practice:</strong> the patient downloads the report and brings it to the session — just as they would fill in a paper form and bring it along.
+      The difference: they filled it in from the sofa, and nobody had to print anything. You don't receive the report directly — the patient is the one who brings it.
+    </div>
+  </div>
+</section>
+
+<!-- ── MISSION ── -->
+<section class="sec">
+  <div class="wrap">
+    <h2 class="sec-title">Why I built this</h2>
+    <div class="mission-body">
+      <p>
+        Therapy should have outcomes. As a therapist, it matters to me to know that I am actually helping my patients — not just to feel that we are making progress, but to see it happen.
+      </p>
+      <p>
+        This came into focus while working with a patient with PTSD. The relationship was good, there were insights, and it felt like we were on the right track. But when we looked at the measures — <strong>nothing had moved</strong>. Only when we changed focus did the change come, fast and clear.
+      </p>
+      <p>
+        Since then, measurement is not an add-on for me — it is an essential part of good therapy.
+      </p>
+    </div>
+    <div class="mission-close">
+      Our mission at the Trauma Recovery Center is to advance the highest standard of care.
+      Madad was built so that measurement is simple enough to become a routine part of therapy — not an extra you have to work for.
+      Free, for every therapist.
+    </div>
+    <div class="mission-invite">
+      <p>
+        You are part of this project. I'd love to hear whether the tool changed something in your work, which questionnaire is missing, what could be better — or just to say hello.
+      </p>
+      <a href="mailto:elad.zlotnick@mail.huji.ac.il" class="mission-invite-link">elad.zlotnick@mail.huji.ac.il</a>
+    </div>
+    <div class="about-sig">
+      <strong>Dr. Elad Zlotnick</strong><br>
+      Trauma Recovery Center · The Hebrew University of Jerusalem
+    </div>
+  </div>
+</section>
+
+<!-- ── FINAL CTA ── -->
+<section class="sec cta-sec">
+  <div class="wrap">
+    <h2 class="cta-headline">Try it now</h2>
+    <a href="__APP_ORIGIN__/?items=phq9&lang=en&ref=demo" class="btn-cta">Try a sample questionnaire</a>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="footer-inner">
+      <div>
+        <span class="footer-brand">Madad</span>
+        <span class="footer-copy" style="margin-inline-start: 14px;">Built by Dr. Elad Zlotnick · Trauma Recovery Center · The Hebrew University of Jerusalem</span>
+      </div>
+      <div class="footer-links">
+        <a href="__APP_ORIGIN__/composer/?lang=en">Link builder</a>
+        <a href="__APP_ORIGIN__/aggregate/?lang=en">Patient summary</a>
+        <a href="https://ctr.huji.ac.il" target="_blank" rel="noopener">The Center</a>
+        <a href="https://github.com/eladzlot/madad" target="_blank" rel="noopener">GitHub</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

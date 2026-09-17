@@ -52,6 +52,8 @@ import { resolve, join } from 'path';
 import { fileURLToPath } from 'url';
 
 import { buildDocDefinition, buildFilename, initBidiForTesting } from '../src/pdf/report.js';
+import { loadStrings } from '../src/i18n/index.js';
+import { configBaseFor, DEFAULT_LANG } from '../shared/i18n/core.js';
 import { parsePdfBytes } from '../aggregate/src/parse-pdf.js';
 import pdfmakeModule from 'pdfmake';
 
@@ -72,7 +74,6 @@ const pdfmake = pdfmakeModule.default ?? pdfmakeModule;
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const ROOT = resolve(__dirname, '..');
-const CONFIG_DIR = resolve(ROOT, 'public/configs/prod');
 
 // ── Default scenario: 5 weekly sessions, declining PHQ-9, OCI-R at the
 //    first and last (crossing its screening cutoff of 21 on the way down).
@@ -92,13 +93,15 @@ const DEFAULT_SCENARIO = {
 
 function parseArgs(argv) {
   const args = [...argv];
-  const opts = { out: null, describe: null, scenario: null };
+  const opts = { out: null, describe: null, scenario: null, lang: null };
 
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--out') {
       opts.out = args[++i];
     } else if (args[i] === '--describe') {
       opts.describe = args[++i];
+    } else if (args[i] === '--lang') {
+      opts.lang = args[++i];
     } else if (args[i].startsWith('--')) {
       throw new ScenarioError(`Unknown flag "${args[i]}".`);
     } else if (opts.scenario === null) {
@@ -138,8 +141,8 @@ function initPdfmake() {
 
 // ── --describe ────────────────────────────────────────────────────────────────
 
-function describe(instrumentId) {
-  const questionnaires = loadQuestionnaires([instrumentId], CONFIG_DIR);
+function describe(instrumentId, lang) {
+  const questionnaires = loadQuestionnaires([instrumentId], configDirFor(lang));
   const q = questionnaires.get(instrumentId);
   const rows = describeInstrument(q);
 
@@ -155,8 +158,16 @@ function describe(instrumentId) {
 
 // ── Generation ────────────────────────────────────────────────────────────────
 
+// Scenario `lang` (top level or per patient, default Hebrew) picks the config
+// directory — public/configs/prod/<lang>/ — exactly as the patient app does.
+function configDirFor(lang) {
+  return resolve(ROOT, 'public', configBaseFor(lang ?? DEFAULT_LANG));
+}
+
 async function generatePatient(patient, questionnaires, outDir) {
   const config = { questionnaires: [...questionnaires.values()] };
+  const lang = patient.lang ?? DEFAULT_LANG;
+  await loadStrings(lang);
   const session = { pid: patient.pid ?? null, name: patient.name ?? null };
 
   mkdirSync(outDir, { recursive: true });
@@ -169,7 +180,7 @@ async function generatePatient(patient, questionnaires, outDir) {
   for (const s of patient.sessions) {
     const now = new Date(`${s.date}T09:30:00`);
     const sessionState = buildSessionState(questionnaires, s.instruments);
-    const dd = buildDocDefinition(sessionState, config, session, now);
+    const dd = buildDocDefinition(sessionState, config, session, now, { lang });
 
     let filename = buildFilename(session, now);
     const seen = usedNames.get(filename) ?? 0;
@@ -205,7 +216,7 @@ async function main() {
   const opts = parseArgs(process.argv.slice(2));
 
   if (opts.describe) {
-    describe(opts.describe);
+    describe(opts.describe, opts.lang);
     return;
   }
 
@@ -219,13 +230,19 @@ async function main() {
   await initBidiForTesting();
   initPdfmake();
 
-  const questionnaires = loadQuestionnaires(collectInstrumentIds(patients), CONFIG_DIR);
+  // Instruments are loaded per language so a scenario can mix Hebrew and
+  // English patients (the Aggregate has to cope with both).
+  const byLang = new Map();
+  for (const patient of patients) {
+    const lang = patient.lang ?? DEFAULT_LANG;
+    if (!byLang.has(lang)) byLang.set(lang, loadQuestionnaires(collectInstrumentIds(patients.filter(p => (p.lang ?? DEFAULT_LANG) === lang)), configDirFor(lang)));
+  }
 
   let written = 0;
   for (const [i, patient] of patients.entries()) {
     const outDir = patientOutDir(patient, i, patients.length, baseOut);
     if (patients.length > 1) console.log(`\n── ${patient.pid ?? '(no pid)'} → ${outDir}`);
-    written += await generatePatient(patient, questionnaires, outDir);
+    written += await generatePatient(patient, byLang.get(patient.lang ?? DEFAULT_LANG), outDir);
   }
 
   console.log(`\n${written} PDF${written === 1 ? '' : 's'} written to ${baseOut}`);

@@ -10,9 +10,11 @@ export default [
       globals: globals.node,
     },
   },
-  // Browser environment — app source, shared layer, clinician layer, composer
+  // Browser environment — app source, shared layer, clinician layer, composer,
+  // aggregate, help. `npm run lint` covers help/src, so it needs the globals
+  // too: help.js drives the dual-language <main> blocks through `document`.
   {
-    files: ['src/**/*.js', 'shared/**/*.js', 'clinician/**/*.js', 'composer/src/**/*.js', 'aggregate/src/**/*.js'],
+    files: ['src/**/*.js', 'shared/**/*.js', 'clinician/**/*.js', 'composer/src/**/*.js', 'aggregate/src/**/*.js', 'help/src/**/*.js'],
     languageOptions: {
       // __APP_VERSION__ / __LANDING_ORIGIN__ are inlined at build time by
       // Vite/Vitest `define`.

@@ -34,7 +34,8 @@ html {
   background: var(--color-bg);
   -webkit-text-size-adjust: 100%;
   overflow-x: hidden;
-  /* RTL is set programmatically on <html> by app.js */
+  /* Direction comes from <html dir>, which app.js sets from the link's lang=
+     (index.html's static dir="rtl" is the Hebrew default). */
 }
 
 body {
@@ -71,7 +72,6 @@ body {
   min-block-size: 100dvh;
   gap: var(--space-lg);
   padding-inline: var(--space-md);
-  direction: rtl;
   text-align: center;
 }
 

@@ -25,6 +25,19 @@ export class ItemSelect extends LitElement {
   };
 
   static styles = [resetCSS, css`
+    /* Selected/hover options nudge toward the reading-start edge and carry an
+       accent bar on it: +x/right in RTL, −x/left in LTR. */
+    :host {
+      --nudge-hover: 2px;
+      --nudge-selected: 3px;
+      --nudge-shadow: -3px;
+    }
+    :host(:dir(ltr)) {
+      --nudge-hover: -2px;
+      --nudge-selected: -3px;
+      --nudge-shadow: 3px;
+    }
+
     :host {
       display: block;
     }
@@ -71,7 +84,7 @@ export class ItemSelect extends LitElement {
     .option:hover {
       background: var(--color-selected-bg);
       border-color: var(--color-border-focus);
-      transform: translateX(2px);
+      transform: translateX(var(--nudge-hover));
     }
 
     .option:focus-visible {
@@ -84,8 +97,8 @@ export class ItemSelect extends LitElement {
       border-color: var(--color-selected-border);
       border-width: 2px;
       font-weight: var(--font-weight-medium);
-      transform: translateX(3px);
-      box-shadow: -3px 0 0 0 var(--color-accent);
+      transform: translateX(var(--nudge-selected));
+      box-shadow: var(--nudge-shadow) 0 0 0 var(--color-accent);
     }
 
     /* Non-colour selected indicator */

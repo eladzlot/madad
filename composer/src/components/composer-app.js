@@ -2,10 +2,11 @@
 //
 // Owns the one reactive store (created in composer.js, handed in as `.store`),
 // subscribes once, and re-renders on every notify. Lays out the browse column
-// (controls + list) beside the desktop selection-cart, with the mobile-bar
-// standing in for the cart on phones. All child events funnel here and turn into
-// store mutations or the few real side effects (clipboard, share, open) that
-// don't belong in a dumb component.
+// (controls + list) beside the desktop <selection-cart> — the rail, which holds
+// the settings, the picked list and the generated link — with <mobile-bar>
+// standing in for that rail on phones. All child events funnel here and turn
+// into store mutations or the few real side effects (clipboard, share, open)
+// that don't belong in a dumb component.
 //
 // Contracts preserved from the imperative composer: items-only buildUrl, ↗ open,
 // non-blocking pid warning, reset, keyboard reorder, RTL, dark mode via tokens.
@@ -14,6 +15,8 @@ import { LitElement, html, css, unsafeCSS, nothing } from 'lit';
 import { clinicianCss } from '../../../clinician/styles/clinician-styles.js';
 import { resetCSS } from '../ui-reset.js';
 import { buildUrl } from '../composer-state.js';
+import { t } from '../../../clinician/i18n/index.js';
+import { configBaseFor } from '../../../shared/i18n/core.js';
 import '../../../clinician/components/clinician-nav.js';
 import './catalog-controls.js';
 import './catalog-list.js';
@@ -58,7 +61,10 @@ export class ComposerApp extends LitElement {
       background: var(--color-surface, #fff);
     }
 
-    /* Selection cart — visually LEFT in RTL; desktop only */
+    /* The rail — visually LEFT in RTL; desktop only. It carries the settings,
+       the picked list and the link, which is why there is no bottom bar here:
+       bottom-anchored actions are a phone idiom, and with a rail on screen they
+       put the link where the eye does not go. */
     .sidebar { display: none; }
 
     @media (min-width: 768px) {
@@ -69,12 +75,11 @@ export class ComposerApp extends LitElement {
         flex-shrink: 0;
         min-block-size: 0;
         border-inline-start: var(--border-width, 1px) solid var(--color-border, #D5DAE2);
-        /* A lighter navy than the header so the output rail reads as its own
-           panel. Theme-independent dark chrome (like the header) — the fields
-           inside carry their own slate colours, so it holds in dark mode too. */
+        /* A lighter navy than the header so the rail reads as its own panel.
+           Theme-independent dark chrome (like the header) — the fields inside
+           carry their own slate colours, so it holds in dark mode too. */
         background: var(--clin-rail-bg, #3A5068);
       }
-      mobile-bar { display: none; }
     }
   `];
 
@@ -126,7 +131,7 @@ export class ComposerApp extends LitElement {
   async _share() {
     const url = this.store.url();
     if (!url || !this._canShare) return;
-    try { await navigator.share({ url, title: 'קישור לשאלון הערכה' }); } catch { /* cancelled */ }
+    try { await navigator.share({ url, title: t('composer.shareTitle') }); } catch { /* cancelled */ }
   }
   _open() {
     const url = this.store.url();
@@ -144,16 +149,20 @@ export class ComposerApp extends LitElement {
         import('../preview/preview-model.js'),
         import('./preview-dialog.js'),
       ]);
-      let config = this._configCache.get(id);
+      // The preview shows what the *patient* will see: the config in the
+      // patient language (the picker only lists entries that have it).
+      const lang = this.store.patientLang;
+      const cacheKey = `${lang}:${id}`;
+      let config = this._configCache.get(cacheKey);
       if (!config) {
         // A battery's referenced questionnaires arrive via declared dependencies.
-        config = await loadConfig([id], { loadDependencies: true });
-        this._configCache.set(id, config);
+        config = await loadConfig([id], { loadDependencies: true, configBase: configBaseFor(lang) });
+        this._configCache.set(cacheKey, config);
       }
-      const model = buildPreviewModel(config, id);
+      const model = buildPreviewModel(config, id, { connectives: { or: t('preview.or'), and: t('preview.and') } });
       if (!model) return;
       this._previewModel = model;
-      this._previewLiveUrl = buildUrl({ selected: [id] });
+      this._previewLiveUrl = buildUrl({ selected: [id], lang });
       this._previewOpen = true;
     } catch {
       // A failed fetch/validation just leaves the dialog closed — the browse
@@ -173,9 +182,13 @@ export class ComposerApp extends LitElement {
     const selected = s.selected;
     const selectedEntries = s.selectedEntries();
     const url = s.url();
+    // Also shown in the banner above; handed to the settings component so an
+    // invalid pid reveals the field it belongs to rather than pointing at a
+    // control the clinician cannot see.
+    const pidWarning = s.pidWarn() ?? '';
 
     return html`
-      <clinician-nav .page=${'composer'} .subtitle=${'בחר שאלונים, הוסף מזהה מטופל, העתק קישור.'}></clinician-nav>
+      <clinician-nav .page=${'composer'} .subtitle=${t('composer.subtitle')}></clinician-nav>
 
       ${warnings.length ? html`
         <div class="warnings" role="alert">
@@ -198,6 +211,8 @@ export class ComposerApp extends LitElement {
         @reorder=${(e) => s.reorder(e.detail.from, e.detail.to)}
         @remove=${(e) => s.toggle(e.detail.id)}
         @pid-change=${(e) => s.setPid(e.detail.pid)}
+        @patient-lang-change=${(e) => s.setPatientLang(e.detail.lang)}
+        @dropped-dismiss=${() => s.clearDropped()}
         @copy=${() => this._copy()}
         @share=${() => this._share()}
         @open=${() => this._open()}
@@ -230,6 +245,10 @@ export class ComposerApp extends LitElement {
             .entries=${selectedEntries}
             .url=${url}
             .pid=${s.pid}
+            .patientLang=${s.patientLang}
+            .langs=${s.patientLangs()}
+            .dropped=${s.dropped}
+            .pidWarning=${pidWarning}
             .copied=${s.copied}
             .canShare=${this._canShare}
           ></selection-cart>
@@ -240,6 +259,8 @@ export class ComposerApp extends LitElement {
         @reorder=${(e) => s.reorder(e.detail.from, e.detail.to)}
         @remove=${(e) => s.toggle(e.detail.id)}
         @pid-change=${(e) => s.setPid(e.detail.pid)}
+        @patient-lang-change=${(e) => s.setPatientLang(e.detail.lang)}
+        @dropped-dismiss=${() => s.clearDropped()}
         @copy=${() => this._copy()}
         @share=${() => this._share()}
         @open=${() => this._open()}
@@ -247,6 +268,10 @@ export class ComposerApp extends LitElement {
         .entries=${selectedEntries}
         .url=${url}
         .pid=${s.pid}
+        .patientLang=${s.patientLang}
+        .langs=${s.patientLangs()}
+        .dropped=${s.dropped}
+        .pidWarning=${pidWarning}
         .copied=${s.copied}
         .canShare=${this._canShare}
       ></mobile-bar>

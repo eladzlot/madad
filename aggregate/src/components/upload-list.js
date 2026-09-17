@@ -6,14 +6,16 @@
 // the store and render below the drop zone; a failed file never blocks
 // the others (§5.7).
 
+import { t } from '../../../clinician/i18n/index.js';
 import { LitElement, html, css } from 'lit';
 
 const STATUS_LABELS = {
-  'ok':                  'נקלט',
-  'not-pdf':             'לא קובץ PDF',
-  'no-attachment':       'לא דוח מדד — אין נתונים מוטמעים',
-  'unsupported-version': 'נוצר בגרסה חדשה יותר של מדד',
-  'malformed':           'קובץ פגום',
+  // parse-pdf.js failure codes → `upload.status.<code>` keys in clinician/i18n.
+  'ok':                  'upload.status.ok',
+  'not-pdf':             'upload.status.not-pdf',
+  'no-attachment':       'upload.status.no-attachment',
+  'unsupported-version': 'upload.status.unsupported-version',
+  'malformed':           'upload.status.malformed',
 };
 
 export class UploadList extends LitElement {
@@ -161,7 +163,7 @@ export class UploadList extends LitElement {
         @drop=${this._onDrop}
       >
         <label>
-          בחירת קבצי PDF
+          ${t('upload.choose')}
           <input
             type="file"
             multiple
@@ -169,7 +171,7 @@ export class UploadList extends LitElement {
             @change=${this._onInput}
           />
         </label>
-        <p>או גררו לכאן דוחות מדד של המטופל</p>
+        <p>${t('upload.drop')}</p>
       </div>
 
       ${failed.length ? html`
@@ -178,7 +180,7 @@ export class UploadList extends LitElement {
             <li class="failed">
               <span class="name">${f.name}</span>
               <span class="status" title=${f.detail ?? ''}>
-                ${STATUS_LABELS[f.status] ?? f.status}
+                ${STATUS_LABELS[f.status] ? t(STATUS_LABELS[f.status]) : f.status}
               </span>
             </li>
           `)}
@@ -188,13 +190,13 @@ export class UploadList extends LitElement {
       ${ok.length ? html`
         <details class="ok-summary">
           <summary>
-            <span class="count">${ok.length === 1 ? 'דוח אחד נקלט' : `נקלטו ${ok.length} דוחות`}</span>
+            <span class="count">${t('upload.summary', { n: ok.length })}</span>
           </summary>
           <ul>
             ${ok.map(f => html`
               <li class="ok">
                 <span class="name">${f.name}</span>
-                <span class="status">${STATUS_LABELS.ok}</span>
+                <span class="status">${t(STATUS_LABELS.ok)}</span>
               </li>
             `)}
           </ul>

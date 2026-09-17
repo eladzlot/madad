@@ -1,0 +1,123 @@
+{
+  "id": "gad7",
+  "version": "1.0.0",
+  "questionnaires": [
+    {
+      "id": "gad7",
+      "meta": {
+        "domains": [
+          "anxiety"
+        ],
+        "type": "severity",
+        "populations": [
+          "adult"
+        ],
+        "featured": true,
+        "source": "Spitzer, Kroenke, Williams & Löwe (2006), Arch Intern Med 166:1092–1097 — English original (GAD-7 is free to reproduce; © Pfizer Inc.)"
+      },
+      "title": "Generalized Anxiety Disorder scale (GAD-7)",
+      "description": "Generalized anxiety symptom severity over the last two weeks (Generalized Anxiety Disorder, GAD-7)",
+      "keywords": [
+        "anxiety",
+        "GAD",
+        "GAD-7",
+        "generalized anxiety",
+        "worry",
+        "screening"
+      ],
+      "defaultOptionSetId": "frequency_4",
+      "optionSets": {
+        "frequency_4": [
+          {
+            "label": "Not at all",
+            "value": 0
+          },
+          {
+            "label": "Several days",
+            "value": 1
+          },
+          {
+            "label": "More than half the days",
+            "value": 2
+          },
+          {
+            "label": "Nearly every day",
+            "value": 3
+          }
+        ]
+      },
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "Over the last two weeks, how often have you been bothered by the following problems?"
+        },
+        {
+          "id": "1",
+          "type": "select",
+          "text": "Feeling nervous, anxious, or on edge"
+        },
+        {
+          "id": "2",
+          "type": "select",
+          "text": "Not being able to stop or control worrying"
+        },
+        {
+          "id": "3",
+          "type": "select",
+          "text": "Worrying too much about different things"
+        },
+        {
+          "id": "4",
+          "type": "select",
+          "text": "Trouble relaxing"
+        },
+        {
+          "id": "5",
+          "type": "select",
+          "text": "Being so restless that it is hard to sit still"
+        },
+        {
+          "id": "6",
+          "type": "select",
+          "text": "Becoming easily annoyed or irritable"
+        },
+        {
+          "id": "7",
+          "type": "select",
+          "text": "Feeling afraid, as if something awful might happen"
+        }
+      ],
+      "scoring": {
+        "method": "sum"
+      },
+      "interpretations": {
+        "target": "total",
+        "type": "severity",
+        "ranges": [
+          {
+            "min": 0,
+            "max": 4,
+            "label": "Minimal"
+          },
+          {
+            "min": 5,
+            "max": 9,
+            "label": "Mild"
+          },
+          {
+            "min": 10,
+            "max": 14,
+            "label": "Moderate"
+          },
+          {
+            "min": 15,
+            "max": 21,
+            "label": "Severe"
+          }
+        ]
+      },
+      "alerts": []
+    }
+  ]
+}

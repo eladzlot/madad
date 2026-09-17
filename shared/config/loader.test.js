@@ -266,6 +266,22 @@ describe('resolved config shape', () => {
     expect(config.questionnaires.find(q => q.id === 'gad7').configFile).toBe('b');
   });
 
+  it('annotates each questionnaire with its config version', async () => {
+    const fetch = makeFetch({
+      '/configs/prod/a.json': { body: { ...minimalConfig([minimalQ('phq9')]), version: '2.1.0' } },
+    });
+    const config = await loadConfig(['a'], { fetch });
+    expect(config.questionnaires[0].configVersion).toBe('2.1.0');
+  });
+
+  it('resolves short names under a language configBase and labels them language-free', async () => {
+    const fetch = makeFetch({
+      '/configs/prod/en/a.json': { body: minimalConfig([minimalQ('phq9')]) },
+    });
+    const config = await loadConfig(['a'], { fetch, configBase: 'configs/prod/en/' });
+    expect(config.questionnaires[0].configFile).toBe('a');
+  });
+
   it('annotates configFile with the full URL when source is not under configBase', async () => {
     const url = 'https://example.com/my-config.json';
     const fetch = makeFetch({ [url]: { body: minimalConfig([minimalQ()]) } });

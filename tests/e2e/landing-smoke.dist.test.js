@@ -54,3 +54,29 @@ test.describe('landing smoke — marketing artifact at its domain root', () => {
     expect(realErrors, 'No CSP violations or runtime errors on landing load').toEqual([]);
   });
 });
+
+test.describe('landing smoke — English variant at /en/', () => {
+  test('/en/ renders LTR English with its assets and hreflang alternates', async ({ page, baseURL }) => {
+    const origin = new URL(baseURL).origin;
+    const badResponses = watchForBadResponses(page, origin);
+    const consoleErrors = watchForConsoleErrors(page);
+
+    await page.goto('/en/');
+    await expect(page.locator('.hero-headline').first()).toContainText('Measurement');
+    await expect(page.locator('html')).toHaveAttribute('dir', 'ltr');
+    await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+    await expect(page.locator('a[href*="items=phq9"][href*="lang=en"]').first()).toBeVisible();
+    await expect(page.locator('link[rel="alternate"][hreflang="he"]')).toHaveAttribute('href', 'https://ezmadad.com/');
+    await expect(page.locator('link[rel="alternate"][hreflang="en"]')).toHaveAttribute('href', 'https://ezmadad.com/en/');
+    // The two pages link to each other.
+    await expect(page.locator('nav a[hreflang="he"]')).toHaveAttribute('href', '../');
+    await page.goto('/');
+    await expect(page.locator('nav a[hreflang="en"]')).toHaveAttribute('href', './en/');
+
+    await page.goto('/en/');
+    await page.waitForLoadState('networkidle');
+    expect(badResponses).toEqual([]);
+    expect(consoleErrors.filter(e => !/favicon/i.test(e))).toEqual([]);
+  });
+});
+

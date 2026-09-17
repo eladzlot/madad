@@ -14,6 +14,7 @@
 import { LitElement, html, css, unsafeCSS, nothing } from 'lit';
 import { clinicianCss } from '../../../clinician/styles/clinician-styles.js';
 import { resetCSS } from '../ui-reset.js';
+import { t } from '../../../clinician/i18n/index.js';
 import { tabLabel } from '../taxonomy.js';
 import './catalog-card.js';
 
@@ -141,7 +142,7 @@ export class CatalogList extends LitElement {
       <div class="cross-tab">
         ${this.crossTab.map(({ tab, count }) => html`
           <button class="link-btn" type="button" @click=${() => this._emit('tab-change', { tab })}>
-            נמצאו עוד ${count} ב${tabLabel(tab)}
+            ${t('list.moreIn', { count, tab: tabLabel(tab) })}
           </button>
         `)}
       </div>
@@ -153,10 +154,10 @@ export class CatalogList extends LitElement {
       const searching = !!this.query?.trim() || this.filtersActive;
       return html`
         <div class="empty">
-          <p>${searching ? 'אין תוצאות לחיפוש זה.' : 'אין פריטים בקטגוריה זו.'}</p>
+          <p>${searching ? t('list.noResults') : t('list.emptyCategory')}</p>
           ${searching ? this._crossTabHints() : nothing}
           <p class="help-hint">
-            <a href="../help/">איך עובדים עם מדד?</a>
+            <a href="../help/">${t('list.helpLink')}</a>
           </p>
         </div>
       `;
@@ -169,26 +170,26 @@ export class CatalogList extends LitElement {
       ${showNote ? html`
         <div class="curated-note">
           ${this._confirmRestore ? html`
-            <span class="confirm-prompt">לבטל את ההתאמות ולשחזר את רשימת המומלצים?</span>
+            <span class="confirm-prompt">${t('list.confirmRestore')}</span>
             <span class="note-actions">
               <button class="link-btn danger restore-confirm" type="button" @click=${this._confirmRestoreNow}>
-                שחזר
+                ${t('list.restore')}
               </button>
               <button class="link-btn restore-cancel" type="button" @click=${this._cancelRestore}>
-                ביטול
+                ${t('list.cancel')}
               </button>
             </span>
           ` : html`
-            <span>השאלונים המומלצים שלך</span>
+            <span>${t('list.recommended')}</span>
             <span class="note-actions">
               ${this.hasBeyond ? html`
                 <button class="link-btn" type="button" @click=${() => this._emit('show-all', {})}>
-                  הצג הכל
+                  ${t('list.showAll')}
                 </button>
               ` : nothing}
               ${this.customized ? html`
                 <button class="link-btn restore-trigger" type="button" @click=${this._askRestore}>
-                  שחזר מומלצים
+                  ${t('list.restoreRecommended')}
                 </button>
               ` : nothing}
             </span>

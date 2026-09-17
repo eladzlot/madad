@@ -1,5 +1,6 @@
 import { LitElement, html, css } from 'lit';
 import { resetCSS } from '../styles/reset.js';
+import { t } from '../i18n/index.js';
 
 /**
  * <results-screen>
@@ -229,9 +230,9 @@ export class ResultsScreen extends LitElement {
   render() {
     return html`
       <div class="header">
-        <p class="eyebrow">סיכום הערכה</p>
-        <h1 class="title">התוצאות שלך</h1>
-        <p class="review-hint">ניתן לחזור אחורה ולשנות תשובות — התוצאות והדוח יתעדכנו בהתאם.</p>
+        <p class="eyebrow">${t('results.eyebrow')}</p>
+        <h1 class="title">${t('results.title')}</h1>
+        <p class="review-hint">${t('results.hint')}</p>
       </div>
 
       <div class="scores">
@@ -265,13 +266,13 @@ export class ResultsScreen extends LitElement {
       <div class="actions">
         ${this._pdfError ? html`
           <div class="pdf-error" role="alert">
-            <p class="pdf-error__msg">לא ניתן להכין את הדוח. בדוק את חיבור האינטרנט ונסה שנית.</p>
+            <p class="pdf-error__msg">${t('results.pdfError')}</p>
             <button
               class="pdf-btn pdf-btn--primary"
               ?disabled=${this.loading}
               @click=${this._handleRetry}
             >
-              ${this.loading ? 'מכין דוח...' : 'נסה שוב'}
+              ${this.loading ? t('results.preparing') : t('results.retry')}
             </button>
           </div>
         ` : this.canShare ? html`
@@ -280,14 +281,14 @@ export class ResultsScreen extends LitElement {
             ?disabled=${this.loading}
             @click=${this._handleShare}
           >
-            ${this.loading ? 'מכין דוח...' : 'שתף דוח PDF'}
+            ${this.loading ? t('results.preparing') : t('results.share')}
           </button>
           <button
             class="pdf-btn pdf-btn--secondary"
             ?disabled=${this.loading}
             @click=${this._handleDownload}
           >
-            הורד דוח PDF
+            ${t('results.download')}
           </button>
         ` : html`
           <button
@@ -295,7 +296,7 @@ export class ResultsScreen extends LitElement {
             ?disabled=${this.loading}
             @click=${this._handleDownload}
           >
-            ${this.loading ? 'מכין דוח...' : 'הורד דוח PDF'}
+            ${this.loading ? t('results.preparing') : t('results.download')}
           </button>
         `}
       </div>

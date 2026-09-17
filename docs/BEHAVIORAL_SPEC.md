@@ -141,7 +141,7 @@ The PDF contains the following sections in order:
 5. **Footer** — generation timestamp, app version, and configuration version.
 
 ### 6.2 Language and Layout
-The default language is Hebrew with right-to-left layout throughout. Language is configurable per deployment. Hebrew RTL is the only currently implemented language.
+The default language is Hebrew with right-to-left layout throughout. A link may carry `lang=<code>` (currently `en`), in which case the patient sees the questionnaire, every screen and the PDF in that language, with the layout direction the language needs; the Composer only offers a language for instruments that have been published in it. The clinician surfaces follow a per-browser preference (`?lang=`, then the stored choice, then the browser language). Full design: `docs/I18N_SPEC.md`.
 
 ### 6.3 Delivery
 The patient downloads the PDF from the results screen and shares it with the clinician via an agreed channel (e.g. messaging app, email, in person). Transmission of the PDF is outside the scope of this application.
@@ -210,5 +210,5 @@ The following are explicitly excluded from the current version:
 - Narrative clinical summaries in the PDF
 - Severity tier rendering in the PDF (data model is ready; rendering is not implemented)
 - Patient name in the URL
-- Languages other than Hebrew
+- Languages beyond Hebrew and English (Russian and Arabic are planned — `docs/I18N_SPEC.md` §14)
 - Randomised item ordering (node type is defined in schema; execution throws `NotImplementedError`)

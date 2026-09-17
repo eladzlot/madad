@@ -27,6 +27,7 @@ async function mount(entries) {
 const listEl = (el) => el.shadowRoot.querySelector('catalog-list');
 const cards = (el) => [...listEl(el).shadowRoot.querySelectorAll('catalog-card')];
 const cart = (el) => el.shadowRoot.querySelector('selection-cart');
+const bar  = (el) => el.shadowRoot.querySelector('mobile-bar');
 
 describe('composer-app', () => {
   beforeEach(() => {
@@ -35,20 +36,33 @@ describe('composer-app', () => {
     vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue();
   });
 
-  it('renders the nav, controls, list, and cart', async () => {
+  it('renders the nav, controls, list, the rail and the phone bar', async () => {
     const { el } = await mount([entry('phq9')]);
     expect(el.shadowRoot.querySelector('clinician-nav')).not.toBeNull();
     expect(el.shadowRoot.querySelector('catalog-controls')).not.toBeNull();
     expect(el.shadowRoot.querySelector('catalog-list')).not.toBeNull();
     expect(cart(el)).not.toBeNull();
+    expect(bar(el)).not.toBeNull();
+    // The link lives in the rail; there is no bottom bar on desktop.
+    expect(el.shadowRoot.querySelector('output-bar')).toBeNull();
   });
 
-  it('toggling a card updates the store and the cart URL', async () => {
+  it('toggling a card updates the store and the link in the rail', async () => {
     const { el, store } = await mount([entry('phq9')]);
     cards(el)[0].shadowRoot.querySelector('button').click();
     await el.updateComplete;
     expect(store.selected).toEqual(['phq9']);
     expect(cart(el).url).toContain('items=phq9');
+    expect(cart(el).entries.map(e => e.id)).toEqual(['phq9']);
+    expect(bar(el).url).toContain('items=phq9');
+  });
+
+  it('hands an invalid pid to both surfaces so the field it lives in is revealed', async () => {
+    const { el, store } = await mount([entry('phq9')]);
+    store.setPid('bad pid!');
+    await el.updateComplete;
+    expect(cart(el).pidWarning).toBeTruthy();
+    expect(bar(el).pidWarning).toBeTruthy();
   });
 
   it('reorder event from the cart reorders the store selection', async () => {
@@ -80,7 +94,7 @@ describe('composer-app', () => {
     const { el, store } = await mount([entry('phq9')]);
     store.toggle('phq9');
     await el.updateComplete;
-    cart(el).dispatchEvent(new CustomEvent('reset', { bubbles: true, composed: true }));
+    bar(el).dispatchEvent(new CustomEvent('reset', { bubbles: true, composed: true }));
     expect(store.selected).toEqual([]);
   });
 

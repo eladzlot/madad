@@ -82,7 +82,8 @@ This document specifies how Madad is to be built. It is intended for the develop
 │       ├── search.js / taxonomy.js / ui-reset.js
 │       ├── preview/preview-model.js
 │       └── components/               # composer-app, catalog-{card,list,controls},
-│                                     # selection-cart, mobile-bar, preview-dialog
+│                                     # selection-cart, session-settings, mobile-bar,
+│                                     # qr-code, preview-dialog
 ├── aggregate/                        # Clinician trajectory surface (see AGGREGATE_SPEC.md)
 │   ├── index.html
 │   └── src/                          # aggregate.js, parse-pdf.js, store.js, chart/, components/

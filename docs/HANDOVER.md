@@ -32,7 +32,9 @@ A static web application for clinical psychological assessment. No backend, no d
 | Composer | `https://app.ezmadad.com/composer/` | clinician |
 | Aggregate (סיכום מטופל) | `https://app.ezmadad.com/aggregate/` | clinician |
 | Help | `https://app.ezmadad.com/help/` | clinician |
-| Landing page | `https://ezmadad.com/` | prospective clinicians |
+| Landing page | `https://ezmadad.com/` (Hebrew), `https://ezmadad.com/en/` (English) | prospective clinicians |
+
+**Languages:** Hebrew (canonical) and English. The patient language rides in the link (`lang=`); the clinician UI language is a per-browser preference with a nav toggle. Design and decisions: `docs/I18N_SPEC.md`.
 
 Hosting: Cloudflare Pages — projects `madad-app` (app entry points) and `madad-landing` (landing).
 **Legacy:** `https://eladzlot.github.io/madad/` serves a redirect shim to the new domains (removal pending — migration Stage 9, `docs/CLOUDFLARE_MIGRATION.md`).
@@ -112,8 +114,10 @@ Clinician-side surfaces (`composer/`, `aggregate/`, `help/`) are separate Vite e
 
 - Data source: generated catalog index (`public/composer/catalog.json`) built by `scripts/build-catalog.mjs` → `shared/catalog/build-catalog.js`, which **scans `public/configs/prod/`** (there is no manifest). Run `npm run build:catalog` after editing configs and commit the result; CI enforces freshness via `npm run validate:catalog`. The composer never downloads full configs. See `docs/COMPOSER_SPEC.md` §Config Discovery.
 - Browse by taxonomy tabs + real-time search, drag-to-reorder selection cart, keyboard navigation, instrument preview dialog
+- Layout is two panels (D-20): the browse column and the rail. `<selection-cart>` is the rail — one fixed head (the link with copy/QR/open/share, then the session-settings chips) over the picked list, which is the only part that scrolls. **There is no bottom bar on desktop.** Below 768px the rail is hidden and `<mobile-bar>` takes over: a fixed bar (chevron'd count → sheet, QR, primary action, no URL) whose sheet body is **the same `<selection-cart>`** in `compact` mode — one renderer, two hosts
+- Session settings (patient language, patient ID) are **value chips** (`<session-settings>`). An unset chip is dashed — an empty slot, not a disabled control. Language is a `<select>` wearing a chip (one click to the native list; the list is open-ended, see I18N-8/9); the ID chip reveals one labelled field and focuses it, and opens itself on an invalid pid or when a language switch drops entries
 - Personal recommended-set pins: the clinician pins/unpins instruments on top of the author-curated `featured` flag; only the `{ added, removed }` difference is persisted (localStorage, per browser) so new author recommendations keep flowing in — `composer/src/composer-profile.js`
-- Mobile bar: share button (HTTPS only) with copy-link fallback on HTTP
+- Output: share (HTTPS only) is the primary action on phones, with a copy-link fallback on HTTP; the QR button opens `<qr-code>`'s dialog directly via its public `expand()` (`tileless` mode — no preview tile, so the footprint never changes). The rail head holds its height whether or not a link exists — measured at 264px, y=73, empty or picked — so nothing shifts on the first pick
 - Full dark theme via `@media (prefers-color-scheme: dark)`
 - Config `meta` taxonomy block (domains/type/populations/tags/featured/durationMinutes) on all prod instruments drives catalog filtering — see `CONFIG_SCHEMA_SPEC.md` §4a
 
@@ -129,9 +133,10 @@ Clinician drops Madad PDFs in and gets per-instrument trajectory charts. Statele
 
 ### Other surfaces
 
-- Help page at `/help/` — static Hebrew/RTL content, shares the clinician nav and design vocabulary
-- Landing page at `/landing/` — direction 5 (radical simplicity), RTL, Hebrew, built separately into `dist-landing/`
-- Favicon: SVG `מ` on teal at `public/favicon.svg`; Hebrew `<title>` on all pages
+- Help page at `/help/` — static content, one `<main>` per language, shares the clinician nav and design vocabulary
+- Landing page at `/landing/` (+ `/landing/en/`) — direction 5 (radical simplicity), Hebrew RTL and English LTR pages sharing `landing/landing.css`, built separately into `dist-landing/`
+- Favicon: SVG `מ` on teal at `public/favicon.svg`; `<title>` set per language at boot on every JS surface
+- Multi-language: `shared/i18n/core.js` (LANGS, `configBaseFor`, `makeT`, clinician-language resolution), string tables in `src/i18n/` (patient + PDF) and `clinician/i18n/` (nav, Composer, Aggregate), translated configs under `public/configs/prod/<lang>/` with CI structural parity, catalog v2 `languages`/`i18n`, envelope `lang` — `docs/I18N_SPEC.md`
 
 ### Build, test, CI
 
@@ -389,7 +394,8 @@ The pre-collapse bundle files (`standard.json`, `trauma.json`, `intake.json`, `o
 │       ├── search.js, taxonomy.js, ui-reset.js
 │       ├── preview/preview-model.js
 │       └── components/           # composer-app, catalog-{card,list,controls},
-│                                 # selection-cart, mobile-bar, preview-dialog
+│                                 # selection-cart, session-settings, mobile-bar,
+│                                 # qr-code, preview-dialog
 ├── aggregate/                    # Aggregate surface (separate Vite entry point)
 │   ├── index.html
 │   └── src/
@@ -448,7 +454,7 @@ A config marked `"dev": true` at the top level is skipped in production builds (
 Multi-config dependencies: if a config references instruments defined in another file, declare it in the config's `"dependencies"` array. The patient app's `loadConfig` auto-fetches declared dependencies at runtime (BFS walk), so generated URLs name only the selected items' configs.
 
 ### URL design
-Patient URLs carry `?items=<id>,<id>` plus the pid in the fragment (`#pid=<pid>`; legacy `?pid=` is still read). **Item IDs are addresses**: the app expands each token to `configs/prod/<id>.json` (one entity per file, filename = id — enforced by `validate:configs`). A legacy `configs=` parameter from bundle-era URLs is ignored; those URLs' items still resolve, so old links keep working. Item IDs are the stable external contract — never rename or delete a prod config file (see `docs/COMPOSER_SPEC.md`).
+Patient URLs carry `?items=<id>,<id>`, optionally `&lang=<code>` (absent ⇒ Hebrew; the loader then reads `configs/prod/<lang>/<id>.json`), plus the pid in the fragment (`#pid=<pid>`; legacy `?pid=` is still read). **Item IDs are addresses**: the app expands each token to `configs/prod/<id>.json` (one entity per file, filename = id — enforced by `validate:configs`). A legacy `configs=` parameter from bundle-era URLs is ignored; those URLs' items still resolve, so old links keep working. Item IDs are the stable external contract — never rename or delete a prod config file (see `docs/COMPOSER_SPEC.md`).
 
 The loader (`shared/config/loader.js`) accepts short names, full paths, and root-relative paths; all normalise to the same canonical URL internally (visited-set dedupes).
 
@@ -561,3 +567,6 @@ To add a new instrument: `public/configs/CONTRIBUTING.md`.
 - **`allowedOrigins` default in `loadConfig`** — defaults to `location.origin` (same-origin only). Making this default permissive re-opens the external config injection vulnerability. The correct pattern for future external-config support is an explicit `allowedOrigins` set at the call site in `src/app.js`.
 - **`config-validation.js` binary-item options check** — binary items must have explicit options (inline, via `optionSetId`, or via the questionnaire's `defaultOptionSetId`). The validator rejects bare binary items with an actionable error message including a copy-pasteable fix. Do not loosen this — explicit per-questionnaire labels are clinically safer than a hardcoded global default. The component contains no fallback labels.
 - **`public/configs/prod/<id>.json` filenames** — item IDs are the external contract carried in every link a clinician has already sent and every PDF already generated. Never rename or delete one.
+- **`public/configs/prod/<lang>/<id>.json` translations** — the same id and structure as the Hebrew file with only text changed; `validate:configs` proves it (`shared/config/translation-parity.js`). A structural change to a Hebrew file must be mirrored in every translation, or CI fails. Hebrew never lives under a language directory. Language codes come only from `shared/i18n/core.js` `LANGS`.
+- **`lang=` in patient links** — absent means Hebrew forever; an unknown code is a malformed link, never a silent fallback (the patient must get the language the clinician chose). String tables must keep key parity with `he` (tested); `makeT` never throws or returns blank on a missing key.
+- **`src/pdf/report.js` — direction layout** — builders are authored in RTL visual order and read `L` (`layoutFor(lang)`); new builders must go through `L.align` / `L.cols` / `L.text`, never a literal `'right'` or a bare `bidiNodes()` call, or the English PDF breaks.

@@ -1,6 +1,7 @@
 import { LitElement, html, css } from 'lit';
 import { resetCSS } from '../styles/reset.js';
 import { isSafePattern, MAX_VALIDATED_LENGTH } from '../../shared/safe-pattern.js';
+import { t } from '../i18n/index.js';
 
 /**
  * <item-text>
@@ -127,12 +128,12 @@ export class ItemText extends LitElement {
 
     if (inputType === 'number') {
       const num = Number(value);
-      if (isNaN(num))           return 'יש להזין מספר';
-      if (min != null && num < min) return `המינימום הוא ${min}`;
-      if (max != null && num > max) return `המקסימום הוא ${max}`;
+      if (isNaN(num))           return t('text.number');
+      if (min != null && num < min) return t('text.min', { min });
+      if (max != null && num > max) return t('text.max', { max });
     }
     if (inputType === 'email') {
-      if (!value.includes('@')) return 'כתובת דוא"ל לא תקינה';
+      if (!value.includes('@')) return t('text.email');
     }
     // Pattern validation is a convenience, never a security control, so both
     // guards below fail open: an unsafe pattern or an over-long answer simply
@@ -142,7 +143,7 @@ export class ItemText extends LitElement {
     // passed. See shared/safe-pattern.js.
     if (pattern && value.length <= MAX_VALIDATED_LENGTH && isSafePattern(pattern)) {
       try {
-        if (!new RegExp(pattern).test(value)) return 'הערך אינו בפורמט הנדרש';
+        if (!new RegExp(pattern).test(value)) return t('text.pattern');
       } catch { /* malformed pattern — skip */ }
     }
     return '';
@@ -219,7 +220,7 @@ export class ItemText extends LitElement {
         ${this._error ? html`<span class="error" role="alert">${this._error}</span>` : ''}
       </div>
       <button class="submit-btn" @click=${this._submit}>
-        ${isRequired || this._value ? 'המשך' : 'המשך ללא מילוי'}
+        ${isRequired || this._value ? t('item.continue') : t('item.continueEmpty')}
       </button>
     `;
   }

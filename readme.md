@@ -14,7 +14,7 @@ A free, open-source, browser-only tool for mental health clinicians. The clinici
 - **Patient** → opens the link, answers one item at a time, downloads a PDF.
 - **Aggregate** → `/aggregate/` (סיכום מטופל): drop past Madad PDFs in to see per-instrument trajectory charts. Stateless, in-browser.
 
-Everything runs client-side. Patient answers never leave the device; the patient ID rides in the URL fragment so it never reaches a server log. Instruments are one file each under `public/configs/prod/` — item IDs are URL addresses (`?items=phq9,gad7`). All content is in Hebrew.
+Everything runs client-side. Patient answers never leave the device; the patient ID rides in the URL fragment so it never reaches a server log. Instruments are one file each under `public/configs/prod/` — item IDs are URL addresses (`?items=phq9,gad7`). Hebrew is the canonical language; a translation is a sibling file under `public/configs/prod/<lang>/` and a link opens in that language with `&lang=<code>` (English today; see `docs/I18N_SPEC.md`).
 
 ## Stack
 

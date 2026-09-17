@@ -1,0 +1,53 @@
+{
+  "id": "trauma_eval",
+  "version": "1.0.0",
+  "questionnaires": [],
+  "batteries": [
+    {
+      "id": "trauma_eval",
+      "meta": {
+        "domains": [
+          "trauma"
+        ],
+        "populations": [
+          "adult"
+        ],
+        "featured": true,
+        "source": "Madad original"
+      },
+      "title": "Initial trauma assessment",
+      "description": "Brief trauma screen (PC-PTSD-5). If positive — in-depth assessment with the PCL-5 and the Posttraumatic Cognitions Inventory (PTCI).",
+      "keywords": [
+        "trauma",
+        "PTSD",
+        "PCL-5",
+        "PTCI",
+        "assessment",
+        "screening"
+      ],
+      "sequence": [
+        {
+          "questionnaireId": "pc_ptsd5"
+        },
+        {
+          "type": "if",
+          "condition": "score.pc_ptsd5 >= 4",
+          "then": [
+            {
+              "questionnaireId": "pcl5"
+            },
+            {
+              "questionnaireId": "ptci"
+            }
+          ],
+          "else": []
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    "configs/prod/en/pc_ptsd5.json",
+    "configs/prod/en/pcl5.json",
+    "configs/prod/en/ptci.json"
+  ]
+}

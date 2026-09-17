@@ -1,0 +1,73 @@
+{
+  "id": "cpt_abc",
+  "version": "1.2.0",
+  "questionnaires": [
+    {
+      "id": "cpt_abc",
+      "meta": {
+        "domains": [
+          "trauma"
+        ],
+        "type": "worksheet",
+        "populations": [
+          "adult"
+        ],
+        "tags": [
+          "CPT",
+          "iCPT"
+        ],
+        "source": "Resick, Monson & Chard (2017), Cognitive Processing Therapy for PTSD: A Comprehensive Manual — ABC Worksheet; Madad wording of the prompts"
+      },
+      "title": "ABC Worksheet (CPT)",
+      "description": "CPT worksheet that breaks an experience into three parts — Activating event, Belief and Consequence (ABC) — and takes a first look at the belief. The patient fills it in about an everyday or trauma-related event that raised a negative emotion.",
+      "keywords": [
+        "CPT",
+        "ABC",
+        "worksheet",
+        "stuck point",
+        "belief",
+        "activating event"
+      ],
+      "items": [
+        {
+          "id": "event",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "A. Activating event — “Something happens.” What happened?",
+          "required": true
+        },
+        {
+          "id": "thought",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "B. Belief / stuck point — “I tell myself something.” What went through your mind?",
+          "required": true
+        },
+        {
+          "id": "emotion",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "C. Consequence — “I feel something.” What did you feel?",
+          "required": true
+        },
+        {
+          "id": "realistic",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "Are your thoughts in “B” realistic and/or helpful?",
+          "required": false
+        },
+        {
+          "id": "future",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "What can you tell yourself in situations like this in the future?",
+          "required": false
+        }
+      ],
+      "scoring": {
+        "method": "none"
+      }
+    }
+  ]
+}

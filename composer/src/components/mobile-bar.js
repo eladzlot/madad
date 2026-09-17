@@ -1,30 +1,42 @@
-// <mobile-bar> — the mobile selection surface (the cart has no room on phones).
+// <mobile-bar> — the phone's stand-in for the desktop rail.
 //
-// A sticky bottom bar shows "נבחרו N" and the primary share/copy action; tapping
-// it opens a bottom sheet with the same output the desktop cart carries: the
-// ordered selection (reorder + remove), the patient-ID field, the generated
-// link, and reset. Emits the identical events as <selection-cart> so
-// <composer-app> handles both surfaces through one path:
-//   reorder { from, to } · remove { id } · pid-change { pid }
-//   copy · share · open · reset
+// Phones have no room for a rail beside the catalog, so the panel the rail
+// shows lives in a bottom sheet instead, and a fixed bar stays on screen to
+// open it and to keep the primary action within one thumb's reach.
 //
-// The sheet's reorder is the "mobile de-scope valve" checkpoint in the plan: if
-// it proves too cramped in the mobile demo, ↑/↓ can be dropped for phones while
-// the rest stays.
+// The sheet's body is <selection-cart> — the very same component the rail
+// renders, in `compact` mode. There is no second implementation of the
+// selection, the settings or the link.
+//
+// The bar's count button carries a chevron. Without it the count read as a
+// status line rather than a control, and nothing invited the tap that reveals
+// the panel. It is not shown on desktop at all (the rail is right there).
+//
+// Emits the identical events as <selection-cart>, which bubble through the
+// sheet, plus its own:
+//   copy · share · open · reorder · remove · pid-change ·
+//   patient-lang-change · dropped-dismiss · reset
 
 import { LitElement, html, css, unsafeCSS, nothing } from 'lit';
 import { clinicianCss } from '../../../clinician/styles/clinician-styles.js';
 import { resetCSS } from '../ui-reset.js';
+import { t } from '../../../clinician/i18n/index.js';
+import { DEFAULT_LANG } from '../../../shared/i18n/core.js';
+import './selection-cart.js';
 import './qr-code.js';
 
 export class MobileBar extends LitElement {
   static properties = {
-    entries:  { type: Array },
-    url:      { type: String },
-    pid:      { type: String },
-    copied:   { type: Boolean },
-    canShare: { type: Boolean },
-    _open:    { type: Boolean, state: true },
+    entries:     { type: Array },
+    url:         { type: String },
+    pid:         { type: String },
+    patientLang: { type: String },
+    langs:       { type: Array },
+    dropped:     { type: Array },
+    pidWarning:  { type: String },
+    copied:      { type: Boolean },
+    canShare:    { type: Boolean },
+    _open:       { type: Boolean, state: true },
   };
 
   constructor() {
@@ -32,9 +44,24 @@ export class MobileBar extends LitElement {
     this.entries = [];
     this.url = null;
     this.pid = '';
+    this.patientLang = DEFAULT_LANG;
+    this.langs = [DEFAULT_LANG];
+    this.dropped = [];
+    this.pidWarning = '';
     this.copied = false;
     this.canShare = false;
     this._open = false;
+    this._onKeydown = (e) => { if (e.key === 'Escape' && this._open) this._close(); };
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    globalThis.addEventListener?.('keydown', this._onKeydown);
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    globalThis.removeEventListener?.('keydown', this._onKeydown);
   }
 
   static styles = [resetCSS, unsafeCSS(clinicianCss), css`
@@ -49,12 +76,59 @@ export class MobileBar extends LitElement {
       align-items: center;
       gap: var(--space-sm, 8px);
       padding: var(--space-sm, 8px) var(--space-md, 16px);
+      padding-block-end: calc(var(--space-sm, 8px) + env(safe-area-inset-bottom, 0px));
       background: var(--clin-header-bg, #1B3148);
       border-block-start: var(--border-width, 1px) solid rgba(255,255,255,0.12);
     }
-    .count { flex: 1; color: #fff; font-size: var(--font-size-sm, 14px); }
-    .count.muted { color: rgba(255,255,255,0.6); }
 
+    /* The count is the control that opens the panel, so it says so. */
+    .count-btn {
+      flex: 1;
+      min-inline-size: 0;
+      justify-content: flex-start;
+      gap: 6px;
+      background: rgba(255,255,255,0.12);
+      border-color: rgba(255,255,255,0.30);
+      color: #fff;
+    }
+    .count-btn:not(:disabled):hover {
+      background: rgba(255,255,255,0.20);
+      border-color: var(--color-accent, #2BB3C0);
+    }
+    .chev { inline-size: 14px; block-size: 14px; flex-shrink: 0; opacity: 0.9; }
+    .count {
+      min-inline-size: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .c-btn--bar {
+      background: rgba(255,255,255,0.12);
+      border-color: rgba(255,255,255,0.30);
+      color: #fff;
+      min-inline-size: var(--item-min-touch, 44px);
+      padding-inline: var(--space-sm, 8px);
+    }
+    .c-btn--bar:not(:disabled):hover {
+      background: rgba(255,255,255,0.20);
+      border-color: var(--color-accent, #2BB3C0);
+      color: var(--color-accent, #2BB3C0);
+    }
+    .c-btn--go {
+      background: var(--color-accent, #2BB3C0);
+      color: var(--color-primary-text, #162232);
+      font-weight: var(--font-weight-bold, 600);
+    }
+    .c-btn--go.c-btn--copied {
+      background: color-mix(in srgb, var(--color-yes, #276749) 62%, #ffffff);
+      color: var(--color-primary-text, #162232);
+    }
+    .c-btn { flex-shrink: 0; }
+    .c-btn:focus-visible { outline: 2px solid var(--color-accent, #2BB3C0); outline-offset: 2px; }
+    .icon { inline-size: 17px; block-size: 17px; display: block; }
+
+    /* ── the sheet ── */
     .backdrop {
       position: fixed; inset: 0; z-index: 45;
       background: rgba(0,0,0,0.4);
@@ -64,159 +138,113 @@ export class MobileBar extends LitElement {
       inset-inline: 0;
       inset-block-end: 0;
       z-index: 50;
-      max-block-size: 85dvh;
+      max-block-size: 88dvh;
       overflow-y: auto;
-      background: var(--color-surface, #fff);
-      border-start-start-radius: var(--radius-lg, 16px);
-      border-start-end-radius: var(--radius-lg, 16px);
-      padding: var(--space-md, 16px);
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-lg, 24px);
+      background: var(--clin-rail-bg, #3A5068);
+      border-start-start-radius: var(--radius-lg, 18px);
+      border-start-end-radius: var(--radius-lg, 18px);
+      padding-block-end: env(safe-area-inset-bottom, 0px);
     }
-    .sheet-header { display: flex; align-items: center; justify-content: space-between; }
-    .sheet-title { font-weight: var(--font-weight-bold, 600); font-size: var(--font-size-lg, 18px); }
-
-    .section-label {
-      font-size: var(--font-size-xs, 12px);
-      font-weight: var(--font-weight-bold, 600);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--color-text-muted, #5E7080);
-      margin-block-end: var(--space-xs, 4px);
-    }
-
-    .url-box {
-      font-family: ui-monospace, monospace;
-      font-size: var(--font-size-xs, 12px);
-      background: var(--color-bg, #F2F4F7);
-      border-radius: var(--radius-sm, 6px);
-      padding: var(--space-sm, 8px);
-      word-break: break-all;
-      max-block-size: 84px; overflow-y: auto;
-    }
-
-    input.pid {
-      inline-size: 100%;
-      min-block-size: var(--item-min-touch, 44px);
-      padding-inline: var(--space-md, 16px);
-      border: var(--border-width, 1px) solid var(--color-border, #D5DAE2);
-      border-radius: var(--radius-sm, 6px);
-      background: var(--clin-card-bg, #fff);
-      color: var(--color-text, #162232);
-      font-family: inherit; font-size: var(--font-size-md, 16px);
-    }
-    input.pid:focus { outline: none; border-color: var(--color-border-focus, #2BB3C0); }
-
-    ol { list-style: none; display: flex; flex-direction: column; gap: 6px; }
-    li.item {
-      display: flex; align-items: center; gap: var(--space-xs, 4px);
-      border: var(--border-width, 1px) solid var(--color-border, #D5DAE2);
-      border-radius: var(--radius-sm, 6px);
-      padding: 6px 8px;
-    }
-    .item-title { flex: 1; min-inline-size: 0; font-size: var(--font-size-sm, 14px); }
-    .icon-btn {
-      background: none; border: none; cursor: pointer;
-      color: var(--color-text-muted, #5E7080); font-size: 15px; line-height: 1;
-      padding: 6px; border-radius: var(--radius-sm, 6px);
-    }
-    .icon-btn:disabled { opacity: 0.3; }
-    .btn-row { display: flex; gap: var(--space-sm, 8px); }
-    .c-btn--grow { flex: 1; }
-    .qr-row {
+    .sheet-header {
       display: flex;
       align-items: center;
-      gap: var(--space-md, 16px);
-      margin-block-start: var(--space-sm, 8px);
+      justify-content: space-between;
+      padding: var(--space-md, 16px) 20px 0;
     }
-    .qr-row .hint { flex: 1; font-size: var(--font-size-xs, 12px); color: var(--color-text-muted, #5E7080); }
+    .sheet-title { color: #fff; font-size: var(--font-size-md, 16px); font-weight: var(--font-weight-medium, 500); }
+    .icon-btn {
+      background: none; border: none; cursor: pointer;
+      color: color-mix(in srgb, var(--clin-rail-text, #A8CFDF) 85%, transparent);
+      font-size: 16px; line-height: 1; padding: 6px; border-radius: var(--radius-sm, 6px);
+    }
+    .icon-btn:focus-visible { outline: 2px solid var(--color-border-focus, #2BB3C0); outline-offset: 1px; }
+
+    .sheet-foot { padding: 0 20px var(--space-lg, 24px); }
+    /* .c-btn--ghost is tuned for a light page; on the rail its muted slate is
+       all but invisible. Keep the quiet-action role, restore the contrast. */
+    .reset-btn {
+      color: var(--clin-rail-text, #A8CFDF);
+      border-color: var(--clin-rail-border, #304860);
+    }
+    .reset-btn:hover { color: var(--color-no, #E08A8A); border-color: var(--color-no, #E08A8A); }
+
+    /* The rail is the desktop surface; none of this belongs there. */
+    @media (min-width: 768px) {
+      :host { display: none; }
+    }
   `];
 
   _emit(type, detail = {}) {
     this.dispatchEvent(new CustomEvent(type, { detail, bubbles: true, composed: true }));
   }
-  _onPid(e) { this._emit('pid-change', { pid: e.target.value }); }
+
   _openSheet() { this._open = true; }
-  _closeSheet() { this._open = false; }
-
-  _primary() {
-    const hasUrl = !!this.url;
-    if (this.canShare) {
-      return html`<button class="c-btn c-btn--primary c-btn--sm" ?disabled=${!hasUrl}
-        @click=${() => this._emit('share')}>שתף</button>`;
-    }
-    return html`<button class="c-btn c-btn--primary c-btn--sm ${this.copied ? 'c-btn--copied' : ''}"
-      ?disabled=${!hasUrl} @click=${() => this._emit('copy')}>
-      ${this.copied ? 'הועתק ✓' : 'העתק קישור'}</button>`;
-  }
-
-  _renderItem(entry, i, count) {
-    return html`
-      <li class="item">
-        <span class="item-title">${entry.title ?? entry.id}</span>
-        <button class="icon-btn" type="button" aria-label="הזז מעלה"
-          ?disabled=${i === 0} @click=${() => this._emit('reorder', { from: i, to: i - 1 })}>↑</button>
-        <button class="icon-btn" type="button" aria-label="הזז מטה"
-          ?disabled=${i === count - 1} @click=${() => this._emit('reorder', { from: i, to: i + 1 })}>↓</button>
-        <button class="icon-btn" type="button" aria-label="הסר"
-          @click=${() => this._emit('remove', { id: entry.id })}>✕</button>
-      </li>
-    `;
-  }
+  _close() { this._open = false; }
 
   render() {
     const count = this.entries?.length ?? 0;
     const hasUrl = !!this.url;
 
+    const primary = this.canShare
+      ? html`<button class="c-btn c-btn--go share-btn" type="button"
+          ?disabled=${!hasUrl} @click=${() => this._emit('share')}>${t('cart.share')}</button>`
+      : html`<button class="c-btn c-btn--go copy-btn ${this.copied ? 'c-btn--copied' : ''}"
+          type="button" ?disabled=${!hasUrl} @click=${() => this._emit('copy')}>
+          ${this.copied ? t('cart.copied') : t('cart.copy')}</button>`;
+
     return html`
       <div class="bar">
-        <span class="count ${count ? '' : 'muted'}">
-          ${count ? `נבחרו ${count}` : 'טרם נבחרו שאלונים'}
-        </span>
-        <button class="c-btn c-btn--secondary c-btn--sm" ?disabled=${!count}
-          @click=${this._openSheet}>פרטים</button>
-        ${this._primary()}
+        <button class="c-btn count-btn" type="button"
+          aria-expanded=${this._open ? 'true' : 'false'}
+          ?disabled=${!count} @click=${this._openSheet}>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="m6 15 6-6 6 6"/>
+          </svg>
+          <span class="count">
+            ${count ? t('mobile.selectedCount', { n: count }) : t('mobile.none')}
+          </span>
+        </button>
+        <button class="c-btn c-btn--bar qr-btn" type="button"
+          title=${t('cart.qr')} aria-label=${t('cart.qr')}
+          ?disabled=${!hasUrl}
+          @click=${() => this.renderRoot.querySelector('.bar qr-code')?.expand()}>
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="1.9" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+            <rect x="3" y="14" width="7" height="7"/>
+            <path d="M14 14h3v3h-3zM19 19h2v2h-2zM14 20h2"/>
+          </svg>
+        </button>
+        ${primary}
+        ${hasUrl ? html`<qr-code .url=${this.url} size="104" tileless></qr-code>` : nothing}
       </div>
 
       ${this._open ? html`
-        <div class="backdrop" @click=${this._closeSheet}></div>
-        <div class="sheet" role="dialog" aria-label="הקישור למטופל" aria-modal="true">
+        <div class="backdrop" @click=${this._close}></div>
+        <div class="sheet" role="dialog" aria-label=${t('mobile.sheetTitle')} aria-modal="true">
           <div class="sheet-header">
-            <span class="sheet-title">הקישור למטופל</span>
-            <button class="icon-btn" type="button" aria-label="סגור" @click=${this._closeSheet}>✕</button>
+            <span class="sheet-title">${t('mobile.sheetTitle')}</span>
+            <button class="icon-btn close-btn" type="button"
+              aria-label=${t('mobile.close')} @click=${this._close}>✕</button>
           </div>
 
-          <div>
-            <div class="section-label">נבחרו (${count})</div>
-            <ol>${this.entries.map((e, i) => this._renderItem(e, i, count))}</ol>
-          </div>
+          <selection-cart
+            compact
+            .entries=${this.entries}
+            .url=${this.url}
+            .pid=${this.pid}
+            .patientLang=${this.patientLang}
+            .langs=${this.langs}
+            .dropped=${this.dropped}
+            .pidWarning=${this.pidWarning}
+            .copied=${this.copied}
+            .canShare=${this.canShare}
+          ></selection-cart>
 
-          <div>
-            <label class="section-label" for="sheet-pid">מזהה מטופל (אופציונלי)</label>
-            <input class="pid" id="sheet-pid" type="text" dir="ltr" placeholder="TRC-2025-000123"
-              .value=${this.pid ?? ''} autocomplete="off" spellcheck="false" @input=${this._onPid} />
-          </div>
-
-          <div>
-            <div class="section-label">קישור</div>
-            <div class="url-box" dir="ltr">${hasUrl ? this.url : 'לא נבחרו שאלונים'}</div>
-            ${hasUrl ? html`
-              <div class="qr-row">
-                <qr-code .url=${this.url} size="104" expandable></qr-code>
-                <p class="hint">סרקו עם מצלמת הטלפון, או לחצו על הקוד להגדלה ולהורדה.</p>
-              </div>
-            ` : nothing}
-            <div class="btn-row" style="margin-block-start: var(--space-sm, 8px)">
-              <button class="c-btn c-btn--primary c-btn--grow ${this.copied ? 'c-btn--copied' : ''}"
-                ?disabled=${!hasUrl} @click=${() => this._emit('copy')}>
-                ${this.copied ? 'הועתק ✓' : 'העתק קישור'}</button>
-              <button class="c-btn c-btn--secondary c-btn--sm" ?disabled=${!hasUrl}
-                @click=${() => this._emit('open')}>↗</button>
-            </div>
-            <div class="btn-row" style="margin-block-start: var(--space-sm, 8px)">
-              <button class="c-btn c-btn--ghost c-btn--sm" @click=${() => this._emit('reset')}>↺ איפוס</button>
-            </div>
+          <div class="sheet-foot">
+            <button class="c-btn c-btn--ghost c-btn--sm reset-btn" type="button"
+              @click=${() => this._emit('reset')}>${t('mobile.reset')}</button>
           </div>
         </div>
       ` : nothing}

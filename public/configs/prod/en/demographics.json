@@ -1,0 +1,158 @@
+{
+  "id": "demographics",
+  "version": "1.0.0",
+  "questionnaires": [
+    {
+      "id": "demographics",
+      "meta": {
+        "domains": [
+          "intake"
+        ],
+        "type": "other",
+        "populations": [
+          "adult"
+        ],
+        "source": "Madad original"
+      },
+      "title": "Personal details",
+      "description": "Personal details and a short description of the referral.",
+      "keywords": [
+        "demographics",
+        "intake",
+        "personal"
+      ],
+      "items": [
+        {
+          "id": "name",
+          "type": "text",
+          "text": "Full name",
+          "inputType": "line",
+          "required": true
+        },
+        {
+          "id": "phone",
+          "type": "text",
+          "text": "Phone number",
+          "inputType": "line"
+        },
+        {
+          "id": "email",
+          "type": "text",
+          "text": "Email address",
+          "inputType": "email"
+        },
+        {
+          "id": "age",
+          "type": "text",
+          "text": "Age",
+          "inputType": "number",
+          "min": 0,
+          "max": 120
+        },
+        {
+          "id": "gender",
+          "type": "select",
+          "text": "Sex",
+          "options": [
+            {
+              "label": "Male",
+              "value": 1
+            },
+            {
+              "label": "Female",
+              "value": 2
+            },
+            {
+              "label": "Other",
+              "value": 3
+            }
+          ],
+          "required": false
+        },
+        {
+          "id": "referral_source",
+          "type": "select",
+          "text": "How did you find us?",
+          "options": [
+            {
+              "label": "Referral from a physician / therapist",
+              "value": 1
+            },
+            {
+              "label": "Recommendation from an acquaintance",
+              "value": 2
+            },
+            {
+              "label": "Internet search",
+              "value": 3
+            },
+            {
+              "label": "Health fund / National Insurance",
+              "value": 4
+            },
+            {
+              "label": "Other",
+              "value": 5
+            }
+          ],
+          "required": false
+        },
+        {
+          "id": "presenting_problem",
+          "type": "text",
+          "text": "Briefly describe what brings you to seek treatment now",
+          "inputType": "multiline"
+        },
+        {
+          "id": "previous_treatment",
+          "type": "select",
+          "text": "Have you received mental-health treatment in the past?",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Yes, a long time ago",
+              "value": 1
+            },
+            {
+              "label": "Yes, recently (within the last year)",
+              "value": 2
+            },
+            {
+              "label": "Yes, currently in treatment",
+              "value": 3
+            }
+          ],
+          "required": false
+        },
+        {
+          "id": "medication",
+          "type": "select",
+          "text": "Are you currently taking psychiatric medication?",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Yes",
+              "value": 1
+            }
+          ],
+          "required": false
+        },
+        {
+          "id": "medication_details",
+          "type": "text",
+          "text": "If yes, which medications? (name and dose)",
+          "inputType": "line"
+        }
+      ],
+      "scoring": {
+        "method": "none"
+      }
+    }
+  ]
+}

@@ -36,7 +36,28 @@ async function gotoComposer(page) {
 const searchBox = (page) => page.locator('catalog-controls input[type="search"]');
 const cardButton = (page, id) => page.locator(`catalog-card[data-id="${id}"] button.card`);
 const previewButton = (page, id) => page.locator(`catalog-card[data-id="${id}"] button.preview-btn`);
-const urlBox = (page) => page.locator('selection-cart .url-box');
+// <selection-cart> is one component with two hosts: it is the rail on desktop
+// and the body of the phone's sheet. Same selectors either way — which is why
+// these tests run in both viewports instead of skipping half of themselves.
+// On a phone the rail is still in the DOM (hidden by CSS) while the sheet
+// holds a second instance, so the scope has to name the visible one.
+const outputScope = (isMobile) => (isMobile ? 'mobile-bar selection-cart' : 'selection-cart');
+const urlBox = (page, isMobile) => page.locator(`${outputScope(isMobile)} .url-line`);
+
+// On a phone the rail is a sheet the bar opens; on desktop it is already there.
+async function openOutput(page, isMobile) {
+  if (!isMobile) return;
+  await page.locator('mobile-bar .count-btn').click();
+  await expect(page.locator('mobile-bar .sheet')).toBeVisible();
+}
+
+// The patient ID sits behind a chip in <session-settings> — set once per
+// patient, so it is one click away rather than permanently on screen.
+async function fillPid(page, isMobile, value) {
+  const scope = outputScope(isMobile);
+  await page.locator(`${scope} session-settings .pid-chip`).click();
+  await page.locator(`${scope} session-settings #settings-pid`).fill(value);
+}
 
 // The category switch (tabs) and filter chips are collapsed behind the סינון
 // caret — open it before touching a tab.
@@ -74,72 +95,90 @@ test.describe('page load', () => {
   });
 });
 
-// ── Selection → URL (desktop cart) ─────────────────────────────────────────────
+// ── Selection → link ──────────────────────────────────────────────────────────
 
 test.describe('selection', () => {
-  test.beforeEach(async ({ isMobile }) => {
-    test.skip(isMobile, 'the URL cart is desktop-only; mobile uses the bottom sheet');
-  });
-
-  test('checking an item generates an items= URL', async ({ page }) => {
+  test('checking an item generates an items= URL', async ({ page, isMobile }) => {
     await gotoComposer(page);
     await selectItem(page, 'phq9');
-    await expect(urlBox(page)).toContainText('items=phq9');
+    await openOutput(page, isMobile);
+    await expect(urlBox(page, isMobile)).toContainText('items=phq9');
   });
 
-  test('unchecking clears the URL', async ({ page }) => {
+  test('unchecking clears the link', async ({ page, isMobile }) => {
     await gotoComposer(page);
     await selectItem(page, 'phq9');
+    if (isMobile) await expect(page.locator('mobile-bar .count')).toContainText('נבחרו 1');
     await cardButton(page, 'phq9').click(); // toggle off (phq9 visible in curated view)
-    await expect(urlBox(page)).toContainText('לא נבחרו');
+    // The phone reports the empty state on its bar; the rail shows the
+    // placeholder link, at the same height it had a moment ago.
+    if (isMobile) await expect(page.locator('mobile-bar .count')).toContainText('טרם');
+    else await expect(urlBox(page, isMobile)).toContainText('לא נבחרו');
   });
 
-  test('the cart lists selections in order', async ({ page }) => {
+  test('the picked list keeps selection order', async ({ page, isMobile }) => {
     await gotoComposer(page);
     await selectItem(page, 'test_q');
     await selectItem(page, 'phq9');
-    const titles = page.locator('selection-cart li.item .item-title');
+    await openOutput(page, isMobile);
+    const titles = page.locator(`${outputScope(isMobile)} li.item .item-title`);
     await expect(titles).toHaveCount(2);
     // phq9 was picked second → second row.
     const phq9Title = await cardButton(page, 'phq9').locator('.name').textContent();
     await expect(titles.nth(1)).toContainText((phq9Title ?? '').trim());
   });
 
-  test('reorder (↑) swaps the last item ahead of the first', async ({ page }) => {
+  test('reorder (↑) swaps the last item ahead of the first', async ({ page, isMobile }) => {
     await gotoComposer(page);
     await selectItem(page, 'test_q');
     await selectItem(page, 'phq9');
-    // Move the 2nd row up → phq9 becomes first in the URL.
-    await page.locator('selection-cart li.item').nth(1).locator('[aria-label="הזז מעלה"]').click();
-    await expect(urlBox(page)).toContainText('items=phq9,test_q');
+    await openOutput(page, isMobile);
+    // Move the 2nd row up → phq9 becomes first in the URL. The arrows fade in
+    // on hover/focus in the rail, but they are always in the DOM and enabled.
+    await page.locator(`${outputScope(isMobile)} li.item`).nth(1)
+      .locator('[aria-label="הזז מעלה"]').click();
+    await expect(urlBox(page, isMobile)).toContainText('items=phq9,test_q');
   });
 });
 
 // ── Patient ID ────────────────────────────────────────────────────────────────
 
 test.describe('patient ID field', () => {
-  test.beforeEach(async ({ isMobile }) => {
-    test.skip(isMobile, 'PID field is in the desktop cart');
-  });
-
-  test('entering a PID adds it to the URL', async ({ page }) => {
+  test('entering a PID adds it to the URL', async ({ page, isMobile }) => {
     await gotoComposer(page);
     await selectItem(page, 'phq9');
-    await page.locator('#cart-pid').fill('TRC-2025-001');
-    await expect(urlBox(page)).toContainText('pid=TRC-2025-001');
+    await openOutput(page, isMobile);
+    await fillPid(page, isMobile, 'TRC-2025-001');
+    await expect(urlBox(page, isMobile)).toContainText('pid=TRC-2025-001');
+  });
+
+  test('the ID chip reads as an empty slot until it holds one', async ({ page, isMobile }) => {
+    await gotoComposer(page);
+    await selectItem(page, 'phq9');
+    await openOutput(page, isMobile);
+    const chip = page.locator(`${outputScope(isMobile)} session-settings .pid-chip`);
+    await expect(chip).toHaveClass(/c-chip--unset/);
+    await fillPid(page, isMobile, 'TRC-2025-001');
+    await expect(chip).not.toHaveClass(/c-chip--unset/);
+    await expect(chip).toContainText('TRC-2025-001');
   });
 });
 
 // ── Reset ─────────────────────────────────────────────────────────────────────
 
 test.describe('reset', () => {
-  test('reset clears selection and URL (desktop)', async ({ page, isMobile }) => {
-    test.skip(isMobile, 'reset lives in the desktop cart');
+  test('reset clears selection and link', async ({ page, isMobile }) => {
     await gotoComposer(page);
     await selectItem(page, 'phq9');
-    await page.locator('#cart-pid').fill('TRC-001');
-    await page.locator('catalog-controls .reset-btn').click();
-    await expect(urlBox(page)).toContainText('לא נבחרו');
+    await openOutput(page, isMobile);
+    await fillPid(page, isMobile, 'TRC-001');
+
+    // Reset lives in the browse toolbar on desktop and in the sheet on a phone,
+    // where the toolbar is behind the sheet's backdrop.
+    if (isMobile) await page.locator('mobile-bar .reset-btn').click();
+    else await page.locator('catalog-controls .reset-btn').click();
+
+    await expect(urlBox(page, isMobile)).toContainText('לא נבחרו');
     await expect(page.locator('catalog-card[data-id="phq9"] button.card')).toHaveAttribute('aria-checked', 'false');
   });
 });
@@ -169,16 +208,33 @@ test.describe('search', () => {
 // ── Mobile bottom sheet ────────────────────────────────────────────────────────
 
 test.describe('mobile bottom sheet', () => {
-  test('selecting then opening the sheet shows the link and PID', async ({ page, isMobile }) => {
-    test.skip(!isMobile, 'the bottom sheet is the mobile-only selection surface');
+  test('the bar counts the selection and says it opens', async ({ page, isMobile }) => {
+    test.skip(!isMobile, 'the sheet is the phone stand-in for the desktop rail');
     await gotoComposer(page);
     await selectItem(page, 'phq9');
     await expect(page.locator('mobile-bar .count')).toContainText('נבחרו 1');
-    await page.locator('mobile-bar .bar button:has-text("פרטים")').click();
-    const sheet = page.locator('mobile-bar .sheet');
-    await expect(sheet).toBeVisible();
-    await expect(sheet.locator('.url-box')).toContainText('items=phq9');
-    await expect(sheet.locator('#sheet-pid')).toBeVisible();
+    // The chevron is the affordance: without it the count read as a status line.
+    await expect(page.locator('mobile-bar .chev')).toBeVisible();
+    await expect(page.locator('mobile-bar .count-btn')).toHaveAttribute('aria-expanded', 'false');
+    // No URL at this width — it always clipped.
+    await expect(page.locator('mobile-bar .url-line')).toHaveCount(0);
+
+    await page.locator('mobile-bar .count-btn').click();
+    await expect(page.locator('mobile-bar .sheet')).toBeVisible();
+    await expect(page.locator('mobile-bar .count-btn')).toHaveAttribute('aria-expanded', 'true');
+    // The sheet renders the same panel the rail does.
+    await expect(page.locator('mobile-bar selection-cart .url-line')).toContainText('items=phq9');
+    await expect(page.locator('mobile-bar selection-cart session-settings')).toBeVisible();
+  });
+
+  test('the sheet closes on the backdrop', async ({ page, isMobile }) => {
+    test.skip(!isMobile, 'the sheet is the phone stand-in for the desktop rail');
+    await gotoComposer(page);
+    await selectItem(page, 'phq9');
+    await page.locator('mobile-bar .count-btn').click();
+    await expect(page.locator('mobile-bar .sheet')).toBeVisible();
+    await page.locator('mobile-bar .backdrop').click({ position: { x: 5, y: 5 } });
+    await expect(page.locator('mobile-bar .sheet')).toHaveCount(0);
   });
 });
 
@@ -219,25 +275,23 @@ test.describe('preview modal', () => {
 // ── Generated URL launches a valid session ────────────────────────────────────
 
 test.describe('generated URL launches valid session', () => {
-  test.beforeEach(async ({ isMobile }) => {
-    test.skip(isMobile, 'reads the URL from the desktop cart');
-  });
-
-  test('phq9 URL loads the patient app welcome screen', async ({ page }) => {
+  test('phq9 URL loads the patient app welcome screen', async ({ page, isMobile }) => {
     await gotoComposer(page);
     await selectItem(page, 'phq9');
-    const url = await urlBox(page).textContent();
+    await openOutput(page, isMobile);
+    const url = await urlBox(page, isMobile).textContent();
     await page.goto(url.trim());
     await expect(page.locator('welcome-screen')).toBeVisible({ timeout: 10_000 });
   });
 
-  test('a battery URL expands and launches the welcome screen', async ({ page }) => {
+  test('a battery URL expands and launches the welcome screen', async ({ page, isMobile }) => {
     await gotoComposer(page);
     // Batteries live in their own tab; search is scoped to the active tab.
     await openFilters(page);
     await page.locator('catalog-controls [role="tab"]', { hasText: 'סוללות' }).click();
     await selectItem(page, 'phq9_intake');
-    const url = await urlBox(page).textContent();
+    await openOutput(page, isMobile);
+    const url = await urlBox(page, isMobile).textContent();
     await page.goto(url.trim());
     await expect(page.locator('welcome-screen')).toBeVisible({ timeout: 10_000 });
   });

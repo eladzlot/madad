@@ -51,3 +51,18 @@ describe('clinician-nav', () => {
     expect(without.shadowRoot.querySelector('.subtitle')).toBeNull();
   });
 });
+
+describe('clinician-nav language switch', () => {
+  it('offers every language as a select option and selects the current one', async () => {
+    // A control per language does not survive the roadmap — Russian and Arabic
+    // are filed as I18N-8/9 — so this is a select, not a row of pills.
+    const el = await makeEl();
+    const select = el.shadowRoot.querySelector('select.lang');
+    const opts = [...select.options];
+    expect(opts.map(o => o.value)).toEqual(['he', 'en']);
+    expect(opts.map(o => o.getAttribute('lang'))).toEqual(['he', 'en']);
+    expect(opts.map(o => o.textContent.trim())).toEqual(['עברית', 'English']);
+    expect(select.value).toBe('he');
+    expect(select.getAttribute('aria-label')).toBe('שפת הממשק');
+  });
+});

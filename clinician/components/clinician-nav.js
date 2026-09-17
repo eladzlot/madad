@@ -10,13 +10,24 @@
 // landing moves to its own domain it becomes cross-origin (`__LANDING_ORIGIN__`).
 
 import { LitElement, html, css, nothing } from 'lit';
+import { t, currentLang, switchLang } from '../i18n/index.js';
+import { LANGS, LANG_CODES } from '../../shared/i18n/core.js';
 
 // Future אודות pages: add a row here and they appear on every surface.
+// Labels are `nav.<id>` keys in clinician/i18n.
 const PAGES = [
-  { id: 'composer', label: 'מחולל קישורים', href: '../composer/' },
-  { id: 'aggregate', label: 'סיכום מטופל', href: '../aggregate/' },
-  { id: 'help', label: 'עזרה', href: '../help/' },
+  { id: 'composer', href: '../composer/' },
+  { id: 'aggregate', href: '../aggregate/' },
+  { id: 'help', href: '../help/' },
 ];
+
+// When the current URL carries an explicit ?lang=, cross-surface links keep
+// it, so a shared "English composer" link stays English on the next page.
+function hrefFor(base) {
+  if (typeof window === 'undefined') return base;
+  const explicit = new URLSearchParams(window.location.search).get('lang');
+  return explicit && explicit === currentLang() ? `${base}?lang=${explicit}` : base;
+}
 
 // Brand → landing. Cross-origin landing origin injected at build time; empty ⇒
 // the relative '../landing/' that resolves under any single-origin base path.
@@ -104,27 +115,69 @@ export class ClinicianNav extends LitElement {
     @media (min-width: 768px) {
       .subtitle { display: block; }
     }
+
+    /* UI language — a select on the bar's trailing edge. The language list is
+       open-ended (Russian and Arabic are filed as I18N-8/9), so one control per
+       language does not survive contact with the roadmap. */
+    .lang {
+      margin-inline-start: auto;
+      background: rgba(255, 255, 255, 0.10);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: var(--radius-pill, 999px);
+      color: #ffffff;
+      font-family: inherit;
+      font-size: var(--font-size-sm, 14px);
+      line-height: 1;
+      padding: 6px 12px;
+      cursor: pointer;
+    }
+    .lang:hover { border-color: var(--color-accent, #2bb3c0); }
+    .lang:focus-visible {
+      outline: 2px solid var(--color-accent, #2bb3c0);
+      outline-offset: 2px;
+    }
+    /* The popup is painted by the platform, not by this bar. */
+    .lang option { color: CanvasText; background: Canvas; }
   `;
+
+  _switch(lang) {
+    if (lang !== currentLang()) switchLang(lang);
+  }
+
+  // A reload is what actually changes the language (I18N-8 / L-11), so the
+  // select's own value is transient — it is re-derived on the way back in.
 
   render() {
     return html`
       <header>
         <div class="inner">
           <div class="nav-group">
-            <a class="brand" href=${LANDING_HREF}>מדד</a>
-            <nav aria-label="עמודי מטפלים">
+            <a class="brand" href=${LANDING_HREF}>${t('nav.brand')}</a>
+            <nav aria-label=${t('nav.aria')}>
               ${PAGES.map(
                 (p) => html`
                   <a
                     class="link"
-                    href=${p.href}
+                    href=${hrefFor(p.href)}
                     aria-current=${p.id === this.page ? 'page' : nothing}
-                  >${p.label}</a>
+                  >${t(`nav.${p.id}`)}</a>
                 `
               )}
             </nav>
           </div>
           ${this.subtitle ? html`<p class="subtitle">${this.subtitle}</p>` : nothing}
+          <select
+            class="lang"
+            aria-label=${t('nav.langAria')}
+            .value=${currentLang()}
+            @change=${(e) => this._switch(e.target.value)}
+          >
+            ${LANG_CODES.map((code) => html`
+              <option value=${code} lang=${code} ?selected=${code === currentLang()}>
+                ${LANGS[code].label}
+              </option>
+            `)}
+          </select>
         </div>
       </header>
     `;

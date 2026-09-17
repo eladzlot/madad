@@ -1,5 +1,5 @@
 {
-  "catalogVersion": 1,
+  "catalogVersion": 2,
   "entries": [
     {
       "id": "all_types_battery",
@@ -21,7 +21,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "all_types_q",
@@ -43,7 +46,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "anger_log",
@@ -68,7 +74,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "aq",
@@ -95,7 +104,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "asi_3",
@@ -122,7 +134,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "cape15",
@@ -149,7 +164,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "cape42",
@@ -176,7 +194,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "clinical_intake",
@@ -200,7 +221,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": true
+      "featured": true,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "cpt_abc",
@@ -229,7 +253,25 @@
         "CPT",
         "iCPT"
       ],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "ABC Worksheet (CPT)",
+          "description": "CPT worksheet that breaks an experience into three parts — Activating event, Belief and Consequence (ABC) — and takes a first look at the…",
+          "keywords": [
+            "CPT",
+            "ABC",
+            "worksheet",
+            "stuck point",
+            "belief",
+            "activating event"
+          ]
+        }
+      }
     },
     {
       "id": "cpt_alternative",
@@ -258,7 +300,10 @@
         "CPT",
         "iCPT"
       ],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "cpt_exploring",
@@ -287,7 +332,10 @@
         "CPT",
         "iCPT"
       ],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "cpt_patterns",
@@ -315,7 +363,10 @@
         "CPT",
         "iCPT"
       ],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "dar5",
@@ -341,7 +392,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": true
+      "featured": true,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "dass21",
@@ -367,7 +421,24 @@
         "adult"
       ],
       "tags": [],
-      "featured": true
+      "featured": true,
+      "languages": [
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Depression, Anxiety and Stress Scales (DASS-21)",
+          "description": "A 21-item measure of depression, anxiety and stress over the past week.",
+          "keywords": [
+            "DASS",
+            "DASS-21",
+            "depression",
+            "anxiety",
+            "stress"
+          ]
+        }
+      }
     },
     {
       "id": "demographics",
@@ -390,7 +461,22 @@
         "adult"
       ],
       "tags": [],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Personal details",
+          "description": "Personal details and a short description of the referral.",
+          "keywords": [
+            "demographics",
+            "intake",
+            "personal"
+          ]
+        }
+      }
     },
     {
       "id": "ders",
@@ -415,7 +501,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": true
+      "featured": true,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "diamond_sr",
@@ -444,7 +533,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": true
+      "featured": true,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "ecrs",
@@ -467,7 +559,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "gad7",
@@ -493,7 +588,25 @@
         "adult"
       ],
       "tags": [],
-      "featured": true
+      "featured": true,
+      "languages": [
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Generalized Anxiety Disorder scale (GAD-7)",
+          "description": "Generalized anxiety symptom severity over the last two weeks (Generalized Anxiety Disorder, GAD-7)",
+          "keywords": [
+            "anxiety",
+            "GAD",
+            "GAD-7",
+            "generalized anxiety",
+            "worry",
+            "screening"
+          ]
+        }
+      }
     },
     {
       "id": "hai",
@@ -518,7 +631,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "isi",
@@ -544,7 +660,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": true
+      "featured": true,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "mgh_hps",
@@ -569,7 +688,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "novaco_anger_situations",
@@ -594,7 +716,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "oasis",
@@ -621,7 +746,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "oci_r",
@@ -649,7 +777,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": true
+      "featured": true,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "ocsrs_m",
@@ -678,7 +809,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "pc_ptsd5",
@@ -703,7 +837,24 @@
         "adult"
       ],
       "tags": [],
-      "featured": true
+      "featured": true,
+      "languages": [
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Primary Care PTSD Screen (PC-PTSD-5)",
+          "description": "Five-item screen for post-traumatic stress disorder. A score of 4 or more indicates probable PTSD.",
+          "keywords": [
+            "trauma",
+            "PTSD",
+            "screen",
+            "screening",
+            "primary care"
+          ]
+        }
+      }
     },
     {
       "id": "pcl5",
@@ -727,7 +878,23 @@
         "adult"
       ],
       "tags": [],
-      "featured": true
+      "featured": true,
+      "languages": [
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "PTSD Checklist for DSM-5 (PCL-5)",
+          "description": "PTSD symptom severity over the past week (PTSD, Trauma, PCL-5)",
+          "keywords": [
+            "PTSD",
+            "trauma",
+            "PCL-5",
+            "checklist"
+          ]
+        }
+      }
     },
     {
       "id": "pcl5_4",
@@ -758,7 +925,10 @@
         "גרסה מקוצרת",
         "screening"
       ],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "pcl5_8",
@@ -789,7 +959,10 @@
         "גרסה מקוצרת",
         "screening"
       ],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "pdss_sr",
@@ -815,7 +988,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": true
+      "featured": true,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "phq9",
@@ -842,7 +1018,26 @@
         "adult"
       ],
       "tags": [],
-      "featured": true
+      "featured": true,
+      "languages": [
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Patient Health Questionnaire (PHQ-9)",
+          "description": "Depression symptom severity over the last two weeks (Depression, MDD, PHQ-9)",
+          "keywords": [
+            "depression",
+            "mood",
+            "PHQ",
+            "PHQ-9",
+            "MDD",
+            "screening",
+            "anhedonia"
+          ]
+        }
+      }
     },
     {
       "id": "phq9_intake",
@@ -863,7 +1058,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "phq9_test",
@@ -885,7 +1083,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "pqb",
@@ -912,7 +1113,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "procsi",
@@ -940,7 +1144,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "ptci",
@@ -970,7 +1177,25 @@
         "PTCI",
         "גרסה מלאה"
       ],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Posttraumatic Cognitions Inventory (PTCI)",
+          "description": "A 36-item (33 scored) measure of trauma-related thoughts and beliefs in three subscales: negative cognitions about the self, negative…",
+          "keywords": [
+            "PTSD",
+            "trauma",
+            "cognitions",
+            "PTCI",
+            "beliefs",
+            "full version"
+          ]
+        }
+      }
     },
     {
       "id": "ptci9",
@@ -1001,7 +1226,10 @@
         "PTCI",
         "גרסה מקוצרת"
       ],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "roci",
@@ -1029,7 +1257,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "sbq",
@@ -1055,7 +1286,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "scared_child",
@@ -1081,7 +1315,10 @@
         "adolescent"
       ],
       "tags": [],
-      "featured": true
+      "featured": true,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "scared_parent",
@@ -1106,7 +1343,10 @@
         "parent"
       ],
       "tags": [],
-      "featured": true
+      "featured": true,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "scq",
@@ -1132,7 +1372,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "spin",
@@ -1159,7 +1402,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": true
+      "featured": true,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "standard_intake",
@@ -1181,7 +1427,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "stss",
@@ -1212,7 +1461,10 @@
         "secondary trauma",
         "clinicians"
       ],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "test_q",
@@ -1233,7 +1485,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": false
+      "featured": false,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "top3",
@@ -1259,7 +1514,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": true
+      "featured": true,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "trauma_eval",
@@ -1286,7 +1544,25 @@
         "adult"
       ],
       "tags": [],
-      "featured": true
+      "featured": true,
+      "languages": [
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Initial trauma assessment",
+          "description": "Brief trauma screen (PC-PTSD-5). If positive — in-depth assessment with the PCL-5 and the Posttraumatic Cognitions Inventory (PTCI).",
+          "keywords": [
+            "trauma",
+            "PTSD",
+            "PCL-5",
+            "PTCI",
+            "assessment",
+            "screening"
+          ]
+        }
+      }
     },
     {
       "id": "wai6",
@@ -1312,7 +1588,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": true
+      "featured": true,
+      "languages": [
+        "he"
+      ]
     },
     {
       "id": "wsas",
@@ -1338,7 +1617,10 @@
         "adult"
       ],
       "tags": [],
-      "featured": true
+      "featured": true,
+      "languages": [
+        "he"
+      ]
     }
   ]
 }

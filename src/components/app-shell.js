@@ -1,5 +1,6 @@
 import { LitElement, html, css } from 'lit';
 import { resetCSS } from '../styles/reset.js';
+import { t } from '../i18n/index.js';
 import { attachOverscroll } from '../helpers/gestures.js';
 
 /**
@@ -144,7 +145,7 @@ export class AppShell extends LitElement {
         <button
           class="nav-btn"
           ?disabled=${!this.canGoBack}
-          aria-label="חזור לשאלה הקודמת"
+          aria-label=${t('nav.back')}
           @click=${this._onBack}
         >
           <!-- Chevron up — back (scroll up metaphor) -->
@@ -160,7 +161,7 @@ export class AppShell extends LitElement {
         <button
           class="nav-btn"
           ?disabled=${!this.canGoForward}
-          aria-label="עבור לשאלה הבאה"
+          aria-label=${t('nav.forward')}
           @click=${this._onForward}
         >
           <!-- Chevron down — forward (scroll down metaphor) -->

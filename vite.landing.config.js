@@ -35,6 +35,13 @@ export default defineConfig(({ mode }) => ({
   build: {
     outDir: abs('dist-landing'),
     emptyOutDir: true, // outDir is outside root; Vite requires this to clean it
+    // One page per language: / (Hebrew) and /en/ (English), sharing landing.css.
+    rollupOptions: {
+      input: {
+        main: abs('landing/index.html'),
+        en:   abs('landing/en/index.html'),
+      },
+    },
   },
   plugins: [
     crossOriginLinksPlugin(),
