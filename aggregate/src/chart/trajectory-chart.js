@@ -536,7 +536,18 @@ export class TrajectoryChart extends LitElement {
 
         ${m.markers.map((k, i) => svg`
           ${k.alerts.length ? svg`
-            <circle cx=${k.x} cy=${k.y} r="8.5" fill="none" stroke="var(--color-no, #b91c1c)" stroke-width="1.5"></circle>
+            <!-- Achromatic on purpose. The series line and the threshold already
+                 spend the blue-yellow axis that survives protanopia and
+                 deuteranopia (see --clin-alert-ring), so a red ring had nowhere
+                 to sit — #b91c1c measured ΔE 6.1 from the threshold under
+                 deuteranopia. The ring separates by LIGHTNESS instead, and is
+                 doubled so it still reads as an alert rather than as the focus
+                 state. Red is kept in the tooltip's alert text, which is never a
+                 side-by-side discrimination. -->
+            <circle cx=${k.x} cy=${k.y} r="8.5" fill="none"
+                    stroke="var(--clin-alert-ring, #162232)" stroke-width="2.4"></circle>
+            <circle cx=${k.x} cy=${k.y} r="11.5" fill="none"
+                    stroke="var(--clin-alert-ring, #162232)" stroke-width="1"></circle>
           ` : ''}
           <circle class="marker" cx=${k.x} cy=${k.y} r=${k.baseline ? 6 : 4.5}
                   fill=${k.baseline ? 'var(--clin-card-bg, #ffffff)' : 'var(--color-primary, #1A9FAD)'}

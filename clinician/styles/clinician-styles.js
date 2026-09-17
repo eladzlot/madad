@@ -23,7 +23,17 @@ export const clinicianCss = /* css */ `
        The clinician header and the composer's output rail: dark navy panels
        that hold in both colour schemes. Every chrome colour lives here so a
        deployment can re-hue the whole clinician shell from one block; the
-       derived tints below (color-mix) follow automatically. */
+       derived tints below (color-mix) follow automatically.
+
+       The chart's threshold line and its alert ring both live here because
+       they answer a constraint the palette as a whole has to satisfy:
+       protanopia and deuteranopia (~8% of men) collapse the red-green axis
+       and leave blue-yellow, so A PALETTE GETS ONE BLUE-YELLOW AXIS AND EACH
+       DISTINCTION ON IT COSTS THE WHOLE THING. The chart asks that axis to
+       separate three things at once — the series line, the threshold and the
+       alert marker — which is one more than it can carry. The alert is the
+       one that gives up its hue: it is the only one of the three that also
+       has a shape of its own to fall back on. */
     --clin-header-bg:        #1B3148;
     --clin-rail-bg:          #3A5068;   /* rail panel — a lighter navy than the header */
     --clin-rail-field:       #2A3D52;   /* fields, list rows, secondary buttons on the rail */
@@ -36,6 +46,15 @@ export const clinicianCss = /* css */ `
     --clin-focus-stroke:     #115e59;   /* chart marker keyboard focus ring */
     --clin-heatmap-ink:      #162232;   /* fixed dark ink over pastel heatmap cells */
 
+    /* The alert marker's ring, achromatic ON PURPOSE. The series line is the
+       brand teal and the threshold is warm, which between them already spend
+       the blue-yellow axis described above; a red ring then has nowhere to
+       sit, and #b91c1c measured ΔE 6.1 from the threshold under deuteranopia.
+       Separating the ring by LIGHTNESS instead frees the axis, and it is what
+       lets the threshold stay warm — cooling the threshold would have been
+       the wrong fix here, because the dark-mode primary is itself a blue. */
+    --clin-alert-ring: #162232;
+
     --clin-card-bg:   #FFFFFF;
     --clin-grid:      #00000014;
     --clin-cutoff:    #B45309;
@@ -46,6 +65,8 @@ export const clinicianCss = /* css */ `
       --clin-reset-icon:    #E07060;
       --clin-search-bg:     #1e2733;   /* lifts the catalog search field off the dark surface */
       --clin-search-border: #3a4656;
+
+      --clin-alert-ring: #e6edf3;
 
       --clin-card-bg: #161b22;
       --clin-grid:    #ffffff1f;

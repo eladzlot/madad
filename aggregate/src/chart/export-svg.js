@@ -40,7 +40,8 @@ const C = {
   grid:    '#00000014',
   primary: '#1A9FAD',
   cutoff:  '#b45309',
-  alert:   '#b91c1c',
+  // Achromatic, matching --clin-alert-ring in the live chart.
+  alert:   '#162232',
 };
 
 const esc = (s) => String(s)
@@ -141,7 +142,8 @@ export function buildExportSvg({ series, questionnaire, domain, pid = null, now 
       : '',
     ...m.markers.map(k => [
       k.alerts.length
-        ? `<circle cx="${k.x}" cy="${k.y}" r="8.5" fill="none" stroke="${C.alert}" stroke-width="1.5"></circle>`
+        ? `<circle cx="${k.x}" cy="${k.y}" r="8.5" fill="none" stroke="${C.alert}" stroke-width="2.4"></circle>`
+          + `<circle cx="${k.x}" cy="${k.y}" r="11.5" fill="none" stroke="${C.alert}" stroke-width="1"></circle>`
         : '',
       `<circle class="marker" cx="${k.x}" cy="${k.y}" r="${k.baseline ? 6 : 4.5}" fill="${k.baseline ? C.bg : C.primary}" stroke="${C.primary}" stroke-width="${k.baseline ? 2.5 : 0}"></circle>`,
     ].join('')),

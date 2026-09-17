@@ -69,11 +69,25 @@ describe('trajectory-chart — rendering', () => {
     expect(texts).toContain('סף');
   });
 
-  it('marks alert sessions with an alert ring', async () => {
+  it('marks alert sessions with a doubled, achromatic alert ring', async () => {
     const el = await makeEl({
       series: series(pts(1, { alerts: [{ message: 'מחשבות אובדניות', severity: 'critical' }] })),
     });
-    expect(el.shadowRoot.querySelectorAll('circle')).toHaveLength(2);   // marker + ring
+    const circles = [...el.shadowRoot.querySelectorAll('circle')];
+    expect(circles).toHaveLength(3);   // marker + two rings
+
+    // The ring takes --clin-alert-ring, NOT --color-no. The series line and the
+    // threshold already spend the blue-yellow axis that survives protanopia and
+    // deuteranopia, so a red ring sat ΔE 6.1 from the threshold under deutan;
+    // this one separates by lightness, and the second ring is what keeps it
+    // reading as an alert rather than as the keyboard focus state.
+    const rings = circles.filter(c => c.getAttribute('fill') === 'none');
+    expect(rings).toHaveLength(2);
+    expect(rings.map(c => c.getAttribute('r'))).toEqual(['8.5', '11.5']);
+    for (const ring of rings) {
+      expect(ring.getAttribute('stroke')).toContain('--clin-alert-ring');
+      expect(ring.getAttribute('stroke')).not.toContain('--color-no');
+    }
   });
 
   it('shows every session with no pagination (D-13)', async () => {

@@ -9,7 +9,54 @@
    WCAG does not count as bold) and the wordmark; use --color-primary-ink for
    brand-coloured small text and icons, where it clears 4.5:1 on every light
    ground. In dark mode the primary is already light enough to be ink, so the
-   two are the same value there. */
+   two are the same value there.
+
+   ── The recipe, for whoever rethemes this next ────────────────────────────
+   This palette is not a bag of hexes; it is a table of (OKLab L, share of the
+   sRGB chroma ceiling at that L and hue) pairs, and a retheme means feeding a
+   new hue into that table. Measured off the values below:
+
+     token            OKLab L   share of ceiling
+     --color-bg         .966      29%
+     --color-surface    .939      26%
+     --color-border     .887      22%
+     --color-text       .249      41%
+     --color-text-muted .501      26%
+     --color-primary    .644      96%
+     --color-primary-ink .501    100%
+
+   Two rules the table alone does not tell you:
+
+   1. MATCH CHROMA IN ABSOLUTE TERMS, NOT AS A SHARE. The ceiling varies
+      enormously by hue — at L .644 it is 0.110 here, 0.148 at an orange, and
+      0.215 at a green. Carrying "96% of the ceiling" to a wider-gamut hue
+      produces a highlighter, not the same colour at a different angle. The
+      primary's absolute C .106 is the number to carry.
+
+   2. THE NEUTRALS DO NOT SIT ON THE BRAND HUE. The neutrals above run H 244
+      to H 261 (bg, surface and border cluster at ~259; the muted text is the
+      outlier at 244) against a primary at H 206 — roughly a 52° offset on the
+      grounds that carry most of the page. That is deliberate:
+      it is what keeps the greys from reading as a wash of the brand, and it
+      is the lever for making a page feel cooler or warmer than its accent
+      without touching the accent.
+
+   Colour-vision deficiency is a palette-level constraint, not a chart detail;
+   the rule and its consequence are written up beside --clin-alert-ring in
+   clinician/styles/clinician-styles.js.
+
+   ── Two measured findings, recorded but NOT acted on ──────────────────────
+   • The brand changes hue between themes: --color-primary is H 206 in light
+     and H 236 in dark, while the dark --color-accent is H 194. So dark mode
+     splits primary and accent by 42° and drifts 30° from its own light-mode
+     brand. Pulling the dark primary to ~H 206 (#21acba, 6.92:1 on the dark
+     ground) would make the brand one hue in both themes. Left alone here
+     because it is a visible change to the app, not a fix.
+   • --color-yes #276749 and --color-no #8B3A3A sit ΔE 7.1 apart under
+     protanopia. They are never a side-by-side discrimination — each appears
+     alone in a block that carries text — so this is recorded, not fixed.
+     Moving yes to a teal-green (#14655f) takes the pair to ΔE 16.3, which is
+     better and still short of the ΔE >= 18 the chart colours hold. */
 
 :root {
   /* Colour */
