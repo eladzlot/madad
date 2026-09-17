@@ -393,6 +393,34 @@ test.describe('error handling', () => {
     await expect(page.locator('welcome-screen')).toHaveCount(0);
   });
 
+  // `items` is the one config source that comes from a stranger — a patient
+  // link is a URL anyone can edit. A token beginning with an authority
+  // introducer resolves to a foreign origin ('//evil.com/x.json' becomes
+  // https://evil.com/x.json), which would render an attacker's questionnaire
+  // inside the app's own origin. CSP connect-src blocks the fetch in a built
+  // bundle, but the link must be refused before that last line. HANDOVER.md §6a.
+  for (const [label, token] of [
+    ['protocol-relative', '//evil.example/cfg.json'],
+    ['backslash authority', '/%5Cevil.example/cfg.json'],
+    ['absolute path', '/configs/prod/../../etc/passwd'],
+  ]) {
+    test(`crafted items token (${label}) is refused without any request leaving the origin`, async ({ page, baseURL }) => {
+      const expectedOrigin = new URL(baseURL).origin;
+      const offOrigin = [];
+      await page.route('**/*', route => {
+        const url = route.request().url();
+        if (!url.startsWith(expectedOrigin) && !url.startsWith('data:')) offOrigin.push(url);
+        return route.continue();
+      });
+
+      await page.goto(`/?items=${token}`);
+
+      await expect(page.locator('#app')).toContainText('הקישור שגוי');
+      await expect(page.locator('welcome-screen')).toHaveCount(0);
+      expect(offOrigin).toEqual([]);
+    });
+  }
+
   test('legacy configs= parameter is ignored — bundle-era links still resolve by items', async ({ page }) => {
     // Bundle-era URLs named config files explicitly (configs=standard, full
     // paths, even nonexistent ones). The app ignores the parameter entirely
