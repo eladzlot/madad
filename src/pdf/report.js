@@ -5,9 +5,12 @@
 //                    Begins fetching pdfmake + fonts in the background so they
 //                    are ready by the time the patient finishes the session.
 //
-//   generateReport(sessionState, config, session)
+//   generateReport(sessionState, config, session, { timing })
 //                  — builds the PDF and returns a { blob, filename } object.
 //                    Awaits preload internally; safe to call immediately.
+//                    `timing` (optional) is the questionnaire-timer snapshot;
+//                    it goes into the embedded data.json only, never onto
+//                    the rendered pages.
 //
 // Font note:
 //   Vite resolves the ?url imports to hashed asset URLs at build time.
@@ -168,9 +171,11 @@ export function _resetPreloadStateOnly() {
  * @param {object} sessionState  — { answers, scores, alerts } from orchestrator
  * @param {object} config        — full QuestionnaireSet config
  * @param {object} session       — { name?, pid? } from app.js
+ * @param {object} [opts]
+ * @param {object} [opts.timing] — questionnaire-timer snapshot for the envelope (monitoring only)
  * @returns {Promise<{ blob: Blob, filename: string }>}
  */
-export async function generateReport(sessionState, config, session) {
+export async function generateReport(sessionState, config, session, { timing = null } = {}) {
   // Ensure a load is in flight.
   if (_state === 'idle') _load().catch(err => console.error('[report] preload failed:', err));
 
@@ -204,7 +209,7 @@ export async function generateReport(sessionState, config, session) {
     },
   });
 
-  const docDefinition = buildDocDefinition(sessionState, config, session);
+  const docDefinition = buildDocDefinition(sessionState, config, session, new Date(), { timing });
   const filename = buildFilename(session);
 
   const pdfDoc = pdfmake.createPdf(docDefinition);
@@ -333,7 +338,7 @@ function formatSubscale(val, subscaleMethod) {
 
 // ── Document definition ───────────────────────────────────────────────────────
 
-export function buildDocDefinition(sessionState, config, session, now = new Date()) {
+export function buildDocDefinition(sessionState, config, session, now = new Date(), { timing = null } = {}) {
   const isMulti = Object.keys(sessionState.answers ?? {}).length > 1;
 
   const content = [
@@ -347,7 +352,7 @@ export function buildDocDefinition(sessionState, config, session, now = new Date
   // This is the integration boundary with the Aggregate surface — every PDF
   // carries the full session payload (AGGREGATE_SPEC §3). Encoded as a data
   // URL because pdfkit decodes those natively with no network round-trip.
-  const envelope = buildEnvelope({ sessionState, config, session, appVersion: APP_VERSION, now });
+  const envelope = buildEnvelope({ sessionState, config, session, appVersion: APP_VERSION, now, timing });
   const payload  = new TextEncoder().encode(JSON.stringify(envelope));
 
   return {

@@ -506,7 +506,7 @@ Tool is ready to ship. Priority actions:
 - Short screen-recording walkthrough (60-90 sec): composer → patient fills → PDF
 
 ### Aggregate — remaining slices
-`AGG-4` (RCI line + subscale toggles) is blocked on `AGG-P`, the user-owned psychometrics content pass (reliability/SD/source per instrument). `AGG-7` (order charts by number of administrations) and `AGG-8` (capture time spent answering) are open and small-to-medium.
+`AGG-4` (RCI line + subscale toggles) is blocked on `AGG-P`, the user-owned psychometrics content pass (reliability/SD/source per instrument). `AGG-7` (order charts by number of administrations) and `AGG-8` (per-questionnaire wall/focus time in the envelope, monitoring only) are done — archive A-15 / A-16. `AGG-9` (config version in the envelope) is open and small.
 
 ### Instrument content
 `CONT-1` SCQ 0-based rescore, `CONT-2` PTCI-9, `CONT-3` PCL-5 short forms — see `docs/TODO.md` §CONT for the open design question shared by the last two.

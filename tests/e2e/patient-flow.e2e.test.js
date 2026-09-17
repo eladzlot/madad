@@ -479,9 +479,24 @@ test.describe('PDF download', () => {
     // an /EmbeddedFiles name tree entry plus the attachment's filename.
     const path = await download.path();
     const { readFileSync } = await import('fs');
-    const pdfBytes = readFileSync(path).toString('latin1');
+    const raw = readFileSync(path);
+    const pdfBytes = raw.toString('latin1');
     expect(pdfBytes).toContain('/EmbeddedFiles');
     expect(pdfBytes).toContain('data.json');
+
+    // The envelope carries per-questionnaire timing (monitoring only, AGG-8):
+    // the PHQ-9 battery's single questionnaire was visited once, took some
+    // wall time, and focus time cannot exceed it. The session started before
+    // the PDF was generated.
+    const { parsePdfBytes } = await import('../../aggregate/src/parse-pdf.js');
+    const parsed = await parsePdfBytes(new Uint8Array(raw));
+    expect(parsed.ok).toBe(true);
+    const { timing, generatedAt } = parsed.envelope;
+    const q = timing.questionnaires.phq9_test;
+    expect(q.visits).toBe(1);
+    expect(q.wallMs).toBeGreaterThan(0);
+    expect(q.focusMs).toBeLessThanOrEqual(q.wallMs);
+    expect(Date.parse(generatedAt)).toBeGreaterThanOrEqual(Date.parse(timing.startedAt));
   });
 });
 

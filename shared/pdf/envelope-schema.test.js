@@ -74,6 +74,20 @@ describe('buildEnvelope', () => {
     ]);
   });
 
+  it('embeds timing when given and defaults it to null', () => {
+    const timing = {
+      startedAt: '2026-07-03T09:50:00.000Z',
+      questionnaires: { phq9: { wallMs: 90000, focusMs: 85000, visits: 1 } },
+    };
+    const withTiming = buildEnvelope({ sessionState: SESSION_STATE, config: CONFIG, now: NOW, timing });
+    expect(withTiming.timing).toEqual(timing);
+    expect(validateEnvelope(JSON.parse(JSON.stringify(withTiming))).valid).toBe(true);
+
+    const without = buildEnvelope({ sessionState: SESSION_STATE, config: CONFIG, now: NOW });
+    expect(without.timing).toBeNull();
+    expect(validateEnvelope(without).valid).toBe(true);
+  });
+
   it('survives a JSON round-trip and validates', () => {
     const env = buildEnvelope({
       sessionState: SESSION_STATE,

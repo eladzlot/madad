@@ -1,4 +1,5 @@
 import { generateReport } from './pdf/report.js';
+import { createQuestionnaireTimer } from './questionnaire-timer.js';
 import { score } from './engine/scoring.js';
 import { evaluateAlerts } from './engine/alerts.js';
 import { tagForType, canAdvance, autoAdvances, ratedTextTextKey } from '../shared/config/item-types.js';
@@ -9,8 +10,10 @@ import { resolveItemOptions } from '../shared/config/options.js';
 //
 // Usage:
 //   const controller = createController(container, router);
-//   controller.start(config, source, { createOrchestrator });
+//   controller.start(config, source, { createOrchestrator, session, timer });
 //   source: { sequence: BatteryNode[] }
+//   timer:  optional questionnaire timer (src/questionnaire-timer.js); defaults
+//           to a real-clock one. Injectable so tests can drive the clock.
 //
 // Components must be registered before calling start() — import them in app.js.
 //
@@ -47,6 +50,8 @@ export function createController(container, router) {
   let _advanceTimer  = null;
   let _session       = null;
   let _sessionState  = null;  // saved when onSessionComplete fires; used by showResults
+  let _sessionKey    = null;  // current questionnaire's session key (for timer re-entry)
+  let _timer         = null;  // per-questionnaire wall/focus time — monitoring only
 
   // ── Shell setup ──────────────────────────────────────────────────────────
 
@@ -175,6 +180,10 @@ export function createController(container, router) {
     if (!_engine) return;
 
     if (_engine.canGoBack()) {
+      // Coming back from the results screen re-opens the last questionnaire
+      // without an orchestrator callback, so the timer is re-entered here.
+      // The cross-back branch below reaches onQuestionnaireResume instead.
+      if (resultsEl) _timer?.enter(_sessionKey);
       mountItem(_engine.back());
     } else {
       _orchestrator.engineCrossBack();
@@ -242,6 +251,8 @@ export function createController(container, router) {
     const existing = _shellEl?.querySelector('results-screen');
     if (existing) existing.remove();
 
+    // No questionnaire is on screen: results dwell is charged to none of them.
+    _timer?.enter(null);
     recomputeDerived(_sessionState);
 
     _shellEl.canGoBack    = true;
@@ -268,8 +279,12 @@ export function createController(container, router) {
     // Note: navigator.share is only available over HTTPS — on HTTP it is undefined.
     const canShareFiles = !!(navigator.share);
 
+    // Timing rides in the embedded data.json only (monitoring); the snapshot
+    // is taken at generation time so a later re-download stays current.
+    const report = () => generateReport(_sessionState, _config, _session, { timing: _timer?.snapshot() ?? null });
+
     const doDownload = async () => {
-      const { blob, filename } = await generateReport(_sessionState, _config, _session);
+      const { blob, filename } = await report();
       const url = URL.createObjectURL(blob);
       const a   = Object.assign(document.createElement('a'), { href: url, download: filename });
       document.body.appendChild(a);
@@ -279,7 +294,7 @@ export function createController(container, router) {
     };
 
     const doShare = async () => {
-      const { blob, filename } = await generateReport(_sessionState, _config, _session);
+      const { blob, filename } = await report();
       try {
         await navigator.share({
           files: [new File([blob], filename, { type: 'application/pdf' })],
@@ -307,6 +322,8 @@ export function createController(container, router) {
   function onQuestionnaireStart(engine, sessionKey, questionnaire) {
     _engine = engine;
     _questionnaire = questionnaire;
+    _sessionKey = sessionKey;
+    _timer?.enter(sessionKey);
 
     const first = engine.advance();
     if (first === null) {
@@ -325,6 +342,8 @@ export function createController(container, router) {
   function onQuestionnaireResume(engine, sessionKey, questionnaire) {
     _engine = engine;
     _questionnaire = questionnaire;
+    _sessionKey = sessionKey;
+    _timer?.enter(sessionKey);
 
     const current = engine.currentItem();
     if (current === null) {
@@ -362,9 +381,16 @@ export function createController(container, router) {
   // ── Public API ───────────────────────────────────────────────────────────
 
   // source: { sequence: BatteryNode[] }
-  function start(config, source, { createOrchestrator, session = {} } = {}) {
+  function start(config, source, { createOrchestrator, session = {}, timer = createQuestionnaireTimer() } = {}) {
     _config  = config;
     _session = session;
+    _timer   = timer;
+    // Focus time = wall time minus the spans the tab was hidden. Never removed:
+    // the controller lives as long as the page (back-to-welcome reloads).
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') _timer.hide();
+      else _timer.show();
+    });
     router.onBack(_onPopBack);
     router.onForward(_onPopForward);
     mountShell();

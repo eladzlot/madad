@@ -40,11 +40,13 @@ controller.start(config, { sequence }, { createOrchestrator, session });
 | `_itemEl` | item component | Currently active item element; replaced on type change |
 | `_advanceTimer` | timer ID | 150ms delay timer between answer and engine advance |
 | `_sessionState` | object | Session state saved on completion; read by `showResults()` and the PDF handlers |
+| `_sessionKey` | string | Current questionnaire's session key; lets `_onPopBack` re-enter the timer when the patient returns from the results screen |
+| `_timer` | questionnaire timer | Per-questionnaire wall/focus time (`src/questionnaire-timer.js`), monitoring only. Entered on `onQuestionnaireStart` / `onQuestionnaireResume`, set to `null` on `showResults()`, hidden/shown on `visibilitychange`; its snapshot goes to `generateReport()` and into the PDF's `data.json` |
 
 ### 2.2 Startup Sequence
 
 `start()` runs in this order:
-1. Stores `_config`, `_session`
+1. Stores `_config`, `_session`, `_timer` (injectable via the options bag; defaults to a real-clock timer) and registers the `visibilitychange` listener
 2. Registers `router.onBack` and `router.onForward` handlers
 3. Calls `mountShell()` — creates `<app-shell>` and `<progress-bar>`, appends to container
 4. Creates the orchestrator with the three callbacks

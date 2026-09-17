@@ -106,6 +106,12 @@ representation. Both come from the same source data (`sessionState`,
     "answers": { "...": "..." },
     "scores":  { "...": "..." },
     "alerts":  []
+  },
+  "timing": {
+    "startedAt": "2026-04-12T08:21:00.000Z",
+    "questionnaires": {
+      "phq9": { "wallMs": 131000, "focusMs": 118000, "visits": 1 }
+    }
   }
 }
 ```
@@ -130,6 +136,18 @@ manually if and when they occur.
 `sessionState` is the unmodified state object the patient app already
 produces. Item-level answers are included because Aggregate may
 eventually graph them (out of v1 scope, but the data is captured).
+
+`timing` is **monitoring data, not clinical data**. Aggregate ignores it
+and the PDF pages never render it. Per questionnaire (keyed like
+`sessionState.answers`): `wallMs` is clock time while that questionnaire
+was on screen, `focusMs` the part of it with the tab visible, `visits`
+how many times it was entered (returning from the results screen to edit
+counts, and the time is added to the same bucket). `startedAt` is when
+the patient pressed Start; session duration is `generatedAt − startedAt`.
+No idle detection: a page left open keeps counting, outliers are handled
+statistically by whoever reads the data. The field is additive (no
+`schemaVersion` bump): it is absent in PDFs generated before it existed
+and `null` in script-generated ones, and readers treat both as unknown.
 
 ### 3.3 What is *not* in the payload
 

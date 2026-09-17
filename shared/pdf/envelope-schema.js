@@ -28,9 +28,14 @@ export const ENVELOPE_VERSION = 1;
  * @param {object} [args.session]    — { name?, pid? } from app.js
  * @param {string} [args.appVersion] — forensic only; never used for routing
  * @param {Date}   [args.now]        — timestamp source, injectable for tests
+ * @param {object} [args.timing]     — monitoring only, never rendered: output of
+ *                 src/questionnaire-timer.js snapshot(), i.e. { startedAt,
+ *                 questionnaires: { [sessionKey]: { wallMs, focusMs, visits } } }.
+ *                 null when the caller has no timer (scripts, tests); absent in
+ *                 PDFs generated before it existed. Readers treat both as unknown.
  * @returns {object} envelope (plain JSON-serializable object)
  */
-export function buildEnvelope({ sessionState, config, session = {}, appVersion = null, now = new Date() }) {
+export function buildEnvelope({ sessionState, config, session = {}, appVersion = null, now = new Date(), timing = null }) {
   const answers = sessionState?.answers ?? {};
 
   // One entry per completed session key, in answer order — same resolution
@@ -59,6 +64,7 @@ export function buildEnvelope({ sessionState, config, session = {}, appVersion =
       alerts:           sessionState?.alerts ?? {},
       questionnaireIds: sessionState?.questionnaireIds ?? {},
     },
+    timing,
   };
 }
 

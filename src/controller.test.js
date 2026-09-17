@@ -3,6 +3,12 @@ import '../tests/setup-dom.js';
 import { describe, it, expect, vi } from 'vitest';
 import { createController } from './controller.js';
 import { createEngine } from './engine/engine.js';
+import { createQuestionnaireTimer } from './questionnaire-timer.js';
+import { generateReport } from './pdf/report.js';
+
+// The PDF pipeline is exercised in src/pdf/*.test.js; here we only need to see
+// what the controller hands it.
+vi.mock('./pdf/report.js', () => ({ generateReport: vi.fn() }));
 
 // item-* components don't need to be registered — controller just
 // calls document.createElement(tag) and sets properties on the element.
@@ -101,7 +107,7 @@ function makeSetup(overrides = {}) {
     batteries:      [],
   };
   const source = { sequence: [{ questionnaireId: questionnaire.id }] };
-  controller.start(config, source, { createOrchestrator });
+  controller.start(config, source, { createOrchestrator, timer: overrides.timer });
   const orchestrator = createOrchestrator.mock.results[0].value;
 
   return { container, controller, engine, orchestrator, questionnaire, router };
@@ -792,5 +798,79 @@ describe('onError', () => {
     // The img tag must not have been parsed as DOM — it should appear as text
     expect(container.querySelector('img')).toBeNull();
     expect(container.textContent).toContain('<img');
+  });
+});
+
+// ─── Questionnaire timing (AGG-8) ─────────────────────────────────────────────
+// Per-questionnaire wall/focus time for monitoring. The controller only tells
+// the timer which questionnaire is on screen and whether the tab is visible.
+
+describe('questionnaire timing', () => {
+  function makeClock() {
+    let now = 1_000_000;
+    return { clock: () => now, tick: ms => { now += ms; } };
+  }
+
+  function setVisibility(state) {
+    vi.spyOn(document, 'visibilityState', 'get').mockReturnValue(state);
+    document.dispatchEvent(new Event('visibilitychange'));
+  }
+
+  it('enters the first questionnaire on start and accrues wall time', () => {
+    const { clock, tick } = makeClock();
+    const timer = createQuestionnaireTimer({ clock });
+    makeSetup({ timer });
+    tick(4000);
+    expect(timer.snapshot().questionnaires.phq9).toEqual({ wallMs: 4000, focusMs: 4000, visits: 1 });
+  });
+
+  it('a hidden tab counts towards wall time but not focus time', () => {
+    const { clock, tick } = makeClock();
+    const timer = createQuestionnaireTimer({ clock });
+    makeSetup({ timer });
+    tick(1000);
+    setVisibility('hidden');
+    tick(3000);
+    setVisibility('visible');
+    tick(1000);
+    vi.restoreAllMocks();
+    expect(timer.snapshot().questionnaires.phq9).toEqual({ wallMs: 5000, focusMs: 2000, visits: 1 });
+  });
+
+  it('results-screen dwell is charged to no questionnaire; going back re-enters it', () => {
+    const { clock, tick } = makeClock();
+    const timer = createQuestionnaireTimer({ clock });
+    vi.useFakeTimers();
+    const { container, orchestrator, router } = makeSetup({ timer });
+    // Advance to the second item so the engine can go back within the questionnaire.
+    container.querySelector('item-select')
+      .dispatchEvent(new CustomEvent('advance', { bubbles: true }));
+    vi.advanceTimersByTime(150);
+    vi.useRealTimers();
+
+    tick(2000);
+    orchestrator._fireSessionComplete();
+    tick(10_000);                       // reading the results screen
+    expect(timer.snapshot().questionnaires.phq9).toEqual({ wallMs: 2000, focusMs: 2000, visits: 1 });
+
+    router._fireBack('q');              // back into the questionnaire to edit
+    tick(1000);
+    expect(timer.snapshot().questionnaires.phq9).toEqual({ wallMs: 3000, focusMs: 3000, visits: 2 });
+  });
+
+  it('hands the timing snapshot to generateReport on download', async () => {
+    const { clock, tick } = makeClock();
+    const timer = createQuestionnaireTimer({ clock });
+    const { container, orchestrator } = makeSetup({ timer });
+    tick(1500);
+    orchestrator._fireSessionComplete();
+
+    const sentinel = new Error('stop before createObjectURL');
+    generateReport.mockRejectedValueOnce(sentinel);
+    await expect(container.querySelector('results-screen').onDownload()).rejects.toBe(sentinel);
+
+    const opts = generateReport.mock.calls.at(-1)[3];
+    expect(opts.timing.questionnaires.phq9).toEqual({ wallMs: 1500, focusMs: 1500, visits: 1 });
+    expect(opts.timing.startedAt).toBe(new Date(1_000_000).toISOString());
   });
 });

@@ -988,8 +988,14 @@ the Aggregate surface (`docs/AGGREGATE_SPEC.md` §3).
   (from `package.json` via the `__APP_VERSION__` Vite define; forensic only),
   `pid` / `name` (nullable, opaque), `instruments[]`
   (`questionnaireId`, `title`, `configFile` — the source config short name
-  annotated by `shared/config/loader.js` at merge time), and the full
-  `sessionState` (`answers`, `scores`, `alerts`, `questionnaireIds`).
+  annotated by `shared/config/loader.js` at merge time), the full
+  `sessionState` (`answers`, `scores`, `alerts`, `questionnaireIds`), and
+  `timing` — the `src/questionnaire-timer.js` snapshot: `startedAt` plus
+  per-questionnaire `{ wallMs, focusMs, visits }`. Monitoring only: the
+  controller passes it to `generateReport()` as an option, it lands in
+  `data.json` and nowhere on the rendered pages, and the Aggregate ignores
+  it. `null` when no timer is supplied (scripts, tests); absent in older
+  PDFs. Semantics in AGGREGATE_SPEC §3.2.
 - **Encoding:** UTF-8 JSON → base64 data URL in `buildDocDefinition()`.
   No network request; CSP-neutral.
 - **Versioning:** `ENVELOPE_VERSION` bumps only on top-level shape changes.
