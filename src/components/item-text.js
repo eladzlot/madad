@@ -1,19 +1,6 @@
 import { LitElement, html, css } from 'lit';
 import { resetCSS } from '../styles/reset.js';
-
-// ─── ReDoS guard ─────────────────────────────────────────────────────────────
-// Rejects regex patterns that contain nested/chained quantifiers which can
-// cause catastrophic backtracking on crafted inputs. This is a conservative
-// syntactic check, not a full ReDoS solver — it blocks the most common forms.
-// Patterns that fail this check are silently skipped (no validation applied).
-function _isSafePattern(pattern) {
-  if (typeof pattern !== 'string' || pattern.length > 200) return false;
-  // Reject nested quantifiers: (x+)+ (x*)+ (x+)* (x?)+ etc.
-  if (/\([^)]*[*+?][^)]*\)[*+?]/.test(pattern)) return false;
-  // Reject adjacent quantifiers on groups: )+(  )*( etc.
-  if (/\)[*+?]\s*\(/.test(pattern)) return false;
-  return true;
-}
+import { isSafePattern, MAX_VALIDATED_LENGTH } from '../../shared/safe-pattern.js';
 
 /**
  * <item-text>
@@ -147,14 +134,16 @@ export class ItemText extends LitElement {
     if (inputType === 'email') {
       if (!value.includes('@')) return 'כתובת דוא"ל לא תקינה';
     }
-    if (pattern) {
-      // Guard against ReDoS: reject patterns with nested/chained quantifiers
-      // that can cause catastrophic backtracking on crafted inputs.
-      if (_isSafePattern(pattern)) {
-        try {
-          if (!new RegExp(pattern).test(value)) return 'הערך אינו בפורמט הנדרש';
-        } catch { /* malformed pattern — skip */ }
-      }
+    // Pattern validation is a convenience, never a security control, so both
+    // guards below fail open: an unsafe pattern or an over-long answer simply
+    // goes unchecked rather than freezing the tab. The length bound matters
+    // independently of the shape check — backtracking cost grows with the
+    // input, so an unbounded answer can be expensive even for a pattern that
+    // passed. See shared/safe-pattern.js.
+    if (pattern && value.length <= MAX_VALIDATED_LENGTH && isSafePattern(pattern)) {
+      try {
+        if (!new RegExp(pattern).test(value)) return 'הערך אינו בפורמט הנדרש';
+      } catch { /* malformed pattern — skip */ }
     }
     return '';
   }

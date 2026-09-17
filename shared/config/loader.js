@@ -8,7 +8,9 @@
 // sources: string[] — each entry is one of:
 //   - A short name (alphanumeric, hyphens, underscores only) → expanded to
 //     /<configBase><name>.json (default base: configs/prod/)
-//   - A root-relative path (starts with /) → used as-is
+//   - A root-relative path (starts with /) → used as-is. Not '//…' or '/\…',
+//     which are authority introducers that resolve to a foreign origin.
+//   - No source may contain '..' or a backslash.
 //   - A path with slashes or .json extension → used as-is (legacy full path)
 //   - A full https:// or http:// URL → validated against allowedOrigins
 //
@@ -120,13 +122,35 @@ function resolveSource(source, allowedOrigins, configBase, baseUrl) {
       `To allow an external config server, pass its origin in the allowedOrigins option.`
     );
   }
-  if (source.startsWith('/')) return source;         // root-relative path
-  // Reject path traversal in any non-absolute, non-external source.
+  // Backslashes have no legitimate place in a config path, and WHATWG URL
+  // resolution treats '\\' as '/' for special schemes — so '/\\evil.com/c.json'
+  // resolves to https://evil.com/c.json, reaching a foreign origin without ever
+  // passing through the allowedOrigins check above. Reject them outright rather
+  // than trying to enumerate the forms.
+  if (source.includes('\\')) {
+    throw new ConfigError(
+      `Invalid config source: "${source}". Backslashes are not permitted.`
+    );
+  }
+  // Reject path traversal in any non-external source — root-relative included.
+  // '/configs/prod/../../x.json' escapes the config base exactly as '../' does,
+  // so this check must precede the root-relative branch below, not follow it.
   if (source.includes('..')) {
     throw new ConfigError(
       `Invalid config source: "${source}". Path traversal is not permitted.`
     );
   }
+  // A leading '//' is an authority introducer: '//evil.com/c.json' resolves to
+  // https://evil.com/c.json. It looks root-relative but is not, so it must be
+  // rejected before the root-relative branch lets it through unexamined.
+  if (source.startsWith('//')) {
+    throw new ConfigError(
+      `Invalid config source: "${source}". ` +
+      `A source beginning with "//" resolves to another origin. ` +
+      `Pass a full https:// URL and list its origin in allowedOrigins instead.`
+    );
+  }
+  if (source.startsWith('/')) return source;         // root-relative path
   // Paths containing slashes or ending with .json are legacy full paths.
   // Normalise to baseUrl-prefixed (e.g. '/madad/configs/prod/standard.json')
   // so the visited-set key matches the key produced by the short-name branch.

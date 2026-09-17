@@ -22,9 +22,16 @@ demo/notes/
 # Remote deployment (branch remote): local secrets and wrangler state
 .dev.vars
 .wrangler/
-# Local convenience only — wrangler reads CLOUDFLARE_ACCOUNT_ID from here so
-# ad-hoc commands hit the trial account. The id is not a secret (it is also in
-# package.json), but an env file that gets committed is how a real secret leaks
-# later. The runbook tells you to create this.
+
+# Local environment — credentials and account ids. wrangler reads
+# CLOUDFLARE_ACCOUNT_ID from .env so ad-hoc commands hit the trial account; the
+# id is not a secret (it is also in package.json), but an env file that gets
+# committed is how a real secret leaks later. The committed templates are
+# .dev.vars.example (Worker secrets) and, for anything new, add it there too.
 .env
+.env.*
+!.env.example
+
+# Minted pilot material — participant briefs, handouts and the link registry,
+# keyed by real email address. Same rule as demo/: personal data, never in git.
 minted/

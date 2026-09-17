@@ -230,6 +230,24 @@ describe('validation', () => {
     expect(el.shadowRoot.querySelector('.error')).toBeNull();
   });
 
+  // Alternation is the shape the original guard missed: '(a|a)+' against 30
+  // characters backtracks for over a minute, freezing the patient's tab.
+  it('pattern: silently skips a quantified alternation, without running it', async () => {
+    const el = await makeEl({ item: { ...item, pattern: '^(a|a)+$', required: true } });
+    const started = Date.now();
+    await typeAndSubmit(el, 'a'.repeat(30) + '!');
+    expect(el.shadowRoot.querySelector('.error')).toBeNull();
+    expect(Date.now() - started).toBeLessThan(1000);
+  });
+
+  // Backtracking cost grows with the input, so the shape check alone is not
+  // enough — an answer past the cap goes unchecked rather than unbounded.
+  it('pattern: skips validation for an answer past the length cap', async () => {
+    const el = await makeEl({ item: { ...item, pattern: '^[0-9]+$', required: true } });
+    await typeAndSubmit(el, 'x'.repeat(1001));
+    expect(el.shadowRoot.querySelector('.error')).toBeNull();
+  });
+
   it('no validation on empty input (skippable items)', async () => {
     const el = await makeEl({ item: { ...item, inputType: 'number', min: 5 } });
     await typeAndSubmit(el, '');

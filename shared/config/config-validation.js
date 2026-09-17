@@ -14,6 +14,7 @@
 //   ConfigError  — re-exported so callers don't need a separate import.
 
 import { ratedTextTextKey } from './item-types.js';
+import { unsafePatternReason } from '../safe-pattern.js';
 
 export class ConfigError extends Error {
   constructor(message) {
@@ -297,6 +298,40 @@ function checkSliderItemsInList(items, qId, errors) {
   }
 }
 
+// A config-supplied `pattern` runs against whatever the patient types, and JS
+// offers no way to time out or abort a regex match — a pattern with
+// catastrophic backtracking freezes the tab. The patient app already refuses
+// to run such a pattern (shared/safe-pattern.js, applied in item-text.js), but
+// silently skipping validation is a poor way for an author to learn their
+// pattern is unusable. Failing here means they find out in CI instead.
+function checkTextPatternsInList(items, qId, errors) {
+  for (const item of items ?? []) {
+    if (item.type === 'if') {
+      checkTextPatternsInList(item.then, qId, errors);
+      checkTextPatternsInList(item.else, qId, errors);
+      continue;
+    }
+    if (item.type === 'randomize') {
+      checkTextPatternsInList(item.ids, qId, errors);
+      continue;
+    }
+    if (item.pattern == null) continue;
+    const reason = unsafePatternReason(item.pattern);
+    if (reason) {
+      errors.push(
+        `Questionnaire "${qId}" › item "${item.id}": ${reason}. ` +
+        `It would be skipped at runtime, so the answer would go unvalidated.`
+      );
+    }
+  }
+}
+
+function checkTextPatterns(data, errors) {
+  for (const q of data.questionnaires ?? []) {
+    checkTextPatternsInList(q.items, q.id, errors);
+  }
+}
+
 function checkSliderItems(data, errors) {
   for (const q of data.questionnaires ?? []) {
     checkSliderItemsInList(q.items, q.id, errors);
@@ -340,6 +375,7 @@ export function collectConfigErrors(data) {
   checkOptionSets(data, errors);
   checkScoringRefs(data, errors);
   checkSliderItems(data, errors);
+  checkTextPatterns(data, errors);
   checkInterpretationRanges(data, errors);
   checkCrossEntityIdCollisions(data, errors);
   return errors;

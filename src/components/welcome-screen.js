@@ -1,5 +1,6 @@
 import { LitElement, html, css } from 'lit';
 import { resetCSS } from '../styles/reset.js';
+import { stripBidi } from '../../shared/text-hygiene.js';
 
 /**
  * <welcome-screen>
@@ -174,9 +175,8 @@ export class WelcomeScreen extends LitElement {
   _begin() {
     // Strip Unicode BiDi control characters before emitting the name.
     // These can cause misleading visual rendering in PDF documents.
-    const safeName = this.collectName
-      ? this._name.trim().replace(/[\u200E\u200F\u202A-\u202E\u2066-\u2069]/g, '')
-      : '';
+    // Shared with the envelope read path — see shared/text-hygiene.js.
+    const safeName = this.collectName ? stripBidi(this._name.trim()) : '';
     this.dispatchEvent(new CustomEvent('begin', {
       detail: { name: safeName },
       bubbles: true,

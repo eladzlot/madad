@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { ENVELOPE_VERSION, buildEnvelope, validateEnvelope } from './envelope-schema.js';
+import { ENVELOPE_VERSION, buildEnvelope, validateEnvelope, sanitizeEnvelope } from './envelope-schema.js';
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
@@ -74,6 +74,20 @@ describe('buildEnvelope', () => {
     ]);
   });
 
+  it('embeds timing when given and defaults it to null', () => {
+    const timing = {
+      startedAt: '2026-07-03T09:50:00.000Z',
+      questionnaires: { phq9: { wallMs: 90000, focusMs: 85000, visits: 1 } },
+    };
+    const withTiming = buildEnvelope({ sessionState: SESSION_STATE, config: CONFIG, now: NOW, timing });
+    expect(withTiming.timing).toEqual(timing);
+    expect(validateEnvelope(JSON.parse(JSON.stringify(withTiming))).valid).toBe(true);
+
+    const without = buildEnvelope({ sessionState: SESSION_STATE, config: CONFIG, now: NOW });
+    expect(without.timing).toBeNull();
+    expect(validateEnvelope(without).valid).toBe(true);
+  });
+
   it('survives a JSON round-trip and validates', () => {
     const env = buildEnvelope({
       sessionState: SESSION_STATE,
@@ -146,5 +160,34 @@ describe('validateEnvelope', () => {
     const res = validateEnvelope({ schemaVersion: 'x', generatedAt: 'x', instruments: 'x', sessionState: 'x' });
     expect(res.valid).toBe(false);
     expect(res.errors.length).toBeGreaterThanOrEqual(4);
+  });
+
+  // The write path caps and strips these before they reach a PDF, but a PDF is
+  // a file on disk — an uploaded one may have been hand-built. The read path
+  // renders pid and name (including into an exported SVG, whose esc() escapes
+  // markup but not BiDi controls), so it re-applies the rules itself.
+  describe('sanitizeEnvelope', () => {
+    it('strips BiDi controls from pid and name', () => {
+      const e = sanitizeEnvelope({ pid: '\u202Eevil\u202C', name: 'A\u200Fb' });
+      expect(e.pid).toBe('evil');
+      expect(e.name).toBe('Ab');
+    });
+
+    it('caps pid at 64 and name at 200 characters', () => {
+      const e = sanitizeEnvelope({ pid: 'x'.repeat(500), name: 'y'.repeat(500) });
+      expect(e.pid).toHaveLength(64);
+      expect(e.name).toHaveLength(200);
+    });
+
+    it('leaves null and absent fields alone', () => {
+      expect(sanitizeEnvelope({ pid: null, name: null })).toEqual({ pid: null, name: null });
+      expect(sanitizeEnvelope({})).toEqual({});
+    });
+
+    it('leaves an ordinary pid and name untouched', () => {
+      const e = sanitizeEnvelope({ pid: 'abc-123', name: 'ישראל ישראלי' });
+      expect(e.pid).toBe('abc-123');
+      expect(e.name).toBe('ישראל ישראלי');
+    });
   });
 });

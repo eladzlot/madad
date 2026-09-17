@@ -45,6 +45,11 @@ import './components/progress-bar.js';
 import './components/welcome-screen.js';
 import './components/results-screen.js';
 
+// Item tokens are questionnaire/battery IDs, which are also config filenames
+// (configs/prod/<id>.json). Same shape the config loader accepts as a short
+// name and the Aggregate surface accepts from an envelope.
+const ITEM_TOKEN_RE = /^[a-zA-Z0-9_-]+$/;
+
 // ── Loading screen ────────────────────────────────────────────────────────────
 
 export function showLoading(container) {
@@ -167,6 +172,18 @@ async function main() {
 
   if (itemTokens.length === 0) {
     showError(container, 'לא נבחרו שאלונים.', 'יש לפתוח את הקישור שקיבלת מהמטפל.');
+    return;
+  }
+
+  // Item IDs are addresses, and this is the one place a config source comes
+  // from a stranger: every other loadConfig call site feeds it IDs that came
+  // from the catalog or from an already-validated envelope. A real link only
+  // ever carries short names — the composer generates nothing else — so hold
+  // the tokens to exactly that before they become fetch targets. loadConfig
+  // re-checks, but the boundary belongs here, where the untrusted input enters.
+  // (The Aggregate surface applies the same filter in aggregate/src/store.js.)
+  if (!itemTokens.every(t => ITEM_TOKEN_RE.test(t))) {
+    showError(container, 'הקישור שגוי או פג תוקף.', 'אנא פנה למטפל שלך לקבלת קישור חדש.');
     return;
   }
 

@@ -91,6 +91,15 @@ export class SelectionCart extends LitElement {
     }
     .qr-row .hint { margin: 0; flex: 1; min-inline-size: 0; }
 
+    /* QR tile beside a short hint — the same link, for a phone camera. */
+    .qr-row {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md, 16px);
+      margin-block-start: var(--space-sm, 8px);
+    }
+    .qr-row .hint { margin: 0; flex: 1; min-inline-size: 0; }
+
     .btn-row { display: flex; gap: var(--space-sm, 8px); margin-block-start: var(--space-sm, 8px); }
     .c-btn--grow { flex: 1; }
 

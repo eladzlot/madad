@@ -840,6 +840,18 @@ describe('buildDocDefinition — embedded data.json envelope', () => {
     expect(payload.sessionState.alerts).toEqual(sessionState.alerts);
   });
 
+  it('carries the timing snapshot into data.json and nowhere else', () => {
+    const timing = {
+      startedAt: '2026-03-12T06:55:00.000Z',
+      questionnaires: { q1: { wallMs: 300000, focusMs: 280000, visits: 1 } },
+    };
+    const def = buildDocDefinition(sessionState, CFG, SES, now, { timing });
+    expect(decodePayload(def).timing).toEqual(timing);
+    // Monitoring only: nothing about it reaches the rendered pages.
+    expect(JSON.stringify(def.content)).not.toContain('wallMs');
+    expect(decodePayload(buildDocDefinition(sessionState, CFG, SES, now)).timing).toBeNull();
+  });
+
   it('records the app version injected at build time', () => {
     const def = buildDocDefinition(sessionState, CFG, SES, now);
     // Vitest injects __APP_VERSION__ from package.json via define.

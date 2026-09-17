@@ -87,6 +87,32 @@ describe('URL resolution', () => {
     ).rejects.toBeInstanceOf(ConfigError);
   });
 
+  // A source that begins with an authority introducer resolves to a foreign
+  // origin ('//evil.com/c.json' → https://evil.com/c.json), which would reach
+  // the network without ever passing the allowedOrigins check. It looks
+  // root-relative, so it must be rejected before the root-relative branch.
+  // HANDOVER.md §6a — do not relax these without reading it.
+  it.each([
+    ['protocol-relative',      '//evil.com/cfg.json'],
+    ['backslash authority',    '/\\evil.com/cfg.json'],
+    ['mixed slash-backslash',  '\\/evil.com/cfg.json'],
+    ['backslash anywhere',     'configs\\evil.json'],
+  ])('rejects %s source (%s) without fetching', async (_label, source) => {
+    const fetch = vi.fn();
+    await expect(
+      loadConfig([source], { fetch, fetchTimeoutMs: 0 })
+    ).rejects.toBeInstanceOf(ConfigError);
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it('rejects path traversal in a root-relative source', async () => {
+    const fetch = vi.fn();
+    await expect(
+      loadConfig(['/configs/prod/../../escape.json'], { fetch, fetchTimeoutMs: 0 })
+    ).rejects.toBeInstanceOf(ConfigError);
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
   it('rejects short name containing a space', async () => {
     await expect(
       loadConfig(['my config'], { fetch: vi.fn(), fetchTimeoutMs: 0 })

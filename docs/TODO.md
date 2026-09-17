@@ -106,7 +106,7 @@ Build slices per D-11. Slice 1 goes to pilot therapists before later slices are 
 | AGG-6 | Design dive: aggregate visual refresh + clinician shell integration | done | See archive A-11. D-15/D-16/D-17 applied. |
 | AGG-P | Psychometrics content: reliability/SD/source per instrument | todo | **User-owned clinical workstream** — can start now; long pole for AGG-4 |
 | AGG-7 | Sort questionnaires in the aggregate by number of applications | done | See archive A-15. |
-| AGG-8 | Capture and report time spent answering | todo | **Spans three layers.** (1) Capture: nothing times anything today — no `Date.now()` in orchestrator/engine/controller. Decide the grain (per item / per questionnaire / per session) and how to handle a patient who leaves the tab open. (2) Carry: new envelope field; `validateEnvelope` already tolerates unknown extra fields (forward-compatible by design), so this is **additive — no `ENVELOPE_VERSION` bump** — but every historical PDF lacks it, so readers must handle absence. (3) Report: PDF and/or aggregate. Purpose per user: see response burden on patients, so per-questionnaire is probably the useful grain. Privacy note: duration is behavioural data about the patient — decide deliberately whether it belongs in the PDF the patient sees. |
+| AGG-8 | Capture time spent answering | done | See archive A-16. Capture + carry only; nothing is reported in the PDF or the aggregate by decision (monitoring data). |
 | AGG-9 | Record the config version in the envelope | todo | **Small, additive.** Nothing in `data.json` says which config version produced a score, so a trajectory spanning a scoring change shows an artificial step the chart cannot detect — `scq` (1–5 → 0–4) and `ptci` (item text + filler exclusion) both changed meaning on 2026-08-21 and every PDF on either side looks identical to the reader. Write the config's top-level `version` (and the questionnaire id it belongs to) next to each instrument in the envelope; `validateEnvelope` already tolerates unknown fields, so this is **additive — no `ENVELOPE_VERSION` bump** — but every historical PDF lacks it, so the aggregate must treat absence as "unknown", never as "same". Open, and the only part needing a call: what the aggregate *does* when two points on one chart disagree — annotate the boundary, split the series, or just tooltip it. Suggest starting with the capture side (envelope + `report.js`), which is useful on its own and decides nothing.
 
 ### IDIO — Idiographic / personalized measures (docs/IDIOGRAPHIC_PLAN.md)
@@ -356,6 +356,12 @@ Append-only. Date format: YYYY-MM-DD.
 ---
 
 ## 5. Task Archive
+
+### A-16 — AGG-8 Per-questionnaire wall and focus time in the envelope
+**Completed:** 2026-09-17
+**Summary:** The PDF's `data.json` now carries `timing`: `startedAt` (Start pressed) and, per questionnaire, `wallMs` (clock time on screen), `focusMs` (the part with the tab visible) and `visits` (entries, re-entry from the results screen included). **Monitoring only** — never rendered on the pages, ignored by the aggregate, `null` in script-generated PDFs, absent in older ones. Decisions: raw wall clock rather than "active" time — an interaction-based idle model (gap clipping, pointer/key tracking) was planned and rejected as over-engineered; outliers are handled statistically downstream. Per-questionnaire grain, not per item. The timer is a pure module the controller drives from its existing hooks (`onQuestionnaireStart` / `onQuestionnaireResume`, `showResults`, the results-screen back path, `visibilitychange`); the snapshot is passed to `generateReport()` as an option so scripts and tests are untouched. On branch `remote` the field reaches the server unchanged once `sendResults()` passes `timing` too (one line at rebase); it is not identifying, so REMOTE_SPEC D-2 holds.
+**Files:** `src/questionnaire-timer.js` (+ test, new), `src/controller.js` (+ 4 tests), `src/pdf/report.js` (+ 1 test), `shared/pdf/envelope-schema.js` (+ 1 test), `tests/e2e/patient-flow.e2e.test.js` (download test now parses the envelope), `docs/AGGREGATE_SPEC.md` §3.2, `docs/IMPLEMENTATION_SPEC.md` §19.4a, `docs/RENDER_SPEC.md` §2.1–2.2.
+**Test delta:** 1502 → 1518 unit.
 
 ### A-15 — AGG-7 Aggregate instruments ordered by administration count
 **Completed:** 2026-08-22
