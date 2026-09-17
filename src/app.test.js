@@ -19,7 +19,7 @@ vi.mock('./engine/orchestrator.js', () => ({ createOrchestrator: vi.fn() }));
 vi.mock('./router.js',              () => ({ createRouter: vi.fn() }));
 vi.mock('./pdf/report.js',          () => ({ preloadPdf: vi.fn() }));
 
-import { showLoading, showError, readPid } from './app.js';
+import { showLoading, showError, readPid, readLang } from './app.js';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -201,3 +201,20 @@ describe('readPid — fragment/query precedence', () => {
   });
 });
 
+// ─── readLang ─────────────────────────────────────────────────────────────────
+
+describe('readLang', () => {
+  it('defaults to Hebrew when lang is absent or empty', () => {
+    expect(readLang({ search: '?items=phq9' })).toBe('he');
+    expect(readLang({ search: '?items=phq9&lang=' })).toBe('he');
+  });
+
+  it('returns a supported language', () => {
+    expect(readLang({ search: '?items=phq9&lang=en' })).toBe('en');
+  });
+
+  it('returns null (malformed link) for an unknown language — never a silent fallback', () => {
+    expect(readLang({ search: '?items=phq9&lang=xx' })).toBeNull();
+    expect(readLang({ search: '?lang=EN' })).toBeNull();
+  });
+});

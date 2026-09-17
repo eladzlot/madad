@@ -1,5 +1,6 @@
 import { LitElement, html, css } from 'lit';
 import { resetCSS } from '../styles/reset.js';
+import { t } from '../i18n/index.js';
 
 /**
  * <progress-bar>
@@ -102,7 +103,7 @@ export class ProgressBar extends LitElement {
           ` : ''}
           ${showItem ? html`
             <span class="item-count">
-              שאלה ${this.itemProgress.current} מתוך ${this.itemProgress.total}
+              ${t('progress.item', { current: this.itemProgress.current, total: this.itemProgress.total })}
             </span>
           ` : ''}
         </div>
@@ -112,14 +113,14 @@ export class ProgressBar extends LitElement {
             aria-valuenow=${itemPct}
             aria-valuemin="0"
             aria-valuemax="100"
-            aria-label="התקדמות בשאלון">
+            aria-label=${t('progress.aria')}>
             <div class="fill" style="inline-size: ${itemPct}%"></div>
           </div>
         ` : ''}
 
         ${showBattery ? html`
           <div class="battery-row">
-            שאלון ${this.batteryProgress.current} מתוך ${this.batteryProgress.total}
+            ${t('progress.battery', { current: this.batteryProgress.current, total: this.batteryProgress.total })}
           </div>
         ` : ''}
       </div>

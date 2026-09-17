@@ -1,0 +1,310 @@
+{
+  "id": "ptci",
+  "version": "2.0.0",
+  "questionnaires": [
+    {
+      "id": "ptci",
+      "meta": {
+        "domains": [
+          "trauma"
+        ],
+        "type": "process",
+        "populations": [
+          "adult"
+        ],
+        "tags": [
+          "PTCI",
+          "גרסה מלאה"
+        ],
+        "source": "Foa, Ehlers, Clark, Tolin & Orsillo (1999), Psychological Assessment 11:303–314 — English original"
+      },
+      "title": "Posttraumatic Cognitions Inventory (PTCI)",
+      "description": "A 36-item (33 scored) measure of trauma-related thoughts and beliefs in three subscales: negative cognitions about the self, negative cognitions about the world, and self-blame.",
+      "keywords": [
+        "PTSD",
+        "trauma",
+        "cognitions",
+        "PTCI",
+        "beliefs",
+        "full version"
+      ],
+      "defaultOptionSetId": "agreement_7",
+      "optionSets": {
+        "agreement_7": [
+          {
+            "label": "Totally disagree",
+            "value": 1
+          },
+          {
+            "label": "Very much disagree",
+            "value": 2
+          },
+          {
+            "label": "Slightly disagree",
+            "value": 3
+          },
+          {
+            "label": "Neutral",
+            "value": 4
+          },
+          {
+            "label": "Slightly agree",
+            "value": 5
+          },
+          {
+            "label": "Very much agree",
+            "value": 6
+          },
+          {
+            "label": "Totally agree",
+            "value": 7
+          }
+        ]
+      },
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "We are interested in the kind of thoughts which you may have had after a traumatic experience. Below are a number of statements that may or may not be representative of your thinking. Please read each statement carefully and tell us how much you agree or disagree with each statement. People react to traumatic events in many different ways. There are no right or wrong answers to these statements."
+        },
+        {
+          "id": "1",
+          "type": "select",
+          "text": "The event happened because of the way I acted."
+        },
+        {
+          "id": "2",
+          "type": "select",
+          "text": "I can't trust that I will do the right thing."
+        },
+        {
+          "id": "3",
+          "type": "select",
+          "text": "I am a weak person."
+        },
+        {
+          "id": "4",
+          "type": "select",
+          "text": "I will not be able to control my anger and will do something terrible."
+        },
+        {
+          "id": "5",
+          "type": "select",
+          "text": "I can't deal with even the slightest upset."
+        },
+        {
+          "id": "6",
+          "type": "select",
+          "text": "I used to be a happy person but now I am always miserable."
+        },
+        {
+          "id": "7",
+          "type": "select",
+          "text": "People can't be trusted."
+        },
+        {
+          "id": "8",
+          "type": "select",
+          "text": "I have to be on guard all the time."
+        },
+        {
+          "id": "9",
+          "type": "select",
+          "text": "I feel dead inside."
+        },
+        {
+          "id": "10",
+          "type": "select",
+          "text": "You can never know who will harm you."
+        },
+        {
+          "id": "11",
+          "type": "select",
+          "text": "I have to be especially careful because you never know what can happen next."
+        },
+        {
+          "id": "12",
+          "type": "select",
+          "text": "I am inadequate."
+        },
+        {
+          "id": "13",
+          "type": "select",
+          "text": "I will not be able to control my emotions, and something terrible will happen."
+        },
+        {
+          "id": "14",
+          "type": "select",
+          "text": "If I think about the event, I will not be able to handle it."
+        },
+        {
+          "id": "15",
+          "type": "select",
+          "text": "The event happened to me because of the sort of person I am."
+        },
+        {
+          "id": "16",
+          "type": "select",
+          "text": "My reactions since the event mean that I am going crazy."
+        },
+        {
+          "id": "17",
+          "type": "select",
+          "text": "I will never be able to feel normal emotions again."
+        },
+        {
+          "id": "18",
+          "type": "select",
+          "text": "The world is a dangerous place."
+        },
+        {
+          "id": "19",
+          "type": "select",
+          "text": "Somebody else would have stopped the event from happening."
+        },
+        {
+          "id": "20",
+          "type": "select",
+          "text": "I have permanently changed for the worse."
+        },
+        {
+          "id": "21",
+          "type": "select",
+          "text": "I feel like an object, not like a person."
+        },
+        {
+          "id": "22",
+          "type": "select",
+          "text": "Somebody else would not have gotten into this situation."
+        },
+        {
+          "id": "23",
+          "type": "select",
+          "text": "I can't rely on other people."
+        },
+        {
+          "id": "24",
+          "type": "select",
+          "text": "I feel isolated and set apart from others."
+        },
+        {
+          "id": "25",
+          "type": "select",
+          "text": "I have no future."
+        },
+        {
+          "id": "26",
+          "type": "select",
+          "text": "I can't stop bad things from happening to me."
+        },
+        {
+          "id": "27",
+          "type": "select",
+          "text": "People are not what they seem."
+        },
+        {
+          "id": "28",
+          "type": "select",
+          "text": "My life has been destroyed by the trauma."
+        },
+        {
+          "id": "29",
+          "type": "select",
+          "text": "There is something wrong with me as a person."
+        },
+        {
+          "id": "30",
+          "type": "select",
+          "text": "My reactions since the event show that I am a lousy coper."
+        },
+        {
+          "id": "31",
+          "type": "select",
+          "text": "There is something about me that made the event happen."
+        },
+        {
+          "id": "32",
+          "type": "select",
+          "text": "I will not be able to tolerate my thoughts about the event, and I will fall apart."
+        },
+        {
+          "id": "33",
+          "type": "select",
+          "text": "I feel like I don't know myself anymore."
+        },
+        {
+          "id": "34",
+          "type": "select",
+          "text": "You never know when something terrible will happen."
+        },
+        {
+          "id": "35",
+          "type": "select",
+          "text": "I can't rely on myself."
+        },
+        {
+          "id": "36",
+          "type": "select",
+          "text": "Nothing good can happen to me anymore."
+        }
+      ],
+      "scoring": {
+        "method": "subscales",
+        "subscaleMethod": "mean",
+        "subscales": {
+          "self": [
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "9",
+            "12",
+            "14",
+            "16",
+            "17",
+            "20",
+            "21",
+            "24",
+            "25",
+            "26",
+            "28",
+            "29",
+            "30",
+            "33",
+            "35",
+            "36"
+          ],
+          "world": [
+            "7",
+            "8",
+            "10",
+            "11",
+            "18",
+            "23",
+            "27"
+          ],
+          "blame": [
+            "1",
+            "15",
+            "19",
+            "22",
+            "31"
+          ]
+        },
+        "totalMethod": "sum_of_items",
+        "exclude": [
+          "13",
+          "32",
+          "34"
+        ]
+      },
+      "subscaleLabels": {
+        "self": "Negative cognitions about the self",
+        "world": "Negative cognitions about the world",
+        "blame": "Self-blame"
+      },
+      "alerts": []
+    }
+  ]
+}

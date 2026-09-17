@@ -421,3 +421,85 @@ describe('recommended profile / pins', () => {
     expect(store.visibleEntries().map(e => e.id).sort()).toEqual(['bdi', 'phq9']);
   });
 });
+
+// ── languages (docs/I18N_SPEC.md §9) ──────────────────────────────────────────
+
+describe('patient language', () => {
+  const he = (id, o = {}) => entry(id, { ...o });                                      // Hebrew-only
+  const both = (id, title) => ({ ...entry(id, { featured: true }), languages: ['he', 'en'], i18n: { en: { title, description: 'Desc', keywords: ['EN'] } } });
+
+  it('defaults the patient language to the UI language and lists all LANGS', () => {
+    expect(seeded([he('a')]).patientLang).toBe('he');
+    const store = createStore({ uiLang: 'en' });
+    store.ingestCatalog(catalog([he('a')]), { catalogVersion: CATALOG_VERSION, isDev: true });
+    expect(store.patientLang).toBe('en');
+    expect(store.patientLangs()).toEqual(['he', 'en']);
+  });
+
+  it('hides entries the patient language cannot serve (L-8)', () => {
+    const store = seeded([he('wsas', { featured: true }), both('phq9', 'PHQ-9')]);
+    store.showEverything();
+    expect(store.visibleEntries().map(e => e.id).sort()).toEqual(['phq9', 'wsas']);
+    store.setPatientLang('en');
+    expect(store.visibleEntries().map(e => e.id)).toEqual(['phq9']);
+    expect(store.availableTabs()).toEqual(['all', 'questionnaires']);
+  });
+
+  it('switching drops unavailable selections, records them, and stamps lang= on the URL', () => {
+    const store = seeded([he('wsas'), both('phq9', 'PHQ-9')]);
+    store.toggle('wsas'); store.toggle('phq9');
+    store.setPatientLang('en');
+    expect(store.selected).toEqual(['phq9']);
+    expect(store.dropped).toEqual(['wsas']);
+    // The trial withholds the link until the uid validates (REMOTE_SPEC §3).
+    store.setPid('CMPS-001J');
+    expect(store.url()).toContain('lang=en');
+    store.clearDropped();
+    expect(store.dropped).toEqual([]);
+    store.setPatientLang('he');
+    expect(store.url()).not.toContain('lang=');
+  });
+
+  it('persists the explicit choice per browser', () => {
+    const mem = new Map();
+    const storage = { getItem: k => mem.get(k) ?? null, setItem: (k, v) => mem.set(k, v) };
+    const a = createStore({ storage });
+    a.ingestCatalog(catalog([both('phq9', 'PHQ-9')]), { catalogVersion: CATALOG_VERSION, isDev: true });
+    a.setPatientLang('en');
+    const b = createStore({ storage, uiLang: 'he' });
+    expect(b.patientLang).toBe('en');
+  });
+
+  it('ignores unknown languages', () => {
+    const store = seeded([both('phq9', 'PHQ-9')]);
+    store.setPatientLang('xx');
+    expect(store.patientLang).toBe('he');
+  });
+});
+
+describe('UI language', () => {
+  const both = (id, title) => ({ ...entry(id, { featured: true, title: `עברית ${id}` }), languages: ['he', 'en'], i18n: { en: { title, description: 'Desc', keywords: ['EN'] } } });
+
+  it('shows titles in the UI language, falling back to Hebrew', () => {
+    const store = createStore({ uiLang: 'en' });
+    store.ingestCatalog(catalog([both('phq9', 'PHQ-9 English'), entry('wsas', { featured: true, title: 'תפקוד' })]),
+      { catalogVersion: CATALOG_VERSION, isDev: true });
+    store.setPatientLang('he');
+    const titles = Object.fromEntries(store.visibleEntries().map(e => [e.id, e.title]));
+    expect(titles).toEqual({ phq9: 'PHQ-9 English', wsas: 'תפקוד' });
+    store.toggle('phq9');
+    expect(store.selectedEntries()[0].title).toBe('PHQ-9 English');
+    expect(store.entries.find(e => e.id === 'phq9').title).toBe('עברית phq9');   // raw entries untouched
+  });
+
+  it('search finds an entry by its other-language title', () => {
+    const store = createStore({ uiLang: 'en' });
+    store.ingestCatalog(catalog([both('phq9', 'Patient Health Questionnaire'), entry('gad7', { title: 'חרדה' })]),
+      { catalogVersion: CATALOG_VERSION, isDev: true });
+    store.setPatientLang('he');
+    store.setQuery('עברית');
+    expect(store.visibleEntries().map(e => e.id)).toEqual(['phq9']);
+    store.setQuery('Patient Health');
+    expect(store.visibleEntries().map(e => e.id)).toEqual(['phq9']);
+  });
+});

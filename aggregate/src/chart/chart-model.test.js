@@ -337,3 +337,24 @@ describe('buildChartModel — shared domain', () => {
     expect(m.markers[0].x).toBe(m.plot.x + X_INSET);
   });
 });
+
+describe('buildChartModel — direction', () => {
+  const interp = { type: 'severity', ranges: [{ min: 0, max: 9, label: 'a' }, { min: 10, max: 27, label: 'b' }], cutoffs: [{ value: 10, label: 'c' }] };
+
+  it('defaults to rtl anchors and echoes dir', () => {
+    const m = model([pt('2026-07-01T10:00:00Z', 12)], { interpretations: interp });
+    expect(m.dir).toBe('rtl');
+    expect(m.bands[0].labelAnchor).toBe('start');
+    expect(m.cutoffs[0].labelAnchor).toBe('end');
+  });
+
+  it('mirrors the anchors in ltr so labels stay inside the plot', () => {
+    const m = model([pt('2026-07-01T10:00:00Z', 12)], { interpretations: interp, dir: 'ltr' });
+    expect(m.dir).toBe('ltr');
+    expect(m.bands[0].labelAnchor).toBe('end');
+    expect(m.cutoffs[0].labelAnchor).toBe('start');
+    // Label x positions are the same edges in both directions.
+    expect(m.bands[0].labelX).toBe(m.plot.x + m.plot.w - 6);
+    expect(m.cutoffs[0].labelX).toBe(m.plot.x + 6);
+  });
+});

@@ -93,11 +93,7 @@ function defaultRandomBytes(n) {
 export function uidWarning(raw) {
   if (!raw || !raw.trim()) return null;
   const n = normalizeUid(raw);
-  if (n.length !== UID_LENGTH || [...n].some(c => !SYMBOL_VALUE.has(c))) {
-    return 'המזהה צריך להיות בן 8 תווים בפורמט XXXX-XXXX, כפי שנמסר לכם.';
-  }
-  if (!isValidUid(n)) {
-    return 'נראה שיש טעות הקלדה במזהה — בדקו אותו מול הרשימה שקיבלתם.';
-  }
+  if (n.length !== UID_LENGTH || [...n].some(c => !SYMBOL_VALUE.has(c))) return 'shape';
+  if (!isValidUid(n)) return 'checksum';
   return null;
 }

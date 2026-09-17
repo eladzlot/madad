@@ -26,7 +26,7 @@
     "demo": "vite-node scripts/generate-test-pdfs.mjs --out demo/out",
     "demo:shots": "node scripts/generate-demo-shots.mjs",
     "pdf:fixtures": "vite-node scripts/generate-test-pdfs.mjs",
-    "pdf:fixtures:e2e": "vite-node scripts/generate-test-pdfs.mjs tests/fixtures/scenarios/mixed-15-weeks.json --out tests/fixtures/pdfs/mixed15",
+    "pdf:fixtures:e2e": "vite-node scripts/generate-test-pdfs.mjs tests/fixtures/scenarios/mixed-15-weeks.json --out tests/fixtures/pdfs/mixed15 && vite-node scripts/generate-test-pdfs.mjs tests/fixtures/scenarios/english-3-weeks.json --out tests/fixtures/pdfs/en3",
     "size": "node scripts/check-size.mjs",
     "build:og": "bash scripts/build-og-image.sh",
     "ci": "npm run lint && npm test && npm run validate:configs && npm run validate:catalog && npm run build && npm run size && npm run e2e"

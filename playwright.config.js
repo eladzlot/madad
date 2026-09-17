@@ -24,6 +24,13 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   reporter: process.env.CI ? 'github' : 'list',
 
+  // The clinician surfaces follow the browser language on a first visit
+  // (docs/I18N_SPEC.md L-7). Playwright's default is en-US, which would boot
+  // the Composer in English and break every Hebrew assertion, so the browser
+  // reports Hebrew — the reality for the suites' reference user. Suites that
+  // exercise English pass ?lang=en explicitly.
+  use: { locale: 'he-IL' },
+
   projects: [
     // Dev-server suite — exercises the full patient journey against the
     // unbuilt source via Vite's dev server. Uses the dev-only e2e.json config.

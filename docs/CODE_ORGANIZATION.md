@@ -88,6 +88,9 @@ shared/
     build-catalog.js            builds the composer catalog index from prod/
   pdf/
     envelope-schema.js          embedded data.json envelope + validateEnvelope
+  i18n/
+    core.js                     LANGS, configBaseFor(), makeT(), clinician-language
+                                resolution — the language model every surface shares
   styles/
     tokens.css                  design tokens (--color-*, --space-*, etc.)
 ```
@@ -113,6 +116,9 @@ clinician/
   styles/
     clinician-styles.js         clinician design vocabulary, adopted at the
                                 document level by each clinician surface
+  i18n/
+    he.js, en.js                clinician string tables (nav, Composer, Aggregate, Help)
+    index.js                    t(), bootLang(), switchLang()
   helpers/                      (when shared utilities emerge)
 ```
 
@@ -147,6 +153,7 @@ src/
   components/                   patient Lit components (item-*, screens, etc.)
   engine/                       scoring, alerts, DSL, orchestrator
   helpers/                      gestures (touch handlers)
+  i18n/                         patient + PDF string tables (he static, en lazy), t()
   styles/                       patient-only CSS
   pdf/                          (see §4)
 ```

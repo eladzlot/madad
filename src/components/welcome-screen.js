@@ -1,4 +1,5 @@
 import { LitElement, html, css } from 'lit';
+import { t } from '../i18n/index.js';
 import { resetCSS } from '../styles/reset.js';
 import { stripBidi } from '../../shared/text-hygiene.js';
 
@@ -187,27 +188,25 @@ export class WelcomeScreen extends LitElement {
   render() {
     return html`
       <div class="card">
-        <span class="app-name">מדד · CTR</span>
-        <span class="app-tagline">הערכה קלינית דיגיטלית</span>
+        <span class="app-name">${t('welcome.appName')}</span>
+        <span class="app-tagline">${t('welcome.tagline')}</span>
 
         ${this.batteryTitle ? html`
           <h1 class="battery-title">${this.batteryTitle}</h1>
         ` : ''}
 
-        <p class="intro">
-          התשובות שלך יעזרו לצוות המטפל להבין אותך טוב יותר.
-        </p>
-        <p class="disclosure">
-          התשובות והציונים — ללא שם וללא פרטים מזהים — יישלחו ישירות למטפל/ת שלך.
-        </p>
+        <p class="intro">${t('welcome.intro')}</p>
+        <!-- Trial only: the patient is told where the answers go, because on
+             this deployment they leave the device (REMOTE_SPEC §5.1). -->
+        <p class="disclosure">${t('welcome.disclosure')}</p>
 
         ${this.collectName ? html`
           <div class="field">
-            <label for="patient-name">שמך</label>
+            <label for="patient-name">${t('welcome.nameLabel')}</label>
             <input
               id="patient-name"
               type="text"
-              placeholder="שמך המלא"
+              placeholder=${t('welcome.namePlaceholder')}
               .value=${this._name}
               @input=${this._onInput}
               @keydown=${this._onKeyDown}
@@ -217,7 +216,7 @@ export class WelcomeScreen extends LitElement {
         ` : ''}
 
         <button class="begin-btn" @click=${this._begin}>
-          התחל
+          ${t('welcome.begin')}
         </button>
       </div>
     `;

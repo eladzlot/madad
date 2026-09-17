@@ -988,6 +988,20 @@ describe('meta', () => {
     })],
   })).toBe(true));
 
+  it('accepts meta.source provenance string', () => expect(valid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire({
+      meta: { domains: ['depression'], type: 'severity', source: 'Kroenke et al. 2001 — English original' },
+    })],
+  })).toBe(true));
+
+  it('rejects an empty meta.source', () => expect(invalid({
+    ...minimalConfig,
+    questionnaires: [makeQuestionnaire({
+      meta: { domains: ['depression'], type: 'severity', source: '' },
+    })],
+  })).toBe(true));
+
   it('rejects non-positive durationMinutes', () => expect(invalid({
     ...minimalConfig,
     questionnaires: [makeQuestionnaire({

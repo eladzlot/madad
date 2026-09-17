@@ -1,0 +1,66 @@
+// en.js — English patient-app strings. Keys mirror he.js exactly.
+
+export const en = {
+  'app.title':            'Madad — pre-session questionnaire',
+
+  'boot.loading':         'Loading questionnaire…',
+  'boot.loadingAria':     'Loading questionnaire',
+
+  'error.noItems':        'No questionnaires were selected.',
+  'error.noItemsHint':    'Please open the link you received from your therapist.',
+  'error.cannotLoad':     'The questionnaire could not be loaded.',
+  'error.timeout':        'The request took too long. Check your internet connection and try again.',
+  'error.badLink':        'This link is invalid or unavailable.',
+  'error.contactTherapist': 'Please ask your therapist for a new link.',
+  'error.network':        'Check your internet connection and try again, or ask your therapist for a new link.',
+  'error.expiredLink':    'This link is invalid or has expired.',
+  'error.retry':          'Try again',
+  'error.generic':        'Something went wrong: {message}',
+
+  'welcome.appName':      'Madad',
+  'welcome.tagline':      'Digital clinical assessment',
+  'welcome.intro':        'Your answers will help your care team understand you better.',
+  'welcome.disclosure':   'Your answers and scores — with no name and no identifying details — go straight to your therapist.',
+  'welcome.nameLabel':    'Your name',
+  'welcome.namePlaceholder': 'Your full name',
+  'welcome.begin':        'Begin',
+
+  'progress.item':        'Question {current} of {total}',
+  'progress.aria':        'Questionnaire progress',
+  'progress.battery':     'Questionnaire {current} of {total}',
+
+  'nav.back':             'Back to the previous question',
+  'nav.forward':          'Go to the next question',
+
+  'item.continue':        'Continue',
+  'item.continueEmpty':   'Continue without answering',
+  'item.continueNoSelection': 'Continue without selecting',
+  'item.dragHint':        'Drag to choose a value',
+
+  'text.number':          'Please enter a number',
+  'text.min':             'The minimum is {min}',
+  'text.max':             'The maximum is {max}',
+  'text.email':           'Invalid email address',
+  'text.pattern':         'The value is not in the required format',
+
+  'results.eyebrow':      'Assessment summary',
+  'results.title':        'Your results',
+  'results.hint':         'You can go back and change answers — the results and the report will update accordingly.',
+  'results.pdfError':     'The report could not be prepared. Check your internet connection and try again.',
+  'results.preparing':    'Preparing report...',
+  'results.retry':        'Try again',
+  'results.share':        'Share PDF report',
+  'results.download':     'Download PDF report',
+
+  'pdf.date':             'Date',
+  'pdf.pid':              'Patient ID',
+  'pdf.name':             'Name',
+  'pdf.completed':        'Completed',
+  'pdf.subscales':        'Subscales:',
+  'pdf.colScore':         'Score',
+  'pdf.colAnswer':        'Answer',
+  'pdf.colItem':          'Item',
+  'pdf.rating':           'Rating:',
+  'pdf.page':             'Page {current} of {total}',
+  'pdf.footer':           'Madad · CTR — treatment tracking',
+};

@@ -76,13 +76,28 @@ instrument's URL address; renaming breaks every link that references it.
 
 - **Unique ID** — lowercase letters, digits, underscores only. `phq9` not `phq-9`. Must be unique across all loaded configs.
 - **Title naming convention** — Hebrew name followed by the instrument's initials in parentheses, e.g. `שאלון דיכאון (PHQ-9)`. Use this when the instrument is commonly known by its initials. Skip the initials if the instrument isn't known by them (e.g. `שלושת הבעיות המרכזיות`).
-- **Hebrew item text** — the platform language is Hebrew.
+- **Hebrew item text** — the canonical file under `prod/` is Hebrew. Other languages are separate files, see "Translating an instrument" below.
 - **Validated scoring** — ranges and alert thresholds must match the published, validated version. Do not adjust them.
 - **Open-source instruments only** — do not add proprietary instruments (e.g. BDI-II) without verifying the license.
 - **Binary items** — require explicit option labels. Either inline `options: [{"label": "כן", "value": 1}, {"label": "לא", "value": 0}]` on the item, or set `defaultOptionSetId` on the questionnaire with a matching entry in `optionSets`. There is no built-in fallback.
 - **Gating items** — if an item should be answered but not scored (e.g. a trauma exposure question), use `"scoring": { "method": "sum", "exclude": ["item_id"] }`.
 
 ---
+
+## Translating an instrument
+
+A translation is a sibling file, `public/configs/prod/<lang>/<id>.json` (e.g. `prod/en/phq9.json`), with the **same id and structure** as the Hebrew file and only its text changed. `<lang>` is a code from `shared/i18n/core.js` (`en` today; never `he`). The patient app picks the directory from the link's `lang=` parameter, so ids stay language-independent and the Aggregate lines up sessions across languages.
+
+1. Scaffold it — every text field becomes a `TODO: …` marker, scoring and ids are copied verbatim:
+   ```bash
+   node scripts/scaffold-translation.mjs en phq9
+   ```
+2. Replace every `TODO:` value. Use the **published original or an official/validated translation** and cite it in `meta.source` (required on translated files). Title convention: full name plus initials, e.g. `Patient Health Questionnaire (PHQ-9)`.
+3. `npm run validate:configs` — proves the file deep-equals the Hebrew one apart from text (`title`, `description`, `keywords`, `text`, `label`, `message`, `ratingText`, `subscaleLabels`/`labels` values, `source`). Anything else that differs is an error naming the JSON path. A translated battery needs every questionnaire it sequences translated too, and its `dependencies` must point into `prod/<lang>/`.
+4. `npm run build:catalog` — the entry gains `languages: ["he", "en"]` and the English title/description for the Composer. Commit the catalog with the file.
+5. Test at `http://localhost:5173/?items=phq9&lang=en`.
+
+When the Hebrew file's structure changes (scoring, items, options), every translation must change with it — the validator fails until they agree.
 
 ## Schema changes and deploy skew
 

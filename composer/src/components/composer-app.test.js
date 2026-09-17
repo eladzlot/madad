@@ -5,10 +5,6 @@ import { fixture, html } from '@open-wc/testing';
 import { createStore } from '../composer-store.js';
 import { CATALOG_VERSION } from '../../../shared/catalog/build-catalog.js';
 import './composer-app.js';
-import { generateUid } from '../../../shared/remote/uid.js';
-
-// Remote deployment: links exist only once a valid uid is set.
-const UID = generateUid(() => Uint8Array.from([1, 2, 3, 4, 5, 6, 7]));
 
 function entry(id, o = {}) {
   return {
@@ -31,6 +27,7 @@ async function mount(entries) {
 const listEl = (el) => el.shadowRoot.querySelector('catalog-list');
 const cards = (el) => [...listEl(el).shadowRoot.querySelectorAll('catalog-card')];
 const cart = (el) => el.shadowRoot.querySelector('selection-cart');
+const bar  = (el) => el.shadowRoot.querySelector('mobile-bar');
 
 describe('composer-app', () => {
   beforeEach(() => {
@@ -39,24 +36,27 @@ describe('composer-app', () => {
     vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue();
   });
 
-  it('renders the nav, controls, list, and cart', async () => {
+  it('renders the nav, controls, list, the rail and the phone bar', async () => {
     const { el } = await mount([entry('phq9')]);
     expect(el.shadowRoot.querySelector('clinician-nav')).not.toBeNull();
     expect(el.shadowRoot.querySelector('catalog-controls')).not.toBeNull();
     expect(el.shadowRoot.querySelector('catalog-list')).not.toBeNull();
     expect(cart(el)).not.toBeNull();
+    expect(bar(el)).not.toBeNull();
+    // The link lives in the rail; there is no bottom bar on desktop.
+    expect(el.shadowRoot.querySelector('output-bar')).toBeNull();
   });
 
-  it('toggling a card updates the store and the cart URL', async () => {
+  it('toggling a card updates the store and the link in the rail', async () => {
     const { el, store } = await mount([entry('phq9')]);
     cards(el)[0].shadowRoot.querySelector('button').click();
+    // The trial withholds the link until the uid validates.
+    store.setPid('CMPS-001J');
     await el.updateComplete;
     expect(store.selected).toEqual(['phq9']);
-    expect(cart(el).url).toBeNull();          // no uid yet → link withheld
-    store.setPid(UID);
-    await el.updateComplete;
     expect(cart(el).url).toContain('items=phq9');
-    expect(cart(el).url).toContain(`#pid=${UID}`);
+    expect(cart(el).entries.map(e => e.id)).toEqual(['phq9']);
+    expect(bar(el).url).toContain('items=phq9');
   });
 
   it('reorder event from the cart reorders the store selection', async () => {
@@ -67,41 +67,40 @@ describe('composer-app', () => {
     expect(store.selected).toEqual(['b', 'a']);
   });
 
-  it('an invalid uid is explained under the field in the cart and the sheet, not in the banner', async () => {
+  it('an invalid uid warns under the field, not in the load-time banner', async () => {
+    // On the trial the message belongs where the therapist is looking while
+    // typing, so warnings() stays load-time only (REMOTE_SPEC §8.2).
     const { el, store } = await mount([entry('phq9')]);
     store.setPid('bad id');
     await el.updateComplete;
     expect(el.shadowRoot.querySelector('.warnings')).toBeNull();
-    expect(cart(el).pidWarning).toContain('XXXX-XXXX');
-    expect(el.shadowRoot.querySelector('mobile-bar').pidWarning).toContain('XXXX-XXXX');
-    store.setPid(UID);
-    await el.updateComplete;
-    expect(cart(el).pidWarning).toBeNull();
+    expect(cart(el).pidWarning).toBeTruthy();
+    expect(bar(el).pidWarning).toBeTruthy();
   });
 
-  it('copy writes the URL to the clipboard, flips the copied flag and remembers the uid', async () => {
+  it('copy writes the URL to the clipboard and flips the copied flag', async () => {
     const { el, store } = await mount([entry('phq9')]);
-    store.toggle('phq9'); store.setPid(UID);
+    store.toggle('phq9');
+    store.setPid('CMPS-001J');   // the trial has no link without a valid uid
     await el.updateComplete;
     cart(el).dispatchEvent(new CustomEvent('copy', { bubbles: true, composed: true }));
     await Promise.resolve();
     expect(navigator.clipboard.writeText).toHaveBeenCalledWith(store.url());
     expect(store.copied).toBe(true);
-    await el.updateComplete;                  // recentUids is reactive state → next render
-    expect(cart(el).recentUids).toEqual([UID]);
   });
 
   it('reset clears the selection', async () => {
     const { el, store } = await mount([entry('phq9')]);
     store.toggle('phq9');
     await el.updateComplete;
-    cart(el).dispatchEvent(new CustomEvent('reset', { bubbles: true, composed: true }));
+    bar(el).dispatchEvent(new CustomEvent('reset', { bubbles: true, composed: true }));
     expect(store.selected).toEqual([]);
   });
 
   it('open dispatches window.open with the generated URL', async () => {
     const { el, store } = await mount([entry('phq9')]);
-    store.toggle('phq9'); store.setPid(UID);
+    store.toggle('phq9');
+    store.setPid('CMPS-001J');   // the trial has no link without a valid uid
     await el.updateComplete;
     const spy = vi.spyOn(window, 'open').mockImplementation(() => null);
     cart(el).dispatchEvent(new CustomEvent('open', { bubbles: true, composed: true }));

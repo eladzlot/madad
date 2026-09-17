@@ -71,14 +71,12 @@ describe('pidWarning', () => {
     expect(pidWarning('מטופל_1')).toBe(null);
   });
 
-  it('returns a length-specific message for over-length PIDs', () => {
-    const msg = pidWarning('a'.repeat(65));
-    expect(msg).toMatch(/64/);
+  it('returns a length-specific code for over-length PIDs', () => {
+    expect(pidWarning('a'.repeat(65))).toBe('too-long');
   });
 
-  it('returns a character-specific message for invalid characters', () => {
-    const msg = pidWarning('foo bar');
-    expect(msg).toMatch(/אותיות|תווים/);
+  it('returns a character-specific code for invalid characters', () => {
+    expect(pidWarning('foo bar')).toBe('invalid-chars');
   });
 
   // Regression: composer used to allow over-length PIDs without warning, while

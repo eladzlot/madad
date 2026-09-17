@@ -143,3 +143,23 @@ describe('uniquePid', () => {
     expect(uniquePid([])).toBeNull();
   });
 });
+
+describe('buildExportSvg — English UI', () => {
+  it('renders ltr text with the English footer and en-GB dates', async () => {
+    const { loadStrings, _resetStringsForTesting } = await import('../../../clinician/i18n/index.js');
+    await loadStrings('en');
+    try {
+      const { svg } = buildExportSvg({ series: series(pts(2)), now: NOW, pid: 'TRC-001' });
+      expect(svg).toContain('direction="ltr"');
+      expect(svg).not.toContain('direction="rtl"');
+      expect(svg).toContain('Generated ');
+      expect(svg).toContain('ID: TRC-001');
+      expect(svg).toContain('>Madad<');
+      expect(svg).toContain('01/03/2026');
+      // Title anchored at the left margin in ltr (start edge).
+      expect(svg).toMatch(/<text x="18" y="28" direction="ltr" text-anchor="start"/);
+    } finally {
+      _resetStringsForTesting();
+    }
+  });
+});

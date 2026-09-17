@@ -10,8 +10,9 @@
 
 import './aggregate.css';
 import { render, html } from 'lit';
-import '../../clinician/components/clinician-nav.js';
 import { adoptClinicianStyles } from '../../clinician/styles/clinician-styles.js';
+import { bootLang, t } from '../../clinician/i18n/index.js';
+import { LANGS, DEFAULT_LANG, configBaseFor } from '../../shared/i18n/core.js';
 import { loadConfig } from '../../shared/config/loader.js';
 import { parsePdfFile } from './parse-pdf.js';
 import { createStore } from './store.js';
@@ -30,7 +31,20 @@ import { loadRecentUids, rememberUid } from '../../shared/remote/uid-memory.js';
 adoptClinicianStyles();
 
 const root = document.getElementById('aggregate-app');
-const store = createStore();
+
+// Language first (docs/I18N_SPEC.md L-7): the components are imported after
+// the strings are in place so no template renders with the wrong table.
+const uiLang = await bootLang({ titleKey: 'aggregate.title' });
+await Promise.all([
+  import('../../clinician/components/clinician-nav.js'),
+  import('./chart/trajectory-chart.js'),
+  import('./components/upload-list.js'),
+  import('./components/pid-filter.js'),
+  import('./components/raw-data-list.js'),
+  import('./components/session-detail.js'),
+]);
+
+const store = createStore({ locale: LANGS[uiLang].locale });
 
 // qId → questionnaire config (for interpretations overlays and subscale
 // labels). Loaded lazily from the configs the uploaded envelopes reference;
@@ -93,24 +107,43 @@ async function handleFiles(files) {
   refreshConfigs();
 }
 
+// Configs are loaded in the clinician's UI language so titles, severity
+// bands and subscale labels read in that language, falling back per
+// instrument to the Hebrew (canonical) file when no translation exists. A
+// load failure only costs the overlays, never the charts.
+async function loadConfigFor(id) {
+  if (uiLang !== DEFAULT_LANG) {
+    try {
+      return await loadConfig([id], { configBase: configBaseFor(uiLang) });
+    } catch { /* no translation — fall through to Hebrew */ }
+  }
+  return loadConfig([id]);
+}
+
 async function refreshConfigs() {
   const configFiles = store.configFiles();
   const key = configFiles.join(',');
   if (key === loadedConfigKey || configFiles.length === 0) return;
   loadedConfigKey = key;
-  try {
-    const config = await loadConfig(configFiles);
-    questionnairesById = new Map(config.questionnaires.map(q => [q.id, q]));
-  } catch (err) {
-    console.warn('[aggregate] config load failed — charts render without overlays:', err);
-    questionnairesById = new Map();
-  }
+  const results = await Promise.allSettled(configFiles.map(loadConfigFor));
+  questionnairesById = new Map();
+  results.forEach((r, i) => {
+    if (r.status === 'fulfilled') {
+      for (const q of r.value.questionnaires) questionnairesById.set(q.id, q);
+    } else {
+      console.warn(`[aggregate] config load failed for ${configFiles[i]} — chart renders without overlays:`, r.reason);
+    }
+  });
   update();
 }
 
+// The instrument title the clinician sees: the loaded config's (UI language)
+// over the envelope's (the language the patient answered in).
+const titled = (s) => ({ ...s, title: questionnairesById.get(s.questionnaireId)?.title ?? s.title });
+
 function template() {
-  const series = store.series();
-  const raw = store.rawInstruments();
+  const series = store.series().map(titled);
+  const raw = store.rawInstruments().map(titled);
   const pids = store.pids();
   const showFilter = store.sessionCount > 0 && (pids.length > 1 || (pids.length > 0 && store.hasUnidentified()));
 
@@ -124,8 +157,8 @@ function template() {
     <clinician-nav
       page="aggregate"
       subtitle=${remote.status === 'request'
-        ? 'הזינו מזהה מטופל כדי לקבל קישור לצפייה בסיכום, או טענו דוחות PDF שקיבלתם.'
-        : 'המפגשים נטענים מהשרת עבור המזהה שבקישור. סגירת הכרטיסייה לא מוחקת דבר מהשרת.'}
+        ? t('aggregate.subtitleRequest')
+        : t('aggregate.subtitleFetch')}
     ></clinician-nav>
     <div class="a-container">
       ${remote.status === 'loading' ? html`<p class="a-remote a-empty">טוען את מפגשי המטופל <bdi>${remote.uid}</bdi>…</p>` : ''}
@@ -169,7 +202,7 @@ function template() {
       `)}
 
       ${store.sessionCount > 0 && series.length === 0 && raw.length === 0 ? html`
-        <p class="a-empty">אין מפגשים להצגה עבור הסינון הנוכחי.</p>
+        <p class="a-empty">${t('aggregate.empty')}</p>
       ` : ''}
 
       <raw-data-list .instruments=${raw}></raw-data-list>

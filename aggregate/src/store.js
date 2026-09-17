@@ -12,7 +12,9 @@
 export const PID_ALL = 'all';
 export const PID_NONE = 'none';   // sessions whose envelope has pid == null
 
-export function createStore() {
+// `locale` drives title collation (the UI language's locale; the composition
+// root passes it after resolving the clinician language).
+export function createStore({ locale = 'he-IL' } = {}) {
   const files = [];      // { name, status: 'ok' | failure reason, detail? }
   const sessions = [];   // { envelope, fileName }
   let pidFilter = PID_ALL;
@@ -213,7 +215,7 @@ export function createStore() {
       const lastA = ea[ea.length - 1]?.date ?? 0;
       const lastB = eb[eb.length - 1]?.date ?? 0;
       if (lastB - lastA !== 0) return lastB - lastA;
-      return a.title.localeCompare(b.title, 'he');
+      return a.title.localeCompare(b.title, locale);
     };
   }
 }

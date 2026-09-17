@@ -1,5 +1,6 @@
 import { LitElement, html, css } from 'lit';
 import { resetCSS } from '../styles/reset.js';
+import { t } from '../i18n/index.js';
 
 /**
  * <item-rated-text>
@@ -101,7 +102,11 @@ export class ItemRatedText extends LitElement {
       background: transparent;
       margin: 0;
       padding: 0;
-      transform: scaleX(-1);  /* visual RTL flip — value logic unaffected */
+    }
+
+    /* See item-slider.js — mirror the native LTR range in RTL documents only. */
+    :host(:dir(rtl)) input[type="range"] {
+      transform: scaleX(-1);
     }
 
     input[type="range"]::-webkit-slider-runnable-track {
@@ -351,7 +356,7 @@ export class ItemRatedText extends LitElement {
           </span>
         </div>
         ${!this._touched ? html`
-          <p class="drag-hint">גרור כדי לבחור ערך</p>
+          <p class="drag-hint">${t('item.dragHint')}</p>
         ` : ''}
         ${(labels?.min || labels?.max) ? html`
           <div class="labels-row">
@@ -365,7 +370,7 @@ export class ItemRatedText extends LitElement {
         ?disabled=${!this._canSubmit()}
         @click=${this._submit}
       >
-        המשך
+        ${t('item.continue')}
       </button>
     `;
   }

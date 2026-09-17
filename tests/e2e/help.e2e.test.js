@@ -44,3 +44,24 @@ test.describe('help page', () => {
     await expect(first).toHaveAttribute('open', /.*/);
   });
 });
+
+test.describe('help page in English', () => {
+  test('?lang=en shows the English guide, LTR, with English nav', async ({ page }) => {
+    await page.goto('/help/?lang=en');
+    await expect(page.locator('clinician-nav .brand')).toBeVisible({ timeout: 10_000 });
+    await expect(page.locator('html')).toHaveAttribute('dir', 'ltr');
+    await expect(page.locator('clinician-nav .link[aria-current="page"]')).toHaveText('Help');
+    await expect(page.getByRole('heading', { name: 'How Madad works' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'איך עובדים עם מדד' })).toHaveCount(0);
+    await expect(page.locator('main[data-lang="he"]')).toBeHidden();
+    await expect(page.locator('main[data-lang="en"] a[href="../composer/?lang=en"]').first()).toBeVisible();
+  });
+
+  test('a Hebrew visit keeps the English block hidden', async ({ page }) => {
+    await page.goto('/help/?lang=he');
+    await expect(page.locator('clinician-nav .brand')).toBeVisible({ timeout: 10_000 });
+    await expect(page.locator('main[data-lang="en"]')).toBeHidden();
+    await expect(page.getByRole('heading', { name: 'איך עובדים עם מדד' })).toBeVisible();
+  });
+});
+

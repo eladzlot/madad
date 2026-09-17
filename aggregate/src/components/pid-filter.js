@@ -4,6 +4,7 @@
 // charts every uploaded PDF; the clinician narrows when needed. Options are
 // every distinct pid seen, plus "all" and — when applicable — "no pid".
 
+import { t } from '../../../clinician/i18n/index.js';
 import { LitElement, html, css } from 'lit';
 import { PID_ALL, PID_NONE } from '../store.js';
 
@@ -70,10 +71,10 @@ export class PidFilter extends LitElement {
 
   render() {
     return html`
-      <span>מטופל:</span>
-      ${this._chip(PID_ALL, 'הכול')}
+      <span>${t('filter.patient')}</span>
+      ${this._chip(PID_ALL, t('filter.all'))}
       ${this.pids.map(pid => this._chip(pid, pid, 'pid'))}
-      ${this.hasUnidentified ? this._chip(PID_NONE, 'ללא מזהה') : ''}
+      ${this.hasUnidentified ? this._chip(PID_NONE, t('filter.none')) : ''}
     `;
   }
 }

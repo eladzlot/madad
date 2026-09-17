@@ -264,12 +264,14 @@ function mergeConfigs(results) {
         );
       }
       seenQIds.add(q.id);
-      // Annotated post-validation: records which config file the questionnaire
-      // came from, for the PDF envelope's instruments[].configFile field.
+      // Annotated post-validation: records which config file (short name) and
+      // which config version the questionnaire came from, for the PDF
+      // envelope's instruments[].configFile / configVersion fields.
       q.configFile = configFile;
       // Remote deployment: carry the file's dev flag onto the questionnaire so
       // the no-text guard in src/app.js can exempt dev fixtures (REMOTE_SPEC §5.3).
       if (data.dev) q.dev = true;
+      q.configVersion = data.version ?? null;
       questionnaires.push(q);
     }
     for (const b of data.batteries ?? []) {

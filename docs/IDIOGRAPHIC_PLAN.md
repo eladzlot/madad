@@ -3,6 +3,20 @@
 **Status:** EXPLORATION. **Nothing here is decided.** Captured 2026-08-21 from a
 design conversation so it can be picked up later.
 
+> **Premises changed, 2026-09-17 (D-20).** The composer's output rail was
+> restructured after this document was written, and two of its arguments now
+> rest on facts that no longer hold. §3.2's rejection of inline editing cites a
+> 300px sidebar shared with the link box and the QR tile; the rail is now a
+> fixed head (the link and its actions, then the settings chips) over the picked
+> list, which is the only part that scrolls. The QR tile is gone, and the rows
+> no longer compete with it for height.
+> §3.5's "the real cost is both output components" is paid: the rail and the sheet
+> are now the same component (`<selection-cart>`, in `compact` mode for the sheet). The chosen
+> direction (a dialog plus a compact read-only summary) still stands, and the
+> summary now has an idiom to reuse — the `.c-chip` value chip, where a dashed
+> chip is an empty slot asking to be filled. The analysis below is left as
+> written; read it against D-20.
+
 This document deliberately violates `TODO.md`'s "no speculation" rule by living
 outside it. Options considered live here; once a choice is made it moves to
 `TODO.md` §4 as a numbered decision and the corresponding options section below

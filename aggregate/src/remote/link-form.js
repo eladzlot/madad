@@ -20,6 +20,7 @@
 import { LitElement, html, css, unsafeCSS } from 'lit';
 import { clinicianCss } from '../../../clinician/styles/clinician-styles.js';
 import { isValidUid, formatUid, uidWarning } from '../../../shared/remote/uid.js';
+import { t } from '../../../clinician/i18n/index.js';
 
 export class LinkForm extends LitElement {
   static properties = {
@@ -75,7 +76,8 @@ export class LinkForm extends LitElement {
   }
 
   render() {
-    const warn = uidWarning(this._current);
+    const warnCode = uidWarning(this._current);
+    const warn = warnCode ? t(`uid.${warnCode}`) : null;
     const COPY = {
       request: {
         title: 'צפייה בסיכום מטופל',

@@ -22,14 +22,8 @@
 import { LitElement, html, css, unsafeCSS, nothing } from 'lit';
 import { clinicianCss } from '../../../clinician/styles/clinician-styles.js';
 import { resetCSS } from '../ui-reset.js';
-import { itemTypeLabel, domainLabel, populationLabel, typeLabel, scoringMethodLabel } from '../taxonomy.js';
-
-const INPUT_TYPE_LABELS = {
-  line:      'שורה',
-  multiline: 'רב-שורות',
-  number:    'מספר',
-  email:     'דוא"ל',
-};
+import { t } from '../../../clinician/i18n/index.js';
+import { itemTypeLabel, domainLabel, populationLabel, typeLabel, scoringMethodLabel, inputTypeLabel } from '../taxonomy.js';
 
 export class PreviewDialog extends LitElement {
   static properties = {
@@ -355,25 +349,25 @@ export class PreviewDialog extends LitElement {
           ${m ? html`
             <header>
               <div class="head-main">
-                <div class="eyebrow">${m.kind === 'battery' ? 'סוללה' : 'תצוגה מקדימה'}</div>
+                <div class="eyebrow">${m.kind === 'battery' ? t('preview.battery') : t('preview.title')}</div>
                 <div class="title">${m.summary.title}</div>
               </div>
               <div class="head-actions">
                 <button class="mech-btn" type="button" role="switch"
                         aria-pressed=${this.showMechanics ? 'true' : 'false'}
-                        @click=${this._toggleMechanics} title="הצג מזהים ותנאים מפורשים">
+                        @click=${this._toggleMechanics} title=${t('preview.mechanicsTitle')}>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/>
                   </svg>
-                  מנגנון
+                  ${t('preview.mechanics')}
                 </button>
                 ${this.liveUrl ? html`
                   <a class="icon-btn" href=${this.liveUrl} target="_blank" rel="noopener"
-                     title="פתח בתצוגת מטופל" aria-label="פתח בתצוגת מטופל">↗</a>
+                     title=${t('preview.openPatient')} aria-label=${t('preview.openPatient')}>↗</a>
                 ` : nothing}
                 <button class="icon-btn" type="button" @click=${this._close}
-                        title="סגור" aria-label="סגור">
+                        title=${t('preview.close')} aria-label=${t('preview.close')}>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
@@ -397,8 +391,8 @@ export class PreviewDialog extends LitElement {
     if (s.type) badges.push(html`<span class="badge accent">${typeLabel(s.type)}</span>`);
     for (const d of s.domains) badges.push(html`<span class="badge">${domainLabel(d)}</span>`);
     for (const p of s.populations) badges.push(html`<span class="badge">${populationLabel(p)}</span>`);
-    if (typeof s.itemCount === 'number') badges.push(html`<span class="badge">${s.itemCount} פריטים</span>`);
-    if (s.durationMinutes) badges.push(html`<span class="badge">~${s.durationMinutes} דק׳</span>`);
+    if (typeof s.itemCount === 'number') badges.push(html`<span class="badge">${t('preview.items', { n: s.itemCount })}</span>`);
+    if (s.durationMinutes) badges.push(html`<span class="badge">${t('preview.minutes', { n: s.durationMinutes })}</span>`);
     for (const t of s.tags) badges.push(html`<span class="badge">${t}</span>`);
 
     return html`
@@ -421,17 +415,17 @@ export class PreviewDialog extends LitElement {
     const hasPanel = m.scoring.method || hasSubscales || ranges.length || psy;
     return html`
       <section>
-        <div class="section-label">ניקוד ופרשנות</div>
+        <div class="section-label">${t('preview.scoring')}</div>
         ${hasPanel ? html`<div class="panel">
-          ${m.scoring.method ? html`<div class="kv"><span class="k">שיטת ניקוד:</span> ${scoringMethodLabel(m.scoring.method)}</div>` : nothing}
+          ${m.scoring.method ? html`<div class="kv"><span class="k">${t('preview.scoringMethod')}</span> ${scoringMethodLabel(m.scoring.method)}</div>` : nothing}
           ${hasSubscales ? html`
-            <div class="kv" style="margin-block-start:8px"><span class="k">תת-סולמות:</span></div>
+            <div class="kv" style="margin-block-start:8px"><span class="k">${t('preview.subscales')}</span></div>
             ${m.subscales.map(sub => html`
               <div class="subscale">
                 <strong>${sub.label}</strong>
                 ${this.showMechanics
                   ? html` <span class="ids">${sub.itemIds.join(', ')}</span>`
-                  : html` <span class="step-count">(${sub.itemIds.length} פריטים)</span>`}
+                  : html` <span class="step-count">(${t('preview.items', { n: sub.itemIds.length })})</span>`}
               </div>
             `)}
           ` : nothing}
@@ -442,7 +436,7 @@ export class PreviewDialog extends LitElement {
           ` : nothing}
           ${psy ? html`
             <div class="kv" style="margin-block-start:8px">
-              <span class="k">מהימנות:</span> ${psy.reliability} · <span class="k">ס״ת:</span> ${psy.sd}
+              <span class="k">${t('preview.reliability')}</span> ${psy.reliability} · <span class="k">${t('preview.sd')}</span> ${psy.sd}
               <span class="step-count">(${psy.source})</span>
             </div>
           ` : nothing}
@@ -462,7 +456,7 @@ export class PreviewDialog extends LitElement {
     if (!nodes?.length) return nothing;
     return html`
       <section>
-        <div class="section-label">פריטים</div>
+        <div class="section-label">${t('preview.itemsSection')}</div>
         <div class="items">
           ${nodes.map(n => n.kind === 'condition' ? this._renderCondition(n) : this._renderItem(n))}
         </div>
@@ -478,11 +472,11 @@ export class PreviewDialog extends LitElement {
     const cls = `node divider ${c.variant}${c.depth > 0 ? ' nested' : ''}`;
     let chip;
     if (c.variant === 'if') {
-      chip = html`<span class="chip">מוצג בתנאי${this.showMechanics && c.label ? html`: <span class="dsl">${c.label}</span>` : nothing}</span>`;
+      chip = html`<span class="chip">${t('preview.conditional')}${this.showMechanics && c.label ? html`: <span class="dsl">${c.label}</span>` : nothing}</span>`;
     } else if (c.variant === 'else') {
-      chip = html`<span class="chip">אחרת</span>`;
+      chip = html`<span class="chip">${t('preview.else')}</span>`;
     } else {
-      chip = html`<span class="chip">סדר אקראי</span>`;
+      chip = html`<span class="chip">${t('preview.random')}</span>`;
     }
     return html`<div class="${cls}" style=${this._indent(c.depth)}>${chip}<span class="line"></span></div>`;
   }
@@ -498,7 +492,7 @@ export class PreviewDialog extends LitElement {
           <div class="item-head">
             <span class="item-type">${itemTypeLabel(n.type)}</span>
             <span class="item-text">${n.text}</span>
-            ${n.required ? html`<span class="req">חובה</span>` : nothing}
+            ${n.required ? html`<span class="req">${t('preview.required')}</span>` : nothing}
             ${this.showMechanics ? html`<span class="item-id">id: ${n.id}</span>` : nothing}
           </div>
           ${this._renderItemBody(n)}
@@ -509,13 +503,13 @@ export class PreviewDialog extends LitElement {
 
   _renderItemBody(n) {
     if (n.type === 'select' || n.type === 'binary') {
-      if (!n.options?.length) return html`<div class="text-field">(אין אפשרויות)</div>`;
+      if (!n.options?.length) return html`<div class="text-field">${t('preview.noOptions')}</div>`;
       return html`<div class="options">
-        ${n.options.map(o => html`<div class="opt"><span class="glyph">○</span> <span class="opt-label">${o.label}</span><span class="val">ציון: ${o.value}</span></div>`)}
+        ${n.options.map(o => html`<div class="opt"><span class="glyph">○</span> <span class="opt-label">${o.label}</span><span class="val">${t('preview.score', { value: o.value })}</span></div>`)}
       </div>`;
     }
     if (n.type === 'multiselect') {
-      if (!n.options?.length) return html`<div class="text-field">(אין אפשרויות)</div>`;
+      if (!n.options?.length) return html`<div class="text-field">${t('preview.noOptions')}</div>`;
       return html`<div class="options">
         ${n.options.map(o => html`<div class="opt"><span class="glyph">☐</span> <span>${o.label}</span></div>`)}
       </div>`;
@@ -529,12 +523,12 @@ export class PreviewDialog extends LitElement {
       </div>`;
     }
     if (n.type === 'text') {
-      return html`<div class="text-field">תשובה חופשית · ${INPUT_TYPE_LABELS[n.inputType] ?? n.inputType}</div>`;
+      return html`<div class="text-field">${t('preview.freeText', { type: inputTypeLabel(n.inputType) })}</div>`;
     }
     if (n.type === 'rated_text') {
       const { min, max, labels } = n.range;
       return html`
-        <div class="text-field">תשובה חופשית · ${INPUT_TYPE_LABELS[n.inputType] ?? n.inputType}</div>
+        <div class="text-field">${t('preview.freeText', { type: inputTypeLabel(n.inputType) })}</div>
         <div class="slider">
           ${labels?.min || labels?.max ? html`<div class="slider-labels"><span>${labels?.min ?? ''}</span><span>${labels?.max ?? ''}</span></div>` : nothing}
           <div class="slider-bar"></div>
@@ -547,7 +541,7 @@ export class PreviewDialog extends LitElement {
   _renderBattery(m) {
     return html`
       <section>
-        <div class="section-label">רצף השאלונים</div>
+        <div class="section-label">${t('preview.sequence')}</div>
         ${m.steps.map(step => this._renderStep(step))}
       </section>
     `;
@@ -559,15 +553,15 @@ export class PreviewDialog extends LitElement {
         <summary>
           <span class="caret">▾</span>
           <span class="step-title">${step.title}</span>
-          ${typeof step.itemCount === 'number' ? html`<span class="step-count">${step.itemCount} פריטים</span>` : nothing}
-          ${step.condition ? html`<span class="step-cond">מוצג בתנאי${this.showMechanics ? html`: <span class="dsl">${step.condition}</span>` : nothing}</span>` : nothing}
-          ${step.branch === 'else' ? html`<span class="step-count">אחרת</span>` : nothing}
-          ${step.randomized ? html`<span class="step-count">סדר אקראי</span>` : nothing}
+          ${typeof step.itemCount === 'number' ? html`<span class="step-count">${t('preview.items', { n: step.itemCount })}</span>` : nothing}
+          ${step.condition ? html`<span class="step-cond">${t('preview.conditional')}${this.showMechanics ? html`: <span class="dsl">${step.condition}</span>` : nothing}</span>` : nothing}
+          ${step.branch === 'else' ? html`<span class="step-count">${t('preview.else')}</span>` : nothing}
+          ${step.randomized ? html`<span class="step-count">${t('preview.random')}</span>` : nothing}
         </summary>
         <div class="step-body">
           ${step.sub
             ? html`${this._renderScoring(step.sub)}${this._renderItems(step.sub.nodes)}`
-            : html`<div class="missing">שאלון "${step.questionnaireId}" לא נמצא.</div>`}
+            : html`<div class="missing">${t('preview.missing', { id: step.questionnaireId })}</div>`}
         </div>
       </details>
     `;

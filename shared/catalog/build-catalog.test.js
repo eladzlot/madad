@@ -201,3 +201,59 @@ describe('exclude option', () => {
     expect(warn).not.toHaveBeenCalled();
   });
 });
+
+// ── languages / i18n (catalog v2) ─────────────────────────────────────────────
+
+describe('languages and i18n', () => {
+  const enQ = (id, title) => ({ id, version: '1.0.0', questionnaires: [makeQ(id, { title, description: 'Desc', keywords: ['EN'] })] });
+
+  it('every entry lists Hebrew even without translations', () => {
+    const cat = buildCatalog([qConfig('phq9')]);
+    expect(cat.entries[0].languages).toEqual(['he']);
+    expect(cat.entries[0]).not.toHaveProperty('i18n');
+  });
+
+  it('adds a language and its clinician-facing text when the translated file exists', () => {
+    const cat = buildCatalog([qConfig('phq9'), qConfig('gad7')], {
+      translations: { en: [enQ('phq9', 'Patient Health Questionnaire (PHQ-9)')] },
+    });
+    const phq9 = cat.entries.find(e => e.id === 'phq9');
+    const gad7 = cat.entries.find(e => e.id === 'gad7');
+    expect(phq9.languages).toEqual(['he', 'en']);
+    expect(phq9.i18n).toEqual({ en: { title: 'Patient Health Questionnaire (PHQ-9)', description: 'Desc', keywords: ['EN'] } });
+    expect(phq9.title).toBe('שאלון phq9');   // Hebrew stays the canonical field
+    expect(gad7.languages).toEqual(['he']);
+    expect(gad7).not.toHaveProperty('i18n');
+  });
+
+  it('offers a battery in a language only when every sequenced questionnaire is translated', () => {
+    const seq = [{ questionnaireId: 'q1' }, { type: 'if', condition: 'score.q1 >= 1', then: [{ questionnaireId: 'q2' }], else: [] }];
+    const enBat = (extraQs) => ({
+      en: [
+        { id: 'bat', version: '1.0.0', questionnaires: [], batteries: [{ id: 'bat', title: 'Battery', sequence: seq, meta: { domains: ['intake'] } }] },
+        ...extraQs.map(id => enQ(id, id.toUpperCase())),
+      ],
+    });
+    const warn = vi.fn();
+    const partial = buildCatalog([batConfig('bat', seq), qConfig('q1'), qConfig('q2')], { translations: enBat(['q1']), warn });
+    expect(partial.entries.find(e => e.id === 'bat').languages).toEqual(['he']);
+    expect(warn).toHaveBeenCalledWith(expect.stringMatching(/en\/bat: battery not offered.*q2/));
+
+    const full = buildCatalog([batConfig('bat', seq), qConfig('q1'), qConfig('q2')], { translations: enBat(['q1', 'q2']) });
+    const bat = full.entries.find(e => e.id === 'bat');
+    expect(bat.languages).toEqual(['he', 'en']);
+    expect(bat.i18n.en.title).toBe('Battery');
+  });
+
+  it('ignores unknown languages with a warning', () => {
+    const warn = vi.fn();
+    const cat = buildCatalog([qConfig('phq9')], { translations: { xx: [enQ('phq9', 'X')] }, warn });
+    expect(cat.entries[0].languages).toEqual(['he']);
+    expect(warn).toHaveBeenCalledWith(expect.stringMatching(/unknown language "xx"/));
+  });
+
+  it('is deterministic with translations', () => {
+    const build = () => serializeCatalog(buildCatalog([qConfig('phq9')], { translations: { en: [enQ('phq9', 'PHQ-9')] } }));
+    expect(build()).toBe(build());
+  });
+});

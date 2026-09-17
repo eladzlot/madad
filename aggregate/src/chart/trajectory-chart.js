@@ -20,6 +20,8 @@
 
 import { LitElement, html, svg, css, unsafeCSS } from 'lit';
 import { clinicianCss } from '../../../clinician/styles/clinician-styles.js';
+import { t, currentLang } from '../../../clinician/i18n/index.js';
+import { LANGS } from '../../../shared/i18n/core.js';
 import { buildChartModel } from './chart-model.js';
 import { buildHeatmapModel } from './heatmap-model.js';
 import { buildExportSvg, exportFilename, uniquePid } from './export-svg.js';
@@ -160,8 +162,7 @@ export class TrajectoryChart extends LitElement {
       pointer-events: none;
       white-space: nowrap;
       z-index: 2;
-      direction: rtl;
-      text-align: right;
+      text-align: start;
     }
 
     .tooltip .tip-total { font-weight: 700; }
@@ -404,8 +405,8 @@ export class TrajectoryChart extends LitElement {
   _markerAria(k) {
     const parts = [`${k.label}: ${k.total}`];
     if (k.category) parts.push(k.category);
-    if (k.baseline) parts.push('מדידה ראשונה');
-    if (k.alerts.length) parts.push(`${k.alerts.length} התראות`);
+    if (k.baseline) parts.push(t('chart.baseline'));
+    if (k.alerts.length) parts.push(t('chart.alerts', { n: k.alerts.length }));
     return parts.join(', ');
   }
 
@@ -431,12 +432,12 @@ export class TrajectoryChart extends LitElement {
 
   _renderViewSwitcher() {
     const views = [
-      { id: 'chart', label: 'גרף' },
-      ...(this.questionnaire ? [{ id: 'heatmap', label: 'מפת פריטים' }] : []),
-      { id: 'table', label: 'טבלה' },
+      { id: 'chart', label: t('chart.chart') },
+      ...(this.questionnaire ? [{ id: 'heatmap', label: t('chart.heatmap') }] : []),
+      { id: 'table', label: t('chart.table') },
     ];
     return html`
-      <div class="c-seg" role="group" aria-label="תצוגה">
+      <div class="c-seg" role="group" aria-label=${t('chart.view')}>
         ${views.map(v => html`
           <button
             data-view=${v.id}
@@ -455,7 +456,7 @@ export class TrajectoryChart extends LitElement {
           <button
             class="c-btn c-btn--sm ${this._copied ? 'c-btn--copied' : 'c-btn--secondary'} export-copy"
             @click=${() => this._copy()}
-          >${this._copied ? 'הועתק ✓' : 'העתקה'}</button>
+          >${this._copied ? t('chart.copied') : t('chart.copy')}</button>
         ` : ''}
         <details
           class="export-menu"
@@ -465,10 +466,10 @@ export class TrajectoryChart extends LitElement {
             if (!e.currentTarget.contains(e.relatedTarget)) this._closeExportMenu();
           }}
         >
-          <summary class="c-btn c-btn--sm c-btn--secondary">ייצוא ▾</summary>
+          <summary class="c-btn c-btn--sm c-btn--secondary">${t('chart.export')}</summary>
           <div class="menu">
-            <button class="export-png" @click=${() => this._export('png')}>הורדת PNG</button>
-            <button class="export-svg" @click=${() => this._export('svg')}>הורדת SVG</button>
+            <button class="export-png" @click=${() => this._export('png')}>${t('chart.png')}</button>
+            <button class="export-svg" @click=${() => this._export('svg')}>${t('chart.svg')}</button>
             ${uniquePid(this.series.points) != null ? html`
               <label class="export-pid">
                 <input
@@ -476,7 +477,7 @@ export class TrajectoryChart extends LitElement {
                   .checked=${this._exportPid}
                   @change=${(e) => { this._exportPid = e.target.checked; }}
                 >
-                כולל מזהה מטופל
+                ${t('chart.includePid')}
               </label>
             ` : ''}
           </div>
@@ -509,6 +510,7 @@ export class TrajectoryChart extends LitElement {
       points: this.series.points,
       interpretations: this.questionnaire?.interpretations,
       domain: this.domain,
+      dir: LANGS[currentLang()].dir,
     });
 
     return html`
@@ -516,12 +518,12 @@ export class TrajectoryChart extends LitElement {
         dir="ltr"
         viewBox="0 0 ${m.width} ${m.height}"
         role="img"
-        aria-label="גרף מהלך: ${this.series.title}"
+        aria-label=${t('chart.aria', { title: this.series.title })}
       >
         ${m.bands.map(b => svg`
           <rect class="band" x=${m.plot.x} y=${b.y} width=${m.plot.w} height=${b.h} fill=${b.fill}></rect>
           <text x=${b.labelX} y=${b.y + 11} text-anchor=${b.labelAnchor}
-                direction="rtl" font-size="9" fill="var(--color-text-muted, #796453)">${b.label}</text>
+                direction=${m.dir} font-size="9" fill="var(--color-text-muted, #796453)">${b.label}</text>
         `)}
 
         ${m.yTicks.map(t => svg`
@@ -536,7 +538,7 @@ export class TrajectoryChart extends LitElement {
                 stroke="var(--clin-cutoff, #32618e)" stroke-width="1.5"></line>
           ${c.label ? svg`
             <text x=${c.labelX} y=${c.y - 4} text-anchor=${c.labelAnchor}
-                  direction="rtl" font-size="9" fill="var(--clin-cutoff, #32618e)">${c.label}</text>
+                  direction=${m.dir} font-size="9" fill="var(--clin-cutoff, #32618e)">${c.label}</text>
           ` : ''}
         `)}
 
@@ -621,7 +623,7 @@ export class TrajectoryChart extends LitElement {
     const { marker: k, x, y } = this._tooltip;
     return html`
       <div class="tooltip" style="left:${x}px; top:${y}px" role="status">
-        <div>${k.label}${k.baseline ? ' · מדידה ראשונה' : ''}</div>
+        <div>${k.label}${k.baseline ? ` · ${t('chart.baseline')}` : ''}</div>
         <div class="tip-total">${this._formatValue(k.total)}${k.category ? ` · ${k.category}` : ''}</div>
         ${Object.entries(k.subscales).map(([id, v]) => html`
           <div class="tip-sub">${this._subscaleLabel(id)}: ${this._formatValue(v)}</div>
@@ -636,17 +638,17 @@ export class TrajectoryChart extends LitElement {
   _renderTable() {
     const points = this.series.points;
     const subscaleIds = [...new Set(points.flatMap(p => Object.keys(p.subscales ?? {})))];
-    const fmt = new Intl.DateTimeFormat('he-IL', { day: 'numeric', month: 'numeric', year: 'numeric' });
+    const fmt = new Intl.DateTimeFormat(LANGS[currentLang()].locale, { day: 'numeric', month: 'numeric', year: 'numeric' });
 
     return html`
       <table>
         <thead>
           <tr>
-            <th scope="col">תאריך</th>
-            <th scope="col">ציון</th>
-            <th scope="col">פירוש</th>
+            <th scope="col">${t('chart.date')}</th>
+            <th scope="col">${t('chart.score')}</th>
+            <th scope="col">${t('chart.category')}</th>
             ${subscaleIds.map(id => html`<th scope="col">${this._subscaleLabel(id)}</th>`)}
-            <th scope="col">התראות</th>
+            <th scope="col">${t('chart.alertsCol')}</th>
           </tr>
         </thead>
         <tbody>
@@ -654,7 +656,7 @@ export class TrajectoryChart extends LitElement {
             <tr
               class="session-row"
               tabindex="0"
-              aria-label="פתיחת פירוט המפגש ${fmt.format(p.date)}"
+              aria-label=${t('chart.openSession', { date: fmt.format(p.date) })}
               @click=${() => this._select(p)}
               @keydown=${(e) => {
                 if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this._select(p); }

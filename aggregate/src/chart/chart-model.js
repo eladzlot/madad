@@ -59,6 +59,8 @@ function defaultFormatDate(date, { withYear = false } = {}) {
  *                                           derives its own domain from its points.
  * @param {object}   [args.dims]
  * @param {Function} [args.formatDate]
+ * @param {string}   [args.dir]        — 'rtl' | 'ltr', the UI language's direction; sets
+ *                                       label anchors and is echoed back as `dir` for the renderers
  * @returns {object} render model
  */
 export function buildChartModel({
@@ -67,8 +69,10 @@ export function buildChartModel({
   domain,
   dims = DIMS,
   formatDate = defaultFormatDate,
+  dir = 'rtl',
 }) {
   const { width, height, margin } = dims;
+  const rtl = dir !== 'ltr';
   const plot = {
     x: margin.left,
     y: margin.top,
@@ -77,7 +81,7 @@ export function buildChartModel({
   };
 
   if (!points || points.length === 0) {
-    return { width, height, plot, empty: true, bands: [], cutoffs: [], markers: [], linePath: null, xTicks: [], yTicks: [] };
+    return { width, height, plot, dir, empty: true, bands: [], cutoffs: [], markers: [], linePath: null, xTicks: [], yTicks: [] };
   }
 
   // Every session is always on screen (D-13 — no windowing, no pagination);
@@ -107,10 +111,11 @@ export function buildChartModel({
   // the left edge — opposite corners so they cannot collide with each other
   // or with the y-axis ticks (left, outside the plot).
   //
-  // Anchor semantics: these are Hebrew labels rendered with an explicit
-  // direction:rtl (see trajectory-chart), where SVG text-anchor is
-  // direction-relative — 'end' puts the text's LEFT edge at x (extends
-  // rightward), 'start' puts its RIGHT edge at x (extends leftward).
+  // Anchor semantics: labels are rendered with an explicit direction (`dir`,
+  // the UI language's — see trajectory-chart), and SVG text-anchor is
+  // direction-relative. In rtl 'end' puts the text's LEFT edge at x (extends
+  // rightward) and 'start' its RIGHT edge (extends leftward); ltr is the
+  // mirror image, so the anchors swap to keep the labels inside the plot.
   // Ranges are integer-inclusive (0–4, 5–9, …), so naive rendering leaves
   // 1-unit gaps between bands in continuous space. Bands tile instead:
   // each band's bottom chains to the previous band's top, the first starts
@@ -128,7 +133,7 @@ export function buildChartModel({
       h: y(bottomValue) - y(topValue),
       label: r.label,
       labelX: plot.x + plot.w - 6,
-      labelAnchor: 'start',    // rtl: extends leftward into the plot
+      labelAnchor: rtl ? 'start' : 'end',   // extends leftward into the plot
       fill: SEVERITY_RAMP[rampIdx],
     };
   });
@@ -137,7 +142,7 @@ export function buildChartModel({
     y: y(c.value),
     label: c.label ?? null,
     labelX: plot.x + 6,
-    labelAnchor: 'end',      // rtl: extends rightward into the plot
+    labelAnchor: rtl ? 'end' : 'start',   // extends rightward into the plot
   }));
 
   // ── Points ────────────────────────────────────────────────────────────────
@@ -171,7 +176,7 @@ export function buildChartModel({
     .filter((_, i) => (markers.length - 1 - i) % step === 0)
     .map(m => ({ x: m.x, label: m.label }));
 
-  return { width, height, plot, empty: false, bands, cutoffs, markers, linePath, xTicks, yTicks };
+  return { width, height, plot, dir, empty: false, bands, cutoffs, markers, linePath, xTicks, yTicks };
 }
 
 function round(n) {

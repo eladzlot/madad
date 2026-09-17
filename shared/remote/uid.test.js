@@ -85,9 +85,13 @@ describe('uidWarning', () => {
     expect(uidWarning('   ')).toBeNull();
     expect(uidWarning(good)).toBeNull();
   });
-  it('explains shape errors and typo errors differently', () => {
-    expect(uidWarning('ABC')).toContain('8 תווים');
+  it('distinguishes shape errors from typo errors', () => {
+    // Codes, not sentences: the clinician surfaces are translated now, so the
+    // wording lives in clinician/i18n and this module stays presentation-free.
+    expect(uidWarning('ABC')).toBe('shape');
     const typo = good.slice(0, 2) + (good[2] === 'A' ? 'B' : 'A') + good.slice(3);
-    expect(uidWarning(typo)).toContain('טעות הקלדה');
+    expect(uidWarning(typo)).toBe('checksum');
+    expect(uidWarning(good)).toBeNull();
+    expect(uidWarning('')).toBeNull();
   });
 });

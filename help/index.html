@@ -18,9 +18,10 @@
   <link rel="stylesheet" href="../shared/styles/tokens.css" />
 </head>
 <body>
-  <clinician-nav page="help" subtitle="מדריך קצר לעבודה עם מדד"></clinician-nav>
+  <!-- subtitle is set by help.js in the resolved language -->
+  <clinician-nav page="help"></clinician-nav>
 
-  <main>
+  <main data-lang="he">
     <h1>איך עובדים עם מדד</h1>
     <p class="lead">
       מדד · CTR הוא כלי למדידה קלינית במסגרת ההכשרה — בלי הרשמה ובלי חשבון. אתם
@@ -106,6 +107,108 @@
           <p>
             אוספים את דוחות ה-PDF ממפגשים שונים וטוענים אותם יחד לסיכום המטופל. מדד
             מזהה את השאלונים ומציג את המגמה לאורך זמן.
+          </p>
+        </details>
+      </div>
+    </section>
+  </main>
+
+  <main data-lang="en" hidden>
+    <h1>How Madad works</h1>
+    <p class="lead">
+      Madad is a free tool for clinical measurement — no sign-up, no account. You build a
+      link with the questionnaires you chose, send it to your patient, and they fill them
+      in from a browser and return a PDF report to you.
+    </p>
+
+    <section aria-labelledby="workflow-title-en">
+      <h2 id="workflow-title-en">The workflow</h2>
+      <ol class="steps">
+        <li>
+          <h3>Pick questionnaires and create a link</h3>
+          <p>
+            In the <a href="../composer/?lang=en">link builder</a> pick one or more
+            questionnaires, choose the language your patient will answer in, optionally add a
+            patient ID, and share the generated link.
+          </p>
+        </li>
+        <li>
+          <h3>Send it to the patient</h3>
+          <p>
+            Pass the link on by WhatsApp, email or any other way. The patient opens it in any
+            browser — nothing to install, nothing to sign up for.
+          </p>
+        </li>
+        <li>
+          <h3>The patient fills it in and gets a PDF</h3>
+          <p>
+            The patient answers the questionnaires and, at the end, produces a PDF report
+            and returns it to you. The data stays in the patient's browser — the report is
+            created locally and is never sent to a server.
+          </p>
+        </li>
+        <li>
+          <h3>See the change over time</h3>
+          <p>
+            Load the PDF reports you have collected into the
+            <a href="../aggregate/?lang=en">patient summary</a> to see the change over time
+            as charts. Here too the files stay in your browser.
+          </p>
+        </li>
+      </ol>
+    </section>
+
+    <section aria-labelledby="faq-title-en">
+      <h2 id="faq-title-en">Frequently asked questions</h2>
+      <div class="faq">
+        <details>
+          <summary>Do I need to sign up or open an account?</summary>
+          <p>No. There is no sign-up, no account and no cost — not for you and not for the patient.</p>
+        </details>
+        <details>
+          <summary>Where is the data stored?</summary>
+          <p>
+            Everything runs in the browser. The patient's answers stay on their device, the PDF
+            report is created locally, and the files you load into the summary stay in your
+            browser. No medical information is sent to a Madad server.
+          </p>
+          <p>
+            Note: when you share the link or the PDF report through a digital service — WhatsApp
+            or email, for example — that information is also stored by that service (on
+            WhatsApp's servers, say). Data security when sharing is your responsibility.
+          </p>
+        </details>
+        <details>
+          <summary>What does the patient see?</summary>
+          <p>
+            A clean questionnaire in the language you chose, built for phones and computers.
+            If you picked several questionnaires, they are shown as one sequence in the order
+            you set.
+          </p>
+        </details>
+        <details>
+          <summary>Which languages are available?</summary>
+          <p>
+            The interface is available in Hebrew and English. Each questionnaire is offered in
+            the languages it has been published in: the link builder lists only the
+            questionnaires available in the language you chose for the patient. The Hebrew
+            library is the largest; the English set is growing.
+          </p>
+        </details>
+        <details>
+          <summary>How do I combine several questionnaires in one link?</summary>
+          <p>
+            In the link builder pick several items; they all go into the same link and are
+            shown to the patient as one sequence. You can reorder them before copying the
+            link.
+          </p>
+        </details>
+        <details>
+          <summary>How do I see the change over time?</summary>
+          <p>
+            Collect the PDF reports from different sessions and load them together into the
+            patient summary. Madad recognises the questionnaires and shows the trend over
+            time.
           </p>
         </details>
       </div>

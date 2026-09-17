@@ -430,7 +430,9 @@ test.describe('error handling', () => {
         return route.continue();
       });
 
-      await page.goto(`/?items=${token}`);
+      // The uid must be valid, or the missing-uid refusal fires before the
+      // foreign-origin check this test is actually about (REMOTE_SPEC §3).
+      await page.goto(`/?items=${token}#pid=${UID}`);
 
       await expect(page.locator('#app')).toContainText('הקישור שגוי');
       await expect(page.locator('welcome-screen')).toHaveCount(0);

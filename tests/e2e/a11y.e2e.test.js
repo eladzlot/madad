@@ -124,7 +124,7 @@ async function walkPatientFlow(page, check) {
         field.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
       }
       const enabled = [...root.querySelectorAll('button')].filter((b) => !b.disabled);
-      const target = enabled.find((b) => /המשך|הבא|סיום|שלח/.test(b.textContent || '')) ?? enabled[0];
+      const target = enabled.find((b) => /המשך|הבא|סיום|שלח|Continue|Next|Finish|Send/.test(b.textContent || '')) ?? enabled[0];
       if (!target) return false;
       target.click();
       return true;

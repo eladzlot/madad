@@ -2,10 +2,11 @@
 //
 // Owns the one reactive store (created in composer.js, handed in as `.store`),
 // subscribes once, and re-renders on every notify. Lays out the browse column
-// (controls + list) beside the desktop selection-cart, with the mobile-bar
-// standing in for the cart on phones. All child events funnel here and turn into
-// store mutations or the few real side effects (clipboard, share, open) that
-// don't belong in a dumb component.
+// (controls + list) beside the desktop <selection-cart> — the rail, which holds
+// the settings, the picked list and the generated link — with <mobile-bar>
+// standing in for that rail on phones. All child events funnel here and turn
+// into store mutations or the few real side effects (clipboard, share, open)
+// that don't belong in a dumb component.
 //
 // Contracts preserved from the imperative composer: items-only buildUrl, ↗ open,
 // non-blocking pid warning, reset, keyboard reorder, RTL, dark mode via tokens.
@@ -14,20 +15,25 @@ import { LitElement, html, css, unsafeCSS, nothing } from 'lit';
 import { clinicianCss } from '../../../clinician/styles/clinician-styles.js';
 import { resetCSS } from '../ui-reset.js';
 import { buildUrl } from '../composer-state.js';
+import { t } from '../../../clinician/i18n/index.js';
+import { configBaseFor } from '../../../shared/i18n/core.js';
+// Trial: uids this browser has produced links for, offered as a datalist so an
+// 8-symbol code is not retyped (REMOTE_SPEC §8.2). Local only, nothing
+// identifying — a uid means nothing without the therapist's own records.
+import { loadRecentUids, rememberUid } from '../../../shared/remote/uid-memory.js';
 import '../../../clinician/components/clinician-nav.js';
 import './catalog-controls.js';
 import './catalog-list.js';
 import './selection-cart.js';
-import { loadRecentUids, rememberUid } from '../../../shared/remote/uid-memory.js';
 import './mobile-bar.js';
 
 export class ComposerApp extends LitElement {
   static properties = {
-    _recentUids: { state: true },
     store: { type: Object },
     _previewModel:   { state: true },
     _previewOpen:    { state: true },
     _previewLiveUrl: { state: true },
+    _recentUids:     { state: true },
   };
 
   static styles = [resetCSS, unsafeCSS(clinicianCss), css`
@@ -57,10 +63,13 @@ export class ComposerApp extends LitElement {
       min-block-size: 0;
       overflow-y: auto;
       padding: 0 var(--space-lg, 24px) 88px;   /* bottom room for the mobile bar */
-      background: var(--color-surface, #fff);
+      background: var(--color-surface, #f0e8e1);
     }
 
-    /* Selection cart — visually LEFT in RTL; desktop only */
+    /* The rail — visually LEFT in RTL; desktop only. It carries the settings,
+       the picked list and the link, which is why there is no bottom bar here:
+       bottom-anchored actions are a phone idiom, and with a rail on screen they
+       put the link where the eye does not go. */
     .sidebar { display: none; }
 
     @media (min-width: 768px) {
@@ -71,12 +80,11 @@ export class ComposerApp extends LitElement {
         flex-shrink: 0;
         min-block-size: 0;
         border-inline-start: var(--border-width, 1px) solid var(--color-border, #e4d6cb);
-        /* A lighter navy than the header so the output rail reads as its own
-           panel. Theme-independent dark chrome (like the header) — the fields
-           inside carry their own slate colours, so it holds in dark mode too. */
+        /* A lighter navy than the header so the rail reads as its own panel.
+           Theme-independent dark chrome (like the header) — the fields inside
+           carry their own slate colours, so it holds in dark mode too. */
         background: var(--clin-rail-bg, #4e3b2c);
       }
-      mobile-bar { display: none; }
     }
   `];
 
@@ -88,11 +96,10 @@ export class ComposerApp extends LitElement {
     this._unsub = null;
     // Preview: state + a per-session cache of loaded ResolvedConfigs, so
     // reopening a previously previewed entry is instant.
-    // Remote deployment: uids this browser has produced links for (datalist).
-    this._recentUids = loadRecentUids();
     this._previewModel = null;
     this._previewOpen = false;
     this._previewLiveUrl = null;
+    this._recentUids = loadRecentUids();
     this._configCache = new Map();
   }
 
@@ -116,36 +123,33 @@ export class ComposerApp extends LitElement {
 
   get _canShare() { return typeof navigator !== 'undefined' && typeof navigator.share === 'function'; }
 
+  // A link that is copied, opened or shared is a link the therapist is really
+  // using, so its uid is worth offering back next time (uid-memory.js).
+  _rememberUid() { this._recentUids = rememberUid(this.store.pid); }
+
   // ── side effects ──
-  // A link that was actually copied / shared / opened is a link that was used,
-  // so its uid is worth remembering for next time (uid-memory.js).
-  _rememberUid() {
-    this._recentUids = rememberUid(this.store.pid);
-  }
   async _copy() {
     const url = this.store.url();
     if (!url) return;
     try {
       await navigator.clipboard.writeText(url);
-      this._rememberUid();
       this.store.setCopied(true);
       clearTimeout(this._copyTimer);
       this._copyTimer = setTimeout(() => this.store.setCopied(false), 2000);
+      this._rememberUid();
     } catch { /* clipboard unavailable — the URL box stays selectable */ }
   }
   async _share() {
     const url = this.store.url();
     if (!url || !this._canShare) return;
-    try {
-      await navigator.share({ url, title: 'קישור לשאלון הערכה' });
-      this._rememberUid();
-    } catch { /* cancelled */ }
+    try { await navigator.share({ url, title: t('composer.shareTitle') }); } catch { /* cancelled */ }
+    this._rememberUid();
   }
   _open() {
     const url = this.store.url();
     if (!url) return;
-    this._rememberUid();
     window.open(url, '_blank', 'noopener');
+    this._rememberUid();
   }
 
   // ── preview ──
@@ -159,16 +163,20 @@ export class ComposerApp extends LitElement {
         import('../preview/preview-model.js'),
         import('./preview-dialog.js'),
       ]);
-      let config = this._configCache.get(id);
+      // The preview shows what the *patient* will see: the config in the
+      // patient language (the picker only lists entries that have it).
+      const lang = this.store.patientLang;
+      const cacheKey = `${lang}:${id}`;
+      let config = this._configCache.get(cacheKey);
       if (!config) {
         // A battery's referenced questionnaires arrive via declared dependencies.
-        config = await loadConfig([id], { loadDependencies: true });
-        this._configCache.set(id, config);
+        config = await loadConfig([id], { loadDependencies: true, configBase: configBaseFor(lang) });
+        this._configCache.set(cacheKey, config);
       }
-      const model = buildPreviewModel(config, id);
+      const model = buildPreviewModel(config, id, { connectives: { or: t('preview.or'), and: t('preview.and') } });
       if (!model) return;
       this._previewModel = model;
-      this._previewLiveUrl = buildUrl({ selected: [id] });
+      this._previewLiveUrl = buildUrl({ selected: [id], lang });
       this._previewOpen = true;
     } catch {
       // A failed fetch/validation just leaves the dialog closed — the browse
@@ -188,9 +196,13 @@ export class ComposerApp extends LitElement {
     const selected = s.selected;
     const selectedEntries = s.selectedEntries();
     const url = s.url();
+    // Also shown in the banner above; handed to the settings component so an
+    // invalid pid reveals the field it belongs to rather than pointing at a
+    // control the clinician cannot see.
+    const pidWarning = s.pidWarn() ?? '';
 
     return html`
-      <clinician-nav .page=${'composer'} .subtitle=${'בחר שאלונים, הוסף מזהה מטופל, העתק קישור.'}></clinician-nav>
+      <clinician-nav .page=${'composer'} .subtitle=${t('composer.subtitle')}></clinician-nav>
 
       ${warnings.length ? html`
         <div class="warnings" role="alert">
@@ -213,6 +225,8 @@ export class ComposerApp extends LitElement {
         @reorder=${(e) => s.reorder(e.detail.from, e.detail.to)}
         @remove=${(e) => s.toggle(e.detail.id)}
         @pid-change=${(e) => s.setPid(e.detail.pid)}
+        @patient-lang-change=${(e) => s.setPatientLang(e.detail.lang)}
+        @dropped-dismiss=${() => s.clearDropped()}
         @copy=${() => this._copy()}
         @share=${() => this._share()}
         @open=${() => this._open()}
@@ -245,8 +259,12 @@ export class ComposerApp extends LitElement {
             .entries=${selectedEntries}
             .url=${url}
             .pid=${s.pid}
-            .pidWarning=${s.pidWarn()}
+            .patientLang=${s.patientLang}
+            .langs=${s.patientLangs()}
+            .dropped=${s.dropped}
+            .pidWarning=${pidWarning}
             .recentUids=${this._recentUids}
+            .requirePid=${true}
             .copied=${s.copied}
             .canShare=${this._canShare}
           ></selection-cart>
@@ -257,6 +275,8 @@ export class ComposerApp extends LitElement {
         @reorder=${(e) => s.reorder(e.detail.from, e.detail.to)}
         @remove=${(e) => s.toggle(e.detail.id)}
         @pid-change=${(e) => s.setPid(e.detail.pid)}
+        @patient-lang-change=${(e) => s.setPatientLang(e.detail.lang)}
+        @dropped-dismiss=${() => s.clearDropped()}
         @copy=${() => this._copy()}
         @share=${() => this._share()}
         @open=${() => this._open()}
@@ -264,8 +284,12 @@ export class ComposerApp extends LitElement {
         .entries=${selectedEntries}
         .url=${url}
         .pid=${s.pid}
-        .pidWarning=${s.pidWarn()}
+        .patientLang=${s.patientLang}
+        .langs=${s.patientLangs()}
+        .dropped=${s.dropped}
+        .pidWarning=${pidWarning}
         .recentUids=${this._recentUids}
+        .requirePid=${true}
         .copied=${s.copied}
         .canShare=${this._canShare}
       ></mobile-bar>

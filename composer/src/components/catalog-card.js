@@ -19,6 +19,7 @@
 import { LitElement, html, css, unsafeCSS, nothing } from 'lit';
 import { clinicianCss } from '../../../clinician/styles/clinician-styles.js';
 import { resetCSS } from '../ui-reset.js';
+import { t } from '../../../clinician/i18n/index.js';
 
 export class CatalogCard extends LitElement {
   static properties = {
@@ -187,8 +188,8 @@ export class CatalogCard extends LitElement {
     // clean (title + id), matching the reference theming. Type/domain/time live
     // in the filter chips and the Stage 4 preview, not on the card.
     const kindBadge = e.kind === 'battery'
-      ? 'סוללה'
-      : (e.type === 'worksheet' ? 'דף עבודה' : null);
+      ? t('card.battery')
+      : (e.type === 'worksheet' ? t('card.worksheet') : null);
 
     return html`
       <div class="row">
@@ -213,8 +214,8 @@ export class CatalogCard extends LitElement {
             class="icon-btn preview-btn"
             type="button"
             @click=${this._preview}
-            title="תצוגה מקדימה"
-            aria-label="תצוגה מקדימה"
+            title=${t('card.preview')}
+            aria-label=${t('card.preview')}
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                  stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -227,8 +228,8 @@ export class CatalogCard extends LitElement {
             type="button"
             @click=${this._pin}
             aria-pressed=${this.pinned ? 'true' : 'false'}
-            title=${this.pinned ? 'הסר מהמומלצים' : 'הוסף למומלצים'}
-            aria-label=${this.pinned ? 'הסר מהמומלצים' : 'הוסף למומלצים'}
+            title=${this.pinned ? t('card.unpin') : t('card.pin')}
+            aria-label=${this.pinned ? t('card.unpin') : t('card.pin')}
           >
             <svg viewBox="0 0 24 24" fill=${this.pinned ? 'currentColor' : 'none'}
                  stroke="currentColor" stroke-width="2"

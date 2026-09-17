@@ -26,6 +26,7 @@
  * rejected by name rather than silently mis-scored.
  */
 
+import { isLang, LANG_CODES, DEFAULT_LANG } from '../../shared/i18n/core.js';
 import { readFileSync } from 'fs';
 import { resolve, join } from 'path';
 
@@ -79,6 +80,9 @@ export function normalizeScenario(raw) {
       problems.push(`${where}: "sessions" must be a non-empty array`);
       return;
     }
+    if (p.lang != null && !isLang(p.lang)) {
+      problems.push(`${where}: "lang" must be one of ${LANG_CODES.join(', ')}, got ${JSON.stringify(p.lang)}`);
+    }
     p.sessions.forEach((s, j) => {
       if (!DATE_RE.test(s?.date ?? '')) {
         problems.push(`${where} session ${j}: "date" must be YYYY-MM-DD, got ${JSON.stringify(s?.date)}`);
@@ -91,10 +95,18 @@ export function normalizeScenario(raw) {
 
   if (problems.length) throw new ScenarioError('Invalid scenario:', problems);
 
+  // `lang` (patient level, or inherited from a `{ patients, lang }` wrapper)
+  // selects public/configs/prod/<lang>/ and the report language — the PDF is
+  // in the patient's language, exactly as the app produces it.
+  const wrapperLang = !Array.isArray(raw) && raw?.lang != null ? raw.lang : null;
+  if (wrapperLang != null && !isLang(wrapperLang)) {
+    throw new ScenarioError('Invalid scenario:', [`"lang" must be one of ${LANG_CODES.join(', ')}, got ${JSON.stringify(wrapperLang)}`]);
+  }
   return patients.map((p) => ({
     pid: p.pid ?? null,
     name: p.name ?? null,
     out: p.out ?? null,
+    lang: p.lang ?? wrapperLang ?? DEFAULT_LANG,
     sessions: p.sessions,
   }));
 }

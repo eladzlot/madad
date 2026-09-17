@@ -69,6 +69,7 @@ Only `id`, `title`, `items` are strictly required. All other fields are optional
 - `tags` (optional): free-form intervention/protocol tags (e.g. `"CBT"`, `"exposure"`). Reuse existing spellings from other configs.
 - `featured` (optional): only for common workhorse instruments — do not set it by default.
 - `durationMinutes` (optional): only when the computed estimate would be misleading.
+- `source` (required on translated files under `prod/<lang>/`, recommended otherwise): where this file's text comes from — the publication or official translation it was transcribed from, or `"Madad original"`. Example: `"Kroenke, Spitzer & Williams (2001) — English original"`.
 
 ---
 

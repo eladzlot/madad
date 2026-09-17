@@ -456,6 +456,21 @@ authentication, server-side identity, token revocation lists.
 - The patient-id field becomes the uid field: label, placeholder
   `XXXX-XXXX`, live format + check-symbol validation; the link is withheld
   until the uid is valid.
+- Because it is **mandatory**, it is never hidden. The public composer keeps
+  the patient id behind a value chip that reveals a field (D-20); here
+  `<session-settings>` runs with `required`, which drops the chip and leaves
+  the field open. Hiding a mandatory field behind a disclosure would hide the
+  one thing standing between the therapist and a working link.
+- On a phone the field lives in the sheet, so the bar has to lead there: while
+  no valid uid exists the bar's primary reads **הזן מזהה** and opens the sheet
+  with the cursor already in the field, and the count button is never disabled
+  (the uid must be enterable before anything is picked). Once the uid
+  validates the primary turns back into שתף / העתק קישור.
+- The link placeholder names which half is missing — "לא נבחרו שאלונים" before
+  anything is picked, "יש להזין מזהה מטופל תקין" once something is.
+- `uidWarning()` returns a **code** (`shape` / `checksum`), not a sentence:
+  the clinician surfaces are translated (D-19), so the wording lives in
+  `clinician/i18n` and `shared/remote/uid.js` stays presentation-free.
 - `shared/remote/uid-memory.js` remembers uids this browser has used and
   offers them in a `<datalist>`, in **both** clinician surfaces: the composer
   when a link is copied, opened or shared, and the aggregate when a viewing

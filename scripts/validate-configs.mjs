@@ -21,6 +21,8 @@ import { fileURLToPath } from 'url';
 import Ajv from 'ajv/dist/2020.js';
 import { collectConfigErrors, checkCrossFileBatteryRefs } from '../shared/config/config-validation.js';
 import { remoteExcludedIds } from '../shared/remote/no-text-rule.js';
+import { checkTranslationParity } from '../shared/config/translation-parity.js';
+import { parseConfigPath, DEFAULT_LANG, LANG_CODES } from '../shared/i18n/core.js';
 
 // ── Paths ─────────────────────────────────────────────────────────────────────
 
@@ -89,13 +91,22 @@ function validateFile(filePath) {
 
 // ── Per-instrument layout convention (public/configs/prod/) ──────────────────
 // Item IDs are addresses: the patient app expands each `items=` token to
-// configs/prod/<token>.json. Every config must therefore hold exactly one
-// questionnaire or battery, with filename = entity id = config id. Test
-// fixtures follow the same rule and are marked `dev: true` in the file.
+// configs/prod/<token>.json — or configs/prod/<lang>/<token>.json when the
+// link carries `lang=` (docs/I18N_SPEC.md §3–4). Every config must therefore
+// hold exactly one questionnaire or battery, with filename = entity id =
+// config id. Test fixtures follow the same rule and are marked `dev: true`.
 
 function checkProdFileLayout(rel, data) {
   if (!rel.startsWith('public/configs/prod/')) return [];
-  const basename = rel.slice('public/configs/prod/'.length).replace(/\.json$/, '');
+  const parsed = parseConfigPath(rel);
+  if (!parsed) {
+    return [
+      `"${rel}" is not a valid prod config path — expected public/configs/prod/<id>.json ` +
+      `or public/configs/prod/<lang>/<id>.json with <lang> one of ${LANG_CODES.filter(l => l !== DEFAULT_LANG).join(', ')} ` +
+      `(Hebrew is the canonical tree and never lives under a language directory).`,
+    ];
+  }
+  const basename = parsed.id;
   const entities = [...(data.questionnaires ?? []), ...(data.batteries ?? [])];
 
   if (entities.length !== 1) {
@@ -113,6 +124,57 @@ function checkProdFileLayout(rel, data) {
     errors.push(`Config id "${data.id}" must equal filename "${basename}"`);
   }
   return errors;
+}
+
+// ── Translations (public/configs/prod/<lang>/) ───────────────────────────────
+// A translated file is the Hebrew file with only its text replaced. Structure
+// parity is proven by shared/config/translation-parity.js; here we pair each
+// translation with its canonical twin and check battery completeness (every
+// questionnaire a translated battery sequences must exist in that language).
+
+function checkTranslations(validFiles) {
+  const errors = [];
+  const byLang = new Map();   // lang → Map(id → { rel, data })
+  for (const f of validFiles) {
+    const parsed = parseConfigPath(f.rel);
+    if (!parsed) continue;
+    if (!byLang.has(parsed.lang)) byLang.set(parsed.lang, new Map());
+    byLang.get(parsed.lang).set(parsed.id, f);
+  }
+  const canonical = byLang.get(DEFAULT_LANG) ?? new Map();
+
+  for (const [lang, files] of byLang) {
+    if (lang === DEFAULT_LANG) continue;
+    for (const [id, { rel, data }] of files) {
+      const twin = canonical.get(id);
+      if (!twin) {
+        errors.push(`${rel}: no canonical Hebrew file public/configs/prod/${id}.json — translations never introduce new instruments.`);
+        continue;
+      }
+      for (const msg of checkTranslationParity(twin.data, data, lang)) {
+        errors.push(`${rel}: ${msg}`);
+      }
+      for (const b of data.batteries ?? []) {
+        for (const ref of collectSequenceRefs(b.sequence)) {
+          if (!files.has(ref)) {
+            errors.push(`${rel}: battery "${b.id}" sequences "${ref}" but public/configs/prod/${lang}/${ref}.json does not exist — a battery is offered in a language only when every questionnaire in it is.`);
+          }
+        }
+      }
+    }
+  }
+  return errors;
+}
+
+function collectSequenceRefs(sequence) {
+  const refs = [];
+  for (const node of sequence ?? []) {
+    if (node.questionnaireId) refs.push(node.questionnaireId);
+    if (node.then) refs.push(...collectSequenceRefs(node.then));
+    if (node.else) refs.push(...collectSequenceRefs(node.else));
+    if (node.ids)  refs.push(...collectSequenceRefs(node.ids));
+  }
+  return refs;
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────
@@ -144,29 +206,35 @@ for (const file of files) {
 }
 
 // ── Cross-file duplicate ID check ─────────────────────────────────────────────
-// IDs must be globally unique across all loaded configs. Catch violations here.
+// IDs must be globally unique across all configs the patient app can load
+// together — i.e. within one language. The same id in configs/prod/ and
+// configs/prod/en/ is the same instrument, translated (never loaded together).
 
 if (validFiles.length > 1) {
-  const seenQ = new Map();  // questionnaire id → rel
-  const seenB = new Map();  // battery id → rel
+  const seenQ = new Map();  // `${lang}:${questionnaire id}` → rel
+  const seenB = new Map();  // `${lang}:${battery id}` → rel
   const crossErrors = [];
+  const langOf = (rel) => parseConfigPath(rel)?.lang ?? DEFAULT_LANG;
 
   for (const { rel, data } of validFiles) {
+    const lang = langOf(rel);
     for (const q of data.questionnaires ?? []) {
-      if (seenQ.has(q.id)) {
-        crossErrors.push(`Duplicate questionnaire ID "${q.id}" in ${rel} (already in ${seenQ.get(q.id)})`);
+      const key = `${lang}:${q.id}`;
+      if (seenQ.has(key)) {
+        crossErrors.push(`Duplicate questionnaire ID "${q.id}" in ${rel} (already in ${seenQ.get(key)})`);
       } else {
-        seenQ.set(q.id, rel);
+        seenQ.set(key, rel);
       }
     }
     for (const b of data.batteries ?? []) {
-      if (seenB.has(b.id)) {
-        crossErrors.push(`Duplicate battery ID "${b.id}" in ${rel} (already in ${seenB.get(b.id)})`);
+      const key = `${lang}:${b.id}`;
+      if (seenB.has(key)) {
+        crossErrors.push(`Duplicate battery ID "${b.id}" in ${rel} (already in ${seenB.get(key)})`);
       } else {
-        seenB.set(b.id, rel);
+        seenB.set(key, rel);
       }
-      if (seenQ.has(b.id)) {
-        crossErrors.push(`Battery ID "${b.id}" in ${rel} collides with questionnaire ID in ${seenQ.get(b.id)}`);
+      if (seenQ.has(key)) {
+        crossErrors.push(`Battery ID "${b.id}" in ${rel} collides with questionnaire ID in ${seenQ.get(key)}`);
       }
     }
   }
@@ -182,6 +250,14 @@ if (validFiles.length > 1) {
   if (refErrors.length > 0) {
     console.error('\n  ✗  Cross-file battery reference errors:');
     for (const err of refErrors) console.error(`       ${err}`);
+    failed++;
+  }
+
+  // ── Translation parity ─────────────────────────────────────────────────────
+  const translationErrors = checkTranslations(validFiles);
+  if (translationErrors.length > 0) {
+    console.error('\n  ✗  Translation errors:');
+    for (const err of translationErrors) console.error(`       ${err}`);
     failed++;
   }
 }

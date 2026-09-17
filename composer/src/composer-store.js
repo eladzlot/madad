@@ -7,8 +7,15 @@
 // derivations have a single source of truth.
 //
 // The catalog is the only data source (see composer-loader.js). Each entry
-// carries id, kind, title, description, keywords, and the meta taxonomy
-// (domains/type/populations/tags/featured) the browse UI filters on.
+// carries id, kind, title, description, keywords, the meta taxonomy
+// (domains/type/populations/tags/featured) the browse UI filters on, and — v2 —
+// `languages` (patient languages it can be sent in) plus `i18n[lang]` with the
+// clinician-facing title/description/keywords per translated language.
+//
+// Two languages live here (docs/I18N_SPEC.md): `uiLang`, the clinician's UI
+// language (fixed for the page lifetime — switching reloads), and
+// `patientLang`, the language the link will open in. The picker only lists
+// entries available in `patientLang` (L-8); titles display in `uiLang`.
 
 import { buildUrl } from './composer-state.js';
 // Remote deployment: the patient id is a minted uid (REMOTE_SPEC §3) and the
@@ -17,8 +24,21 @@ import { formatUid, uidWarning } from '../../shared/remote/uid.js';
 import { sortForBrowse, rankForQuery } from './search.js';
 import { TABS, ALL_TAB, tabOf } from './taxonomy.js';
 import { loadProfile, saveProfile, safeLocalStorage } from './composer-profile.js';
+import { t } from '../../clinician/i18n/index.js';
+import { DEFAULT_LANG, LANGS, isLang } from '../../shared/i18n/core.js';
+import { titleIn, textIn } from './entry-text.js';
 
-export function createStore({ storage = safeLocalStorage() } = {}) {
+export const PATIENT_LANG_KEY = 'madad.composer.patientLang.v1';
+export { titleIn, textIn };
+
+function loadPatientLang(storage, fallback) {
+  try {
+    const v = storage?.getItem?.(PATIENT_LANG_KEY);
+    return isLang(v) ? v : fallback;
+  } catch { return fallback; }
+}
+
+export function createStore({ storage = safeLocalStorage(), uiLang = DEFAULT_LANG } = {}) {
   const state = {
     entries:   [],              // all catalog entries (post dev-filter)
     warnings:  [],              // load-time warnings (catalog version, ...)
@@ -32,9 +52,19 @@ export function createStore({ storage = safeLocalStorage() } = {}) {
     // The clinician's personal recommended-profile overlay on top of the
     // catalog's author `featured` defaults. See composer-profile.js.
     profile:   loadProfile(storage),
+    uiLang:    isLang(uiLang) ? uiLang : DEFAULT_LANG,
+    // Patient language: the clinician's last explicit choice, else the UI language.
+    patientLang: loadPatientLang(storage, isLang(uiLang) ? uiLang : DEFAULT_LANG),
+    // Selections dropped by the last patient-language switch, for a notice.
+    dropped:   [],
   };
 
   const persist = () => saveProfile(state.profile, storage);
+  const persistPatientLang = () => { try { storage?.setItem?.(PATIENT_LANG_KEY, state.patientLang); } catch { /* no storage */ } };
+
+  // The catalog entries the patient language allows (L-8: hidden entirely).
+  const availableIn = (entry, lang = state.patientLang) => (entry.languages ?? [DEFAULT_LANG]).includes(lang);
+  const displayEntry = (e) => ({ ...e, title: titleIn(e, state.uiLang), description: textIn(e, state.uiLang, 'description') });
 
   const listeners = new Set();
   const notify = () => { for (const fn of listeners) fn(); };
@@ -49,9 +79,10 @@ export function createStore({ storage = safeLocalStorage() } = {}) {
     return [ALL_TAB, ...real];
   }
 
-  // Entries in a tab. The synthetic 'all' tab spans every category.
+  // Entries in a tab, restricted to the patient language. The synthetic 'all'
+  // tab spans every category.
   const entriesInTab = (tab) =>
-    tab === ALL_TAB ? state.entries.slice() : state.entries.filter(e => tabOf(e) === tab);
+    state.entries.filter(e => availableIn(e) && (tab === ALL_TAB || tabOf(e) === tab));
 
   // An entry passes the active chip filters (domain AND population, when set).
   function passesFilters(entry, filters = state.filters) {
@@ -90,11 +121,12 @@ export function createStore({ storage = safeLocalStorage() } = {}) {
   }
 
   // The entries visible in the active tab, after filters, query, and curation.
+  // Returned with title/description in the UI language.
   function visibleEntries() {
     let pool = entriesInTab(state.tab).filter(e => passesFilters(e));
-    if (state.query.trim()) return rankForQuery(pool, state.query);
+    if (state.query.trim()) return rankForQuery(pool, state.query, state.uiLang).map(displayEntry);
     if (curationActive()) pool = pool.filter(e => isPinned(e.id));
-    return sortForBrowse(pool);
+    return sortForBrowse(pool, state.uiLang).map(displayEntry);
   }
 
   // Does the active tab have entries beyond the pinned ones? Drives whether the
@@ -121,7 +153,7 @@ export function createStore({ storage = safeLocalStorage() } = {}) {
       .filter(t => t !== state.tab && t !== ALL_TAB)
       .map(t => ({
         tab: t,
-        count: rankForQuery(entriesInTab(t).filter(e => passesFilters(e)), state.query).length,
+        count: rankForQuery(entriesInTab(t).filter(e => passesFilters(e)), state.query, state.uiLang).length,
       }))
       .filter(x => x.count > 0);
   }
@@ -141,7 +173,10 @@ export function createStore({ storage = safeLocalStorage() } = {}) {
 
   const entryById = (id) => state.entries.find(e => e.id === id) ?? null;
   const selectedEntries = () =>
-    state.selected.map(id => entryById(id) ?? { id, title: id, kind: 'questionnaire' });
+    state.selected.map(id => {
+      const e = entryById(id);
+      return e ? displayEntry(e) : { id, title: id, kind: 'questionnaire' };
+    });
 
   // ── Public API ──────────────────────────────────────────────────────────────
 
@@ -152,9 +187,7 @@ export function createStore({ storage = safeLocalStorage() } = {}) {
     // builds (import.meta.env.DEV) — same semantics as the old applyCatalog.
     ingestCatalog(catalog, { catalogVersion, isDev = detectDev() } = {}) {
       if (catalogVersion != null && catalog.catalogVersion !== catalogVersion) {
-        state.warnings.push(
-          `גרסת קטלוג לא תואמת (${catalog.catalogVersion ?? '?'}) — ייתכן שהתצוגה חלקית. רעננו את הדף.`
-        );
+        state.warnings.push(t('composer.catalogVersion', { version: catalog.catalogVersion ?? '?' }));
       }
       for (const entry of catalog.entries ?? []) {
         if (entry.dev && !isDev) continue;
@@ -164,6 +197,7 @@ export function createStore({ storage = safeLocalStorage() } = {}) {
           keywords:    entry.keywords ?? [],
           domains:     entry.domains ?? [],
           populations: entry.populations ?? [],
+          languages:   entry.languages ?? [DEFAULT_LANG],
         });
       }
       notify();
@@ -235,6 +269,24 @@ export function createStore({ storage = safeLocalStorage() } = {}) {
     setPid(value) { state.pid = value; notify(); },
     setCopied(v) { state.copied = v; notify(); },
 
+    // ── Patient language ──
+    // Switching drops selections the new language cannot serve (the picker
+    // hides them too) and records them so the cart can say what happened.
+    setPatientLang(lang) {
+      if (!isLang(lang) || lang === state.patientLang) return;
+      state.patientLang = lang;
+      const dropped = state.selected.filter(id => { const e = entryById(id); return e && !availableIn(e, lang); });
+      state.selected = state.selected.filter(id => !dropped.includes(id));
+      state.dropped = dropped;
+      state.copied = false;
+      persistPatientLang();
+      notify();
+    },
+    clearDropped() { if (state.dropped.length) { state.dropped = []; notify(); } },
+    // Languages a link can be built in — every LANGS code, so the clinician can
+    // see an empty list rather than wonder why a language is missing.
+    patientLangs() { return Object.keys(LANGS); },
+
     reset() {
       state.selected = [];
       state.pid = '';
@@ -253,6 +305,9 @@ export function createStore({ storage = safeLocalStorage() } = {}) {
     get pid() { return state.pid; },
     get copied() { return state.copied; },
     get entries() { return state.entries.slice(); },
+    get uiLang() { return state.uiLang; },
+    get patientLang() { return state.patientLang; },
+    get dropped() { return state.dropped.slice(); },
 
     availableTabs,
     availableDomains,
@@ -273,10 +328,10 @@ export function createStore({ storage = safeLocalStorage() } = {}) {
     url() {
       const uid = formatUid(state.pid);
       if (!uid) return null;
-      return buildUrl({ selected: state.selected, pid: uid });
+      return buildUrl({ selected: state.selected, pid: uid, lang: state.patientLang });
     },
     uidValid() { return formatUid(state.pid) !== null; },
-    pidWarn() { return uidWarning(state.pid); },
+    pidWarn() { const c = uidWarning(state.pid); return c ? t(`uid.${c}`) : null; },
     // Load-time warnings only. The uid message is not in this banner: it is
     // rendered by the cart / sheet directly under the field (pidWarn), where
     // the therapist is looking while typing.

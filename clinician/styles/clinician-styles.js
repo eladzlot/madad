@@ -178,6 +178,63 @@ export const clinicianCss = /* css */ `
     outline: 2px solid var(--color-border-focus, #da924f);
     outline-offset: -2px;
   }
+
+  /* ── Value chip — a setting shown as its own value ─────────────────────── */
+  /* Used on the dark clinician rail and in the mobile sheet: the closed state
+     of a setting IS the setting, so a glance reads "Hebrew, no patient ID"
+     without opening anything. An unset chip is dashed — an empty slot asking
+     to be filled, the same idiom the idiographic param slots will need. */
+
+  .c-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-block-size: 30px;
+    padding-inline: 11px;
+    border: var(--border-width, 1px) solid var(--clin-rail-border, #304860);
+    border-radius: var(--radius-pill, 999px);
+    background: var(--clin-rail-field, #2A3D52);
+    color: var(--clin-rail-text-strong, #C0D4E4);
+    font-family: inherit;
+    font-size: var(--font-size-sm, 14px);
+    line-height: 1;
+    cursor: pointer;
+    transition: border-color var(--transition-fast, 120ms ease),
+                color var(--transition-fast, 120ms ease);
+  }
+
+  .c-chip:hover { border-color: var(--color-accent, #2BB3C0); }
+
+  .c-chip[aria-expanded='true'] {
+    border-color: var(--color-accent, #2BB3C0);
+    color: #ffffff;
+  }
+
+  /* No value yet — a dashed outline reads as an empty slot, not a disabled
+     control, and the label says what filling it would do. */
+  .c-chip--unset {
+    background: none;
+    border-style: dashed;
+    color: var(--clin-rail-hint, #aec8dc);
+  }
+
+  .c-chip svg {
+    inline-size: 14px;
+    block-size: 14px;
+    flex-shrink: 0;
+    opacity: 0.8;
+  }
+
+  .c-chip .c-chip-value {
+    font-family: ui-monospace, monospace;
+    font-size: var(--font-size-xs, 12px);
+    direction: ltr;
+  }
+
+  .c-chip:focus-visible {
+    outline: 2px solid var(--color-border-focus, #2BB3C0);
+    outline-offset: 2px;
+  }
 `;
 
 let sheet;
