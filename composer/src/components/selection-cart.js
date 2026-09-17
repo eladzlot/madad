@@ -92,7 +92,7 @@ export class SelectionCart extends LitElement {
 
     .settings {
       padding: var(--space-md, 16px) 20px;
-      border-block: var(--border-width, 1px) solid var(--clin-rail-border, #7b6048);
+      border-block: var(--border-width, 1px) solid var(--clin-rail-border, #4d6f61);
     }
 
     .picked {
@@ -108,12 +108,12 @@ export class SelectionCart extends LitElement {
       font-weight: var(--font-weight-bold, 600);
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: var(--clin-rail-label, #c8af9b);
+      color: var(--clin-rail-label, #9ebcb0);
       margin-block-end: var(--space-xs, 4px);
     }
     .hint {
       font-size: var(--font-size-xs, 12px);
-      color: var(--clin-rail-hint, #bea590);
+      color: var(--clin-rail-hint, #95b2a6);
       margin-block-end: var(--space-sm, 8px);
     }
 
@@ -123,8 +123,8 @@ export class SelectionCart extends LitElement {
       display: flex;
       align-items: center;
       gap: 2px;
-      background: var(--clin-rail-field, #3c2d20);
-      border: var(--border-width, 1px) solid var(--clin-rail-border, #7b6048);
+      background: var(--clin-rail-field, #23352e);
+      border: var(--border-width, 1px) solid var(--clin-rail-border, #4d6f61);
       border-radius: var(--radius-sm, 6px);
       padding-inline: var(--space-sm, 8px);
       padding-block: 5px;
@@ -138,8 +138,8 @@ export class SelectionCart extends LitElement {
       inline-size: 22px;
       block-size: 22px;
       border-radius: 50%;
-      background: var(--color-primary, #c37829);
-      color: var(--color-primary-text, #311c08);
+      background: var(--color-primary, #5aa053);
+      color: var(--color-primary-text, #0b281e);
       font-size: var(--font-size-xs, 12px);
       display: grid;
       place-items: center;
@@ -149,7 +149,7 @@ export class SelectionCart extends LitElement {
       flex: 1;
       min-inline-size: 0;
       font-size: var(--font-size-sm, 14px);
-      color: var(--clin-rail-text-strong, #f1e6dc);
+      color: var(--clin-rail-text-strong, #d0f1e3);
       /* One line, ellipsis — overrides the reset's overflow-wrap so long titles
          don't wrap and buckle the row. */
       white-space: nowrap;
@@ -162,16 +162,16 @@ export class SelectionCart extends LitElement {
       background: none;
       border: none;
       cursor: pointer;
-      color: color-mix(in srgb, var(--clin-rail-text, #dbc9b9) 85%, transparent);
+      color: color-mix(in srgb, var(--clin-rail-text, #b0d7c7) 85%, transparent);
       font-size: 14px;
       line-height: 1;
       padding: 3px;
       border-radius: var(--radius-sm, 6px);
     }
     :host([compact]) .icon-btn { font-size: 16px; padding: 6px; }
-    .icon-btn:hover:not(:disabled) { color: var(--color-accent, #da924f); }
+    .icon-btn:hover:not(:disabled) { color: var(--color-accent, #77b770); }
     .icon-btn:disabled { opacity: 0.3; cursor: default; }
-    .icon-btn:focus-visible { outline: 2px solid var(--color-border-focus, #c37829); outline-offset: 1px; }
+    .icon-btn:focus-visible { outline: 2px solid var(--color-border-focus, #5aa053); outline-offset: 1px; }
 
     /* Reordering is rare; removing is not. The arrows fade in on hover or when
        anything in the row takes keyboard focus. Opacity, not display — they
@@ -187,12 +187,12 @@ export class SelectionCart extends LitElement {
 
     .empty-cart {
       font-size: var(--font-size-sm, 14px);
-      color: var(--clin-rail-label, #c8af9b);
+      color: var(--clin-rail-label, #9ebcb0);
     }
-    .empty-cart .help-link { color: var(--clin-rail-text, #dbc9b9); text-decoration: underline; }
-    .empty-cart .help-link:hover { color: var(--clin-rail-text-strong, #f1e6dc); }
+    .empty-cart .help-link { color: var(--clin-rail-text, #b0d7c7); text-decoration: underline; }
+    .empty-cart .help-link:hover { color: var(--clin-rail-text-strong, #d0f1e3); }
     .empty-cart .help-link:focus-visible {
-      outline: 2px solid var(--color-border-focus, #c37829);
+      outline: 2px solid var(--color-border-focus, #5aa053);
       outline-offset: 2px;
     }
 
@@ -208,7 +208,7 @@ export class SelectionCart extends LitElement {
       text-align: start;
       /* --clin-rail-hint is the token the a11y pass tuned to clear 4.5:1 on
          this navy at small sizes; anything dimmer fails WCAG AA at 12px. */
-      color: var(--clin-rail-hint, #bea590);
+      color: var(--clin-rail-hint, #95b2a6);
       line-height: 1.4;
       margin-block-end: var(--space-md, 16px);
       /* Exactly two lines, always: 12px x 1.4 x 2. A min-block-size is not
@@ -226,15 +226,15 @@ export class SelectionCart extends LitElement {
        row cannot hold a long Hebrew label plus three buttons in 260px. */
     .c-btn--go {
       inline-size: 100%;
-      background: var(--color-accent, #da924f);
-      color: var(--color-primary-text, #311c08);
+      background: var(--color-accent, #77b770);
+      color: var(--color-primary-text, #0b281e);
       font-weight: var(--font-weight-bold, 600);
     }
-    .c-btn--go:not(:disabled):hover { background: var(--color-accent-hover, #e6a973); }
+    .c-btn--go:not(:disabled):hover { background: var(--color-accent-hover, #8dca86); }
     /* The shared --copied green is tuned for a light page; lift it for navy. */
     .c-btn--go.c-btn--copied {
-      background: color-mix(in srgb, var(--color-yes, #276749) 62%, #ffffff);
-      color: var(--color-primary-text, #311c08);
+      background: color-mix(in srgb, var(--color-yes, #14655f) 62%, #ffffff);
+      color: var(--color-primary-text, #0b281e);
     }
 
     .icon-row { display: flex; gap: var(--space-sm, 8px); margin-block-start: var(--space-sm, 8px); }
@@ -243,17 +243,17 @@ export class SelectionCart extends LitElement {
          spans the same width as the primary above it, so the foot reads as one
          block rather than a button with some offcuts beside it. */
       flex: 1;
-      background: var(--clin-rail-field, #3c2d20);
-      border-color: var(--clin-rail-border, #7b6048);
-      color: var(--clin-rail-text-strong, #f1e6dc);
+      background: var(--clin-rail-field, #23352e);
+      border-color: var(--clin-rail-border, #4d6f61);
+      color: var(--clin-rail-text-strong, #d0f1e3);
       padding-inline: var(--space-sm, 8px);
     }
     .c-btn--rail:not(:disabled):hover {
-      border-color: var(--color-accent, #da924f);
-      color: var(--color-accent, #da924f);
+      border-color: var(--color-accent, #77b770);
+      color: var(--color-accent, #77b770);
     }
     .c-btn:focus-visible {
-      outline: 2px solid var(--color-border-focus, #c37829);
+      outline: 2px solid var(--color-border-focus, #5aa053);
       outline-offset: 2px;
     }
     .icon { inline-size: 17px; block-size: 17px; display: block; }

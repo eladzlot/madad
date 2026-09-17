@@ -2,38 +2,47 @@
    Components reference these via var(--token).
    Replace values here to retheme without touching components.
 
-   Remote deployment (מדד · CTR): honey on a warm neutral ground.
-   Built on the same recipe as the public app rather than in opposition to it:
-   the primary sits at L* 64 near the sRGB chroma ceiling for its lightness,
-   and every neutral — including the ink — is tinted into the brand hue (H 62)
-   so the page reads as one family. The burgundy this replaces failed on three
-   counts at once (L* 41, ~41% of its available chroma, and yellow-cast greys
-   against a red primary); see REMOTE_SPEC §8.4. Non-confusion with
-   app.ezmadad.com is carried by hue distance: H 62 against the teal's H 206.
+   Remote deployment (מדד · CTR): Leaf on a cool-shifted ground.
+   The brand sits at OKLab L .640, H 142, C .130 — the same ABSOLUTE chroma as
+   the honey it replaces, which is only ~61% of green's sRGB ceiling at that
+   lightness (0.215, against the honey hue's 0.148 and the teal's 0.110).
+   Copying the honey's 88% *share* would have produced a signal green near
+   C .19; matching its chroma instead keeps the colour a material.
+
+   Unlike the honey — which tinted the whole page to one hue — every neutral
+   here sits at H 169, 27° cooler than the brand. That is `main`'s own move
+   (its neutrals are 52° off its primary), and it is what makes the page read
+   cool while the green itself stays alive. Non-confusion with app.ezmadad.com
+   is carried by 64° of hue distance plus the warm/cool split; see
+   REMOTE_SPEC §8.4.
 
    Both forms of the brand apply here as on main, and the split matters more:
    --color-primary is a fill, --color-primary-ink is for small text and icons.
-   Semantic yes/no colours are unchanged — they carry meaning in the item
-   components, and sit 37° and 93° off the brand hue. */
+   --color-primary-text stays a deep ink rather than white — dark-on-Leaf
+   clears AA at 4.93:1 where white on the same fill reaches only 2.62:1.
+
+   --color-yes moved 25° cooler (H 160 → H 190). It was a cousin of the brand
+   ink at ΔE 5.7 under tritanopia, and it sat ΔE 7.1 from --color-no under
+   protanopia — a pair main still carries. --color-no is unchanged. */
 
 :root {
   /* Colour */
-  --color-bg:              #faf6f3;
-  --color-surface:         #f0e8e1;
-  --color-border:          #e4d6cb;
-  --color-border-focus:    #c37829;
-  --color-text:            #311c08;
-  --color-text-muted:      #796453;
-  --color-primary:         #c37829;
-  --color-primary-hover:   #d18d4e;
-  --color-primary-text:    #311c08;
-  --color-primary-ink:     #995600;
-  --color-accent:          #da924f;
-  --color-accent-hover:    #e6a973;
-  --color-selected-bg:     #ffecdd;
-  --color-selected-border: #c37829;
-  --color-yes:             #276749;
-  --color-yes-bg:          #F0FBF4;
+  --color-bg:              #eefaf5;
+  --color-surface:         #d8f0e6;
+  --color-border:          #bae4d2;
+  --color-border-focus:    #5aa053;
+  --color-text:            #0b281e;
+  --color-text-muted:      #576f65;
+  --color-primary:         #5aa053;
+  --color-primary-hover:   #73b06d;
+  --color-primary-text:    #0b281e;
+  --color-primary-ink:     #397533;
+  --color-accent:          #77b770;
+  --color-accent-hover:    #8dca86;
+  --color-selected-bg:     #dbfad6;
+  --color-selected-border: #5aa053;
+  --color-yes:             #14655f;
+  --color-yes-bg:          #eefbfa;
   --color-no:              #8B3A3A;
   --color-no-bg:           #FDF3F3;
 
@@ -81,22 +90,22 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-bg:              #14110e;
-    --color-surface:         #211c17;
-    --color-border:          #382e26;
-    --color-border-focus:    #eaa76b;
-    --color-text:            #f0e6de;
-    --color-text-muted:      #a99c91;
-    --color-primary:         #e79f5c;
-    --color-primary-hover:   #f4ba87;
-    --color-primary-text:    #1a1511;
-    --color-primary-ink:     #e79f5c;
-    --color-accent:          #f3b680;
-    --color-accent-hover:    #e79f5c;
-    --color-selected-bg:     #332214;
-    --color-selected-border: #e79f5c;
-    --color-yes:             #4CAF82;
-    --color-yes-bg:          #0d2b1e;
+    --color-bg:              #0f1311;
+    --color-surface:         #181f1c;
+    --color-border:          #28332f;
+    --color-border-focus:    #89cb81;
+    --color-text:            #d3f0e4;
+    --color-text-muted:      #94a39c;
+    --color-primary:         #83c57c;
+    --color-primary-hover:   #8be082;
+    --color-primary-text:    #131713;
+    --color-primary-ink:     #83c57c;
+    --color-accent:          #8adc81;
+    --color-accent-hover:    #83c57c;
+    --color-selected-bg:     #1c2b1b;
+    --color-selected-border: #83c57c;
+    --color-yes:             #3fb8a8;
+    --color-yes-bg:          #0d2a28;
     --color-no:              #E07070;
     --color-no-bg:           #2d1515;
   }

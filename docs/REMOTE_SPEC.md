@@ -497,81 +497,126 @@ fresh-link form; PDF-download affordance hidden for server rows.
 The trial instance must never be confused with `app.ezmadad.com`. That
 requirement is carried by **hue distance**, not by darkness.
 
-Decided 2026-09-16, replacing the burgundy (which had itself replaced a plum
-system rejected as generic "app purple", and a terracotta POC before that):
-**honey on a warm neutral ground** — primary `#c37829`, accent `#da924f`,
-chrome `#392a1e` / rail `#4e3b2c`, warm light background `#faf6f3`, dark
-background `#14110e` with a light-honey primary `#e79f5c`.
+Decided 2026-09-17, replacing the honey (which had replaced a burgundy, itself
+replacing a plum rejected as generic "app purple", and a terracotta POC before
+that): **Leaf on a cool-shifted ground** — primary `#5aa053`, ink `#397533`,
+accent `#77b770`, chrome `#21322b` / rail `#2f453c`, background `#eefaf5`,
+dark background `#0f1311` with a light-Leaf primary `#83c57c`.
 
-Why the burgundy was replaced. Measured in OKLCH against `main`'s teal, it
-failed on three counts at once, and the three compounded:
+#### The recipe, written down
 
-| | `main` teal | burgundy | honey |
+Both shipped palettes turn out to be one table of *(OKLab L, share of the sRGB
+chroma ceiling)* pairs per token. Writing it down is what made this pass four
+rounds instead of the honey's several, and it is the artefact to reuse next
+time:
+
+| | `main` teal | honey | Leaf |
 |---|---|---|---|
-| primary lightness | L\* 64 | **L\* 41** | L\* 64 |
-| chroma vs. the sRGB ceiling at that lightness | 96% | **~41%** | ~88% |
-| neutrals | tinted to the brand hue (H 258) | **greys at H 74–85 against a primary at H 13** | tinted to the brand hue (H 62) |
-| chrome | none | **L\* 20 / L\* 27** | L\* 30 / L\* 37 |
+| primary OKLab L | .644 | .640 | .640 |
+| primary chroma | C .106 | C .130 | **C .130** |
+| share of the ceiling at that L | 96% | 88% | **~61%** |
+| neutral hue vs. primary hue | **+52°** (H 258 vs 206) | 0° (H 62) | **+27°** (H 169 vs 142) |
+| chrome header / rail | none | L .299 / .369 | L .299 / .369, both ~42% |
 
-The clinician chrome keeps the header darker than the rail — the header is the
-outer frame, the rail a panel inside it — and holds both at the same share of
-the sRGB chroma ceiling (~42%) for their own lightness. A fixed *absolute*
-chroma does not work: the ceiling falls as a colour darkens, so the darker
-surface ends up proportionally more saturated and reads as a different, redder
-material.
+Two rows carry the argument.
 
-A primary at L\* 41 is a hole punched in an L\* 97 page rather than a colour
-on it; "muted" was the literal design intent and the literal fault; and warm
-greys carrying no chroma read as dirty rather than warm. The honey is built
-from `main`'s recipe instead of in opposition to it — same lightness, same
-share of the available gamut, neutrals and ink tinted into the brand hue —
-and separates from `app.ezmadad.com` by 144° of hue.
+**Chroma is matched in absolute terms, not as a share.** Green's ceiling at
+L .640 is `0.215` — nearly double the teal's `0.110` and half again the honey's
+`0.148`. Copying the honey's 88% *share* would have put the primary near
+`C .19`: the same recipe, a highlighter result. Matching its absolute chroma
+instead keeps the colour a material. This is the one place the honey's recipe
+must not be applied literally to a new hue.
 
-Because the primary is a mid-light warm colour, **`--color-primary-text` is
-a deep ink (`#311c08`), not white**: dark-on-honey clears AA at 4.64:1 where
-white on the same fill reaches only 3.48:1. Every filled-primary surface in
-the app takes its text from that one token, so this needed no component
-changes.
+**The neutrals leave the brand hue.** The honey tinted the whole page to H 62 —
+background, ink, chrome, everything. Here the brand is H 142 and every neutral
+is H 169. That is `main`'s own move, and it is what makes the page read cool
+while the green itself stays alive. The chrome follows the *neutrals*, not the
+brand: a brand-hued rail would put a hue seam down the middle of the composer,
+between the rail and the catalog column beside it.
 
-Colour-vision deficiency. Protanopia and deuteranopia (~8% of men) collapse
-the red–green axis but keep blue, so nothing in the UI may rely on warm-hue
-separation alone:
+`--color-primary-text` stays **a deep ink (`#0b281e`), not white**: dark-on-Leaf
+clears AA at 4.93:1 where white on the same fill reaches only 2.62:1.
 
-- **The chart threshold is deliberately cool** (`--clin-cutoff`, `#32618e`
-  light / `#82b1ed` dark). The old amber sat ΔE 3.1 from the alert red, and
-  in dark mode `#E8A33D` was ΔE 1.0 from the new primary — indistinguishable.
-  Slate clears every mark beside it by ΔE ≥ 18 under all three dichromacies.
-- **`SEVERITY_RAMP` descends in lightness** as well as travelling green → red,
-  so the sequence survives without hue perception. This one is not branch-only —
-  it was flat on `main` too and was fixed there; the branch inherits it.
-- `--color-yes` / `--color-no` are unchanged. They are never a side-by-side
-  discrimination task — each appears alone in a status block that carries
-  text — and each clears 6:1 against its own ground.
-- The PDF's critical/elevated pills already carry `'!!'` vs `'!'` as a
-  non-colour cue and were left alone.
+#### Colour-vision deficiency — and why green is harder than honey was
 
-Known gap: the item heatmap's **compact mode** blanks the cell value, leaving
-the ramp fill as the only encoding. Colour is redundant in normal mode, where
-the value is printed on the cell.
+Protanopia and deuteranopia (~8% of men) collapse the red–green axis and leave
+blue–yellow. **A palette gets one blue–yellow axis, and each distinction on it
+costs the whole thing.** The honey never felt this: orange and red are already
+neighbours, so it only ever asked that axis to carry one distinction. A green
+series line lands on the yellow end of it, and the cutoff is deliberately blue
+— the other end. That leaves the alert ring nowhere to sit, because red
+collapses onto the same yellow as the line. Measured on the shipped honey
+values transposed to Leaf, the dark-mode ring sat **ΔE 6.9** from the line it is
+drawn 4px away from.
 
-The palette lives in two token blocks (`shared/styles/tokens.css`, the
-`--clin-*` block in `clinician/styles/clinician-styles.js`) plus the favicon,
-the OG cards, the PDF footer link and the chart export line. The same pass
-retired the stale `var(--token, …)` fallbacks across the clinician, composer
-and aggregate components so they carry the branch's own values.
+So the ring gives up hue. `--clin-alert-ring` is a **doubled, achromatic ring**
+in the text colour (`#0b281e` light / `#d3f0e4` dark), separated from the series
+by lightness, at r 8.5 (2.4px) and r 11.5 (1px); the doubling is what keeps it
+reading as an alert rather than as the keyboard focus state. The red survives
+where it still works — the tooltip's alert text, which is never a side-by-side
+discrimination. Every pair on the chart now clears **ΔE ≥ 18** under normal,
+protan and deutan vision.
+
+`--color-yes` moved from `#276749` (H 160) to `#14655f` (H 190). At H 160 it was
+a cousin of the brand ink at ΔE 5.7 under tritanopia, and it sat **ΔE 7.1 from
+`--color-no` under protanopia** — a pair `main` still carries. `--color-no` is
+unchanged. Neither is ever a side-by-side discrimination task (each appears
+alone in a block that carries text), so this is hygiene, not a fix.
+
+`SEVERITY_RAMP` is untouched: it already descends in lightness as well as
+travelling green → red, so the sequence survives without hue perception.
+
+**Known gap, recorded not fixed.** In dark mode the series and the cutoff sit
+**ΔE 7.3 apart under tritanopia**, below the ΔE ≥ 18 this palette holds
+everywhere else. Tritanopia is ~0.01% (against the 8% carried by protan and
+deutan), the cutoff is a dashed horizontal against a solid polyline with round
+markers, and the chart carries a full data table alternative. The item
+heatmap's **compact mode** remains the other known gap: it blanks the cell
+value, leaving the ramp fill as the only encoding. Colour is redundant in
+normal mode, where the value is printed on the cell.
+
+#### A correction carried forward
+
+The honey recorded `--clin-reset-icon` as "4.13:1" — measured against the
+**rail**. The ↺ glyph does not sit on the rail; it lives in the catalog
+toolbar, on `--color-surface`, where the honey's accent actually measured
+**2.11:1**. The token is now the brand ink (`#397533`, 4.65:1 on the surface it
+sits on). `main` was never affected: its `#B03A10` reads 5.08:1 there.
+
+#### Where the palette lives
+
+Two token blocks (`shared/styles/tokens.css`, the `--clin-*` block in
+`clinician/styles/clinician-styles.js`) plus the favicon, the two OG cards
+(SVG sources and the PNGs built from them by `scripts/build-og-image.sh`), the
+PDF footer link and the chart export's literal palette. The same pass rewrote
+every stale `var(--token, #hex)` fallback across the clinician, composer and
+aggregate components — 301 of them, keyed by token name, which also cleared
+leftovers from the teal, plum and terracotta palettes. The public landing page
+(`landing/landing.css`, ezmadad.com) is deliberately untouched, as it was under
+the honey.
 
 The **structure** this palette needs — the `--color-primary-ink` token, the
 brand-as-text call sites, the `<li role="presentation">` fixes, the wrapping
 nav group, the lightness-descending `SEVERITY_RAMP`, and the
 `tests/e2e/a11y.e2e.test.js` audit — lives on `main` (§12.1: seams on main,
-values on the branch). Every one of those was a pre-existing `main` bug that
-the trial simply inherited; the contrast failures were in fact *worse* there,
-because the teal is the same lightness as the honey and its ground is lighter.
+values on the branch).
 
-Still open on `main`, not fixed here: its chart threshold `#B45309` sits ΔE 3.1
-from the alert red `#b91c1c`, and under tritanopia ΔE 3.1. Main's data line is
-teal so it does not hit the branch's threshold-vs-line collision, but the
-threshold-vs-alert pair is the same bug and wants the same cool treatment. Wordmark "מדד · CTR" (working name, to confirm) in the welcome screen,
+#### Still open on `main`
+
+1. Its chart threshold `#B45309` sits ΔE 6.1 from the alert red `#b91c1c` under
+   deuteranopia. Already recorded; still true.
+2. **This branch's fix does not port.** `main`'s dark primary `#4BA3D4` is
+   itself a blue, so the cool slate cutoff `#82b1ed` sits ΔE 7.6 from it under
+   protanopia. Copying these values into `main` trades one collapse for another.
+3. **`main`'s brand changes hue between themes**, which is probably why (2) is
+   true: light primary `#1A9FAD` is H 206, dark primary `#4BA3D4` is H 236, and
+   the dark accent `#5BC0BE` is H 194 — so dark mode splits primary and accent
+   by 42° and drifts 30° from its own light-mode self. The honey held H 62 in
+   both; Leaf holds H 142. Pulling the dark primary back toward H 206 is one
+   token and would buy back the cutoff separation as a side effect.
+4. The `--color-yes` / `--color-no` protanopia pair described above.
+
+Wordmark "מדד · CTR" (working name, to confirm) in the welcome screen,
 clinician nav, PDF footer and page titles; `public/robots.txt` with
 `Disallow: /`.
 

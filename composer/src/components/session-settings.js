@@ -103,16 +103,16 @@ export class SessionSettings extends LitElement {
       line-height: 1;
       min-block-size: 32px;
       padding-inline: 30px 11px;
-      border: var(--border-width, 1px) solid var(--clin-rail-border, #304860);
+      border: var(--border-width, 1px) solid var(--clin-rail-border, #4d6f61);
       border-radius: var(--radius-pill, 999px);
-      background: var(--clin-rail-field, #2A3D52);
-      color: var(--clin-rail-text-strong, #C0D4E4);
+      background: var(--clin-rail-field, #23352e);
+      color: var(--clin-rail-text-strong, #d0f1e3);
       cursor: pointer;
       transition: border-color var(--transition-fast, 120ms ease);
     }
-    .chip-select:hover select { border-color: var(--color-accent, #2BB3C0); }
+    .chip-select:hover select { border-color: var(--color-accent, #77b770); }
     .chip-select select:focus-visible {
-      outline: 2px solid var(--color-border-focus, #2BB3C0);
+      outline: 2px solid var(--color-border-focus, #5aa053);
       outline-offset: 2px;
     }
     .chip-select .glyph {
@@ -122,14 +122,14 @@ export class SessionSettings extends LitElement {
       block-size: 14px;
       pointer-events: none;
       opacity: 0.8;
-      color: var(--clin-rail-hint, #aec8dc);
+      color: var(--clin-rail-hint, #95b2a6);
     }
     .chip-select .caret {
       position: absolute;
       inset-inline-end: 11px;
       font-size: 9px;
       pointer-events: none;
-      color: var(--clin-rail-hint, #aec8dc);
+      color: var(--clin-rail-hint, #95b2a6);
     }
     /* The popup list is painted by the platform, not by the rail. */
     .chip-select select option { color: CanvasText; background: Canvas; }
@@ -149,24 +149,24 @@ export class SessionSettings extends LitElement {
       font-weight: var(--font-weight-bold, 600);
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: var(--clin-rail-label, #bad5e9);
+      color: var(--clin-rail-label, #9ebcb0);
     }
 
     input.pid {
       inline-size: 100%;
       min-block-size: var(--item-min-touch, 44px);
       padding-inline: var(--space-md, 16px);
-      border: var(--border-width, 1px) solid var(--clin-rail-border, #304860);
+      border: var(--border-width, 1px) solid var(--clin-rail-border, #4d6f61);
       border-radius: var(--radius-sm, 6px);
-      background: var(--clin-rail-field, #2A3D52);
-      color: var(--clin-rail-text-strong, #C0D4E4);
+      background: var(--clin-rail-field, #23352e);
+      color: var(--clin-rail-text-strong, #d0f1e3);
       font-family: inherit;
       font-size: var(--font-size-md, 16px);
     }
-    input.pid::placeholder { color: color-mix(in srgb, var(--clin-rail-text, #A8CFDF) 52%, transparent); }
-    input.pid:focus { outline: none; border-color: var(--color-accent, #2BB3C0); }
+    input.pid::placeholder { color: color-mix(in srgb, var(--clin-rail-text, #b0d7c7) 52%, transparent); }
+    input.pid:focus { outline: none; border-color: var(--color-accent, #77b770); }
 
-    .hint { font-size: var(--font-size-xs, 12px); color: var(--clin-rail-hint, #aec8dc); }
+    .hint { font-size: var(--font-size-xs, 12px); color: var(--clin-rail-hint, #95b2a6); }
 
     /* Entries the last language switch removed from the selection. */
     .dropped {
@@ -175,7 +175,7 @@ export class SessionSettings extends LitElement {
       gap: var(--space-sm, 8px);
       margin-block-start: var(--space-sm, 8px);
       font-size: var(--font-size-xs, 12px);
-      color: var(--clin-rail-text-strong, #C0D4E4);
+      color: var(--clin-rail-text-strong, #d0f1e3);
     }
     .dropped button {
       background: none;
@@ -183,12 +183,12 @@ export class SessionSettings extends LitElement {
       padding: 0;
       font-family: inherit;
       font-size: var(--font-size-xs, 12px);
-      color: var(--color-accent, #2BB3C0);
+      color: var(--color-accent, #77b770);
       text-decoration: underline;
       cursor: pointer;
     }
     .dropped button:focus-visible {
-      outline: 2px solid var(--color-border-focus, #2BB3C0);
+      outline: 2px solid var(--color-border-focus, #5aa053);
       outline-offset: 2px;
     }
   `];

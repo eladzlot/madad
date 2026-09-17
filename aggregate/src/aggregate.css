@@ -33,8 +33,8 @@ body {
   font-family: var(--font-family, system-ui, sans-serif);
   font-size: var(--font-size-md);
   line-height: var(--line-height);
-  background: var(--color-bg, #faf6f3);
-  color: var(--color-text, #311c08);
+  background: var(--color-bg, #eefaf5);
+  color: var(--color-text, #0b281e);
 }
 
 /* ── Content ─────────────────────────────────────────────────────────────── */
@@ -65,7 +65,7 @@ body {
 /* Remote deployment (REMOTE_SPEC §5.2): the fetch-mode header line. */
 .a-remote {
   font-size: var(--font-size-md, 16px);
-  color: var(--color-text-muted, #6B6360);
+  color: var(--color-text-muted, #576f65);
   margin: 0 0 var(--space-md, 16px);
 }
-.a-remote bdi { font-weight: var(--font-weight-bold, 600); color: var(--color-text, #26211F); }
+.a-remote bdi { font-weight: var(--font-weight-bold, 600); color: var(--color-text, #0b281e); }

@@ -1088,7 +1088,7 @@ export function buildFooter() {
       text: [
         { text: L.fuse(t('pdf.page', { current: currentPage, total: pageCount })) },
         { text: `${NBSP}${NBSP}|${NBSP}${NBSP}` },
-        { text: composerUrl, link: composerUrl, color: '#995600' },
+        { text: composerUrl, link: composerUrl, color: '#397533' },
         { text: `${NBSP}${NBSP}|${NBSP}${NBSP}` },
         ...L.text(t('pdf.footer')),
       ],

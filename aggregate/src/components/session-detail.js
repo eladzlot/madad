@@ -35,22 +35,22 @@ export class SessionDetail extends LitElement {
       inset-inline-end: 0;
       inline-size: min(420px, 92vw);
       font-family: var(--font-family, system-ui, sans-serif);
-      background: var(--clin-card-bg, #fff);
-      border-inline-start: 1px solid var(--color-border, #e7e5e4);
+      background: var(--clin-card-bg, #FFFFFF);
+      border-inline-start: 1px solid var(--color-border, #bae4d2);
       box-shadow: 0 0 24px #00000022;
       padding: var(--space-md, 1rem);
       overflow-y: auto;
       z-index: 10;
-      color: var(--color-text, #311c08);
+      color: var(--color-text, #0b281e);
     }
     .lang-badge {
       display: inline-block;
       margin-inline-start: var(--space-sm, .5rem);
       padding: 1px 8px;
       border-radius: 999px;
-      border: 1px solid var(--color-border, #e7e5e4);
+      border: 1px solid var(--color-border, #bae4d2);
       font-size: var(--font-size-xs, .75rem);
-      color: var(--color-text-muted, #78716c);
+      color: var(--color-text-muted, #576f65);
     }
 
     header {
@@ -68,7 +68,7 @@ export class SessionDetail extends LitElement {
     }
 
     .meta {
-      color: var(--color-text-muted, #796453);
+      color: var(--color-text-muted, #576f65);
       font-size: var(--font-size-sm, .875rem);
       margin-block-start: .2rem;
     }
@@ -81,7 +81,7 @@ export class SessionDetail extends LitElement {
       font-size: 1.3rem;
       line-height: 1;
       cursor: pointer;
-      color: var(--color-text-muted, #796453);
+      color: var(--color-text-muted, #576f65);
       padding: .25rem;
     }
 
@@ -89,7 +89,7 @@ export class SessionDetail extends LitElement {
       display: flex;
       align-items: baseline;
       gap: var(--space-sm, .5rem);
-      border-block-start: 1px solid var(--color-border, #e7e5e4);
+      border-block-start: 1px solid var(--color-border, #bae4d2);
       padding-block-start: var(--space-sm, .75rem);
     }
 
@@ -99,14 +99,14 @@ export class SessionDetail extends LitElement {
       font-variant-numeric: tabular-nums;
     }
 
-    .category { color: var(--color-text-muted, #796453); }
+    .category { color: var(--color-text-muted, #576f65); }
 
     ul.subscales {
       list-style: none;
       margin: .4rem 0 0;
       padding: 0;
       font-size: var(--font-size-sm, .875rem);
-      color: var(--color-text-muted, #796453);
+      color: var(--color-text-muted, #576f65);
     }
 
     ul.subscales li {
@@ -128,9 +128,9 @@ export class SessionDetail extends LitElement {
     h4 {
       margin: var(--space-md, 1rem) 0 .35rem;
       padding-block-start: var(--space-sm, .75rem);
-      border-block-start: 1px solid var(--color-border, #e7e5e4);
+      border-block-start: 1px solid var(--color-border, #bae4d2);
       font-size: var(--font-size-sm, .875rem);
-      color: var(--color-text, #311c08);
+      color: var(--color-text, #0b281e);
       font-weight: var(--font-weight-bold, 600);
     }
 
@@ -147,25 +147,25 @@ export class SessionDetail extends LitElement {
       font-size: var(--font-size-sm, .875rem);
     }
 
-    .q-text { color: var(--color-text-muted, #796453); }
+    .q-text { color: var(--color-text-muted, #576f65); }
 
     .q-answer {
       display: flex;
       justify-content: space-between;
       gap: var(--space-sm, .5rem);
       margin-block-start: .15rem;
-      color: var(--color-text, #311c08);
+      color: var(--color-text, #0b281e);
     }
 
-    .q-value { font-variant-numeric: tabular-nums; color: var(--color-text-muted, #796453); }
+    .q-value { font-variant-numeric: tabular-nums; color: var(--color-text-muted, #576f65); }
 
     .download {
       display: inline-block;
       margin-block-start: var(--space-md, 1rem);
       padding: .5rem 1rem;
       border-radius: var(--radius-sm, 8px);
-      background: var(--color-primary, #c37829);
-      color: var(--color-primary-text, #311c08);
+      background: var(--color-primary, #5aa053);
+      color: var(--color-primary-text, #0b281e);
       font-weight: var(--font-weight-bold, 600);
       text-decoration: none;
     }

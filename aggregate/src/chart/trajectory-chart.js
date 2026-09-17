@@ -43,8 +43,8 @@ export class TrajectoryChart extends LitElement {
       display: block;
       position: relative;
       font-family: var(--font-family, system-ui, sans-serif);
-      background: var(--clin-card-bg, #fff);
-      border: 1px solid var(--color-border, #e7e5e4);
+      background: var(--clin-card-bg, #FFFFFF);
+      border: 1px solid var(--color-border, #bae4d2);
       border-radius: var(--radius-md, 12px);
       box-shadow: var(--shadow-sm, none);
       padding: var(--space-md, 1rem);
@@ -64,7 +64,7 @@ export class TrajectoryChart extends LitElement {
     h3 {
       margin: 0;
       font-size: var(--font-size-md, 1rem);
-      color: var(--color-text, #311c08);
+      color: var(--color-text, #0b281e);
     }
 
     .controls {
@@ -90,8 +90,8 @@ export class TrajectoryChart extends LitElement {
       position: absolute;
       inset-inline-end: 0;
       top: calc(100% + 4px);
-      background: var(--clin-card-bg, #fff);
-      border: 1px solid var(--color-border, #e4d6cb);
+      background: var(--clin-card-bg, #FFFFFF);
+      border: 1px solid var(--color-border, #bae4d2);
       border-radius: var(--radius-sm, 6px);
       box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.07));
       padding: var(--space-xs, 4px);
@@ -112,20 +112,20 @@ export class TrajectoryChart extends LitElement {
       background: none;
       font-family: inherit;
       font-size: var(--font-size-sm, .875rem);
-      color: var(--color-text, #311c08);
+      color: var(--color-text, #0b281e);
       cursor: pointer;
       border-radius: 4px;
       white-space: nowrap;
     }
 
     .menu button:hover,
-    .menu label.export-pid:hover { background: var(--color-selected-bg, #ffecdd); }
+    .menu label.export-pid:hover { background: var(--color-selected-bg, #dbfad6); }
 
     .menu label.export-pid {
-      border-block-start: 1px solid var(--color-border, #e4d6cb);
+      border-block-start: 1px solid var(--color-border, #bae4d2);
       border-radius: 0 0 4px 4px;
       margin-block-start: 2px;
-      color: var(--color-text-muted, #796453);
+      color: var(--color-text-muted, #576f65);
     }
 
     /* Pastel severity fills glare on a dark surface — keep the hue as a
@@ -146,15 +146,15 @@ export class TrajectoryChart extends LitElement {
     }
 
     .marker:focus {
-      stroke: var(--clin-focus-stroke, #115e59);
+      stroke: var(--clin-focus-stroke, #21322b);
       stroke-width: 3;
     }
 
     .tooltip {
       position: absolute;
       transform: translate(-50%, calc(-100% - 10px));
-      background: #211c17;
-      color: #f0e6de;
+      background: #181f1c;
+      color: #d3f0e4;
       border-radius: 6px;
       padding: .45rem .65rem;
       font-size: var(--font-size-sm, .8rem);
@@ -166,8 +166,11 @@ export class TrajectoryChart extends LitElement {
     }
 
     .tooltip .tip-total { font-weight: 700; }
+    /* The alert stays RED here. The marker's ring gave up hue because it has to
+       be told apart from the series line and the cutoff at a glance; this line
+       is labelled text inside a tooltip, never a discrimination task. */
     .tooltip .tip-alert { color: #f3a9a9; }
-    .tooltip .tip-sub   { color: #a99c91; }
+    .tooltip .tip-sub   { color: #94a39c; }
 
     .heatmap-scroll {
       overflow-x: auto;
@@ -192,7 +195,7 @@ export class TrajectoryChart extends LitElement {
 
     table.heatmap th[scope='col'] {
       font-weight: var(--font-weight-medium, 500);
-      color: var(--color-text-muted, #796453);
+      color: var(--color-text-muted, #576f65);
       padding: .2rem 0;
       text-align: center;
       font-variant-numeric: tabular-nums;
@@ -204,7 +207,7 @@ export class TrajectoryChart extends LitElement {
 
     table.heatmap th[scope='row'] {
       font-weight: var(--font-weight-normal, 400);
-      color: var(--color-text-muted, #796453);
+      color: var(--color-text-muted, #576f65);
       text-align: right;
       padding: .2rem .4rem;
       overflow: hidden;
@@ -216,15 +219,15 @@ export class TrajectoryChart extends LitElement {
       text-align: center;
       padding: .25rem .5rem;
       min-inline-size: 34px;
-      border: 2px solid var(--clin-card-bg, #fff);
+      border: 2px solid var(--clin-card-bg, #FFFFFF);
       border-radius: 4px;
       font-variant-numeric: tabular-nums;
       /* Fixed dark ink: cell fills are light pastels in both color schemes. */
-      color: var(--clin-heatmap-ink, #311c08);
+      color: var(--clin-heatmap-ink, #0b281e);
     }
 
     table.heatmap td.cell.empty {
-      color: var(--color-text-muted, #796453);
+      color: var(--color-text-muted, #576f65);
       background: none;
     }
 
@@ -251,11 +254,11 @@ export class TrajectoryChart extends LitElement {
     th, td {
       text-align: right;
       padding: .35rem .5rem;
-      border-block-end: 1px solid var(--color-border, #e7e5e4);
+      border-block-end: 1px solid var(--color-border, #bae4d2);
     }
 
     th {
-      color: var(--color-text-muted, #796453);
+      color: var(--color-text-muted, #576f65);
       font-weight: 600;
     }
 
@@ -267,20 +270,20 @@ export class TrajectoryChart extends LitElement {
     tr.session-row { cursor: pointer; }
 
     tr.session-row:hover td,
-    tr.session-row:focus-visible td { background: var(--color-selected-bg, #ffecdd); }
+    tr.session-row:focus-visible td { background: var(--color-selected-bg, #dbfad6); }
 
     tr.session-row:focus-visible {
-      outline: 2px solid var(--color-border-focus, #da924f);
+      outline: 2px solid var(--color-border-focus, #5aa053);
       outline-offset: -2px;
     }
 
     table.heatmap th.col-head,
     table.heatmap td.cell { cursor: pointer; }
 
-    table.heatmap th.col-head:hover { color: var(--color-text, #311c08); }
+    table.heatmap th.col-head:hover { color: var(--color-text, #0b281e); }
 
     table.heatmap td.cell:hover {
-      outline: 2px solid var(--color-accent, #da924f);
+      outline: 2px solid var(--color-accent, #77b770);
       outline-offset: -2px;
     }
   `];
@@ -523,14 +526,14 @@ export class TrajectoryChart extends LitElement {
         ${m.bands.map(b => svg`
           <rect class="band" x=${m.plot.x} y=${b.y} width=${m.plot.w} height=${b.h} fill=${b.fill}></rect>
           <text x=${b.labelX} y=${b.y + 11} text-anchor=${b.labelAnchor}
-                direction=${m.dir} font-size="9" fill="var(--color-text-muted, #796453)">${b.label}</text>
+                direction=${m.dir} font-size="9" fill="var(--color-text-muted, #576f65)">${b.label}</text>
         `)}
 
         ${m.yTicks.map(t => svg`
           <line x1=${m.plot.x} y1=${t.y} x2=${m.plot.x + m.plot.w} y2=${t.y}
                 stroke="var(--clin-grid, #00000014)" stroke-width="1"></line>
           <text x=${m.plot.x - 16} y=${t.y + 3} text-anchor="end"
-                font-size="10" fill="var(--color-text-muted, #796453)">${t.label}</text>
+                font-size="10" fill="var(--color-text-muted, #576f65)">${t.label}</text>
         `)}
 
         ${m.cutoffs.map(c => svg`
@@ -543,17 +546,28 @@ export class TrajectoryChart extends LitElement {
         `)}
 
         ${m.linePath ? svg`
-          <path d=${m.linePath} fill="none" stroke="var(--color-primary, #c37829)" stroke-width="2"
+          <path d=${m.linePath} fill="none" stroke="var(--color-primary, #5aa053)" stroke-width="2"
                 stroke-linejoin="round" stroke-linecap="round"></path>
         ` : ''}
 
         ${m.markers.map((k, i) => svg`
           ${k.alerts.length ? svg`
-            <circle cx=${k.x} cy=${k.y} r="8.5" fill="none" stroke="var(--color-no, #b91c1c)" stroke-width="1.5"></circle>
+            <!-- Achromatic on purpose (REMOTE_SPEC §8.4). The series line is the
+                 brand green and the cutoff is blue, which between them spend the
+                 whole blue-yellow axis that survives protanopia and deuteranopia;
+                 a red ring drawn 4px from a green marker measured ΔE 6.9 from it
+                 in dark mode. The ring separates by LIGHTNESS instead, doubled so
+                 it still reads as an alert rather than a focus state. The red is
+                 kept in the tooltip's alert text, which is never a side-by-side
+                 discrimination. -->
+            <circle cx=${k.x} cy=${k.y} r="8.5" fill="none"
+                    stroke="var(--clin-alert-ring, #0b281e)" stroke-width="2.4"></circle>
+            <circle cx=${k.x} cy=${k.y} r="11.5" fill="none"
+                    stroke="var(--clin-alert-ring, #0b281e)" stroke-width="1"></circle>
           ` : ''}
           <circle class="marker" cx=${k.x} cy=${k.y} r=${k.baseline ? 6 : 4.5}
-                  fill=${k.baseline ? 'var(--clin-card-bg, #ffffff)' : 'var(--color-primary, #c37829)'}
-                  stroke="var(--color-primary, #c37829)" stroke-width=${k.baseline ? 2.5 : 0}
+                  fill=${k.baseline ? 'var(--clin-card-bg, #ffffff)' : 'var(--color-primary, #5aa053)'}
+                  stroke="var(--color-primary, #5aa053)" stroke-width=${k.baseline ? 2.5 : 0}
                   tabindex="0" role="button"
                   aria-label=${this._markerAria(k)}
                   .__marker=${k}
@@ -567,7 +581,7 @@ export class TrajectoryChart extends LitElement {
 
         ${m.xTicks.map(t => svg`
           <text x=${t.x} y=${m.plot.y + m.plot.h + 16} text-anchor="middle"
-                font-size="10" fill="var(--color-text-muted, #796453)">${t.label}</text>
+                font-size="10" fill="var(--color-text-muted, #576f65)">${t.label}</text>
         `)}
       </svg>
 

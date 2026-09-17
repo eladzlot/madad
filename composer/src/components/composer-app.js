@@ -40,7 +40,7 @@ export class ComposerApp extends LitElement {
     :host { display: flex; flex-direction: column; block-size: 100%; min-block-size: 0; }
 
     .warnings {
-      background: var(--color-no-bg, #FBEAEA);
+      background: var(--color-no-bg, #FDF3F3);
       border-block-end: var(--border-width, 1px) solid var(--color-no, #8B3A3A);
       padding: var(--space-sm, 8px) var(--space-lg, 24px);
     }
@@ -63,7 +63,7 @@ export class ComposerApp extends LitElement {
       min-block-size: 0;
       overflow-y: auto;
       padding: 0 var(--space-lg, 24px) 88px;   /* bottom room for the mobile bar */
-      background: var(--color-surface, #f0e8e1);
+      background: var(--color-surface, #d8f0e6);
     }
 
     /* The rail — visually LEFT in RTL; desktop only. It carries the settings,
@@ -79,11 +79,11 @@ export class ComposerApp extends LitElement {
         inline-size: 300px;
         flex-shrink: 0;
         min-block-size: 0;
-        border-inline-start: var(--border-width, 1px) solid var(--color-border, #e4d6cb);
+        border-inline-start: var(--border-width, 1px) solid var(--color-border, #bae4d2);
         /* A lighter navy than the header so the rail reads as its own panel.
            Theme-independent dark chrome (like the header) — the fields inside
            carry their own slate colours, so it holds in dark mode too. */
-        background: var(--clin-rail-bg, #4e3b2c);
+        background: var(--clin-rail-bg, #2f453c);
       }
     }
   `];

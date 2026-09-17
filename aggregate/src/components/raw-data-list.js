@@ -21,13 +21,13 @@ export class RawDataList extends LitElement {
 
     h2 {
       font-size: var(--font-size-md, 1rem);
-      color: var(--color-text-muted, #796453);
+      color: var(--color-text-muted, #576f65);
       margin: 0 0 var(--space-sm, .5rem);
     }
 
     .card {
-      background: var(--clin-card-bg, #fff);
-      border: 1px solid var(--color-border, #e4d6cb);
+      background: var(--clin-card-bg, #FFFFFF);
+      border: 1px solid var(--color-border, #bae4d2);
       border-radius: var(--radius-md, 12px);
       box-shadow: var(--shadow-sm, none);
       padding: var(--space-md, 1rem);
@@ -39,7 +39,7 @@ export class RawDataList extends LitElement {
     p.hint {
       margin: 0 0 .5rem;
       font-size: var(--font-size-sm, .875rem);
-      color: var(--color-text-muted, #796453);
+      color: var(--color-text-muted, #576f65);
     }
 
     ul { list-style: none; margin: 0; padding: 0; }
@@ -51,7 +51,7 @@ export class RawDataList extends LitElement {
       padding-block: .15rem;
     }
 
-    .pid { direction: ltr; unicode-bidi: plaintext; color: var(--color-text-muted, #796453); }
+    .pid { direction: ltr; unicode-bidi: plaintext; color: var(--color-text-muted, #576f65); }
   `;
 
   constructor() {

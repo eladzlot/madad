@@ -15,39 +15,39 @@
   </defs>
 
   <!-- Background: the warm neutral ground -->
-  <rect width="1200" height="630" fill="#faf6f3"/>
+  <rect width="1200" height="630" fill="#eefaf5"/>
 
-  <rect x="1192" y="0" width="8" height="630" fill="#c37829"/>
-  <rect x="0" y="0" width="1200" height="6" fill="#c37829" opacity="0.18"/>
+  <rect x="1192" y="0" width="8" height="630" fill="#5aa053"/>
+  <rect x="0" y="0" width="1200" height="6" fill="#5aa053" opacity="0.18"/>
 
   <text x="1152" y="90"
     font-family="NotoHebrew, sans-serif" font-weight="700" font-size="40"
-    fill="#311c08" text-anchor="start" direction="rtl" letter-spacing="-1">מדד · CTR</text>
+    fill="#0b281e" text-anchor="start" direction="rtl" letter-spacing="-1">מדד · CTR</text>
 
-  <rect x="1028" y="104" width="124" height="3" rx="1.5" fill="#c37829"/>
+  <rect x="1028" y="104" width="124" height="3" rx="1.5" fill="#5aa053"/>
 
   <text x="1152" y="240"
     font-family="NotoHebrew, sans-serif" font-weight="700" font-size="100"
-    fill="#311c08" text-anchor="start" direction="rtl" letter-spacing="-2">מלאו שאלון</text>
+    fill="#0b281e" text-anchor="start" direction="rtl" letter-spacing="-2">מלאו שאלון</text>
 
   <text x="1152" y="358"
     font-family="NotoHebrew, sans-serif" font-weight="700" font-size="100"
-    fill="#c37829" text-anchor="start" direction="rtl" letter-spacing="-2">לפני הפגישה</text>
+    fill="#5aa053" text-anchor="start" direction="rtl" letter-spacing="-2">לפני הפגישה</text>
 
   <!-- Must not promise the answers stay with the patient: they are sent to the
        therapist. Mirrors the welcome-screen disclosure (REMOTE_SPEC §8.1). -->
   <text x="1152" y="444"
     font-family="NotoHebrew, sans-serif" font-weight="400" font-size="32"
-    fill="#796453" text-anchor="start" direction="rtl">לוקח כמה דקות  •  ללא שם וללא פרטים מזהים</text>
+    fill="#576f65" text-anchor="start" direction="rtl">לוקח כמה דקות  •  ללא שם וללא פרטים מזהים</text>
 
-  <line x1="72" y1="510" x2="1152" y2="510" stroke="#311c08" stroke-opacity="0.09" stroke-width="1"/>
+  <line x1="72" y1="510" x2="1152" y2="510" stroke="#0b281e" stroke-opacity="0.09" stroke-width="1"/>
 
   <text x="1152" y="568"
     font-family="NotoHebrew, sans-serif" font-weight="400" font-size="24"
-    fill="#8a7460" text-anchor="start" direction="rtl">ללא הרשמה  ·  ללא התקנה</text>
+    fill="#648074" text-anchor="start" direction="rtl">ללא הרשמה  ·  ללא התקנה</text>
 
   <text x="72" y="568"
     font-family="NotoHebrew, sans-serif" font-weight="400" font-size="22"
-    fill="#a08d78" text-anchor="start">ctrmadad.com</text>
+    fill="#7c988c" text-anchor="start">ctrmadad.com</text>
 
 </svg>

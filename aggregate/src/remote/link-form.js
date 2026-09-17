@@ -34,28 +34,28 @@ export class LinkForm extends LitElement {
   static styles = [unsafeCSS(clinicianCss), css`
     :host { display: block; }
     .box {
-      background: var(--clin-card-bg, #fff);
-      border: var(--border-width, 1px) solid var(--color-border, #D9D5D0);
-      border-inline-start: 4px solid var(--color-border-focus, #9A4453);
+      background: var(--clin-card-bg, #FFFFFF);
+      border: var(--border-width, 1px) solid var(--color-border, #bae4d2);
+      border-inline-start: 4px solid var(--color-border-focus, #5aa053);
       border-radius: var(--radius-md, 12px);
       padding: var(--space-lg, 24px);
       max-inline-size: 560px;
     }
-    h2 { margin: 0 0 var(--space-xs, 4px); font-size: var(--font-size-lg, 22px); color: var(--color-text, #26211F); }
-    p  { margin: 0 0 var(--space-md, 16px); color: var(--color-text-muted, #6B6360); line-height: var(--line-height, 1.6); }
+    h2 { margin: 0 0 var(--space-xs, 4px); font-size: var(--font-size-lg, 22px); color: var(--color-text, #0b281e); }
+    p  { margin: 0 0 var(--space-md, 16px); color: var(--color-text-muted, #576f65); line-height: var(--line-height, 1.6); }
     form { display: flex; gap: var(--space-sm, 8px); flex-wrap: wrap; align-items: center; }
     input {
       min-block-size: var(--item-min-touch, 44px);
       padding-inline: var(--space-md, 16px);
-      border: var(--border-width, 1px) solid var(--color-border, #D9D5D0);
+      border: var(--border-width, 1px) solid var(--color-border, #bae4d2);
       border-radius: var(--radius-sm, 6px);
       font: inherit; font-size: var(--font-size-md, 16px);
       inline-size: 12ch; direction: ltr; text-align: center; letter-spacing: 0.08em; text-transform: uppercase;
-      background: var(--color-bg, #F5F4F2); color: var(--color-text, #26211F);
+      background: var(--color-bg, #eefaf5); color: var(--color-text, #0b281e);
     }
-    input:focus { outline: none; border-color: var(--color-border-focus, #9A4453); }
+    input:focus { outline: none; border-color: var(--color-border-focus, #5aa053); }
     .warn { color: var(--color-no, #8B3A3A); font-size: var(--font-size-sm, 14px); flex-basis: 100%; margin: 0; }
-    .sent { color: var(--color-yes, #276749); margin: 0; }
+    .sent { color: var(--color-yes, #14655f); margin: 0; }
   `];
 
   constructor() {

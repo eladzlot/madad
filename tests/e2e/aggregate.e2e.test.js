@@ -93,9 +93,11 @@ test.describe('aggregate round-trip', () => {
 
     await expect(page.locator('upload-list details.ok-summary summary')).toContainText('נקלטו 2 דוחות');
     const chart = page.locator('trajectory-chart');
-    // optionIndex 1 → PHQ-9 item 9 = 1 → suicidality alert → each marker
-    // carries an alert ring: 2 markers + 2 rings.
-    await expect(chart.locator('circle')).toHaveCount(4);
+    // optionIndex 1 → PHQ-9 item 9 = 1 → suicidality alert → each marker carries
+    // an alert ring, and that ring is DOUBLED (REMOTE_SPEC §8.4 — it separates
+    // from the series by lightness, not hue, so the second ring is what keeps it
+    // reading as an alert rather than as the focus state): 2 markers + 4 rings.
+    await expect(chart.locator('circle')).toHaveCount(6);
     await expect(chart.locator('path')).toHaveCount(1);
   });
 });

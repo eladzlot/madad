@@ -81,7 +81,7 @@ export class MobileBar extends LitElement {
       gap: var(--space-sm, 8px);
       padding: var(--space-sm, 8px) var(--space-md, 16px);
       padding-block-end: calc(var(--space-sm, 8px) + env(safe-area-inset-bottom, 0px));
-      background: var(--clin-header-bg, #392a1e);
+      background: var(--clin-header-bg, #21322b);
       border-block-start: var(--border-width, 1px) solid rgba(255,255,255,0.12);
     }
 
@@ -97,7 +97,7 @@ export class MobileBar extends LitElement {
     }
     .count-btn:not(:disabled):hover {
       background: rgba(255,255,255,0.20);
-      border-color: var(--color-accent, #da924f);
+      border-color: var(--color-accent, #77b770);
     }
     .chev { inline-size: 14px; block-size: 14px; flex-shrink: 0; opacity: 0.9; }
     .count {
@@ -116,20 +116,20 @@ export class MobileBar extends LitElement {
     }
     .c-btn--bar:not(:disabled):hover {
       background: rgba(255,255,255,0.20);
-      border-color: var(--color-accent, #da924f);
-      color: var(--color-accent, #da924f);
+      border-color: var(--color-accent, #77b770);
+      color: var(--color-accent, #77b770);
     }
     .c-btn--go {
-      background: var(--color-accent, #da924f);
-      color: var(--color-primary-text, #311c08);
+      background: var(--color-accent, #77b770);
+      color: var(--color-primary-text, #0b281e);
       font-weight: var(--font-weight-bold, 600);
     }
     .c-btn--go.c-btn--copied {
-      background: color-mix(in srgb, var(--color-yes, #276749) 62%, #ffffff);
-      color: var(--color-primary-text, #311c08);
+      background: color-mix(in srgb, var(--color-yes, #14655f) 62%, #ffffff);
+      color: var(--color-primary-text, #0b281e);
     }
     .c-btn { flex-shrink: 0; }
-    .c-btn:focus-visible { outline: 2px solid var(--color-accent, #da924f); outline-offset: 2px; }
+    .c-btn:focus-visible { outline: 2px solid var(--color-accent, #77b770); outline-offset: 2px; }
     .icon { inline-size: 17px; block-size: 17px; display: block; }
 
     /* ── the sheet ── */
@@ -144,7 +144,7 @@ export class MobileBar extends LitElement {
       z-index: 50;
       max-block-size: 88dvh;
       overflow-y: auto;
-      background: var(--clin-rail-bg, #4e3b2c);
+      background: var(--clin-rail-bg, #2f453c);
       border-start-start-radius: var(--radius-lg, 18px);
       border-start-end-radius: var(--radius-lg, 18px);
       padding-block-end: env(safe-area-inset-bottom, 0px);
@@ -158,19 +158,19 @@ export class MobileBar extends LitElement {
     .sheet-title { color: #fff; font-size: var(--font-size-md, 16px); font-weight: var(--font-weight-medium, 500); }
     .icon-btn {
       background: none; border: none; cursor: pointer;
-      color: color-mix(in srgb, var(--clin-rail-text, #dbc9b9) 85%, transparent);
+      color: color-mix(in srgb, var(--clin-rail-text, #b0d7c7) 85%, transparent);
       font-size: 16px; line-height: 1; padding: 6px; border-radius: var(--radius-sm, 6px);
     }
-    .icon-btn:focus-visible { outline: 2px solid var(--color-border-focus, #c37829); outline-offset: 1px; }
+    .icon-btn:focus-visible { outline: 2px solid var(--color-border-focus, #5aa053); outline-offset: 1px; }
 
     .sheet-foot { padding: 0 20px var(--space-lg, 24px); }
     /* .c-btn--ghost is tuned for a light page; on the rail its muted slate is
        all but invisible. Keep the quiet-action role, restore the contrast. */
     .reset-btn {
-      color: var(--clin-rail-text, #dbc9b9);
-      border-color: var(--clin-rail-border, #7b6048);
+      color: var(--clin-rail-text, #b0d7c7);
+      border-color: var(--clin-rail-border, #4d6f61);
     }
-    .reset-btn:hover { color: var(--color-no, #E08A8A); border-color: var(--color-no, #E08A8A); }
+    .reset-btn:hover { color: var(--color-no, #8B3A3A); border-color: var(--color-no, #8B3A3A); }
 
     /* The rail is the desktop surface; none of this belongs there. */
     @media (min-width: 768px) {

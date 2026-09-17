@@ -35,12 +35,13 @@ const PAD_X = 18;   // matches the chart's horizontal margins
 // fallbacks resolve to, so the export matches what the clinician sees.
 const C = {
   bg:      '#ffffff',
-  text:    '#311c08',
-  muted:   '#796453',
+  text:    '#0b281e',
+  muted:   '#576f65',
   grid:    '#00000014',
-  primary: '#c37829',
+  primary: '#5aa053',
   cutoff:  '#32618e',
-  alert:   '#b91c1c',
+  // Achromatic, matching --clin-alert-ring in the live chart (REMOTE_SPEC §8.4).
+  alert:   '#0b281e',
 };
 
 const esc = (s) => String(s)
@@ -141,7 +142,8 @@ export function buildExportSvg({ series, questionnaire, domain, pid = null, now 
       : '',
     ...m.markers.map(k => [
       k.alerts.length
-        ? `<circle cx="${k.x}" cy="${k.y}" r="8.5" fill="none" stroke="${C.alert}" stroke-width="1.5"></circle>`
+        ? `<circle cx="${k.x}" cy="${k.y}" r="8.5" fill="none" stroke="${C.alert}" stroke-width="2.4"></circle>`
+          + `<circle cx="${k.x}" cy="${k.y}" r="11.5" fill="none" stroke="${C.alert}" stroke-width="1"></circle>`
         : '',
       `<circle class="marker" cx="${k.x}" cy="${k.y}" r="${k.baseline ? 6 : 4.5}" fill="${k.baseline ? C.bg : C.primary}" stroke="${C.primary}" stroke-width="${k.baseline ? 2.5 : 0}"></circle>`,
     ].join('')),

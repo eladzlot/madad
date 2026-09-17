@@ -38,26 +38,26 @@ export class CatalogCard extends LitElement {
       gap: var(--space-sm, 8px);
       text-align: start;
       padding: var(--space-sm, 8px) var(--space-md, 16px);
-      border: var(--border-width, 1px) solid var(--color-border, #e4d6cb);
+      border: var(--border-width, 1px) solid var(--color-border, #bae4d2);
       border-radius: var(--radius-sm, 6px);
-      background: var(--clin-card-bg, #fff);
-      color: var(--color-text, #311c08);
+      background: var(--clin-card-bg, #FFFFFF);
+      color: var(--color-text, #0b281e);
       font-family: inherit;
       cursor: pointer;
       transition: border-color var(--transition-fast, 120ms ease),
                   background var(--transition-fast, 120ms ease);
     }
 
-    button.card:hover { border-color: var(--color-primary, #c37829); }
+    button.card:hover { border-color: var(--color-primary, #5aa053); }
 
     button.card:focus-visible {
-      outline: 2px solid var(--color-border-focus, #da924f);
+      outline: 2px solid var(--color-border-focus, #5aa053);
       outline-offset: 2px;
     }
 
     :host([selected]) button.card {
-      border-color: var(--color-selected-border, #da924f);
-      background: var(--color-selected-bg, #ffecdd);
+      border-color: var(--color-selected-border, #5aa053);
+      background: var(--color-selected-bg, #dbfad6);
     }
 
     /* Check mark box on the leading edge */
@@ -66,7 +66,7 @@ export class CatalogCard extends LitElement {
       inline-size: 22px;
       block-size: 22px;
       margin-block-start: 2px;
-      border: var(--border-width, 1px) solid var(--color-border, #e4d6cb);
+      border: var(--border-width, 1px) solid var(--color-border, #bae4d2);
       border-radius: var(--radius-sm, 6px);
       display: grid;
       place-items: center;
@@ -75,9 +75,9 @@ export class CatalogCard extends LitElement {
       color: transparent;
     }
     :host([selected]) .check {
-      background: var(--color-primary, #c37829);
-      border-color: var(--color-primary, #c37829);
-      color: var(--color-primary-text, #fff);
+      background: var(--color-primary, #5aa053);
+      border-color: var(--color-primary, #5aa053);
+      color: var(--color-primary-text, #0b281e);
     }
 
     .body { min-inline-size: 0; flex: 1; }
@@ -91,7 +91,7 @@ export class CatalogCard extends LitElement {
     .name { font-weight: var(--font-weight-medium, 500); }
     .id {
       font-size: var(--font-size-xs, 12px);
-      color: var(--color-text-muted, #796453);
+      color: var(--color-text-muted, #576f65);
       font-family: ui-monospace, monospace;
       direction: ltr;
     }
@@ -104,9 +104,9 @@ export class CatalogCard extends LitElement {
       font-size: var(--font-size-xs, 12px);
       padding: 1px 10px;
       border-radius: var(--radius-pill, 999px);
-      border: var(--border-width, 1px) solid var(--color-selected-border, #da924f);
+      border: var(--border-width, 1px) solid var(--color-selected-border, #5aa053);
       background: transparent;
-      color: var(--color-primary-ink, #995600);
+      color: var(--color-primary-ink, #397533);
       white-space: nowrap;
     }
 
@@ -133,18 +133,18 @@ export class CatalogCard extends LitElement {
       border: none;
       border-radius: var(--radius-sm, 6px);
       background: transparent;
-      color: var(--color-text-muted, #796453);
+      color: var(--color-text-muted, #576f65);
       cursor: pointer;
       font-family: inherit;
       transition: background var(--transition-fast, 120ms ease), color var(--transition-fast, 120ms ease);
     }
     .icon-btn svg { inline-size: 18px; block-size: 18px; display: block; }
-    .icon-btn:hover { background: var(--color-selected-bg, #ffecdd); color: var(--color-primary-ink, #995600); }
-    .icon-btn:focus-visible { outline: 2px solid var(--color-border-focus, #da924f); outline-offset: 2px; }
+    .icon-btn:hover { background: var(--color-selected-bg, #dbfad6); color: var(--color-primary-ink, #397533); }
+    .icon-btn:focus-visible { outline: 2px solid var(--color-border-focus, #5aa053); outline-offset: 2px; }
 
     /* A pinned card shows a filled teal pin (the system accent) so "in your
        recommended set" reads at a glance and stays on-palette. */
-    .pin-btn.on { color: var(--color-primary-ink, #995600); }
+    .pin-btn.on { color: var(--color-primary-ink, #397533); }
   `];
 
   // Mirror the entry id onto the host as a stable hook for e2e selectors

@@ -42,7 +42,7 @@ export class CatalogControls extends LitElement {
       position: sticky;
       inset-block-start: 0;
       z-index: 10;
-      background: var(--color-surface, #fff);
+      background: var(--color-surface, #d8f0e6);
       padding-block: var(--space-sm, 8px);
     }
 
@@ -58,7 +58,7 @@ export class CatalogControls extends LitElement {
       gap: 4px;
       border: none;
       background: none;
-      color: var(--color-text-muted, #796453);
+      color: var(--color-text-muted, #576f65);
       font-family: inherit;
       font-size: var(--font-size-sm, 14px);
       cursor: pointer;
@@ -66,9 +66,9 @@ export class CatalogControls extends LitElement {
       transition: color var(--transition-fast, 120ms ease);
     }
     .reset-btn:hover { color: var(--color-no, #8B3A3A); }
-    .reset-btn:focus-visible { outline: 2px solid var(--color-border-focus, #da924f); outline-offset: 2px; }
+    .reset-btn:focus-visible { outline: 2px solid var(--color-border-focus, #5aa053); outline-offset: 2px; }
     /* ↺ is coloured by default (deep terracotta), matching the legacy toolbar. */
-    .reset-icon { color: var(--clin-reset-icon, #B03A10); font-size: 16px; }
+    .reset-icon { color: var(--clin-reset-icon, #397533); font-size: 16px; }
 
     /* Filter caret — a chevron beside the tabs that expands the chip rows, so it
        reads as "filter these categories" rather than a stray button. */
@@ -81,31 +81,31 @@ export class CatalogControls extends LitElement {
       padding-inline: var(--space-md, 16px);
       /* Bordered pill so it reads as a distinct filter control — differentiates
          it from the borderless איפוס reset link and groups it with the tabs. */
-      border: var(--border-width, 1px) solid var(--color-border, #e4d6cb);
+      border: var(--border-width, 1px) solid var(--color-border, #bae4d2);
       border-radius: var(--radius-pill, 999px);
-      background: var(--clin-card-bg, #fff);
-      color: var(--color-text-muted, #796453);
+      background: var(--clin-card-bg, #FFFFFF);
+      color: var(--color-text-muted, #576f65);
       font-family: inherit;
       font-size: var(--font-size-sm, 14px);
       cursor: pointer;
       transition: all var(--transition-fast, 120ms ease);
     }
-    .filter-caret:hover { color: var(--color-primary-ink, #995600); }
+    .filter-caret:hover { color: var(--color-primary-ink, #397533); }
     .filter-caret[aria-expanded='true'],
     .filter-caret.has-active {
-      color: var(--color-primary-ink, #995600);
-      border-color: var(--color-selected-border, #da924f);
-      background: var(--color-selected-bg, #ffecdd);
+      color: var(--color-primary-ink, #397533);
+      border-color: var(--color-selected-border, #5aa053);
+      background: var(--color-selected-bg, #dbfad6);
     }
-    .filter-caret:focus-visible { outline: 2px solid var(--color-border-focus, #da924f); outline-offset: 2px; }
+    .filter-caret:focus-visible { outline: 2px solid var(--color-border-focus, #5aa053); outline-offset: 2px; }
     .caret { transition: transform var(--transition-fast, 120ms ease); font-size: 11px; }
     .caret.open { transform: rotate(180deg); }
     .filter-count {
       min-inline-size: 18px;
       padding-inline: 5px;
       border-radius: var(--radius-pill, 999px);
-      background: var(--color-primary, #c37829);
-      color: var(--color-primary-text, #fff);
+      background: var(--color-primary, #5aa053);
+      color: var(--color-primary-text, #0b281e);
       font-size: var(--font-size-xs, 12px);
       text-align: center;
     }
@@ -115,25 +115,25 @@ export class CatalogControls extends LitElement {
       min-inline-size: 0;
       min-block-size: var(--item-min-touch, 44px);
       padding-inline: var(--space-md, 16px);
-      border: var(--border-width, 1px) solid var(--color-border, #e4d6cb);
+      border: var(--border-width, 1px) solid var(--color-border, #bae4d2);
       border-radius: var(--radius-sm, 6px);
-      background: var(--clin-card-bg, #fff);
-      color: var(--color-text, #311c08);
+      background: var(--clin-card-bg, #FFFFFF);
+      color: var(--color-text, #0b281e);
       font-family: inherit;
       font-size: var(--font-size-md, 16px);
       transition: border-color var(--transition-fast, 120ms ease);
     }
     input[type='search']:focus {
       outline: none;
-      border-color: var(--color-border-focus, #da924f);
+      border-color: var(--color-border-focus, #5aa053);
     }
     /* Dark mode: the input background (clin-card-bg) equals the .main surface, so
        the search bar disappeared. Lift it and strengthen the border so it reads
        as a distinct control. */
     @media (prefers-color-scheme: dark) {
       input[type='search'] {
-        background: var(--clin-search-bg, #1e2733);
-        border-color: var(--clin-search-border, #3a4656);
+        background: var(--clin-search-bg, #1e2723);
+        border-color: var(--clin-search-border, #323e39);
       }
     }
 
@@ -153,27 +153,27 @@ export class CatalogControls extends LitElement {
       font-size: var(--font-size-sm, 14px);
       padding: 4px 12px;
       border-radius: var(--radius-pill, 999px);
-      border: var(--border-width, 1px) solid var(--color-border, #e4d6cb);
-      background: var(--clin-card-bg, #fff);
-      color: var(--color-text-muted, #796453);
+      border: var(--border-width, 1px) solid var(--color-border, #bae4d2);
+      background: var(--clin-card-bg, #FFFFFF);
+      color: var(--color-text-muted, #576f65);
       font-family: inherit;
       cursor: pointer;
       transition: all var(--transition-fast, 120ms ease);
     }
-    .chip:hover { border-color: var(--color-primary, #c37829); }
+    .chip:hover { border-color: var(--color-primary, #5aa053); }
     .chip[aria-pressed='true'] {
-      background: var(--color-selected-bg, #ffecdd);
-      border-color: var(--color-selected-border, #da924f);
-      color: var(--color-primary-ink, #995600);
+      background: var(--color-selected-bg, #dbfad6);
+      border-color: var(--color-selected-border, #5aa053);
+      color: var(--color-primary-ink, #397533);
     }
     .chip:focus-visible {
-      outline: 2px solid var(--color-border-focus, #da924f);
+      outline: 2px solid var(--color-border-focus, #5aa053);
       outline-offset: 2px;
     }
     .chip-group-label {
       align-self: center;
       font-size: var(--font-size-xs, 12px);
-      color: var(--color-text-muted, #796453);
+      color: var(--color-text-muted, #576f65);
     }
   `];
 

@@ -36,21 +36,21 @@ export class UploadList extends LitElement {
       align-items: center;
       gap: var(--space-sm, .5rem);
       padding: var(--space-lg, 1.5rem);
-      border: 2px dashed var(--color-border, #e4d6cb);
+      border: 2px dashed var(--color-border, #bae4d2);
       border-radius: var(--radius-md, 12px);
-      background: var(--clin-card-bg, #fff);
+      background: var(--clin-card-bg, #FFFFFF);
       text-align: center;
       transition: border-color var(--transition-fast, .15s), background var(--transition-fast, .15s);
     }
 
     .zone.over {
-      border-color: var(--color-selected-border, #da924f);
-      background: var(--color-selected-bg, #ffecdd);
+      border-color: var(--color-selected-border, #5aa053);
+      background: var(--color-selected-bg, #dbfad6);
     }
 
     .zone p {
       margin: 0;
-      color: var(--color-text-muted, #796453);
+      color: var(--color-text-muted, #576f65);
       font-size: var(--font-size-sm, .875rem);
     }
 
@@ -58,15 +58,15 @@ export class UploadList extends LitElement {
       display: inline-block;
       padding: .5rem 1.25rem;
       border-radius: var(--radius-sm, 6px);
-      background: var(--color-primary, #c37829);
-      color: var(--color-primary-text, #311c08);
+      background: var(--color-primary, #5aa053);
+      color: var(--color-primary-text, #0b281e);
       font-weight: var(--font-weight-bold, 600);
       cursor: pointer;
       transition: background var(--transition-fast, .15s);
     }
 
     label:hover {
-      background: var(--color-primary-hover, #d18d4e);
+      background: var(--color-primary-hover, #73b06d);
     }
 
     input[type='file'] {
@@ -93,8 +93,8 @@ export class UploadList extends LitElement {
       padding: .35rem .6rem;
       border-radius: var(--radius-sm, 6px);
       font-size: var(--font-size-sm, .875rem);
-      background: var(--clin-card-bg, #fff);
-      border: 1px solid var(--color-border, #e4d6cb);
+      background: var(--clin-card-bg, #FFFFFF);
+      border: 1px solid var(--color-border, #bae4d2);
     }
 
     li .name {
@@ -106,7 +106,7 @@ export class UploadList extends LitElement {
     }
 
     li .status { flex-shrink: 0; }
-    li.ok .status { color: var(--color-yes, #276749); }
+    li.ok .status { color: var(--color-yes, #14655f); }
     li.failed { background: var(--color-no-bg, #FDF3F3); }
     li.failed .status { color: var(--color-no, #8B3A3A); }
 
@@ -114,7 +114,7 @@ export class UploadList extends LitElement {
     details.ok-summary {
       margin-block-start: var(--space-sm, .5rem);
       font-size: var(--font-size-sm, .875rem);
-      color: var(--color-text-muted, #796453);
+      color: var(--color-text-muted, #576f65);
     }
 
     details.ok-summary summary {
@@ -123,7 +123,7 @@ export class UploadList extends LitElement {
       list-style-position: inside;
     }
 
-    details.ok-summary .count { color: var(--color-yes, #276749); }
+    details.ok-summary .count { color: var(--color-yes, #14655f); }
   `;
 
   constructor() {

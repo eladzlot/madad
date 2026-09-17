@@ -25,9 +25,13 @@ export const clinicianCss = /* css */ `
        deployment can re-hue the whole clinician shell from one block; the
        derived tints below (color-mix) follow automatically.
 
-       מדד · CTR: burnt-honey chrome, the dark end of the brand hue (H 62),
-       lifted well clear of the burgundy's near-black (header L* 20, rail
-       L* 27). Two rules hold these together as ONE material:
+       מדד · CTR: Leaf chrome. Unlike the honey — whose chrome, ground and
+       brand were all one hue — the palette splits them: the brand is H 142
+       and every neutral, this chrome included, sits at H 169. The chrome is
+       a dark neutral, so it belongs to the neutral family; a brand-hued rail
+       would put a hue seam down the middle of the composer, between the rail
+       and the catalog column beside it. Two rules hold header and rail
+       together as ONE material:
          • the header stays DARKER than the rail. The header is the outer
            frame, the rail a panel inside it. Inverting this reads as a pale
            bar floating on an unrelated slab.
@@ -35,47 +39,66 @@ export const clinicianCss = /* css */ `
            lightness (~42%). Matching absolute chroma is not enough — the
            ceiling falls as a colour darkens, so a fixed chroma makes the
            darker surface proportionally more saturated and visibly a
-           different, redder material.
+           different material.
 
        The threshold line is deliberately COOL. Protanopia and deuteranopia
        (~8% of men) collapse the red–green axis but keep blue, so a warm
-       threshold beside a warm data line is unreadable for them: in dark mode
-       the old #E8A33D sat ΔE 1.0 from the new primary. */
-    --clin-header-bg:        #392a1e;   /* L* 30 — white on it, 13.78:1 */
-    --clin-rail-bg:          #4e3b2c;   /* L* 37 — the panel inside the frame */
-    --clin-rail-field:       #3c2d20;   /* fields, list rows, secondary buttons on the rail */
-    --clin-rail-border:      #7b6048;
-    --clin-rail-text:        #dbc9b9;   /* body text on the rail — 6.58:1 */
-    --clin-rail-text-strong: #f1e6dc;   /* input values, item titles — 8.61:1 */
-    --clin-rail-label:       #c8af9b;   /* section labels, empty-state copy — 5.07:1 */
-    --clin-rail-hint:        #bea590;   /* 4.52:1 */
-    --clin-rail-alert:       #f2a99f;   /* uid error line + field border on the rail — 5.5:1 */
-    --clin-reset-icon:       #da924f;   /* the ↺ glyph in the catalog toolbar — 4.13:1 */
-    --clin-focus-stroke:     #392a1e;   /* chart marker keyboard focus ring */
-    --clin-heatmap-ink:      #311c08;   /* fixed dark ink over pastel heatmap cells */
+       threshold beside a warm data line is unreadable for them.
+
+       That same axis is why --clin-alert-ring exists. A green series line
+       lands on the yellow end of what survives protan/deutan and the cutoff
+       holds the blue end, so the axis is already fully spent and a red alert
+       ring has nowhere to sit — in dark mode it measured ΔE 6.9 from the line
+       it is drawn 4px away from. The ring gives up hue instead and separates
+       by lightness: a double ring in the text colour. The red is kept in the
+       tooltip's alert text, which is never a discrimination task.
+
+       KNOWN GAP: in dark mode the series and the cutoff sit ΔE 7.3 apart
+       under TRITANOPIA, below the ΔE ≥ 18 this block holds elsewhere.
+       Tritanopia is ~0.01% (against the 8% carried by protan/deutan), the
+       cutoff is a dashed horizontal against a solid polyline with round
+       markers, and the chart carries a full data table. Recorded, not fixed. */
+    --clin-header-bg:        #21322b;   /* OKLab L .299 — white on it, 13.50:1 */
+    --clin-rail-bg:          #2f453c;   /* OKLab L .369 — the panel inside the frame */
+    --clin-rail-field:       #23352e;   /* fields, list rows, secondary buttons on the rail */
+    --clin-rail-border:      #4d6f61;
+    --clin-rail-text:        #b0d7c7;   /* body text on the rail — 6.57:1 */
+    --clin-rail-text-strong: #d0f1e3;   /* input values, item titles — 8.53:1 */
+    --clin-rail-label:       #9ebcb0;   /* section labels, empty-state copy — 5.04:1 */
+    --clin-rail-hint:        #95b2a6;   /* 4.51:1 */
+    --clin-rail-alert:       #f2a99f;   /* uid error line + field border on the rail — 5.38:1 */
+    /* The ↺ glyph sits in the catalog toolbar, which is --color-surface — NOT
+       the rail. The honey shipped the accent here and recorded 4.13:1 against
+       the rail by mistake; on the surface it actually sits on, that value was
+       2.11:1. The ink is the token that clears AA there. */
+    --clin-reset-icon:       #397533;   /* on --color-surface — 4.65:1 */
+    --clin-focus-stroke:     #21322b;   /* chart marker keyboard focus ring */
+    --clin-heatmap-ink:      #0b281e;   /* fixed dark ink over pastel heatmap cells */
+    --clin-alert-ring:       #0b281e;   /* chart alert marker — achromatic, see above */
 
     --clin-card-bg:   #FFFFFF;
     --clin-grid:      #00000014;
-    --clin-cutoff:    #32618e;   /* slate, not amber — see the note below */
+    --clin-cutoff:    #32618e;   /* slate, not amber — see the note above */
   }
 
   @media (prefers-color-scheme: dark) {
     :root {
-      --clin-reset-icon:    #f3b680;
-      --clin-search-bg:     #2a231c;
-      --clin-search-border: #443830;
+      --clin-reset-icon:    #83c57c;   /* on the dark --color-surface — 8.18:1 */
+      --clin-search-bg:     #1e2723;
+      --clin-search-border: #323e39;
 
-      --clin-card-bg: #211c17;
-      --clin-grid:    #ffffff1f;
-      --clin-cutoff:  #82b1ed;
+      --clin-card-bg:   #181f1c;
+      --clin-grid:      #ffffff1f;
+      --clin-cutoff:    #82b1ed;
+      --clin-alert-ring: #d3f0e4;
     }
   }
 
   /* ── Card — white content panel on the muted page background ──────────── */
 
   .c-card {
-    background: var(--clin-card-bg, #fff);
-    border: var(--border-width, 1px) solid var(--color-border, #e4d6cb);
+    background: var(--clin-card-bg, #FFFFFF);
+    border: var(--border-width, 1px) solid var(--color-border, #bae4d2);
     border-radius: var(--radius-md, 12px);
     box-shadow: var(--shadow-sm, none);
     padding: var(--space-md, 16px);
@@ -103,34 +126,34 @@ export const clinicianCss = /* css */ `
   .c-btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
   .c-btn--primary {
-    background: var(--color-primary, #c37829);
-    color: var(--color-primary-text, #fff);
+    background: var(--color-primary, #5aa053);
+    color: var(--color-primary-text, #0b281e);
   }
-  .c-btn--primary:not(:disabled):hover { background: var(--color-primary-hover, #d18d4e); }
+  .c-btn--primary:not(:disabled):hover { background: var(--color-primary-hover, #73b06d); }
 
   .c-btn--secondary {
-    background: var(--color-bg, #faf6f3);
-    color: var(--color-text, #311c08);
-    border-color: var(--color-border, #e4d6cb);
+    background: var(--color-bg, #eefaf5);
+    color: var(--color-text, #0b281e);
+    border-color: var(--color-border, #bae4d2);
   }
   .c-btn--secondary:not(:disabled):hover {
-    border-color: var(--color-primary, #c37829);
-    color: var(--color-primary-ink, #995600);
+    border-color: var(--color-primary, #5aa053);
+    color: var(--color-primary-ink, #397533);
   }
 
   .c-btn--ghost {
     background: transparent;
-    color: var(--color-text-muted, #796453);
+    color: var(--color-text-muted, #576f65);
   }
   .c-btn--ghost:hover { color: var(--color-no, #8B3A3A); }
 
   .c-btn--active {
-    background: var(--color-selected-bg, #ffecdd);
-    border-color: var(--color-selected-border, #da924f);
-    color: var(--color-primary-ink, #995600);
+    background: var(--color-selected-bg, #dbfad6);
+    border-color: var(--color-selected-border, #5aa053);
+    color: var(--color-primary-ink, #397533);
   }
 
-  .c-btn--copied { background: var(--color-yes, #276749); color: #fff; }
+  .c-btn--copied { background: var(--color-yes, #14655f); color: #fff; }
 
   /* Small button (secondary actions, toolbars) */
   .c-btn--sm {
@@ -143,9 +166,9 @@ export const clinicianCss = /* css */ `
 
   .c-seg {
     display: inline-flex;
-    border: var(--border-width, 1px) solid var(--color-border, #e4d6cb);
+    border: var(--border-width, 1px) solid var(--color-border, #bae4d2);
     border-radius: var(--radius-sm, 6px);
-    background: var(--color-bg, #faf6f3);
+    background: var(--color-bg, #eefaf5);
     overflow: hidden;
   }
 
@@ -154,7 +177,7 @@ export const clinicianCss = /* css */ `
     background: none;
     font-family: inherit;
     font-size: var(--font-size-sm, 14px);
-    color: var(--color-text-muted, #796453);
+    color: var(--color-text-muted, #576f65);
     min-block-size: 36px;
     padding-inline: var(--space-md, 16px);
     cursor: pointer;
@@ -163,19 +186,19 @@ export const clinicianCss = /* css */ `
   }
 
   .c-seg button + button {
-    border-inline-start: var(--border-width, 1px) solid var(--color-border, #e4d6cb);
+    border-inline-start: var(--border-width, 1px) solid var(--color-border, #bae4d2);
   }
 
   .c-seg button[aria-pressed='true'] {
-    background: var(--color-selected-bg, #ffecdd);
-    color: var(--color-primary-ink, #995600);
+    background: var(--color-selected-bg, #dbfad6);
+    color: var(--color-primary-ink, #397533);
     font-weight: var(--font-weight-medium, 500);
   }
 
-  .c-seg button:not([aria-pressed='true']):hover { color: var(--color-text, #311c08); }
+  .c-seg button:not([aria-pressed='true']):hover { color: var(--color-text, #0b281e); }
 
   .c-seg button:focus-visible {
-    outline: 2px solid var(--color-border-focus, #da924f);
+    outline: 2px solid var(--color-border-focus, #5aa053);
     outline-offset: -2px;
   }
 
@@ -191,10 +214,10 @@ export const clinicianCss = /* css */ `
     gap: 6px;
     min-block-size: 30px;
     padding-inline: 11px;
-    border: var(--border-width, 1px) solid var(--clin-rail-border, #304860);
+    border: var(--border-width, 1px) solid var(--clin-rail-border, #4d6f61);
     border-radius: var(--radius-pill, 999px);
-    background: var(--clin-rail-field, #2A3D52);
-    color: var(--clin-rail-text-strong, #C0D4E4);
+    background: var(--clin-rail-field, #23352e);
+    color: var(--clin-rail-text-strong, #d0f1e3);
     font-family: inherit;
     font-size: var(--font-size-sm, 14px);
     line-height: 1;
@@ -203,10 +226,10 @@ export const clinicianCss = /* css */ `
                 color var(--transition-fast, 120ms ease);
   }
 
-  .c-chip:hover { border-color: var(--color-accent, #2BB3C0); }
+  .c-chip:hover { border-color: var(--color-accent, #77b770); }
 
   .c-chip[aria-expanded='true'] {
-    border-color: var(--color-accent, #2BB3C0);
+    border-color: var(--color-accent, #77b770);
     color: #ffffff;
   }
 
@@ -215,7 +238,7 @@ export const clinicianCss = /* css */ `
   .c-chip--unset {
     background: none;
     border-style: dashed;
-    color: var(--clin-rail-hint, #aec8dc);
+    color: var(--clin-rail-hint, #95b2a6);
   }
 
   .c-chip svg {
@@ -232,7 +255,7 @@ export const clinicianCss = /* css */ `
   }
 
   .c-chip:focus-visible {
-    outline: 2px solid var(--color-border-focus, #2BB3C0);
+    outline: 2px solid var(--color-border-focus, #5aa053);
     outline-offset: 2px;
   }
 `;

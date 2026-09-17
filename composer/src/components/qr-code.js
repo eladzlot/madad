@@ -59,14 +59,14 @@ export class QrCode extends LitElement {
       padding: 0;
     }
     button.tile { cursor: zoom-in; }
-    button.tile:focus-visible { outline: 2px solid var(--color-border-focus, #2BB3C0); outline-offset: 2px; }
+    button.tile:focus-visible { outline: 2px solid var(--color-border-focus, #5aa053); outline-offset: 2px; }
     .tile.pending { background: color-mix(in srgb, #fff 70%, transparent); }
     svg { display: block; inline-size: 100%; block-size: 100%; }
     path { fill: #000; }
 
     .unavailable {
       font-size: var(--font-size-xs, 12px);
-      color: var(--clin-rail-hint, #6898B0);
+      color: var(--clin-rail-hint, #95b2a6);
     }
 
     /* ── enlarged view ── */
@@ -75,8 +75,8 @@ export class QrCode extends LitElement {
       padding: 0;
       border: none;
       border-radius: var(--radius-lg, 18px);
-      background: var(--clin-card-bg, #fff);
-      color: var(--color-text, #162232);
+      background: var(--clin-card-bg, #FFFFFF);
+      color: var(--color-text, #0b281e);
       box-shadow: 0 24px 64px -20px rgba(11, 22, 33, 0.28);
     }
     dialog::backdrop { background: rgba(11, 22, 33, 0.4); backdrop-filter: blur(2px); }
@@ -93,7 +93,7 @@ export class QrCode extends LitElement {
       background: #fff;
       border-radius: var(--radius-md, 10px);
       /* A hairline so the white symbol still has an edge in dark mode. */
-      box-shadow: 0 0 0 1px var(--color-border, #D5DAE2);
+      box-shadow: 0 0 0 1px var(--color-border, #bae4d2);
     }
     .caption {
       font-size: var(--font-size-md, 16px);
@@ -103,7 +103,7 @@ export class QrCode extends LitElement {
     .link {
       font-family: ui-monospace, monospace;
       font-size: var(--font-size-xs, 12px);
-      color: var(--color-text-muted, #5E7080);
+      color: var(--color-text-muted, #576f65);
       word-break: break-all;
       text-align: center;
       max-inline-size: 100%;

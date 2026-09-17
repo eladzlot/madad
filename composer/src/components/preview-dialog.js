@@ -54,8 +54,8 @@ export class PreviewDialog extends LitElement {
       padding: 0;
       border: none;
       border-radius: var(--radius-lg, 18px);
-      background: var(--clin-card-bg, #fff);
-      color: var(--color-text, #311c08);
+      background: var(--clin-card-bg, #FFFFFF);
+      color: var(--color-text, #0b281e);
       box-shadow: 0 24px 64px -20px rgba(11, 22, 33, 0.28);
       overflow: hidden;
     }
@@ -81,14 +81,14 @@ export class PreviewDialog extends LitElement {
       align-items: flex-start;
       gap: var(--space-md, 16px);
       padding: var(--pv-pad) var(--pv-pad) var(--space-lg, 20px);
-      border-block-end: var(--border-width, 1px) solid var(--color-border, #e4d6cb);
+      border-block-end: var(--border-width, 1px) solid var(--color-border, #bae4d2);
     }
     .head-main { flex: 1; min-inline-size: 0; }
     .eyebrow {
       font-size: var(--font-size-xs, 12px);
       font-weight: var(--font-weight-bold, 600);
       letter-spacing: 0.07em;
-      color: var(--color-primary-ink, #995600);
+      color: var(--color-primary-ink, #397533);
       text-transform: uppercase;
     }
     .title {
@@ -106,33 +106,33 @@ export class PreviewDialog extends LitElement {
       border: none;
       border-radius: var(--radius-sm, 8px);
       background: transparent;
-      color: var(--color-text-muted, #796453);
+      color: var(--color-text-muted, #576f65);
       font-size: 16px; cursor: pointer; text-decoration: none;
       font-family: inherit;
       transition: background 120ms ease, color 120ms ease;
     }
-    .icon-btn:hover { background: var(--color-selected-bg, #ffecdd); color: var(--color-primary-ink, #995600); }
-    .icon-btn:focus-visible { outline: 2px solid var(--color-border-focus, #da924f); outline-offset: 2px; }
+    .icon-btn:hover { background: var(--color-selected-bg, #dbfad6); color: var(--color-primary-ink, #397533); }
+    .icon-btn:focus-visible { outline: 2px solid var(--color-border-focus, #5aa053); outline-offset: 2px; }
     .icon-btn svg { inline-size: 18px; block-size: 18px; }
 
     .mech-btn {
       block-size: 36px;
       padding-inline: 12px;
       display: inline-flex; align-items: center; gap: 6px;
-      border: var(--border-width, 1px) solid var(--color-border, #e4d6cb);
+      border: var(--border-width, 1px) solid var(--color-border, #bae4d2);
       border-radius: var(--radius-pill, 999px);
       background: transparent;
-      color: var(--color-text-muted, #796453);
+      color: var(--color-text-muted, #576f65);
       font-family: inherit; font-size: var(--font-size-xs, 12px); font-weight: var(--font-weight-medium, 500);
       cursor: pointer;
       transition: border-color 120ms ease, background 120ms ease, color 120ms ease;
     }
-    .mech-btn:hover { border-color: var(--color-primary, #c37829); color: var(--color-primary-ink, #995600); }
-    .mech-btn:focus-visible { outline: 2px solid var(--color-border-focus, #da924f); outline-offset: 2px; }
+    .mech-btn:hover { border-color: var(--color-primary, #5aa053); color: var(--color-primary-ink, #397533); }
+    .mech-btn:focus-visible { outline: 2px solid var(--color-border-focus, #5aa053); outline-offset: 2px; }
     .mech-btn[aria-pressed="true"] {
-      background: var(--color-selected-bg, #ffecdd);
-      border-color: var(--color-selected-border, #da924f);
-      color: var(--color-primary-ink, #995600);
+      background: var(--color-selected-bg, #dbfad6);
+      border-color: var(--color-selected-border, #5aa053);
+      color: var(--color-primary-ink, #397533);
     }
     .mech-btn svg { inline-size: 15px; block-size: 15px; }
 
@@ -145,13 +145,13 @@ export class PreviewDialog extends LitElement {
       font-weight: var(--font-weight-bold, 600);
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: var(--color-primary-ink, #995600);
+      color: var(--color-primary-ink, #397533);
       margin-block-end: var(--space-md, 16px);
     }
     .desc { line-height: var(--line-height-base, 1.65); }
     .keywords {
       font-size: var(--font-size-xs, 12px);
-      color: var(--color-text-muted, #796453);
+      color: var(--color-text-muted, #576f65);
       margin-block-start: var(--space-sm, 8px);
       direction: ltr; unicode-bidi: embed; text-align: start;
     }
@@ -162,22 +162,22 @@ export class PreviewDialog extends LitElement {
       padding: 3px 12px;
       border-radius: var(--radius-pill, 999px);
       background: transparent;
-      border: var(--border-width, 1px) solid var(--color-border, #e4d6cb);
-      color: var(--color-text-muted, #796453);
+      border: var(--border-width, 1px) solid var(--color-border, #bae4d2);
+      color: var(--color-text-muted, #576f65);
       white-space: nowrap;
     }
-    .badge.accent { border-color: var(--color-selected-border, #da924f); color: var(--color-primary-ink, #995600); }
+    .badge.accent { border-color: var(--color-selected-border, #5aa053); color: var(--color-primary-ink, #397533); }
 
     /* ── scoring ── plain content, hairline-ruled ladder ── */
     .panel { display: flex; flex-direction: column; gap: var(--space-xs, 6px); }
     .kv { font-size: var(--font-size-sm, 14px); line-height: 1.7; }
-    .kv .k { color: var(--color-text-muted, #796453); }
+    .kv .k { color: var(--color-text-muted, #576f65); }
     .subscale { font-size: var(--font-size-sm, 14px); padding-block: 2px; }
-    .subscale .ids { color: var(--color-text-muted, #796453); direction: ltr; unicode-bidi: embed; font-family: ui-monospace, monospace; font-size: var(--font-size-xs, 12px); }
+    .subscale .ids { color: var(--color-text-muted, #576f65); direction: ltr; unicode-bidi: embed; font-family: ui-monospace, monospace; font-size: var(--font-size-xs, 12px); }
     .ladder { inline-size: 100%; border-collapse: collapse; font-size: var(--font-size-sm, 14px); margin-block-start: var(--space-xs, 6px); }
-    .ladder td { padding: 7px var(--space-md, 16px) 7px 0; border-block-end: var(--border-width, 1px) solid var(--color-border, #e4d6cb); }
+    .ladder td { padding: 7px var(--space-md, 16px) 7px 0; border-block-end: var(--border-width, 1px) solid var(--color-border, #bae4d2); }
     .ladder tr:last-child td { border-block-end: none; }
-    .ladder .range { direction: ltr; unicode-bidi: embed; color: var(--color-text-muted, #796453); font-family: ui-monospace, monospace; white-space: nowrap; }
+    .ladder .range { direction: ltr; unicode-bidi: embed; color: var(--color-text-muted, #576f65); font-family: ui-monospace, monospace; white-space: nowrap; }
 
     .alert {
       font-size: var(--font-size-sm, 14px);
@@ -199,35 +199,35 @@ export class PreviewDialog extends LitElement {
     .dsl {
       direction: ltr; unicode-bidi: embed;
       font-family: ui-monospace, monospace; font-size: var(--font-size-xs, 12px);
-      color: var(--color-text-muted, #796453);
+      color: var(--color-text-muted, #576f65);
     }
 
     /* ── items ── an airy list, hairline-separated, no boxes ── */
     .items { display: flex; flex-direction: column; }
     .node { min-inline-size: 0; }
-    .node.nested { border-inline-start: 2px solid var(--color-selected-bg, #ffecdd); padding-inline-start: var(--space-md, 16px); }
+    .node.nested { border-inline-start: 2px solid var(--color-selected-bg, #dbfad6); padding-inline-start: var(--space-md, 16px); }
 
     .item {
       padding-block: var(--space-md, 16px);
-      border-block-end: var(--border-width, 1px) solid var(--color-border, #e4d6cb);
+      border-block-end: var(--border-width, 1px) solid var(--color-border, #bae4d2);
     }
     .items > .node:last-child > .item { border-block-end: none; }
     .item-head { display: flex; align-items: baseline; gap: var(--space-sm, 8px); flex-wrap: wrap; }
     .item-type {
       font-size: var(--font-size-xs, 11px); font-weight: var(--font-weight-bold, 600);
       letter-spacing: 0.03em;
-      color: var(--color-primary-ink, #995600);
-      background: var(--color-selected-bg, #ffecdd);
+      color: var(--color-primary-ink, #397533);
+      background: var(--color-selected-bg, #dbfad6);
       padding: 2px 9px; border-radius: var(--radius-pill, 999px);
       flex-shrink: 0;
     }
     .item-text { font-weight: var(--font-weight-medium, 500); flex: 1; min-inline-size: 0; }
-    .item-id { font-size: var(--font-size-xs, 12px); color: var(--color-text-muted, #796453); font-family: ui-monospace, monospace; direction: ltr; unicode-bidi: embed; }
+    .item-id { font-size: var(--font-size-xs, 12px); color: var(--color-text-muted, #576f65); font-family: ui-monospace, monospace; direction: ltr; unicode-bidi: embed; }
     .req { font-size: var(--font-size-xs, 11px); color: var(--color-no, #8B3A3A); font-weight: var(--font-weight-medium, 500); }
 
     .instr {
-      color: var(--color-text-muted, #796453);
-      border-inline-start: 2px solid var(--color-selected-border, #da924f);
+      color: var(--color-text-muted, #576f65);
+      border-inline-start: 2px solid var(--color-selected-border, #5aa053);
       padding-inline-start: var(--space-md, 14px);
       line-height: var(--line-height-base, 1.6);
     }
@@ -237,31 +237,31 @@ export class PreviewDialog extends LitElement {
       font-size: var(--font-size-sm, 14px);
       display: flex; align-items: center; gap: var(--space-sm, 10px);
       padding: var(--space-sm, 9px) var(--space-md, 14px);
-      border: var(--border-width, 1px) solid var(--color-border, #e4d6cb);
+      border: var(--border-width, 1px) solid var(--color-border, #bae4d2);
       border-radius: var(--radius-sm, 6px);
       /* A light grey surface — the app's --color-bg, lighter than --color-surface,
          so options read as a soft distinct layer on the white background. */
-      background: var(--color-bg, #faf6f3);
-      color: var(--color-text, #311c08);
+      background: var(--color-bg, #eefaf5);
+      color: var(--color-text, #0b281e);
     }
-    .opt .glyph { color: var(--color-primary-ink, #995600); flex-shrink: 0; font-size: 12px; }
+    .opt .glyph { color: var(--color-primary-ink, #397533); flex-shrink: 0; font-size: 12px; }
     .opt-label { flex: 1; min-inline-size: 0; }
-    .opt .val { color: var(--color-text-muted, #796453); font-size: var(--font-size-xs, 12px); white-space: nowrap; }
+    .opt .val { color: var(--color-text-muted, #576f65); font-size: var(--font-size-xs, 12px); white-space: nowrap; }
 
     .slider { margin-block-start: var(--space-md, 12px); }
-    .slider-labels { display: flex; justify-content: space-between; font-size: var(--font-size-xs, 12px); color: var(--color-text-muted, #796453); }
+    .slider-labels { display: flex; justify-content: space-between; font-size: var(--font-size-xs, 12px); color: var(--color-text-muted, #576f65); }
     .slider-bar {
       block-size: 4px; border-radius: 999px; margin-block: 8px;
-      background: linear-gradient(to left, var(--color-accent, #da924f), var(--color-selected-bg, #ffecdd));
+      background: linear-gradient(to left, var(--color-accent, #77b770), var(--color-selected-bg, #dbfad6));
     }
-    .slider-range { font-size: var(--font-size-xs, 12px); color: var(--color-text-muted, #796453); direction: ltr; unicode-bidi: embed; text-align: center; }
+    .slider-range { font-size: var(--font-size-xs, 12px); color: var(--color-text-muted, #576f65); direction: ltr; unicode-bidi: embed; text-align: center; }
 
     .text-field {
       margin-block-start: var(--space-md, 12px);
-      border: var(--border-width, 1px) dashed var(--color-border, #e4d6cb);
+      border: var(--border-width, 1px) dashed var(--color-border, #bae4d2);
       border-radius: var(--radius-md, 10px);
       padding: var(--space-sm, 10px) var(--space-md, 14px);
-      color: var(--color-text-muted, #8196A6);
+      color: var(--color-text-muted, #576f65);
       font-size: var(--font-size-sm, 14px);
     }
 
@@ -270,20 +270,20 @@ export class PreviewDialog extends LitElement {
       display: flex; align-items: center; gap: var(--space-sm, 8px);
       margin-block: var(--space-lg, 20px) 2px;
       font-size: var(--font-size-xs, 12px); font-weight: var(--font-weight-medium, 500);
-      color: var(--color-text-muted, #796453);
+      color: var(--color-text-muted, #576f65);
     }
     .divider .chip {
       display: inline-flex; align-items: center; gap: 6px;
       padding: 3px 12px; border-radius: var(--radius-pill, 999px);
       background: transparent;
-      border: var(--border-width, 1px) solid var(--color-border, #e4d6cb);
+      border: var(--border-width, 1px) solid var(--color-border, #bae4d2);
     }
-    .divider.if .chip { color: var(--color-primary-ink, #995600); border-color: var(--color-selected-border, #da924f); background: var(--color-selected-bg, #ffecdd); }
-    .divider .line { flex: 1; height: 1px; background: var(--color-border, #e4d6cb); }
+    .divider.if .chip { color: var(--color-primary-ink, #397533); border-color: var(--color-selected-border, #5aa053); background: var(--color-selected-bg, #dbfad6); }
+    .divider .line { flex: 1; height: 1px; background: var(--color-border, #bae4d2); }
 
     /* battery accordion — hairline-separated rows, no boxes */
-    details.step { border-block-end: var(--border-width, 1px) solid var(--color-border, #e4d6cb); }
-    details.step:first-of-type { border-block-start: var(--border-width, 1px) solid var(--color-border, #e4d6cb); }
+    details.step { border-block-end: var(--border-width, 1px) solid var(--color-border, #bae4d2); }
+    details.step:first-of-type { border-block-start: var(--border-width, 1px) solid var(--color-border, #bae4d2); }
     details.step > summary {
       list-style: none;
       cursor: pointer;
@@ -291,13 +291,13 @@ export class PreviewDialog extends LitElement {
       display: flex; align-items: center; gap: var(--space-sm, 8px); flex-wrap: wrap;
     }
     details.step > summary::-webkit-details-marker { display: none; }
-    details.step > summary .caret { color: var(--color-primary-ink, #995600); transition: transform 120ms ease; display: inline-block; }
+    details.step > summary .caret { color: var(--color-primary-ink, #397533); transition: transform 120ms ease; display: inline-block; }
     details.step[open] > summary .caret { transform: rotate(-90deg); }
     .step-title { font-weight: var(--font-weight-medium, 500); }
-    .step-count { font-size: var(--font-size-xs, 12px); color: var(--color-text-muted, #796453); }
+    .step-count { font-size: var(--font-size-xs, 12px); color: var(--color-text-muted, #576f65); }
     .step-cond {
-      font-size: var(--font-size-xs, 12px); color: var(--color-primary-ink, #995600);
-      background: var(--color-selected-bg, #ffecdd); border-radius: var(--radius-pill, 999px);
+      font-size: var(--font-size-xs, 12px); color: var(--color-primary-ink, #397533);
+      background: var(--color-selected-bg, #dbfad6); border-radius: var(--radius-pill, 999px);
       padding: 2px 10px; display: inline-flex; align-items: center; gap: 6px;
     }
     .step-body { padding: 0 var(--space-md, 16px) var(--space-md, 16px); }

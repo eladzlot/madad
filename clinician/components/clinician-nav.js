@@ -44,7 +44,7 @@ export class ClinicianNav extends LitElement {
   static styles = css`
     :host {
       display: block;
-      background: var(--clin-header-bg, #392a1e);
+      background: var(--clin-header-bg, #21322b);
     }
 
     .inner {
@@ -98,12 +98,12 @@ export class ClinicianNav extends LitElement {
     .link[aria-current='page'] {
       color: #ffffff;
       font-weight: var(--font-weight-medium, 500);
-      border-block-end-color: var(--color-accent, #da924f);
+      border-block-end-color: var(--color-accent, #77b770);
     }
 
     .link:focus-visible,
     .brand:focus-visible {
-      outline: 2px solid var(--color-accent, #da924f);
+      outline: 2px solid var(--color-accent, #77b770);
       outline-offset: 2px;
     }
 
@@ -133,9 +133,9 @@ export class ClinicianNav extends LitElement {
       padding: 6px 12px;
       cursor: pointer;
     }
-    .lang:hover { border-color: var(--color-accent, #2bb3c0); }
+    .lang:hover { border-color: var(--color-accent, #77b770); }
     .lang:focus-visible {
-      outline: 2px solid var(--color-accent, #2bb3c0);
+      outline: 2px solid var(--color-accent, #77b770);
       outline-offset: 2px;
     }
     /* The popup is painted by the platform, not by this bar. */
