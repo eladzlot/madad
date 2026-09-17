@@ -19,7 +19,7 @@
 //      we decode the whole file as latin1 (1 char = 1 byte) for searching
 //      and slice the untouched original bytes for stream data.
 
-import { ENVELOPE_VERSION, validateEnvelope } from '../../shared/pdf/envelope-schema.js';
+import { ENVELOPE_VERSION, validateEnvelope, sanitizeEnvelope } from '../../shared/pdf/envelope-schema.js';
 
 export const FAILURE = {
   NOT_PDF: 'not-pdf',                       // no %PDF header
@@ -101,7 +101,10 @@ export async function parsePdfBytes(bytes) {
     return { ok: false, reason: FAILURE.MALFORMED, detail: errors.join('; ') };
   }
 
-  return { ok: true, envelope: payload };
+  // This return is the boundary: past it the envelope is treated as app data
+  // and rendered. Clean the free-text fields here, once, rather than at each
+  // surface that displays them.
+  return { ok: true, envelope: sanitizeEnvelope(payload) };
 }
 
 // ── Locating the attachment ───────────────────────────────────────────────────

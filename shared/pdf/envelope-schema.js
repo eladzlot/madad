@@ -12,6 +12,8 @@
 //   version must remain readable forever — readers migrate old payloads
 //   forward via explicit migration code, never by rejecting them.
 
+import { cleanText, MAX_NAME_LENGTH, MAX_PID_LENGTH } from '../text-hygiene.js';
+
 export const ENVELOPE_VERSION = 1;
 
 // ── Build ─────────────────────────────────────────────────────────────────────
@@ -69,6 +71,32 @@ export function buildEnvelope({ sessionState, config, session = {}, appVersion =
 }
 
 // ── Validate ──────────────────────────────────────────────────────────────────
+
+/**
+ * Cleans the free-text fields of an inbound envelope, in place.
+ *
+ * The write path caps the name at 200 characters and strips BiDi controls
+ * before the name ever reaches a PDF (src/components/welcome-screen.js), and
+ * holds the pid to PID_PATTERN (shared/pid.js). None of that binds a file we
+ * did not write: a PDF is a file on disk, and its attachment can be edited or
+ * hand-built. Since the read path renders these fields — into the Aggregate
+ * UI and, via export-svg.js, into an exported chart whose `esc()` escapes
+ * markup but not BiDi controls — it has to re-apply the same rules itself.
+ *
+ * Sanitize rather than reject: the pid groups a patient's sessions together,
+ * so dropping one silently splits a trajectory. Trimming the hazard keeps the
+ * grouping intact.
+ *
+ * Call after validateEnvelope — this assumes the shape is already known good.
+ *
+ * @param {object} payload — a validated envelope
+ * @returns {object} the same object, mutated
+ */
+export function sanitizeEnvelope(payload) {
+  if (payload.pid != null)  payload.pid  = cleanText(payload.pid, MAX_PID_LENGTH);
+  if (payload.name != null) payload.name = cleanText(payload.name, MAX_NAME_LENGTH);
+  return payload;
+}
 
 /**
  * Structural validation for inbound payloads (the Aggregate read path).
