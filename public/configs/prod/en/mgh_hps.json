@@ -1,0 +1,253 @@
+{
+  "id": "mgh_hps",
+  "version": "1.0.0",
+  "questionnaires": [
+    {
+      "id": "mgh_hps",
+      "meta": {
+        "domains": [
+          "ocd"
+        ],
+        "type": "severity",
+        "populations": [
+          "adult"
+        ],
+        "source": "Keuthen et al. (1995), Psychotherapy and Psychosomatics 64:141–145 — Massachusetts General Hospital Hairpulling Scale, transcribed verbatim from the form supplied 2026-09-18"
+      },
+      "title": "Massachusetts General Hospital Hairpulling Scale (MGH-HPS)",
+      "description": "Severity of hairpulling over the past week — 7 items (Massachusetts General Hospital Hairpulling Scale).",
+      "keywords": [
+        "trichotillomania",
+        "hairpulling",
+        "MGH-HPS",
+        "BFRB",
+        "severity"
+      ],
+      "defaultOptionSetId": "hps_5",
+      "optionSets": {
+        "hps_5": [
+          {
+            "label": "Not at all",
+            "value": 0
+          },
+          {
+            "label": "Occasionally",
+            "value": 1
+          },
+          {
+            "label": "Often",
+            "value": 2
+          },
+          {
+            "label": "Very often",
+            "value": 3
+          },
+          {
+            "label": "Almost always",
+            "value": 4
+          }
+        ]
+      },
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "For each question, pick the one statement in that group which best describes your behaviour and feelings over the past week. If you have been having ups and downs, estimate an average for the week."
+        },
+        {
+          "id": "1",
+          "type": "select",
+          "text": "Frequency of urges. On an average day, how often did you feel the urge to pull your hair?",
+          "options": [
+            {
+              "label": "This week I felt no urges to pull my hair.",
+              "value": 0
+            },
+            {
+              "label": "This week I felt an occasional urge to pull my hair.",
+              "value": 1
+            },
+            {
+              "label": "This week I felt an urge to pull my hair often.",
+              "value": 2
+            },
+            {
+              "label": "This week I felt an urge to pull my hair very often.",
+              "value": 3
+            },
+            {
+              "label": "This week I felt near constant urges to pull my hair.",
+              "value": 4
+            }
+          ]
+        },
+        {
+          "id": "2",
+          "type": "select",
+          "text": "Intensity of urges. On an average day, how intense or “strong” were the urges to pull your hair?",
+          "options": [
+            {
+              "label": "This week I did not feel any urges to pull my hair.",
+              "value": 0
+            },
+            {
+              "label": "This week I felt mild urges to pull my hair.",
+              "value": 1
+            },
+            {
+              "label": "This week I felt moderate urges to pull my hair.",
+              "value": 2
+            },
+            {
+              "label": "This week I felt severe urges to pull my hair.",
+              "value": 3
+            },
+            {
+              "label": "This week I felt extreme urges to pull my hair.",
+              "value": 4
+            }
+          ]
+        },
+        {
+          "id": "3",
+          "type": "select",
+          "text": "Ability to control the urges. On an average day, how much control do you have over the urges to pull your hair?",
+          "options": [
+            {
+              "label": "This week I could always control the urges, or I did not feel any urges to pull my hair.",
+              "value": 0
+            },
+            {
+              "label": "This week I was always able to distract myself from the urges to pull my hair most of the time.",
+              "value": 1
+            },
+            {
+              "label": "This week I was able to distract myself from the urges to pull my hair some of the time.",
+              "value": 2
+            },
+            {
+              "label": "This week I was able to distract myself from the urges to pull my hair rarely.",
+              "value": 3
+            },
+            {
+              "label": "This week I was never able to distract myself from the urges to pull my hair.",
+              "value": 4
+            }
+          ]
+        },
+        {
+          "id": "4",
+          "type": "select",
+          "text": "Frequency of hairpulling. On an average day, how often did you actually pull your hair?",
+          "options": [
+            {
+              "label": "This week I did not pull my hair.",
+              "value": 0
+            },
+            {
+              "label": "This week I pulled my hair occasionally.",
+              "value": 1
+            },
+            {
+              "label": "This week I pulled my hair often.",
+              "value": 2
+            },
+            {
+              "label": "This week I pulled my hair very often.",
+              "value": 3
+            },
+            {
+              "label": "This week I pulled my hair so often it felt like I was always doing it.",
+              "value": 4
+            }
+          ]
+        },
+        {
+          "id": "5",
+          "type": "select",
+          "text": "Attempts to resist hairpulling. On an average day, how often did you make an attempt to stop yourself from actually pulling your hair?",
+          "options": [
+            {
+              "label": "This week I felt no urges to pull my hair.",
+              "value": 0
+            },
+            {
+              "label": "This week I tried to resist the urge to pull my hair almost all of the time.",
+              "value": 1
+            },
+            {
+              "label": "This week I tried to resist the urge to pull my hair some of the time.",
+              "value": 2
+            },
+            {
+              "label": "This week I tried to resist the urge to pull my hair rarely.",
+              "value": 3
+            },
+            {
+              "label": "This week I never tried to resist the urge to pull my hair.",
+              "value": 4
+            }
+          ]
+        },
+        {
+          "id": "6",
+          "type": "select",
+          "text": "Control over hairpulling. On an average day, how often were you successful at actually stopping yourself from pulling your hair?",
+          "options": [
+            {
+              "label": "This week I did not pull my hair.",
+              "value": 0
+            },
+            {
+              "label": "This week I was able to resist pulling my hair almost all of the time.",
+              "value": 1
+            },
+            {
+              "label": "This week I was able to resist pulling my hair most of the time.",
+              "value": 2
+            },
+            {
+              "label": "This week I was able to resist pulling my hair some of the time.",
+              "value": 3
+            },
+            {
+              "label": "This week I was rarely able to resist pulling my hair.",
+              "value": 4
+            }
+          ]
+        },
+        {
+          "id": "7",
+          "type": "select",
+          "text": "Associated distress. Hairpulling can make some people feel moody, “on edge,” or sad. During the past week, how uncomfortable did your hairpulling make you feel?",
+          "options": [
+            {
+              "label": "This week I did not feel uncomfortable about my hairpulling.",
+              "value": 0
+            },
+            {
+              "label": "This week I felt vaguely uncomfortable about my hairpulling.",
+              "value": 1
+            },
+            {
+              "label": "This week I felt noticeably uncomfortable about my hairpulling.",
+              "value": 2
+            },
+            {
+              "label": "This week I felt significantly uncomfortable about my hairpulling.",
+              "value": 3
+            },
+            {
+              "label": "This week I felt intensely uncomfortable about my hairpulling.",
+              "value": 4
+            }
+          ]
+        }
+      ],
+      "scoring": {
+        "method": "sum"
+      },
+      "alerts": []
+    }
+  ]
+}

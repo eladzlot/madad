@@ -15,40 +15,41 @@
         "tags": [
           "PCL-5",
           "screening"
-        ]
+        ],
+        "source": "Price, Szafranski, van Stolk-Cooke & Gros (2016), Psychiatry Research 239:124–130 — item text verbatim from the PCL-5 English original (Weathers et al., 2013; National Center for PTSD, public domain)"
       },
-      "title": "שאלון פוסט-טראומה מקוצר בן 8 פריטים (PCL-5)",
-      "description": "גרסה מקוצרת בת 8 פריטים של ה-PCL-5 למעקב אחר תסמיני פוסט-טראומה בשבוע האחרון (Price et al., 2016); סף סינון 19.",
+      "title": "Abbreviated PTSD Checklist — 8 items (PCL-5)",
+      "description": "An 8-item abbreviation of the PCL-5 for monitoring PTSD symptoms over the past week (Price et al., 2016); screening cutoff 19.",
       "keywords": [
         "PTSD",
-        "טראומה",
-        "PCL-5",
         "trauma",
+        "PCL-5",
         "screening",
-        "סינון",
-        "גרסה מקוצרת"
+        "monitoring",
+        "abbreviated",
+        "short form"
       ],
       "defaultOptionSetId": "frequency_5",
       "optionSets": {
         "frequency_5": [
           {
-            "label": "כלל לא",
+            "label": "Not at all",
             "value": 0
           },
           {
-            "label": "מעט",
+            "label": "A little bit",
             "value": 1
           },
           {
-            "label": "במידה בינונית",
+            "label": "Moderately",
             "value": 2
           },
           {
-            "label": "במידה רבה",
+            "label": "Quite a bit",
             "value": 3
           },
           {
-            "label": "במידה רבה מאוד",
+            "label": "Extremely",
             "value": 4
           }
         ]
@@ -57,47 +58,47 @@
         {
           "id": "intro",
           "type": "instructions",
-          "text": "להלן רשימת בעיות שלאנשים יש לפעמים בתגובה לחוויה טראומטית מאוד מלחיצה. קרא/י כל בעיה בעיון ובחר/י את התשובה המתארת עד כמה אותה בעיה הטרידה אותך בשבוע האחרון."
+          "text": "Below is a list of problems that people sometimes have in response to a very stressful experience. Please read each problem carefully and then select the answer that indicates how much you have been bothered by that problem in the past week."
         },
         {
           "id": "1",
           "type": "select",
-          "text": "חוויות חוזרות ונשנות, מטרידות ובלתי-רצוניות של החוויה הטראומטית?"
+          "text": "Repeated, disturbing, and unwanted memories of the stressful experience?"
         },
         {
           "id": "4",
           "type": "select",
-          "text": "הרגשה עזה של מצוקה, כאשר משהו מזכיר לך את החוויה הטראומטית?"
+          "text": "Feeling very upset when something reminded you of the stressful experience?"
         },
         {
           "id": "6",
           "type": "select",
-          "text": "הימנעות מזיכרונות, מחשבות או רגשות הקשורים לחוויה הטראומטית?"
+          "text": "Avoiding memories, thoughts, or feelings related to the stressful experience?"
         },
         {
           "id": "7",
           "type": "select",
-          "text": "הימנעות מתזכורות חיצוניות של החוויה הטראומטית (אנשים, מקומות, שיחות, פעילויות, חפצים, מצבים)?"
+          "text": "Avoiding external reminders of the stressful experience (for example, people, places, conversations, activities, objects, or situations)?"
         },
         {
           "id": "9",
           "type": "select",
-          "text": "אמונות שליליות חזקות לגבי עצמך, אנשים אחרים, או העולם?"
+          "text": "Having strong negative beliefs about yourself, other people, or the world?"
         },
         {
           "id": "12",
           "type": "select",
-          "text": "איבוד עניין בפעילויות שפעם נהנית מהן?"
+          "text": "Loss of interest in activities that you used to enjoy?"
         },
         {
           "id": "18",
           "type": "select",
-          "text": "להיבהל בקלות?"
+          "text": "Feeling jumpy or easily startled?"
         },
         {
           "id": "19",
           "type": "select",
-          "text": "קושי בריכוז?"
+          "text": "Having difficulty concentrating?"
         }
       ],
       "scoring": {
@@ -110,18 +111,18 @@
           {
             "min": 0,
             "max": 18,
-            "label": "מתחת לסף הסינון"
+            "label": "Below screening cutoff"
           },
           {
             "min": 19,
             "max": 32,
-            "label": "מעל סף הסינון"
+            "label": "Above screening cutoff"
           }
         ],
         "cutoffs": [
           {
             "value": 19,
-            "label": "סף סינון"
+            "label": "Screening cutoff"
           }
         ]
       },
@@ -134,7 +135,7 @@
         {
           "id": "screen_cutoff",
           "condition": "score.pcl5_8 >= 19",
-          "message": "מעל סף סינון ל-PTSD",
+          "message": "Above PTSD screening cutoff",
           "severity": "warning"
         }
       ]

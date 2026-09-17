@@ -11,44 +11,48 @@
         "type": "process",
         "populations": [
           "adult"
-        ]
+        ],
+        "source": "Wei, Russell, Mallinckrodt & Vogel (2007), J Personality Assessment 88:187–204 (ECR-S) — wording follows the Hebrew file’s generalised referent rather than the English original"
       },
-      "title": "שאלון התקשרות (ECR-S)",
-      "description": "שאלון בן 12 פריטים להערכת חרדת התקשרות והימנעות.",
+      "title": "Experiences in Close Relationships — Short Form (ECR-S)",
+      "description": "A 12-item measure of attachment anxiety and avoidance. Note: this version generalises the original’s romantic-partner referent to close relationships in general, following the Hebrew file — scores are therefore not directly comparable with published ECR-S norms.",
       "keywords": [
         "attachment",
+        "anxiety",
+        "avoidance",
         "ECR",
-        "התקשרות"
+        "ECR-S",
+        "relationships"
       ],
       "defaultOptionSetId": "likert7",
       "optionSets": {
         "likert7": [
           {
-            "label": "מאוד לא מסכים",
+            "label": "Strongly disagree",
             "value": 1
           },
           {
-            "label": "לא מסכים",
+            "label": "Disagree",
             "value": 2
           },
           {
-            "label": "קצת לא מסכים",
+            "label": "Slightly disagree",
             "value": 3
           },
           {
-            "label": "ניטרלי",
+            "label": "Neutral",
             "value": 4
           },
           {
-            "label": "קצת מסכים",
+            "label": "Slightly agree",
             "value": 5
           },
           {
-            "label": "מסכים",
+            "label": "Agree",
             "value": 6
           },
           {
-            "label": "מאוד מסכים",
+            "label": "Strongly agree",
             "value": 7
           }
         ]
@@ -57,66 +61,66 @@
         {
           "id": "1",
           "type": "select",
-          "text": "זה עוזר לפנות לאנשים אחרים ברגעים של צורך",
+          "text": "It helps to turn to other people in times of need",
           "reverse": true
         },
         {
           "id": "2",
           "type": "select",
-          "text": "אני נזקק/ת להרבה אישורים לכך שאני אהוב/ה"
+          "text": "I need a lot of reassurance that I am loved"
         },
         {
           "id": "3",
           "type": "select",
-          "text": "אני רוצה להתקרב לאנשים אבל נסוג/ה מהם"
+          "text": "I want to get close to people, but I pull back from them"
         },
         {
           "id": "4",
           "type": "select",
-          "text": "אני מרגיש/ה שאנשים לא רוצים להיות קרובים כפי שאני רוצה"
+          "text": "I feel that people do not want to be as close as I would like"
         },
         {
           "id": "5",
           "type": "select",
-          "text": "אני פונה לאנשים אחרים לנחמה",
+          "text": "I turn to other people for comfort",
           "reverse": true
         },
         {
           "id": "6",
           "type": "select",
-          "text": "הרצון שלי לקרבה מרחיק אנשים"
+          "text": "My desire for closeness pushes people away"
         },
         {
           "id": "7",
           "type": "select",
-          "text": "אני מנסה להימנע מקרבה"
+          "text": "I try to avoid closeness"
         },
         {
           "id": "8",
           "type": "select",
-          "text": "אינני מודאג/ת שינטשו אותי",
+          "text": "I am not worried about being abandoned",
           "reverse": true
         },
         {
           "id": "9",
           "type": "select",
-          "text": "אני דן/ה בבעיות עם אנשים קרובים",
+          "text": "I discuss my problems with people close to me",
           "reverse": true
         },
         {
           "id": "10",
           "type": "select",
-          "text": "אני מתוסכל/ת כשאחרים לא זמינים"
+          "text": "I get frustrated when others are not available"
         },
         {
           "id": "11",
           "type": "select",
-          "text": "אני נעשה/ית מתוח/ה מקרבה יתר"
+          "text": "I become tense when there is too much closeness"
         },
         {
           "id": "12",
           "type": "select",
-          "text": "אני מודאג/ת שלא אכפת לאחרים ממני"
+          "text": "I worry that others do not care about me"
         }
       ],
       "scoring": {
@@ -141,8 +145,8 @@
         }
       },
       "subscaleLabels": {
-        "anxiety": "חרדת התקשרות",
-        "avoidance": "הימנעות מהתקשרות"
+        "anxiety": "Attachment anxiety",
+        "avoidance": "Attachment avoidance"
       }
     }
   ]

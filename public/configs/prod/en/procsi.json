@@ -1,0 +1,291 @@
+{
+  "id": "procsi",
+  "version": "1.0.0",
+  "questionnaires": [
+    {
+      "id": "procsi",
+      "meta": {
+        "domains": [
+          "ocd"
+        ],
+        "type": "severity",
+        "populations": [
+          "adult"
+        ],
+        "source": "Doron, Derby, Szepsenwol & Talmor (2012) — Partner-Related Obsessive-Compulsive Symptoms Inventory (PROCSI), English original, transcribed from the form supplied 2026-09-18. Anchor labels render the Hebrew file’s wording; the supplied form’s label row did not survive conversion."
+      },
+      "title": "Partner-Related Obsessive-Compulsive Symptoms Inventory (PROCSI)",
+      "description": "A 28-item scale of obsessive-compulsive symptoms focused on a romantic partner.",
+      "keywords": [
+        "relationship OCD",
+        "ROCD",
+        "PROCSI",
+        "partner",
+        "obsessive",
+        "compulsive"
+      ],
+      "defaultOptionSetId": "agreement_5",
+      "optionSets": {
+        "agreement_5": [
+          {
+            "label": "Not at all",
+            "value": 0
+          },
+          {
+            "label": "A little",
+            "value": 1
+          },
+          {
+            "label": "Moderately",
+            "value": 2
+          },
+          {
+            "label": "A lot",
+            "value": 3
+          },
+          {
+            "label": "Very much",
+            "value": 4
+          }
+        ]
+      },
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "The following statements describe the way people may experience intimate relationships. We are interested in the way you generally experience relationships. Please rate the extent to which such thoughts and behaviours describe your experience."
+        },
+        {
+          "id": "note",
+          "type": "instructions",
+          "text": "In the questions that refer to a physical flaw or defect, this means any real or perceived flaw in your partner’s appearance — for example thinning hair, excess body hair, the size or shape of a feature such as the nose, chest, buttocks, body build, weight and so on."
+        },
+        {
+          "id": "q1",
+          "type": "select",
+          "text": "I am happy with my partner's morality level"
+        },
+        {
+          "id": "q2",
+          "type": "select",
+          "text": "I repeatedly evaluate my partner's social functioning"
+        },
+        {
+          "id": "q3",
+          "type": "select",
+          "text": "I am constantly questioning whether my partner is deep and intelligent enough"
+        },
+        {
+          "id": "q4",
+          "type": "select",
+          "text": "I am satisfied by with my partner's appearance"
+        },
+        {
+          "id": "q5",
+          "type": "select",
+          "text": "I am troubled by thoughts about my partner's social skills"
+        },
+        {
+          "id": "q6",
+          "type": "select",
+          "text": "I am constantly bothered by doubts about my partner's morality level"
+        },
+        {
+          "id": "q7",
+          "type": "select",
+          "text": "I find it hard to dismiss the thought that my partner is mentally unbalanced"
+        },
+        {
+          "id": "q8",
+          "type": "select",
+          "text": "I often seek reassurance (from friends, family, etc.) about whether my partner is smart enough"
+        },
+        {
+          "id": "q9",
+          "type": "select",
+          "text": "When I am with my partner I find it hard to ignore her physical flaws"
+        },
+        {
+          "id": "q10",
+          "type": "select",
+          "text": "I keep comparing my partner's ability to \"achieve something\" in life to that of other men/women"
+        },
+        {
+          "id": "q11",
+          "type": "select",
+          "text": "I can't stop comparing my partner's intelligence level to that of other men/women"
+        },
+        {
+          "id": "q12",
+          "type": "select",
+          "text": "I find it difficult to control my tendency to compare my partner's emotional responses to those of other men/women"
+        },
+        {
+          "id": "q13",
+          "type": "select",
+          "text": "The thought that my partner is not intelligent enough bothers me greatly"
+        },
+        {
+          "id": "q14",
+          "type": "select",
+          "text": "I am constantly bothered by thoughts regarding the flaws in my partner's physical appearance"
+        },
+        {
+          "id": "q15",
+          "type": "select",
+          "text": "The thought that my partner is not a \"good and moral\" person bothers me on a daily basis"
+        },
+        {
+          "id": "q16",
+          "type": "select",
+          "text": "I feel good about my partner's level of intelligence"
+        },
+        {
+          "id": "q17",
+          "type": "select",
+          "text": "I keep looking for evidence that my partner is moral enough"
+        },
+        {
+          "id": "q18",
+          "type": "select",
+          "text": "Thoughts about my partner's poor functioning in social situations bother me on a daily basis"
+        },
+        {
+          "id": "q19",
+          "type": "select",
+          "text": "Every time I'm reminded of my partner I think about the flaw in his/her appearance"
+        },
+        {
+          "id": "q20",
+          "type": "select",
+          "text": "I'm constantly examining my partner's morality level"
+        },
+        {
+          "id": "q21",
+          "type": "select",
+          "text": "I keep trying to compensate for my partner's social deficiencies"
+        },
+        {
+          "id": "q22",
+          "type": "select",
+          "text": "I am bothered by doubts about my partner's emotional stability"
+        },
+        {
+          "id": "q23",
+          "type": "select",
+          "text": "I am happy with my partner's social skills"
+        },
+        {
+          "id": "q24",
+          "type": "select",
+          "text": "I keep examining whether my partner acts in a strange manner"
+        },
+        {
+          "id": "q25",
+          "type": "select",
+          "text": "I am extremely preoccupied with assessing my partner's ability to \"make something of himself/herself\""
+        },
+        {
+          "id": "q26",
+          "type": "select",
+          "text": "I feel an uncontrollable urge to compare my partner's physical flaws with those of other men/women"
+        },
+        {
+          "id": "q27",
+          "type": "select",
+          "text": "When I think of my partner I wonder whether he/she is the sort of person who can succeed in the modern world"
+        },
+        {
+          "id": "q28",
+          "type": "select",
+          "text": "I keep looking for evidence of my partner's occupational success"
+        }
+      ],
+      "scoring": {
+        "method": "subscales",
+        "subscales": {
+          "morality": [
+            "q6",
+            "q15",
+            "q17",
+            "q20"
+          ],
+          "social_functioning": [
+            "q21",
+            "q18",
+            "q5",
+            "q2"
+          ],
+          "emotional_stability": [
+            "q24",
+            "q22",
+            "q12",
+            "q7"
+          ],
+          "success_potential": [
+            "q28",
+            "q27",
+            "q25",
+            "q10"
+          ],
+          "appearance": [
+            "q26",
+            "q19",
+            "q14",
+            "q9"
+          ],
+          "intelligence": [
+            "q3",
+            "q8",
+            "q11",
+            "q13"
+          ]
+        },
+        "exclude": [
+          "q1",
+          "q4",
+          "q16",
+          "q23"
+        ]
+      },
+      "subscaleLabels": {
+        "morality": "Morality",
+        "social_functioning": "Social functioning",
+        "emotional_stability": "Emotional stability",
+        "success_potential": "Success potential",
+        "appearance": "Appearance",
+        "intelligence": "Intelligence"
+      },
+      "interpretations": {
+        "target": "total",
+        "type": "screening",
+        "ranges": [
+          {
+            "min": 0,
+            "max": 17,
+            "label": "Below clinical cutoff"
+          },
+          {
+            "min": 18,
+            "max": 96,
+            "label": "Above clinical cutoff"
+          }
+        ],
+        "cutoffs": [
+          {
+            "value": 18,
+            "label": "Clinical cutoff"
+          }
+        ]
+      },
+      "alerts": [
+        {
+          "id": "clinical_cutoff",
+          "condition": "score.procsi >= 18",
+          "message": "PROCSI above clinical cutoff",
+          "severity": "warning"
+        }
+      ]
+    }
+  ]
+}

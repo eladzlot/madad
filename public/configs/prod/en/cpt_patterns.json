@@ -1,0 +1,80 @@
+{
+  "id": "cpt_patterns",
+  "version": "1.1.0",
+  "questionnaires": [
+    {
+      "id": "cpt_patterns",
+      "meta": {
+        "domains": [
+          "trauma"
+        ],
+        "type": "worksheet",
+        "populations": [
+          "adult"
+        ],
+        "tags": [
+          "CPT",
+          "iCPT"
+        ],
+        "source": "Resick, Monson & Chard (2024), Cognitive Processing Therapy for PTSD: A Comprehensive Therapist Manual, 2nd ed. — HANDOUT 10.1, Thinking Patterns Worksheet; pattern names verbatim, prompt framing is Madad’s"
+      },
+      "title": "Thinking Patterns Worksheet (CPT)",
+      "description": "A CPT worksheet for identifying unhelpful patterns of thinking in a trauma-related thought. For each pattern the client checks whether it fits and describes how it affects them.",
+      "keywords": [
+        "CPT",
+        "thinking patterns",
+        "automatic thoughts",
+        "stuck point",
+        "trauma",
+        "cognitive restructuring"
+      ],
+      "items": [
+        {
+          "id": "thought",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "Listed below are patterns of thinking that often become automatic, habitual thoughts and lead us into self-defeating behaviour. Write down a thought related to your trauma, then for each pattern check whether it fits that thought and how it affects you. A thought can fit more than one pattern, and that is fine.",
+          "required": true
+        },
+        {
+          "id": "jumping",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "Jumping to conclusions or predicting the future — does this pattern fit the thought? If so, how does it affect you?",
+          "required": false
+        },
+        {
+          "id": "ignoring",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "Ignoring important parts of a situation — does this pattern fit the thought? If so, how does it affect you?",
+          "required": false
+        },
+        {
+          "id": "oversimplifying",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "Oversimplifying things as “good–bad” or “right–wrong,” or overreaching from a single incident — does this pattern fit the thought? If so, how does it affect you?",
+          "required": false
+        },
+        {
+          "id": "mind_reading",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "Mind reading (assuming that people are thinking negatively of you when there is no definitive evidence of this) — does this pattern fit the thought? If so, how does it affect you?",
+          "required": false
+        },
+        {
+          "id": "emotional_reasoning",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "Emotional reasoning (using your emotions as proof — e.g., “I feel fear, so I must be in danger”) — does this pattern fit the thought? If so, how does it affect you?",
+          "required": false
+        }
+      ],
+      "scoring": {
+        "method": "none"
+      }
+    }
+  ]
+}

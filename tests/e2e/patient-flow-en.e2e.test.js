@@ -77,7 +77,9 @@ test.describe('English patient flow', () => {
     // The dev server answers a missing config with the SPA fallback (HTML,
     // status 200) and production with a real 404 — both are load failures,
     // reported in English, never a silent Hebrew questionnaire.
-    await page.goto('/?items=wsas&lang=en');
+    // A Hebrew-only instrument. If this one ever gains public/configs/prod/en/,
+    // repoint these assertions at another config whose catalog entry is langs: ['he'].
+    await page.goto('/?items=ocsrs_m&lang=en');
     const title = page.locator('.boot-screen__title');
     await expect(title).toBeVisible();
     expect([en['error.badLink'], en['error.cannotLoad']]).toContain(await title.textContent());

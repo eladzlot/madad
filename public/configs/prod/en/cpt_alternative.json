@@ -1,0 +1,220 @@
+{
+  "id": "cpt_alternative",
+  "version": "1.3.0",
+  "questionnaires": [
+    {
+      "id": "cpt_alternative",
+      "meta": {
+        "domains": [
+          "trauma"
+        ],
+        "type": "worksheet",
+        "populations": [
+          "adult"
+        ],
+        "tags": [
+          "CPT",
+          "iCPT"
+        ],
+        "source": "Resick, Monson & Chard (2024), Cognitive Processing Therapy for PTSD: A Comprehensive Therapist Manual, 2nd ed. — HANDOUT 11.1, Alternative Thoughts Worksheet; section headings and question text verbatim, prompt framing is Madad’s"
+      },
+      "title": "Alternative Thoughts Worksheet (CPT)",
+      "description": "The central CPT worksheet, gathering every tool into one unit: identifying the situation, thought and emotion, examining the thought with the exploring questions and thinking patterns, and finding a more balanced alternative thought — with ratings of belief in the thought and of emotion intensity.",
+      "keywords": [
+        "CPT",
+        "alternative thoughts",
+        "challenging beliefs",
+        "stuck point",
+        "trauma",
+        "cognitive restructuring"
+      ],
+      "items": [
+        {
+          "id": "situation",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "A. Situation — describe the event, thought, or belief leading to the unpleasant emotion(s).",
+          "required": true
+        },
+        {
+          "id": "thought",
+          "type": "rated_text",
+          "inputType": "multiline",
+          "text": "B. Thought / Stuck Point — write down the thought or Stuck Point related to the situation in section A.",
+          "ratingText": "How much do you believe this thought?",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "labels": {
+            "min": "Not at all",
+            "max": "Completely"
+          },
+          "required": true
+        },
+        {
+          "id": "emotion",
+          "type": "rated_text",
+          "inputType": "multiline",
+          "text": "C. Emotion(s) — what do you feel (sad, angry, etc.)?",
+          "ratingText": "How strongly do you feel this emotion?",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "labels": {
+            "min": "Not at all",
+            "max": "Extremely"
+          },
+          "required": true
+        },
+        {
+          "id": "clarify",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "What do you mean? Write the Stuck Point clearly enough that a stranger would understand exactly what is troubling you.",
+          "required": false
+        },
+        {
+          "id": "explore_intro",
+          "type": "instructions",
+          "text": "D. Exploring Questions — examine the Stuck Point with the questions below (see the Exploring Questions Worksheet). Answer the ones that are relevant; you do not need to answer them all."
+        },
+        {
+          "id": "explore_evidence",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "What is the evidence against the thought?",
+          "required": false
+        },
+        {
+          "id": "explore_info",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "What information are you not including about the thought?",
+          "required": false
+        },
+        {
+          "id": "explore_extreme",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "Is the thought worded in all-or-none, extreme or exaggerated terms? How could it be worded more evenly?",
+          "required": false
+        },
+        {
+          "id": "explore_onepiece",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "Is the thought overfocused on just one piece of the event? What other parts matter here?",
+          "required": false
+        },
+        {
+          "id": "explore_source",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "Is the source of information for the thought questionable? How?",
+          "required": false
+        },
+        {
+          "id": "explore_possible",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "Is the thought confusing something possible with something definite? How?",
+          "required": false
+        },
+        {
+          "id": "explore_feelings",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "Is the thought based on feelings rather than facts? Which facts contradict the feeling?",
+          "required": false
+        },
+        {
+          "id": "patterns_intro",
+          "type": "instructions",
+          "text": "E. Thinking Patterns — does the thought reflect one of the patterns below (see the Thinking Patterns Worksheet)? Where a pattern applies, describe how it shows up."
+        },
+        {
+          "id": "pattern_jumping",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "Jumping to conclusions or predicting the future",
+          "required": false
+        },
+        {
+          "id": "pattern_ignoring",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "Ignoring important parts of a situation",
+          "required": false
+        },
+        {
+          "id": "pattern_oversimplify",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "Oversimplifying or overreaching",
+          "required": false
+        },
+        {
+          "id": "pattern_mindreading",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "Mind reading",
+          "required": false
+        },
+        {
+          "id": "pattern_emotional",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "Emotional reasoning",
+          "required": false
+        },
+        {
+          "id": "alternative",
+          "type": "rated_text",
+          "inputType": "multiline",
+          "text": "F. Alternative Thought — what else can you say to yourself instead of the Stuck Point above? How else could you interpret the event?",
+          "ratingText": "How much do you believe the alternative thought?",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "labels": {
+            "min": "Not at all",
+            "max": "Completely"
+          },
+          "required": true
+        },
+        {
+          "id": "rerate",
+          "type": "slider",
+          "text": "G. Rerate old thought / Stuck Point — how much do you now believe the Stuck Point you wrote above?",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "labels": {
+            "min": "Do not believe it at all",
+            "max": "Believe it completely"
+          },
+          "display": "block",
+          "required": true
+        },
+        {
+          "id": "new_emotion",
+          "type": "rated_text",
+          "inputType": "multiline",
+          "text": "H. Emotion(s) — what do you feel now, thinking the alternative thought?",
+          "ratingText": "How strongly do you feel this?",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "labels": {
+            "min": "Not at all",
+            "max": "Extremely"
+          },
+          "required": true
+        }
+      ],
+      "scoring": {
+        "method": "none"
+      }
+    }
+  ]
+}

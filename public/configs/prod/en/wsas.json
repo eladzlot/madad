@@ -1,0 +1,128 @@
+{
+  "id": "wsas",
+  "version": "1.0.0",
+  "questionnaires": [
+    {
+      "id": "wsas",
+      "meta": {
+        "domains": [
+          "functioning"
+        ],
+        "type": "severity",
+        "populations": [
+          "adult"
+        ],
+        "featured": true,
+        "source": "Mundt, Marks, Shear & Greist (2002), Br J Psychiatry 180:461–464 — English original"
+      },
+      "title": "Work and Social Adjustment Scale (WSAS)",
+      "description": "A 5-item measure of functional impairment in work, home management, social leisure, private leisure and relationships. Scores range 0–40; higher scores indicate more severe impairment.",
+      "keywords": [
+        "functioning",
+        "impairment",
+        "WSAS",
+        "work",
+        "social adjustment",
+        "disability"
+      ],
+      "defaultOptionSetId": "wsas_scale",
+      "optionSets": {
+        "wsas_scale": [
+          {
+            "label": "0 — Not at all impaired",
+            "value": 0
+          },
+          {
+            "label": "1",
+            "value": 1
+          },
+          {
+            "label": "2 — Slightly impaired",
+            "value": 2
+          },
+          {
+            "label": "3",
+            "value": 3
+          },
+          {
+            "label": "4 — Definitely impaired",
+            "value": 4
+          },
+          {
+            "label": "5",
+            "value": 5
+          },
+          {
+            "label": "6 — Markedly impaired",
+            "value": 6
+          },
+          {
+            "label": "7",
+            "value": 7
+          },
+          {
+            "label": "8 — Very severely impaired",
+            "value": 8
+          }
+        ]
+      },
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "People’s problems sometimes affect their ability to do certain day-to-day tasks in their lives. For each section below, rate how much your problem impairs your ability to carry out the activity."
+        },
+        {
+          "id": "1",
+          "type": "select",
+          "text": "Because of my problem, my ability to work is impaired.",
+          "required": false
+        },
+        {
+          "id": "2",
+          "type": "select",
+          "text": "Because of my problem, my home management (cleaning, tidying, shopping, cooking, looking after home or children, paying bills) is impaired."
+        },
+        {
+          "id": "3",
+          "type": "select",
+          "text": "Because of my problem, my social leisure activities (with other people, such as parties, bars, clubs, outings, visits, dating, home entertainment) are impaired."
+        },
+        {
+          "id": "4",
+          "type": "select",
+          "text": "Because of my problem, my private leisure activities (done alone, such as reading, gardening, collecting, sewing, walking alone) are impaired."
+        },
+        {
+          "id": "5",
+          "type": "select",
+          "text": "Because of my problem, my ability to form and maintain close relationships with others, including those I live with, is impaired."
+        }
+      ],
+      "scoring": {
+        "method": "sum"
+      },
+      "interpretations": {
+        "target": "total",
+        "type": "severity",
+        "ranges": [
+          {
+            "min": 0,
+            "max": 9,
+            "label": "Subclinical"
+          },
+          {
+            "min": 10,
+            "max": 20,
+            "label": "Significant impairment"
+          },
+          {
+            "min": 21,
+            "max": 40,
+            "label": "Severe impairment"
+          }
+        ]
+      }
+    }
+  ]
+}

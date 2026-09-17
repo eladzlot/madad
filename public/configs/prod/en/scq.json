@@ -1,0 +1,179 @@
+{
+  "id": "scq",
+  "version": "2.0.0",
+  "questionnaires": [
+    {
+      "id": "scq",
+      "meta": {
+        "domains": [
+          "social"
+        ],
+        "type": "process",
+        "populations": [
+          "adult"
+        ],
+        "source": "Wells, Stopa & Clark — Social Cognitions Questionnaire; English original, transcribed from the SCQ form supplied 2026-09-18"
+      },
+      "title": "Social Cognitions Questionnaire (SCQ)",
+      "description": "Frequency of negative thoughts typical of social anxiety over the past week.",
+      "keywords": [
+        "social anxiety",
+        "cognitions",
+        "SCQ",
+        "negative thoughts",
+        "social phobia"
+      ],
+      "defaultOptionSetId": "scq_freq",
+      "optionSets": {
+        "scq_freq": [
+          {
+            "label": "Thought never occurs",
+            "value": 0
+          },
+          {
+            "label": "Thought rarely occurs",
+            "value": 1
+          },
+          {
+            "label": "Thought occurs during half of the times when I am nervous",
+            "value": 2
+          },
+          {
+            "label": "Thought usually occurs",
+            "value": 3
+          },
+          {
+            "label": "Thought always occurs when I am nervous",
+            "value": 4
+          }
+        ]
+      },
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "Listed below are some thoughts that go through people’s minds when they are nervous or frightened. Indicate how often each thought has occurred over the past week."
+        },
+        {
+          "id": "1",
+          "type": "select",
+          "text": "I will be unable to speak"
+        },
+        {
+          "id": "2",
+          "type": "select",
+          "text": "I am unlikeable"
+        },
+        {
+          "id": "3",
+          "type": "select",
+          "text": "I am going to tremble or shake uncontrollably"
+        },
+        {
+          "id": "4",
+          "type": "select",
+          "text": "People will stare at me"
+        },
+        {
+          "id": "5",
+          "type": "select",
+          "text": "I am foolish"
+        },
+        {
+          "id": "6",
+          "type": "select",
+          "text": "People will reject me"
+        },
+        {
+          "id": "7",
+          "type": "select",
+          "text": "I will be paralysed with fear"
+        },
+        {
+          "id": "8",
+          "type": "select",
+          "text": "I will drop or spill things"
+        },
+        {
+          "id": "9",
+          "type": "select",
+          "text": "I am going to be sick"
+        },
+        {
+          "id": "10",
+          "type": "select",
+          "text": "I am inadequate"
+        },
+        {
+          "id": "11",
+          "type": "select",
+          "text": "I will babble or talk funny"
+        },
+        {
+          "id": "12",
+          "type": "select",
+          "text": "I am inferior"
+        },
+        {
+          "id": "13",
+          "type": "select",
+          "text": "I will be unable to concentrate"
+        },
+        {
+          "id": "14",
+          "type": "select",
+          "text": "I will be unable to write properly"
+        },
+        {
+          "id": "15",
+          "type": "select",
+          "text": "People are not interested in me"
+        },
+        {
+          "id": "16",
+          "type": "select",
+          "text": "People won’t like me"
+        },
+        {
+          "id": "17",
+          "type": "select",
+          "text": "I am vulnerable"
+        },
+        {
+          "id": "18",
+          "type": "select",
+          "text": "I will sweat/perspire"
+        },
+        {
+          "id": "19",
+          "type": "select",
+          "text": "I am going red/blushing"
+        },
+        {
+          "id": "20",
+          "type": "select",
+          "text": "I am weird/different"
+        },
+        {
+          "id": "21",
+          "type": "select",
+          "text": "People will see I am nervous"
+        },
+        {
+          "id": "22",
+          "type": "select",
+          "text": "People think I am boring"
+        },
+        {
+          "id": "other",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "Other thoughts not listed (please specify):"
+        }
+      ],
+      "scoring": {
+        "method": "sum"
+      }
+    }
+  ]
+}

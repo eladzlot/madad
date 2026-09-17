@@ -1,0 +1,198 @@
+{
+  "id": "oasis",
+  "version": "1.0.0",
+  "questionnaires": [
+    {
+      "id": "oasis",
+      "meta": {
+        "domains": [
+          "anxiety",
+          "functioning"
+        ],
+        "type": "severity",
+        "populations": [
+          "adult"
+        ],
+        "source": "Norman, Hami Cissell, Means-Christensen & Stein (2006), Depression and Anxiety 23:245–249 — English original, full anchor descriptions from the OASIS form at osf.io/mfk4r"
+      },
+      "title": "Overall Anxiety Severity and Impairment Scale (OASIS)",
+      "description": "A 5-item transdiagnostic measure of anxiety severity and impairment over the past week, applicable across anxiety disorders.",
+      "keywords": [
+        "anxiety",
+        "OASIS",
+        "severity",
+        "impairment",
+        "transdiagnostic",
+        "screening"
+      ],
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "The following items ask about anxiety and fear. For each item, select the answer that best describes your experience over the past week."
+        },
+        {
+          "id": "1",
+          "type": "select",
+          "text": "In the past week, how often have you felt anxious?",
+          "options": [
+            {
+              "label": "None — no anxiety in the past week",
+              "value": 0
+            },
+            {
+              "label": "Infrequent — felt anxious a few times",
+              "value": 1
+            },
+            {
+              "label": "Occasional — felt anxious as much of the time as not; it was hard to relax",
+              "value": 2
+            },
+            {
+              "label": "Frequent — felt anxious most of the time; it was very difficult to relax",
+              "value": 3
+            },
+            {
+              "label": "Constant — felt anxious all of the time and never really relaxed",
+              "value": 4
+            }
+          ]
+        },
+        {
+          "id": "2",
+          "type": "select",
+          "text": "In the past week, when you have felt anxious, how intense or severe was your anxiety?",
+          "options": [
+            {
+              "label": "Little or none — anxiety was absent or barely noticeable",
+              "value": 0
+            },
+            {
+              "label": "Mild — anxiety was at a low level; it was possible to relax when I tried",
+              "value": 1
+            },
+            {
+              "label": "Moderate — anxiety was distressing at times; it was hard to relax or concentrate",
+              "value": 2
+            },
+            {
+              "label": "Severe — anxiety was intense much of the time; it was very difficult to relax or focus",
+              "value": 3
+            },
+            {
+              "label": "Extreme — anxiety was overwhelming; it was impossible to relax at all",
+              "value": 4
+            }
+          ]
+        },
+        {
+          "id": "3",
+          "type": "select",
+          "text": "In the past week, how often did you avoid situations, places, objects, or activities because of anxiety or fear?",
+          "options": [
+            {
+              "label": "None — I do not avoid places, situations, activities, or things because of fear",
+              "value": 0
+            },
+            {
+              "label": "Infrequent — I avoid something once in a while, but usually face it; my lifestyle is not affected",
+              "value": 1
+            },
+            {
+              "label": "Occasional — some fear of certain situations, but still manageable; my lifestyle has changed only slightly",
+              "value": 2
+            },
+            {
+              "label": "Frequent — considerable fear, and I have made significant changes to my lifestyle to avoid it",
+              "value": 3
+            },
+            {
+              "label": "All the time — avoidance has taken over my life; I no longer do things I used to enjoy",
+              "value": 4
+            }
+          ]
+        },
+        {
+          "id": "4",
+          "type": "select",
+          "text": "In the past week, how much did your anxiety interfere with your ability to do the things you needed to do at work, at school, or at home?",
+          "options": [
+            {
+              "label": "None — no interference at work, home or school from anxiety",
+              "value": 0
+            },
+            {
+              "label": "Mild — some interference; things are more difficult, but everything still gets done",
+              "value": 1
+            },
+            {
+              "label": "Moderate — anxiety definitely interferes; most things get done, but few as well as in the past",
+              "value": 2
+            },
+            {
+              "label": "Severe — my ability to get things done has really changed; many things are not getting done",
+              "value": 3
+            },
+            {
+              "label": "Extreme — anxiety has become incapacitating; I am unable to complete tasks",
+              "value": 4
+            }
+          ]
+        },
+        {
+          "id": "5",
+          "type": "select",
+          "text": "In the past week, how much has anxiety interfered with your social life and relationships?",
+          "options": [
+            {
+              "label": "None — my anxiety doesn’t affect my relationships",
+              "value": 0
+            },
+            {
+              "label": "Mild — slight interference; some relationships have suffered, but my social life is still fulfilling",
+              "value": 1
+            },
+            {
+              "label": "Moderate — some interference; I still have a few close relationships and socialise sometimes",
+              "value": 2
+            },
+            {
+              "label": "Severe — my relationships have suffered a lot; I do not enjoy social activities and socialise very little",
+              "value": 3
+            },
+            {
+              "label": "Extreme — my social activities are completely disrupted; relationships have suffered or ended",
+              "value": 4
+            }
+          ]
+        }
+      ],
+      "scoring": {
+        "method": "sum"
+      },
+      "interpretations": {
+        "target": "total",
+        "type": "screening",
+        "ranges": [
+          {
+            "min": 0,
+            "max": 7,
+            "label": "Below clinical cutoff"
+          },
+          {
+            "min": 8,
+            "max": 20,
+            "label": "Above screening cutoff for anxiety"
+          }
+        ],
+        "cutoffs": [
+          {
+            "value": 8,
+            "label": "Screening cutoff"
+          }
+        ]
+      },
+      "alerts": []
+    }
+  ]
+}

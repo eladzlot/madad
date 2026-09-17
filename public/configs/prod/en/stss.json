@@ -1,0 +1,232 @@
+{
+  "id": "stss",
+  "version": "1.0.0",
+  "questionnaires": [
+    {
+      "id": "stss",
+      "title": "Secondary Traumatic Stress Scale (STSS)",
+      "description": "A 17-item self-report measure of secondary traumatic stress in professionals working with traumatised clients, over the past seven days; yields intrusion, avoidance and arousal subscales.",
+      "keywords": [
+        "secondary trauma",
+        "STSS",
+        "compassion fatigue",
+        "clinicians",
+        "vicarious trauma"
+      ],
+      "meta": {
+        "domains": [
+          "trauma"
+        ],
+        "type": "severity",
+        "populations": [
+          "adult"
+        ],
+        "tags": [
+          "secondary trauma",
+          "clinicians"
+        ],
+        "source": "Bride, Robinson, Yegidis & Figley (2004), Research on Social Work Practice 14:27–35 — English original, transcribed from the paper’s appendix"
+      },
+      "defaultOptionSetId": "frequency_5",
+      "optionSets": {
+        "frequency_5": [
+          {
+            "label": "Never",
+            "value": 1
+          },
+          {
+            "label": "Rarely",
+            "value": 2
+          },
+          {
+            "label": "Occasionally",
+            "value": 3
+          },
+          {
+            "label": "Often",
+            "value": 4
+          },
+          {
+            "label": "Very often",
+            "value": 5
+          }
+        ]
+      },
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "The following is a list of statements made by persons who have been impacted by their work with traumatised clients. Read each statement, then indicate how frequently it was true for you in the past seven days."
+        },
+        {
+          "id": "1",
+          "type": "select",
+          "text": "I felt emotionally numb."
+        },
+        {
+          "id": "2",
+          "type": "select",
+          "text": "My heart started pounding when I thought about my work with clients."
+        },
+        {
+          "id": "3",
+          "type": "select",
+          "text": "It seemed as if I was reliving the trauma(s) experienced by my client(s)."
+        },
+        {
+          "id": "4",
+          "type": "select",
+          "text": "I had trouble sleeping."
+        },
+        {
+          "id": "5",
+          "type": "select",
+          "text": "I felt discouraged about the future."
+        },
+        {
+          "id": "6",
+          "type": "select",
+          "text": "Reminders of my work with clients upset me."
+        },
+        {
+          "id": "7",
+          "type": "select",
+          "text": "I had little interest in being around others."
+        },
+        {
+          "id": "8",
+          "type": "select",
+          "text": "I felt jumpy."
+        },
+        {
+          "id": "9",
+          "type": "select",
+          "text": "I was less active than usual."
+        },
+        {
+          "id": "10",
+          "type": "select",
+          "text": "I thought about my work with clients when I didn’t intend to."
+        },
+        {
+          "id": "11",
+          "type": "select",
+          "text": "I had trouble concentrating."
+        },
+        {
+          "id": "12",
+          "type": "select",
+          "text": "I avoided people, places, or things that reminded me of my work with clients."
+        },
+        {
+          "id": "13",
+          "type": "select",
+          "text": "I had disturbing dreams about my work with clients."
+        },
+        {
+          "id": "14",
+          "type": "select",
+          "text": "I wanted to avoid working with some clients."
+        },
+        {
+          "id": "15",
+          "type": "select",
+          "text": "I was easily annoyed."
+        },
+        {
+          "id": "16",
+          "type": "select",
+          "text": "I expected something bad to happen."
+        },
+        {
+          "id": "17",
+          "type": "select",
+          "text": "I noticed gaps in my memory about client sessions."
+        }
+      ],
+      "scoring": {
+        "method": "subscales",
+        "subscales": {
+          "intrusion": [
+            "2",
+            "3",
+            "6",
+            "10",
+            "13"
+          ],
+          "avoidance": [
+            "1",
+            "5",
+            "7",
+            "9",
+            "12",
+            "14",
+            "17"
+          ],
+          "arousal": [
+            "4",
+            "8",
+            "11",
+            "15",
+            "16"
+          ]
+        }
+      },
+      "subscaleLabels": {
+        "intrusion": "Intrusion",
+        "avoidance": "Avoidance",
+        "arousal": "Arousal"
+      },
+      "interpretations": {
+        "target": "total",
+        "type": "severity",
+        "ranges": [
+          {
+            "min": 17,
+            "max": 27,
+            "label": "Little or no secondary trauma"
+          },
+          {
+            "min": 28,
+            "max": 37,
+            "label": "Mild secondary trauma"
+          },
+          {
+            "min": 38,
+            "max": 43,
+            "label": "Moderate secondary trauma"
+          },
+          {
+            "min": 44,
+            "max": 48,
+            "label": "High secondary trauma"
+          },
+          {
+            "min": 49,
+            "max": 85,
+            "label": "Severe secondary trauma"
+          }
+        ],
+        "cutoffs": [
+          {
+            "value": 38,
+            "label": "Threshold for STS"
+          }
+        ]
+      },
+      "psychometrics": {
+        "reliability": 0.93,
+        "sd": 10.76,
+        "source": "Bride et al. 2004"
+      },
+      "alerts": [
+        {
+          "id": "clinical_cutoff",
+          "condition": "score.stss >= 38",
+          "message": "Above secondary trauma cutoff",
+          "severity": "warning"
+        }
+      ]
+    }
+  ]
+}

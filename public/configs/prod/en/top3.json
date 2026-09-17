@@ -1,0 +1,118 @@
+{
+  "id": "top3",
+  "version": "2.0.0",
+  "questionnaires": [
+    {
+      "id": "top3",
+      "meta": {
+        "domains": [
+          "general"
+        ],
+        "type": "worksheet",
+        "populations": [
+          "adult"
+        ],
+        "featured": true,
+        "source": "Madad original, after the Top Problems Assessment idiom (Weisz et al., 2011, J Consult Clin Psychol 79:369–380) — English rendering of the Hebrew wording"
+      },
+      "title": "Top Three Problems",
+      "description": "An idiographic three-problem measure: the client names up to three main problems and rates how much each one bothers them on a 1–12 scale, with an optional description of how they have coped with each.",
+      "keywords": [
+        "problems",
+        "idiographic",
+        "severity",
+        "coping",
+        "top problems"
+      ],
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "Please name the three main problems you are seeking help with in therapy. For each one, mark on a scale from 1 to 12 how much it bothers you."
+        },
+        {
+          "id": "p1",
+          "type": "rated_text",
+          "inputType": "multiline",
+          "text": "First problem — describe it briefly:",
+          "ratingText": "How much does the first problem bother you?",
+          "min": 1,
+          "max": 12,
+          "labels": {
+            "min": "Very slightly",
+            "max": "Very much"
+          },
+          "required": true
+        },
+        {
+          "id": "p1_coping",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "How have you coped with this problem so far?",
+          "required": false
+        },
+        {
+          "id": "p2",
+          "type": "rated_text",
+          "inputType": "multiline",
+          "text": "Second problem — describe it briefly (if any):",
+          "ratingText": "How much does the second problem bother you?",
+          "min": 1,
+          "max": 12,
+          "labels": {
+            "min": "Very slightly",
+            "max": "Very much"
+          },
+          "required": false
+        },
+        {
+          "id": "if_p2",
+          "type": "if",
+          "condition": "count(item.p2__text) >= 1",
+          "then": [
+            {
+              "id": "p2_coping",
+              "type": "text",
+              "inputType": "multiline",
+              "text": "How have you coped with this problem so far?",
+              "required": false
+            },
+            {
+              "id": "p3",
+              "type": "rated_text",
+              "inputType": "multiline",
+              "text": "Third problem — describe it briefly (if any):",
+              "ratingText": "How much does the third problem bother you?",
+              "min": 1,
+              "max": 12,
+              "labels": {
+                "min": "Very slightly",
+                "max": "Very much"
+              },
+              "required": false
+            },
+            {
+              "id": "if_p3",
+              "type": "if",
+              "condition": "count(item.p3__text) >= 1",
+              "then": [
+                {
+                  "id": "p3_coping",
+                  "type": "text",
+                  "inputType": "multiline",
+                  "text": "How have you coped with this problem so far?",
+                  "required": false
+                }
+              ],
+              "else": []
+            }
+          ],
+          "else": []
+        }
+      ],
+      "scoring": {
+        "method": "average"
+      }
+    }
+  ]
+}

@@ -1,0 +1,193 @@
+{
+  "id": "roci",
+  "version": "1.0.0",
+  "questionnaires": [
+    {
+      "id": "roci",
+      "meta": {
+        "domains": [
+          "ocd"
+        ],
+        "type": "severity",
+        "populations": [
+          "adult"
+        ],
+        "source": "Doron, Derby, Szepsenwol & Talmor (2012) — Relationship Obsessive-Compulsive Inventory (ROCI), English original, transcribed from the form supplied 2026-09-18. Anchor labels render the Hebrew file’s wording; the supplied form’s label row did not survive conversion."
+      },
+      "title": "Relationship Obsessive-Compulsive Inventory (ROCI)",
+      "description": "A 14-item scale of obsessive-compulsive symptoms focused on the romantic relationship itself.",
+      "keywords": [
+        "relationship OCD",
+        "ROCD",
+        "ROCI",
+        "relationship",
+        "obsessive",
+        "compulsive"
+      ],
+      "defaultOptionSetId": "agreement_5",
+      "optionSets": {
+        "agreement_5": [
+          {
+            "label": "Not at all",
+            "value": 0
+          },
+          {
+            "label": "A little",
+            "value": 1
+          },
+          {
+            "label": "Moderately",
+            "value": 2
+          },
+          {
+            "label": "A lot",
+            "value": 3
+          },
+          {
+            "label": "Very much",
+            "value": 4
+          }
+        ]
+      },
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "The following statements describe the way people may experience intimate relationships. We are interested in the way you generally experience relationships. Please rate the extent to which such thoughts and behaviours describe your experience."
+        },
+        {
+          "id": "q1",
+          "type": "select",
+          "text": "The thought that I don't really love my partner haunts me"
+        },
+        {
+          "id": "q2",
+          "type": "select",
+          "text": "I find it easy to dismiss my doubts about my partner"
+        },
+        {
+          "id": "q3",
+          "type": "select",
+          "text": "I constantly doubt my relationship"
+        },
+        {
+          "id": "q4",
+          "type": "select",
+          "text": "I find it difficult to dismiss doubts regarding my partner's love for me"
+        },
+        {
+          "id": "q5",
+          "type": "select",
+          "text": "I check and recheck whether my relationship feels \"right\""
+        },
+        {
+          "id": "q6",
+          "type": "select",
+          "text": "I am constantly looking for evidence that my partner really loves me"
+        },
+        {
+          "id": "q7",
+          "type": "select",
+          "text": "I feel that I must remind myself over and over again why I love my partner"
+        },
+        {
+          "id": "q8",
+          "type": "select",
+          "text": "I am sure my partner loves me"
+        },
+        {
+          "id": "q9",
+          "type": "select",
+          "text": "I am extremely disturbed by thoughts that something is \"not right\" in my relationship"
+        },
+        {
+          "id": "q10",
+          "type": "select",
+          "text": "I continuously doubt my love for my partner"
+        },
+        {
+          "id": "q11",
+          "type": "select",
+          "text": "I keep asking my partner whether she/he really loves me"
+        },
+        {
+          "id": "q12",
+          "type": "select",
+          "text": "I frequently seek reassurance that my relationship is \"right\""
+        },
+        {
+          "id": "q13",
+          "type": "select",
+          "text": "I am constantly bothered by the thought that my partner doesn't really want to be with me"
+        },
+        {
+          "id": "q14",
+          "type": "select",
+          "text": "I feel a need to repeatedly check how much I love my partner"
+        }
+      ],
+      "scoring": {
+        "method": "subscales",
+        "subscales": {
+          "partner_love_doubt": [
+            "q4",
+            "q6",
+            "q11",
+            "q13"
+          ],
+          "self_love_doubt": [
+            "q1",
+            "q7",
+            "q10",
+            "q14"
+          ],
+          "relationship_not_right": [
+            "q3",
+            "q5",
+            "q9",
+            "q12"
+          ]
+        },
+        "exclude": [
+          "q2",
+          "q8"
+        ]
+      },
+      "subscaleLabels": {
+        "partner_love_doubt": "Doubts about the partner’s love",
+        "self_love_doubt": "Doubts about one’s own love",
+        "relationship_not_right": "The relationship is not right"
+      },
+      "interpretations": {
+        "target": "total",
+        "type": "screening",
+        "ranges": [
+          {
+            "min": 0,
+            "max": 21,
+            "label": "Below clinical cutoff"
+          },
+          {
+            "min": 22,
+            "max": 48,
+            "label": "Above clinical cutoff"
+          }
+        ],
+        "cutoffs": [
+          {
+            "value": 22,
+            "label": "Clinical cutoff"
+          }
+        ]
+      },
+      "alerts": [
+        {
+          "id": "clinical_cutoff",
+          "condition": "score.roci >= 22",
+          "message": "ROCI above clinical cutoff",
+          "severity": "warning"
+        }
+      ]
+    }
+  ]
+}

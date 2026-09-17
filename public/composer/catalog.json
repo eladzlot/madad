@@ -106,8 +106,23 @@
       "tags": [],
       "featured": false,
       "languages": [
-        "he"
-      ]
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Autism Spectrum Quotient (AQ)",
+          "description": "A 50-item self-report screen for autism-spectrum traits in adults of normal intelligence (age 16 and over).",
+          "keywords": [
+            "autism",
+            "ASD",
+            "AQ",
+            "autism spectrum quotient",
+            "screening",
+            "traits"
+          ]
+        }
+      }
     },
     {
       "id": "asi_3",
@@ -136,8 +151,23 @@
       "tags": [],
       "featured": false,
       "languages": [
-        "he"
-      ]
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Anxiety Sensitivity Index-3 (ASI-3)",
+          "description": "Fear of anxiety-related sensations over the past week, across physical, cognitive and social concerns (Anxiety Sensitivity, ASI-3)",
+          "keywords": [
+            "anxiety",
+            "anxiety sensitivity",
+            "ASI",
+            "ASI-3",
+            "panic",
+            "fear of sensations"
+          ]
+        }
+      }
     },
     {
       "id": "cape15",
@@ -166,8 +196,22 @@
       "tags": [],
       "featured": false,
       "languages": [
-        "he"
-      ]
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Community Assessment of Psychic Experiences — Positive scale (CAPE-P15)",
+          "description": "A 15-item self-report screen for psychosis-like experiences over the past three months (the current-state CAPE-P15).",
+          "keywords": [
+            "psychosis",
+            "CAPE",
+            "CAPE-P15",
+            "psychotic-like experiences",
+            "screening"
+          ]
+        }
+      }
     },
     {
       "id": "cape42",
@@ -223,8 +267,21 @@
       "tags": [],
       "featured": true,
       "languages": [
-        "he"
-      ]
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Initial assessment",
+          "description": "Initial assessment battery: the DIAMOND screener, followed by focused questionnaires according to the symptoms reported.",
+          "keywords": [
+            "intake",
+            "screening",
+            "clinical",
+            "DIAMOND"
+          ]
+        }
+      }
     },
     {
       "id": "cpt_abc",
@@ -302,8 +359,23 @@
       ],
       "featured": false,
       "languages": [
-        "he"
-      ]
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Alternative Thoughts Worksheet (CPT)",
+          "description": "The central CPT worksheet, gathering every tool into one unit: identifying the situation, thought and emotion, examining the thought with…",
+          "keywords": [
+            "CPT",
+            "alternative thoughts",
+            "challenging beliefs",
+            "stuck point",
+            "trauma",
+            "cognitive restructuring"
+          ]
+        }
+      }
     },
     {
       "id": "cpt_exploring",
@@ -334,8 +406,23 @@
       ],
       "featured": false,
       "languages": [
-        "he"
-      ]
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Exploring Questions Worksheet (CPT)",
+          "description": "A CPT worksheet for examining a Stuck Point systematically through a series of questions. The client picks one Stuck Point and answers the…",
+          "keywords": [
+            "CPT",
+            "exploring questions",
+            "challenging questions",
+            "stuck point",
+            "trauma",
+            "cognitive restructuring"
+          ]
+        }
+      }
     },
     {
       "id": "cpt_patterns",
@@ -365,8 +452,23 @@
       ],
       "featured": false,
       "languages": [
-        "he"
-      ]
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Thinking Patterns Worksheet (CPT)",
+          "description": "A CPT worksheet for identifying unhelpful patterns of thinking in a trauma-related thought. For each pattern the client checks whether it…",
+          "keywords": [
+            "CPT",
+            "thinking patterns",
+            "automatic thoughts",
+            "stuck point",
+            "trauma",
+            "cognitive restructuring"
+          ]
+        }
+      }
     },
     {
       "id": "dar5",
@@ -394,8 +496,23 @@
       "tags": [],
       "featured": true,
       "languages": [
-        "he"
-      ]
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Dimensions of Anger Reactions (DAR-5)",
+          "description": "A 5-item scale of anger reactions over the past four weeks — frequency, intensity, duration, aggression and interference with relationships…",
+          "keywords": [
+            "anger",
+            "DAR",
+            "DAR-5",
+            "aggression",
+            "irritability",
+            "screening"
+          ]
+        }
+      }
     },
     {
       "id": "dass21",
@@ -503,8 +620,21 @@
       "tags": [],
       "featured": true,
       "languages": [
-        "he"
-      ]
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Difficulties in Emotion Regulation Scale (DERS)",
+          "description": "A 36-item measure of difficulties in emotion regulation across six dimensions (Gratz & Roemer, 2004).",
+          "keywords": [
+            "emotion regulation",
+            "DERS",
+            "emotion dysregulation",
+            "affect"
+          ]
+        }
+      }
     },
     {
       "id": "diamond_sr",
@@ -535,8 +665,22 @@
       "tags": [],
       "featured": true,
       "languages": [
-        "he"
-      ]
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "DIAMOND Self Report Screener",
+          "description": "A 30-item yes/no screener covering anxiety, mood, obsessive-compulsive spectrum, trauma, psychosis, eating disorders, substance use, ADHD…",
+          "keywords": [
+            "screening",
+            "DIAMOND",
+            "intake",
+            "diagnosis",
+            "transdiagnostic"
+          ]
+        }
+      }
     },
     {
       "id": "ecrs",
@@ -561,8 +705,23 @@
       "tags": [],
       "featured": false,
       "languages": [
-        "he"
-      ]
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Experiences in Close Relationships — Short Form (ECR-S)",
+          "description": "A 12-item measure of attachment anxiety and avoidance. Note: this version generalises the original’s romantic-partner referent to close…",
+          "keywords": [
+            "attachment",
+            "anxiety",
+            "avoidance",
+            "ECR",
+            "ECR-S",
+            "relationships"
+          ]
+        }
+      }
     },
     {
       "id": "gad7",
@@ -633,8 +792,22 @@
       "tags": [],
       "featured": false,
       "languages": [
-        "he"
-      ]
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Health Anxiety Inventory (HAI-18)",
+          "description": "Health anxiety — 18 items covering preoccupation with health, fear of illness, and perceived danger and disability (Health Anxiety…",
+          "keywords": [
+            "health anxiety",
+            "hypochondriasis",
+            "HAI",
+            "SHAI",
+            "illness worry"
+          ]
+        }
+      }
     },
     {
       "id": "isi",
@@ -690,8 +863,22 @@
       "tags": [],
       "featured": false,
       "languages": [
-        "he"
-      ]
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Massachusetts General Hospital Hairpulling Scale (MGH-HPS)",
+          "description": "Severity of hairpulling over the past week — 7 items (Massachusetts General Hospital Hairpulling Scale).",
+          "keywords": [
+            "trichotillomania",
+            "hairpulling",
+            "MGH-HPS",
+            "BFRB",
+            "severity"
+          ]
+        }
+      }
     },
     {
       "id": "novaco_anger_situations",
@@ -748,8 +935,23 @@
       "tags": [],
       "featured": false,
       "languages": [
-        "he"
-      ]
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Overall Anxiety Severity and Impairment Scale (OASIS)",
+          "description": "A 5-item transdiagnostic measure of anxiety severity and impairment over the past week, applicable across anxiety disorders.",
+          "keywords": [
+            "anxiety",
+            "OASIS",
+            "severity",
+            "impairment",
+            "transdiagnostic",
+            "screening"
+          ]
+        }
+      }
     },
     {
       "id": "oci_r",
@@ -779,8 +981,25 @@
       "tags": [],
       "featured": true,
       "languages": [
-        "he"
-      ]
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Obsessive-Compulsive Inventory — Revised (OCI-R)",
+          "description": "Distress caused by obsessive-compulsive symptoms over the past week (OCD, Obsessive-Compulsive, OCI-R)",
+          "keywords": [
+            "OCD",
+            "obsessive",
+            "compulsive",
+            "OCI",
+            "OCI-R",
+            "checking",
+            "hoarding",
+            "washing"
+          ]
+        }
+      }
     },
     {
       "id": "ocsrs_m",
@@ -922,13 +1141,27 @@
       ],
       "tags": [
         "PCL-5",
-        "גרסה מקוצרת",
         "screening"
       ],
       "featured": false,
       "languages": [
-        "he"
-      ]
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Abbreviated PTSD Checklist — 4 items (PCL-5)",
+          "description": "A 4-item abbreviation of the PCL-5 screening for PTSD symptoms over the past week (Price et al., 2016); screening cutoff 10.",
+          "keywords": [
+            "PTSD",
+            "trauma",
+            "PCL-5",
+            "screening",
+            "abbreviated",
+            "short form"
+          ]
+        }
+      }
     },
     {
       "id": "pcl5_8",
@@ -956,13 +1189,28 @@
       ],
       "tags": [
         "PCL-5",
-        "גרסה מקוצרת",
         "screening"
       ],
       "featured": false,
       "languages": [
-        "he"
-      ]
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Abbreviated PTSD Checklist — 8 items (PCL-5)",
+          "description": "An 8-item abbreviation of the PCL-5 for monitoring PTSD symptoms over the past week (Price et al., 2016); screening cutoff 19.",
+          "keywords": [
+            "PTSD",
+            "trauma",
+            "PCL-5",
+            "screening",
+            "monitoring",
+            "abbreviated",
+            "short form"
+          ]
+        }
+      }
     },
     {
       "id": "pdss_sr",
@@ -990,8 +1238,23 @@
       "tags": [],
       "featured": true,
       "languages": [
-        "he"
-      ]
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Panic Disorder Severity Scale — Self Report (PDSS-SR)",
+          "description": "Severity of panic symptoms over the past week (Panic Disorder Severity Scale – Self Report)",
+          "keywords": [
+            "panic",
+            "panic disorder",
+            "PDSS",
+            "PDSS-SR",
+            "agoraphobia",
+            "severity"
+          ]
+        }
+      }
     },
     {
       "id": "phq9",
@@ -1146,8 +1409,23 @@
       "tags": [],
       "featured": false,
       "languages": [
-        "he"
-      ]
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Partner-Related Obsessive-Compulsive Symptoms Inventory (PROCSI)",
+          "description": "A 28-item scale of obsessive-compulsive symptoms focused on a romantic partner.",
+          "keywords": [
+            "relationship OCD",
+            "ROCD",
+            "PROCSI",
+            "partner",
+            "obsessive",
+            "compulsive"
+          ]
+        }
+      }
     },
     {
       "id": "ptci",
@@ -1174,8 +1452,7 @@
         "adult"
       ],
       "tags": [
-        "PTCI",
-        "גרסה מלאה"
+        "PTCI"
       ],
       "featured": false,
       "languages": [
@@ -1223,13 +1500,28 @@
         "adult"
       ],
       "tags": [
-        "PTCI",
-        "גרסה מקוצרת"
+        "PTCI"
       ],
       "featured": false,
       "languages": [
-        "he"
-      ]
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Brief Posttraumatic Cognitions Inventory (PTCI-9)",
+          "description": "A 9-item abbreviation of the PTCI (Wells et al., 2019), three items per subscale: negative cognitions about the self, negative cognitions…",
+          "keywords": [
+            "PTSD",
+            "trauma",
+            "cognitions",
+            "PTCI-9",
+            "PTCI",
+            "abbreviated",
+            "short form"
+          ]
+        }
+      }
     },
     {
       "id": "roci",
@@ -1259,8 +1551,71 @@
       "tags": [],
       "featured": false,
       "languages": [
-        "he"
-      ]
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Relationship Obsessive-Compulsive Inventory (ROCI)",
+          "description": "A 14-item scale of obsessive-compulsive symptoms focused on the romantic relationship itself.",
+          "keywords": [
+            "relationship OCD",
+            "ROCD",
+            "ROCI",
+            "relationship",
+            "obsessive",
+            "compulsive"
+          ]
+        }
+      }
+    },
+    {
+      "id": "sapas",
+      "kind": "questionnaire",
+      "title": "הערכת אישיות מקוצרת (SAPAS)",
+      "description": "שאלון סינון בן 8 פריטים (כן/לא) לאיתור סבירות להפרעת אישיות. ציון 3 ומעלה מצביע על סבירות גבוהה.",
+      "keywords": [
+        "SAPAS",
+        "אישיות",
+        "הפרעת אישיות",
+        "personality",
+        "personality disorder",
+        "screening",
+        "סינון"
+      ],
+      "itemCount": 8,
+      "estMinutes": 1,
+      "hasConditional": false,
+      "domains": [
+        "intake"
+      ],
+      "type": "screener",
+      "populations": [
+        "adult"
+      ],
+      "tags": [
+        "SAPAS",
+        "personality",
+        "screening"
+      ],
+      "featured": false,
+      "languages": [
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Standardised Assessment of Personality — Abbreviated Scale (SAPAS)",
+          "description": "An 8-item yes/no screen for the likelihood of personality disorder. A score of 3 or more indicates personality disorder is likely.",
+          "keywords": [
+            "SAPAS",
+            "personality",
+            "personality disorder",
+            "screening",
+            "intake"
+          ]
+        }
+      }
     },
     {
       "id": "sbq",
@@ -1288,8 +1643,22 @@
       "tags": [],
       "featured": false,
       "languages": [
-        "he"
-      ]
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Social Behaviour Questionnaire (SBQ)",
+          "description": "Frequency of safety behaviours used in social situations, following the Clark and Wells model.",
+          "keywords": [
+            "social anxiety",
+            "safety behaviours",
+            "SBQ",
+            "avoidance",
+            "social phobia"
+          ]
+        }
+      }
     },
     {
       "id": "scared_child",
@@ -1317,8 +1686,22 @@
       "tags": [],
       "featured": true,
       "languages": [
-        "he"
-      ]
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Screen for Child Anxiety Related Disorders (SCARED) — Child",
+          "description": "41 items on a 0–2 scale, reported by the child. Five subscales: panic/somatic, generalised anxiety, separation anxiety, social phobia and…",
+          "keywords": [
+            "anxiety",
+            "SCARED",
+            "child",
+            "self-report",
+            "screening"
+          ]
+        }
+      }
     },
     {
       "id": "scared_parent",
@@ -1345,8 +1728,22 @@
       "tags": [],
       "featured": true,
       "languages": [
-        "he"
-      ]
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Screen for Child Anxiety Related Disorders (SCARED) — Parent",
+          "description": "41 items on a 0–2 scale, reported by the parent. Five subscales: panic/somatic, generalised anxiety, separation anxiety, social phobia and…",
+          "keywords": [
+            "anxiety",
+            "SCARED",
+            "child",
+            "parent report",
+            "screening"
+          ]
+        }
+      }
     },
     {
       "id": "scq",
@@ -1374,8 +1771,22 @@
       "tags": [],
       "featured": false,
       "languages": [
-        "he"
-      ]
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Social Cognitions Questionnaire (SCQ)",
+          "description": "Frequency of negative thoughts typical of social anxiety over the past week.",
+          "keywords": [
+            "social anxiety",
+            "cognitions",
+            "SCQ",
+            "negative thoughts",
+            "social phobia"
+          ]
+        }
+      }
     },
     {
       "id": "spin",
@@ -1404,8 +1815,22 @@
       "tags": [],
       "featured": true,
       "languages": [
-        "he"
-      ]
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Social Phobia Inventory (SPIN)",
+          "description": "A 17-item scale of social phobia severity; used to screen for social anxiety disorder and to measure symptom severity (Social Phobia…",
+          "keywords": [
+            "social anxiety",
+            "social phobia",
+            "SPIN",
+            "avoidance",
+            "screening"
+          ]
+        }
+      }
     },
     {
       "id": "standard_intake",
@@ -1463,8 +1888,22 @@
       ],
       "featured": false,
       "languages": [
-        "he"
-      ]
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Secondary Traumatic Stress Scale (STSS)",
+          "description": "A 17-item self-report measure of secondary traumatic stress in professionals working with traumatised clients, over the past seven days;…",
+          "keywords": [
+            "secondary trauma",
+            "STSS",
+            "compassion fatigue",
+            "clinicians",
+            "vicarious trauma"
+          ]
+        }
+      }
     },
     {
       "id": "test_q",
@@ -1516,8 +1955,22 @@
       "tags": [],
       "featured": true,
       "languages": [
-        "he"
-      ]
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Top Three Problems",
+          "description": "An idiographic three-problem measure: the client names up to three main problems and rates how much each one bothers them on a 1–12 scale,…",
+          "keywords": [
+            "problems",
+            "idiographic",
+            "severity",
+            "coping",
+            "top problems"
+          ]
+        }
+      }
     },
     {
       "id": "trauma_eval",
@@ -1590,8 +2043,23 @@
       "tags": [],
       "featured": true,
       "languages": [
-        "he"
-      ]
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Working Alliance Inventory (WAI-6)",
+          "description": "A 6-item measure of the therapeutic alliance — bond, and agreement on goals and tasks between client and therapist. Administered at the end…",
+          "keywords": [
+            "alliance",
+            "working alliance",
+            "WAI",
+            "WAI-6",
+            "therapy process",
+            "bond"
+          ]
+        }
+      }
     },
     {
       "id": "wsas",
@@ -1619,8 +2087,23 @@
       "tags": [],
       "featured": true,
       "languages": [
-        "he"
-      ]
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Work and Social Adjustment Scale (WSAS)",
+          "description": "A 5-item measure of functional impairment in work, home management, social leisure, private leisure and relationships. Scores range 0–40;…",
+          "keywords": [
+            "functioning",
+            "impairment",
+            "WSAS",
+            "work",
+            "social adjustment",
+            "disability"
+          ]
+        }
+      }
     }
   ]
 }

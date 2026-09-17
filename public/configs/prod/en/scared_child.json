@@ -1,0 +1,353 @@
+{
+  "id": "scared_child",
+  "version": "1.0.0",
+  "questionnaires": [
+    {
+      "id": "scared_child",
+      "meta": {
+        "domains": [
+          "anxiety"
+        ],
+        "type": "screener",
+        "populations": [
+          "child",
+          "adolescent"
+        ],
+        "featured": true,
+        "source": "Birmaher et al. (1997), J Am Acad Child Adolesc Psychiatry 36:545–553 — English original (child version), transcribed from the SCARED form supplied 2026-09-18"
+      },
+      "title": "Screen for Child Anxiety Related Disorders (SCARED) — Child",
+      "description": "41 items on a 0–2 scale, reported by the child. Five subscales: panic/somatic, generalised anxiety, separation anxiety, social phobia and school avoidance.",
+      "keywords": [
+        "anxiety",
+        "SCARED",
+        "child",
+        "self-report",
+        "screening"
+      ],
+      "defaultOptionSetId": "scared_scale",
+      "optionSets": {
+        "scared_scale": [
+          {
+            "label": "Not true or hardly ever true",
+            "value": 0
+          },
+          {
+            "label": "Somewhat true or sometimes true",
+            "value": 1
+          },
+          {
+            "label": "Very true or often true",
+            "value": 2
+          }
+        ]
+      },
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "Below is a list of sentences that describe how people feel. Read each one and decide how true it has been for you over the last three months."
+        },
+        {
+          "id": "1",
+          "type": "select",
+          "text": "When I feel frightened, it is hard to breathe."
+        },
+        {
+          "id": "2",
+          "type": "select",
+          "text": "I get headaches when I am at school."
+        },
+        {
+          "id": "3",
+          "type": "select",
+          "text": "I don’t like to be with people I don’t know well."
+        },
+        {
+          "id": "4",
+          "type": "select",
+          "text": "I get scared if I sleep away from home."
+        },
+        {
+          "id": "5",
+          "type": "select",
+          "text": "I worry about other people liking me."
+        },
+        {
+          "id": "6",
+          "type": "select",
+          "text": "When I get frightened, I feel like passing out."
+        },
+        {
+          "id": "7",
+          "type": "select",
+          "text": "I am nervous."
+        },
+        {
+          "id": "8",
+          "type": "select",
+          "text": "I follow my mother or father wherever they go."
+        },
+        {
+          "id": "9",
+          "type": "select",
+          "text": "People tell me that I look nervous."
+        },
+        {
+          "id": "10",
+          "type": "select",
+          "text": "I feel nervous with people I don’t know well."
+        },
+        {
+          "id": "11",
+          "type": "select",
+          "text": "I get stomachaches at school."
+        },
+        {
+          "id": "12",
+          "type": "select",
+          "text": "When I get frightened, I feel like I am going crazy."
+        },
+        {
+          "id": "13",
+          "type": "select",
+          "text": "I worry about sleeping alone."
+        },
+        {
+          "id": "14",
+          "type": "select",
+          "text": "I worry about being as good as other kids."
+        },
+        {
+          "id": "15",
+          "type": "select",
+          "text": "When I get frightened, I feel like things are not real."
+        },
+        {
+          "id": "16",
+          "type": "select",
+          "text": "I have nightmares about something bad happening to my parents."
+        },
+        {
+          "id": "17",
+          "type": "select",
+          "text": "I worry about going to school."
+        },
+        {
+          "id": "18",
+          "type": "select",
+          "text": "When I get frightened, my heart beats fast."
+        },
+        {
+          "id": "19",
+          "type": "select",
+          "text": "I get shaky."
+        },
+        {
+          "id": "20",
+          "type": "select",
+          "text": "I have nightmares about something bad happening to me."
+        },
+        {
+          "id": "21",
+          "type": "select",
+          "text": "I worry about things working out for me."
+        },
+        {
+          "id": "22",
+          "type": "select",
+          "text": "When I get frightened, I sweat a lot."
+        },
+        {
+          "id": "23",
+          "type": "select",
+          "text": "I am a worrier."
+        },
+        {
+          "id": "24",
+          "type": "select",
+          "text": "I get really frightened for no reason at all."
+        },
+        {
+          "id": "25",
+          "type": "select",
+          "text": "I am afraid to be alone in the house."
+        },
+        {
+          "id": "26",
+          "type": "select",
+          "text": "It is hard for me to talk with people I don’t know well."
+        },
+        {
+          "id": "27",
+          "type": "select",
+          "text": "When I get frightened, I feel like I am choking."
+        },
+        {
+          "id": "28",
+          "type": "select",
+          "text": "People tell me that I worry too much."
+        },
+        {
+          "id": "29",
+          "type": "select",
+          "text": "I don’t like to be away from my family."
+        },
+        {
+          "id": "30",
+          "type": "select",
+          "text": "I am afraid of having anxiety (or panic) attacks."
+        },
+        {
+          "id": "31",
+          "type": "select",
+          "text": "I worry that something bad might happen to my parents."
+        },
+        {
+          "id": "32",
+          "type": "select",
+          "text": "I feel shy with people I don’t know well."
+        },
+        {
+          "id": "33",
+          "type": "select",
+          "text": "I worry about what is going to happen in the future."
+        },
+        {
+          "id": "34",
+          "type": "select",
+          "text": "When I get frightened, I feel like throwing up."
+        },
+        {
+          "id": "35",
+          "type": "select",
+          "text": "I worry about how well I do things."
+        },
+        {
+          "id": "36",
+          "type": "select",
+          "text": "I am scared to go to school."
+        },
+        {
+          "id": "37",
+          "type": "select",
+          "text": "I worry about things that have already happened."
+        },
+        {
+          "id": "38",
+          "type": "select",
+          "text": "When I get frightened, I feel dizzy."
+        },
+        {
+          "id": "39",
+          "type": "select",
+          "text": "I feel nervous when I am with other children or adults and I have to do something while they watch me (for example: read aloud, speak, play a game, play a sport.)"
+        },
+        {
+          "id": "40",
+          "type": "select",
+          "text": "I feel nervous when I am going to parties, dances, or any place where there will be people that I don’t know well."
+        },
+        {
+          "id": "41",
+          "type": "select",
+          "text": "I am shy."
+        }
+      ],
+      "scoring": {
+        "method": "subscales",
+        "subscaleMethod": "sum",
+        "subscales": {
+          "panic_somatic": [
+            "1",
+            "6",
+            "9",
+            "12",
+            "15",
+            "18",
+            "19",
+            "22",
+            "24",
+            "27",
+            "30",
+            "34",
+            "38"
+          ],
+          "gad": [
+            "5",
+            "7",
+            "14",
+            "21",
+            "23",
+            "28",
+            "33",
+            "35",
+            "37"
+          ],
+          "separation_anxiety": [
+            "4",
+            "8",
+            "13",
+            "16",
+            "20",
+            "25",
+            "29",
+            "31"
+          ],
+          "social_phobia": [
+            "3",
+            "10",
+            "26",
+            "32",
+            "39",
+            "40",
+            "41"
+          ],
+          "school_avoidance": [
+            "2",
+            "11",
+            "17",
+            "36"
+          ]
+        }
+      },
+      "interpretations": {
+        "target": "total",
+        "type": "screening",
+        "ranges": [
+          {
+            "min": 0,
+            "max": 24,
+            "label": "Below clinical cutoff"
+          },
+          {
+            "min": 25,
+            "max": 82,
+            "label": "Above anxiety screening cutoff"
+          }
+        ],
+        "cutoffs": [
+          {
+            "value": 25,
+            "label": "Screening cutoff"
+          }
+        ]
+      },
+      "alerts": [
+        {
+          "condition": "score.scared_child >= 25",
+          "message": "Anxiety — likely",
+          "severity": "warning",
+          "id": "scared_child_alert_1"
+        }
+      ],
+      "subscaleLabels": {
+        "panic_somatic": "Panic / somatic",
+        "gad": "Generalised anxiety",
+        "separation_anxiety": "Separation anxiety",
+        "social_phobia": "Social phobia",
+        "school_avoidance": "School avoidance"
+      }
+    }
+  ]
+}

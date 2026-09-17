@@ -1,0 +1,228 @@
+{
+  "id": "diamond_sr",
+  "version": "1.0.0",
+  "questionnaires": [
+    {
+      "id": "diamond_sr",
+      "meta": {
+        "domains": [
+          "intake"
+        ],
+        "type": "screener",
+        "populations": [
+          "adult"
+        ],
+        "featured": true,
+        "source": "Tolin et al., DIAMOND Self Report Screener v.1.3 — English original"
+      },
+      "title": "DIAMOND Self Report Screener",
+      "description": "A 30-item yes/no screener covering anxiety, mood, obsessive-compulsive spectrum, trauma, psychosis, eating disorders, substance use, ADHD and tic disorders.",
+      "keywords": [
+        "screening",
+        "DIAMOND",
+        "intake",
+        "diagnosis",
+        "transdiagnostic"
+      ],
+      "defaultOptionSetId": "yesno",
+      "optionSets": {
+        "yesno": [
+          {
+            "label": "Yes",
+            "value": 1
+          },
+          {
+            "label": "No",
+            "value": 0
+          }
+        ]
+      },
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "Please read the following statements and indicate Yes or No for each, to show whether it applies to you. If you are not sure whether a statement applies to you, answer Yes and ask your clinician about it."
+        },
+        {
+          "id": "q1",
+          "type": "binary",
+          "text": "I get very anxious or fearful in social situations or when I am being observed."
+        },
+        {
+          "id": "q2",
+          "type": "binary",
+          "text": "I have had a panic attack, where I experienced a lot of fear and physical sensations that came out of the blue."
+        },
+        {
+          "id": "q3",
+          "type": "binary",
+          "text": "I feel very fearful or anxious in situations where it’s difficult to escape quickly or get help (for example, using public transportation, being in open or enclosed spaces, standing in line or being in a crowded place or being alone away from home)."
+        },
+        {
+          "id": "q4",
+          "type": "binary",
+          "text": "I feel excessively anxious or worried about many things, a lot of the time (for example, worry about finances, responsibilities at work/school, my health or the health of others)."
+        },
+        {
+          "id": "q5",
+          "type": "binary",
+          "text": "There are certain objects, situations, or activities that I am very afraid of (for example, like animals, insects, blood, needles, heights, storms, flying, choking, vomiting, or enclosed spaces)."
+        },
+        {
+          "id": "q6",
+          "type": "binary",
+          "text": "I feel very afraid to be away from a certain person or people."
+        },
+        {
+          "id": "q7",
+          "type": "binary",
+          "text": "I have had a period of four days or more when my mood was so good or elevated, like I was on top of the world, that it caused problems for me, or people thought I wasn’t my usual self."
+        },
+        {
+          "id": "q8",
+          "type": "binary",
+          "text": "I have been feeling down, blue, or depressed frequently over the past two years."
+        },
+        {
+          "id": "q9",
+          "type": "binary",
+          "text": "I have had a time when I felt very sad, blue, down, or depressed, or lost interest or pleasure in my usual activities, for two weeks or more."
+        },
+        {
+          "id": "q10",
+          "type": "binary",
+          "text": "(If applicable) I get really depressed, irritable, anxious, or have mood swings in the week prior to menstruation (my period)."
+        },
+        {
+          "id": "q11",
+          "type": "binary",
+          "text": "I have frequent thoughts, urges, or images that I don’t want to have (for example, thoughts about being contaminated even though I may not be, or that I may hurt someone else even though I don’t want to)."
+        },
+        {
+          "id": "q12",
+          "type": "binary",
+          "text": "I do repetitive behaviors (for example, hand washing or cleaning, ordering or arranging, checking things, or repeating behaviors over and over), or I repeatedly do things in my mind (for example, counting, saying certain words or phrases) in order to feel better or to prevent something bad from happening."
+        },
+        {
+          "id": "q13",
+          "type": "binary",
+          "text": "I spend a lot of time worrying about my physical appearance."
+        },
+        {
+          "id": "q14",
+          "type": "binary",
+          "text": "My house is excessively cluttered."
+        },
+        {
+          "id": "q15",
+          "type": "binary",
+          "text": "I frequently pull out hair from my scalp or my body."
+        },
+        {
+          "id": "q16",
+          "type": "binary",
+          "text": "I frequently pick at my skin."
+        },
+        {
+          "id": "q17",
+          "type": "binary",
+          "text": "I have a physical health problem that makes me very worried or anxious, or requires me to do a lot to diagnose or monitor it."
+        },
+        {
+          "id": "q18",
+          "type": "binary",
+          "text": "I often worry that I have a serious medical illness or injury, or that I am going to develop a serious medical illness or injury."
+        },
+        {
+          "id": "q19",
+          "type": "binary",
+          "text": "I am distressed about a really bad event (like seeing something that was life-threatening or caused someone to die, being seriously injured or seeing someone be seriously injured, or being sexually assaulted or molested) that I have experienced or witnessed."
+        },
+        {
+          "id": "q20",
+          "type": "binary",
+          "text": "I’m having a hard time dealing with a stressful or unpleasant experience, or a major change in my life."
+        },
+        {
+          "id": "q21",
+          "type": "binary",
+          "text": "I avoid eating food because I think I am overweight."
+        },
+        {
+          "id": "q22",
+          "type": "binary",
+          "text": "I often have eating “binges,” in which I eat more than most people would eat, and it feels like my eating is out of control."
+        },
+        {
+          "id": "q23",
+          "type": "binary",
+          "text": "I eat very little, have difficulty eating enough, or avoid certain foods."
+        },
+        {
+          "id": "q24",
+          "type": "binary",
+          "text": "I have had 3 or more alcoholic drinks within a 3 hour period on 3 or more occasions."
+        },
+        {
+          "id": "q25",
+          "type": "binary",
+          "text": "I have used drugs (including cannabis, even if prescribed), or I have used prescription medications other than how they were prescribed, more than three times."
+        },
+        {
+          "id": "q26",
+          "type": "binary",
+          "text": "I have difficulty paying attention or concentrating when I need to."
+        },
+        {
+          "id": "q27",
+          "type": "binary",
+          "text": "It often seems that I have difficulty sitting still or waiting for things."
+        },
+        {
+          "id": "q28",
+          "type": "binary",
+          "text": "I have a lot of sudden movements (tics) that are hard to control, or make sounds that are hard to control."
+        },
+        {
+          "id": "q29",
+          "type": "binary",
+          "text": "I have had very strong beliefs in something that other people thought were strange, such as any of the following: that people were conspiring against me, spying on me, or harassing me; that a governmental or religious organization was following me or harassing me; that someone I didn’t know, such as a celebrity, was in love with me; that I had special talents or powers, or that I was famous; that there was something very strange going on with my body; that someone had removed thoughts from my mind, placed thoughts in my mind, or read my mind; that someone or something was controlling my movements and actions; that someone was sending me special messages through the TV, radio, or books; that I did not exist, that the world did not exist, or that the world was ending; that a partner was being unfaithful to me; that I was responsible for a disaster or serious crime and needed to be punished."
+        },
+        {
+          "id": "q30",
+          "type": "binary",
+          "text": "I have had sensory experiences that others could not understand, such as: hearing sounds that others couldn’t hear, such as voices or music; seeing things that others couldn’t see, such as colors, animals, people, or spirits; having unusual sensations in my body, such as a feeling of electric shocks or bugs on me; smelling odors that others could not smell, such as vomit, feces, or something rotting."
+        }
+      ],
+      "scoring": {
+        "method": "sum"
+      },
+      "alerts": [
+        {
+          "id": "psychotic_ideation",
+          "condition": "item.q29 == 1 || item.q30 == 1",
+          "message": "Possible psychotic experiences",
+          "severity": "critical"
+        },
+        {
+          "id": "mania_screen",
+          "condition": "item.q7 == 1",
+          "message": "Possible bipolar disorder",
+          "severity": "warning"
+        },
+        {
+          "id": "trauma_screen",
+          "condition": "item.q19 == 1",
+          "message": "Trauma exposure",
+          "severity": "warning"
+        },
+        {
+          "id": "substance_use",
+          "condition": "item.q24 == 1 || item.q25 == 1",
+          "message": "Substance use",
+          "severity": "warning"
+        }
+      ]
+    }
+  ]
+}

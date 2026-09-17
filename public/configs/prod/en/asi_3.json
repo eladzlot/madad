@@ -1,0 +1,188 @@
+{
+  "id": "asi_3",
+  "version": "1.1.0",
+  "questionnaires": [
+    {
+      "id": "asi_3",
+      "meta": {
+        "domains": [
+          "anxiety"
+        ],
+        "type": "process",
+        "populations": [
+          "adult"
+        ],
+        "source": "Taylor et al. (2007), Psychological Assessment 19:176–188 — English original (ASI-3, May 2006 form), transcribed from the form supplied 2026-09-18. Time frame follows the Hebrew file (past week); the published form is a trait measure and carries no time frame."
+      },
+      "title": "Anxiety Sensitivity Index-3 (ASI-3)",
+      "description": "Fear of anxiety-related sensations over the past week, across physical, cognitive and social concerns (Anxiety Sensitivity, ASI-3)",
+      "keywords": [
+        "anxiety",
+        "anxiety sensitivity",
+        "ASI",
+        "ASI-3",
+        "panic",
+        "fear of sensations"
+      ],
+      "defaultOptionSetId": "agree_5",
+      "optionSets": {
+        "agree_5": [
+          {
+            "label": "Very little",
+            "value": 0
+          },
+          {
+            "label": "A little",
+            "value": 1
+          },
+          {
+            "label": "Some",
+            "value": 2
+          },
+          {
+            "label": "Much",
+            "value": 3
+          },
+          {
+            "label": "Very much",
+            "value": 4
+          }
+        ]
+      },
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "Select the answer that best corresponds to how much you agree with each statement, with reference to the past week. If any items concern something that you have never experienced (e.g., fainting in public) answer on the basis of how you think you might feel if you had such an experience. Otherwise, answer all items on the basis of your own experience."
+        },
+        {
+          "id": "1",
+          "type": "select",
+          "text": "It is important for me not to appear nervous."
+        },
+        {
+          "id": "2",
+          "type": "select",
+          "text": "When I cannot keep my mind on a task, I worry that I might be going crazy."
+        },
+        {
+          "id": "3",
+          "type": "select",
+          "text": "It scares me when my heart beats rapidly."
+        },
+        {
+          "id": "4",
+          "type": "select",
+          "text": "When my stomach is upset, I worry that I might be seriously ill."
+        },
+        {
+          "id": "5",
+          "type": "select",
+          "text": "It scares me when I am unable to keep my mind on a task."
+        },
+        {
+          "id": "6",
+          "type": "select",
+          "text": "When I tremble in the presence of others, I fear what people might think of me."
+        },
+        {
+          "id": "7",
+          "type": "select",
+          "text": "When my chest feels tight, I get scared that I won’t be able to breathe properly."
+        },
+        {
+          "id": "8",
+          "type": "select",
+          "text": "When I feel pain in my chest, I worry that I am going to have a heart attack."
+        },
+        {
+          "id": "9",
+          "type": "select",
+          "text": "I worry that other people will notice my anxiety."
+        },
+        {
+          "id": "10",
+          "type": "select",
+          "text": "When I feel “spacey” or spaced out I worry that I may be mentally ill."
+        },
+        {
+          "id": "11",
+          "type": "select",
+          "text": "It scares me when I blush in front of people."
+        },
+        {
+          "id": "12",
+          "type": "select",
+          "text": "When I notice my heart skipping a beat, I worry that there is something seriously wrong with me."
+        },
+        {
+          "id": "13",
+          "type": "select",
+          "text": "When I begin to sweat in a social situation, I fear people will think negatively of me."
+        },
+        {
+          "id": "14",
+          "type": "select",
+          "text": "When my thoughts seem to speed up, I worry that I might be going crazy."
+        },
+        {
+          "id": "15",
+          "type": "select",
+          "text": "When my throat feels tight, I worry that I could choke to death."
+        },
+        {
+          "id": "16",
+          "type": "select",
+          "text": "When I have trouble thinking clearly, I worry that there is something wrong with me."
+        },
+        {
+          "id": "17",
+          "type": "select",
+          "text": "I think it would be horrible for me to faint in public."
+        },
+        {
+          "id": "18",
+          "type": "select",
+          "text": "When my mind goes blank, I worry there is something terribly wrong with me."
+        }
+      ],
+      "scoring": {
+        "method": "subscales",
+        "subscaleMethod": "sum",
+        "subscales": {
+          "physical": [
+            "3",
+            "4",
+            "7",
+            "8",
+            "12",
+            "15"
+          ],
+          "cognitive": [
+            "2",
+            "5",
+            "10",
+            "14",
+            "16",
+            "18"
+          ],
+          "social": [
+            "1",
+            "6",
+            "9",
+            "11",
+            "13",
+            "17"
+          ]
+        },
+        "totalMethod": "sum_of_items"
+      },
+      "subscaleLabels": {
+        "physical": "Physical concerns",
+        "cognitive": "Cognitive concerns",
+        "social": "Social concerns"
+      },
+      "alerts": []
+    }
+  ]
+}

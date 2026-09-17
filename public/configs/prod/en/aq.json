@@ -1,0 +1,381 @@
+{
+  "id": "aq",
+  "version": "1.0.0",
+  "questionnaires": [
+    {
+      "id": "aq",
+      "meta": {
+        "domains": [
+          "neurodevelopmental"
+        ],
+        "type": "screener",
+        "populations": [
+          "adult"
+        ],
+        "source": "Baron-Cohen, Wheelwright, Skinner, Martin & Clubley (2001), J Autism Dev Disord 31:5–17 — English original, transcribed from the AQ-50 form supplied 2026-09-18"
+      },
+      "title": "Autism Spectrum Quotient (AQ)",
+      "description": "A 50-item self-report screen for autism-spectrum traits in adults of normal intelligence (age 16 and over).",
+      "keywords": [
+        "autism",
+        "ASD",
+        "AQ",
+        "autism spectrum quotient",
+        "screening",
+        "traits"
+      ],
+      "defaultOptionSetId": "agreement_4",
+      "optionSets": {
+        "agreement_4": [
+          {
+            "label": "Definitely agree",
+            "value": 3
+          },
+          {
+            "label": "Slightly agree",
+            "value": 2
+          },
+          {
+            "label": "Slightly disagree",
+            "value": 1
+          },
+          {
+            "label": "Definitely disagree",
+            "value": 0
+          }
+        ]
+      },
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "For each statement below, choose the response that best describes how strongly that statement applies to you."
+        },
+        {
+          "id": "1",
+          "type": "select",
+          "text": "I prefer to do things with others, rather than on my own.",
+          "reverse": true
+        },
+        {
+          "id": "2",
+          "type": "select",
+          "text": "I prefer to do things the same way over and over again."
+        },
+        {
+          "id": "3",
+          "type": "select",
+          "text": "If I try to imagine something, I find it very easy to create a picture in my mind.",
+          "reverse": true
+        },
+        {
+          "id": "4",
+          "type": "select",
+          "text": "I frequently get so strongly absorbed in one thing that I lose sight of other things."
+        },
+        {
+          "id": "5",
+          "type": "select",
+          "text": "I often notice small sounds when others do not."
+        },
+        {
+          "id": "6",
+          "type": "select",
+          "text": "I usually notice car number plates or similar strings of information."
+        },
+        {
+          "id": "7",
+          "type": "select",
+          "text": "Other people frequently tell me that what I’ve said is impolite, even though I think it is polite."
+        },
+        {
+          "id": "8",
+          "type": "select",
+          "text": "When I’m reading a story, I can easily imagine what the characters might look like.",
+          "reverse": true
+        },
+        {
+          "id": "9",
+          "type": "select",
+          "text": "I am fascinated by dates."
+        },
+        {
+          "id": "10",
+          "type": "select",
+          "text": "In a social group, I can easily keep track of several different people’s conversations.",
+          "reverse": true
+        },
+        {
+          "id": "11",
+          "type": "select",
+          "text": "I find social situations easy.",
+          "reverse": true
+        },
+        {
+          "id": "12",
+          "type": "select",
+          "text": "I tend to notice details that others do not."
+        },
+        {
+          "id": "13",
+          "type": "select",
+          "text": "I would rather go to a library than to a party."
+        },
+        {
+          "id": "14",
+          "type": "select",
+          "text": "I find making up stories easy.",
+          "reverse": true
+        },
+        {
+          "id": "15",
+          "type": "select",
+          "text": "I find myself drawn more strongly to people than to things.",
+          "reverse": true
+        },
+        {
+          "id": "16",
+          "type": "select",
+          "text": "I tend to have very strong interests, which I get upset about if I can’t pursue."
+        },
+        {
+          "id": "17",
+          "type": "select",
+          "text": "I enjoy social chitchat.",
+          "reverse": true
+        },
+        {
+          "id": "18",
+          "type": "select",
+          "text": "When I talk, it isn’t always easy for others to get a word in edgewise."
+        },
+        {
+          "id": "19",
+          "type": "select",
+          "text": "I am fascinated by numbers."
+        },
+        {
+          "id": "20",
+          "type": "select",
+          "text": "When I’m reading a story, I find it difficult to work out the characters’ intentions."
+        },
+        {
+          "id": "21",
+          "type": "select",
+          "text": "I don’t particularly enjoy reading fiction."
+        },
+        {
+          "id": "22",
+          "type": "select",
+          "text": "I find it hard to make new friends."
+        },
+        {
+          "id": "23",
+          "type": "select",
+          "text": "I notice patterns in things all the time."
+        },
+        {
+          "id": "24",
+          "type": "select",
+          "text": "I would rather go to the theatre than to a museum.",
+          "reverse": true
+        },
+        {
+          "id": "25",
+          "type": "select",
+          "text": "It does not upset me if my daily routine is disturbed.",
+          "reverse": true
+        },
+        {
+          "id": "26",
+          "type": "select",
+          "text": "I frequently find that I don’t know how to keep a conversation going."
+        },
+        {
+          "id": "27",
+          "type": "select",
+          "text": "I find it easy to ‘read between the lines’ when someone is talking to me.",
+          "reverse": true
+        },
+        {
+          "id": "28",
+          "type": "select",
+          "text": "I usually concentrate more on the whole picture, rather than on the small details.",
+          "reverse": true
+        },
+        {
+          "id": "29",
+          "type": "select",
+          "text": "I am not very good at remembering phone numbers.",
+          "reverse": true
+        },
+        {
+          "id": "30",
+          "type": "select",
+          "text": "I don’t usually notice small changes in a situation or a person’s appearance.",
+          "reverse": true
+        },
+        {
+          "id": "31",
+          "type": "select",
+          "text": "I don’t know how to tell if someone listening to me is getting bored.",
+          "reverse": true
+        },
+        {
+          "id": "32",
+          "type": "select",
+          "text": "I find it easy to do more than one thing at once.",
+          "reverse": true
+        },
+        {
+          "id": "33",
+          "type": "select",
+          "text": "When I talk on the phone, I’m not sure when it’s my turn to speak."
+        },
+        {
+          "id": "34",
+          "type": "select",
+          "text": "I enjoy doing things spontaneously.",
+          "reverse": true
+        },
+        {
+          "id": "35",
+          "type": "select",
+          "text": "I am often the last to understand the point of a joke."
+        },
+        {
+          "id": "36",
+          "type": "select",
+          "text": "I find it easy to work out what someone is thinking or feeling just by looking at their face.",
+          "reverse": true
+        },
+        {
+          "id": "37",
+          "type": "select",
+          "text": "If there is an interruption, I can switch back to what I was doing very quickly.",
+          "reverse": true
+        },
+        {
+          "id": "38",
+          "type": "select",
+          "text": "I am good at social chitchat.",
+          "reverse": true
+        },
+        {
+          "id": "39",
+          "type": "select",
+          "text": "People often tell me that I keep going on and on about the same thing."
+        },
+        {
+          "id": "40",
+          "type": "select",
+          "text": "When I was young, I used to enjoy playing games involving pretending with other children.",
+          "reverse": true
+        },
+        {
+          "id": "41",
+          "type": "select",
+          "text": "I like to collect information about categories of things (e.g. types of cars, birds, trains, plants)."
+        },
+        {
+          "id": "42",
+          "type": "select",
+          "text": "I find it difficult to imagine what it would be like to be someone else."
+        },
+        {
+          "id": "43",
+          "type": "select",
+          "text": "I like to carefully plan any activities I participate in."
+        },
+        {
+          "id": "44",
+          "type": "select",
+          "text": "I enjoy social occasions.",
+          "reverse": true
+        },
+        {
+          "id": "45",
+          "type": "select",
+          "text": "I find it difficult to work out people’s intentions."
+        },
+        {
+          "id": "46",
+          "type": "select",
+          "text": "New situations make me anxious."
+        },
+        {
+          "id": "47",
+          "type": "select",
+          "text": "I enjoy meeting new people.",
+          "reverse": true
+        },
+        {
+          "id": "48",
+          "type": "select",
+          "text": "I am a good diplomat.",
+          "reverse": true
+        },
+        {
+          "id": "49",
+          "type": "select",
+          "text": "I am not very good at remembering people’s date of birth.",
+          "reverse": true
+        },
+        {
+          "id": "50",
+          "type": "select",
+          "text": "I find it very easy to play games with children that involve pretending.",
+          "reverse": true
+        }
+      ],
+      "scoring": {
+        "method": "custom",
+        "customFormula": "sum(if(item.1 <= 1, 1, 0), if(item.2 >= 2, 1, 0), if(item.3 <= 1, 1, 0), if(item.4 >= 2, 1, 0), if(item.5 >= 2, 1, 0), if(item.6 >= 2, 1, 0), if(item.7 >= 2, 1, 0), if(item.8 <= 1, 1, 0), if(item.9 >= 2, 1, 0), if(item.10 <= 1, 1, 0), if(item.11 <= 1, 1, 0), if(item.12 >= 2, 1, 0), if(item.13 >= 2, 1, 0), if(item.14 <= 1, 1, 0), if(item.15 <= 1, 1, 0), if(item.16 >= 2, 1, 0), if(item.17 <= 1, 1, 0), if(item.18 >= 2, 1, 0), if(item.19 >= 2, 1, 0), if(item.20 >= 2, 1, 0), if(item.21 >= 2, 1, 0), if(item.22 >= 2, 1, 0), if(item.23 >= 2, 1, 0), if(item.24 <= 1, 1, 0), if(item.25 <= 1, 1, 0), if(item.26 >= 2, 1, 0), if(item.27 <= 1, 1, 0), if(item.28 <= 1, 1, 0), if(item.29 <= 1, 1, 0), if(item.30 <= 1, 1, 0), if(item.31 <= 1, 1, 0), if(item.32 <= 1, 1, 0), if(item.33 >= 2, 1, 0), if(item.34 <= 1, 1, 0), if(item.35 >= 2, 1, 0), if(item.36 <= 1, 1, 0), if(item.37 <= 1, 1, 0), if(item.38 <= 1, 1, 0), if(item.39 >= 2, 1, 0), if(item.40 <= 1, 1, 0), if(item.41 >= 2, 1, 0), if(item.42 >= 2, 1, 0), if(item.43 >= 2, 1, 0), if(item.44 <= 1, 1, 0), if(item.45 >= 2, 1, 0), if(item.46 >= 2, 1, 0), if(item.47 <= 1, 1, 0), if(item.48 <= 1, 1, 0), if(item.49 <= 1, 1, 0), if(item.50 <= 1, 1, 0))",
+        "subscaleFormulas": {
+          "social_skill": "sum(if(item.1 <= 1, 1, 0), if(item.11 <= 1, 1, 0), if(item.13 >= 2, 1, 0), if(item.15 <= 1, 1, 0), if(item.22 >= 2, 1, 0), if(item.36 <= 1, 1, 0), if(item.44 <= 1, 1, 0), if(item.45 >= 2, 1, 0), if(item.47 <= 1, 1, 0), if(item.48 <= 1, 1, 0))",
+          "attention_switching": "sum(if(item.2 >= 2, 1, 0), if(item.4 >= 2, 1, 0), if(item.10 <= 1, 1, 0), if(item.16 >= 2, 1, 0), if(item.25 <= 1, 1, 0), if(item.32 <= 1, 1, 0), if(item.34 <= 1, 1, 0), if(item.37 <= 1, 1, 0), if(item.43 >= 2, 1, 0), if(item.46 >= 2, 1, 0))",
+          "attention_to_detail": "sum(if(item.5 >= 2, 1, 0), if(item.6 >= 2, 1, 0), if(item.9 >= 2, 1, 0), if(item.12 >= 2, 1, 0), if(item.19 >= 2, 1, 0), if(item.23 >= 2, 1, 0), if(item.28 <= 1, 1, 0), if(item.29 <= 1, 1, 0), if(item.30 <= 1, 1, 0), if(item.49 <= 1, 1, 0))",
+          "communication": "sum(if(item.7 >= 2, 1, 0), if(item.17 <= 1, 1, 0), if(item.18 >= 2, 1, 0), if(item.26 >= 2, 1, 0), if(item.27 <= 1, 1, 0), if(item.31 <= 1, 1, 0), if(item.33 >= 2, 1, 0), if(item.35 >= 2, 1, 0), if(item.38 <= 1, 1, 0), if(item.39 >= 2, 1, 0))",
+          "imagination": "sum(if(item.3 <= 1, 1, 0), if(item.8 <= 1, 1, 0), if(item.14 <= 1, 1, 0), if(item.20 >= 2, 1, 0), if(item.21 >= 2, 1, 0), if(item.24 <= 1, 1, 0), if(item.40 <= 1, 1, 0), if(item.41 >= 2, 1, 0), if(item.42 >= 2, 1, 0), if(item.50 <= 1, 1, 0))"
+        }
+      },
+      "subscaleLabels": {
+        "social_skill": "Social skill",
+        "attention_switching": "Attention switching",
+        "attention_to_detail": "Attention to detail",
+        "communication": "Communication",
+        "imagination": "Imagination"
+      },
+      "interpretations": {
+        "target": "total",
+        "type": "screening",
+        "ranges": [
+          {
+            "min": 0,
+            "max": 21,
+            "label": "Below screening cutoff"
+          },
+          {
+            "min": 22,
+            "max": 50,
+            "label": "Above screening cutoff — full assessment recommended"
+          }
+        ],
+        "cutoffs": [
+          {
+            "value": 22,
+            "label": "Israeli screening cutoff"
+          }
+        ]
+      },
+      "alerts": [
+        {
+          "id": "above_cutoff",
+          "condition": "score.aq >= 22",
+          "message": "Above AQ screening cutoff",
+          "severity": "warning"
+        }
+      ]
+    }
+  ]
+}

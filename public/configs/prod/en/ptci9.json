@@ -1,0 +1,146 @@
+{
+  "id": "ptci9",
+  "version": "1.0.0",
+  "questionnaires": [
+    {
+      "id": "ptci9",
+      "meta": {
+        "domains": [
+          "trauma"
+        ],
+        "type": "process",
+        "populations": [
+          "adult"
+        ],
+        "tags": [
+          "PTCI"
+        ],
+        "source": "Wells, Morrison, Murphy & Resick (2019) PTCI-9 — item text verbatim from the PTCI English original (Foa, Ehlers, Clark, Tolin & Orsillo, 1999, Psychological Assessment 11:303–314)"
+      },
+      "title": "Brief Posttraumatic Cognitions Inventory (PTCI-9)",
+      "description": "A 9-item abbreviation of the PTCI (Wells et al., 2019), three items per subscale: negative cognitions about the self, negative cognitions about the world, and self-blame.",
+      "keywords": [
+        "PTSD",
+        "trauma",
+        "cognitions",
+        "PTCI-9",
+        "PTCI",
+        "abbreviated",
+        "short form"
+      ],
+      "defaultOptionSetId": "agreement_7",
+      "optionSets": {
+        "agreement_7": [
+          {
+            "label": "Totally disagree",
+            "value": 1
+          },
+          {
+            "label": "Very much disagree",
+            "value": 2
+          },
+          {
+            "label": "Slightly disagree",
+            "value": 3
+          },
+          {
+            "label": "Neutral",
+            "value": 4
+          },
+          {
+            "label": "Slightly agree",
+            "value": 5
+          },
+          {
+            "label": "Very much agree",
+            "value": 6
+          },
+          {
+            "label": "Totally agree",
+            "value": 7
+          }
+        ]
+      },
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "We are interested in the kind of thoughts which you may have had after a traumatic experience. Below are a number of statements that may or may not be representative of your thinking. Please read each statement carefully and tell us how much you agree or disagree with each statement. People react to traumatic events in many different ways. There are no right or wrong answers to these statements."
+        },
+        {
+          "id": "1",
+          "type": "select",
+          "text": "The event happened because of the way I acted."
+        },
+        {
+          "id": "7",
+          "type": "select",
+          "text": "People can't be trusted."
+        },
+        {
+          "id": "22",
+          "type": "select",
+          "text": "Somebody else would not have gotten into this situation."
+        },
+        {
+          "id": "23",
+          "type": "select",
+          "text": "I can't rely on other people."
+        },
+        {
+          "id": "25",
+          "type": "select",
+          "text": "I have no future."
+        },
+        {
+          "id": "27",
+          "type": "select",
+          "text": "People are not what they seem."
+        },
+        {
+          "id": "31",
+          "type": "select",
+          "text": "There is something about me that made the event happen."
+        },
+        {
+          "id": "33",
+          "type": "select",
+          "text": "I feel like I don't know myself anymore."
+        },
+        {
+          "id": "36",
+          "type": "select",
+          "text": "Nothing good can happen to me anymore."
+        }
+      ],
+      "scoring": {
+        "method": "subscales",
+        "subscaleMethod": "mean",
+        "subscales": {
+          "self": [
+            "25",
+            "33",
+            "36"
+          ],
+          "world": [
+            "7",
+            "23",
+            "27"
+          ],
+          "blame": [
+            "1",
+            "22",
+            "31"
+          ]
+        },
+        "totalMethod": "sum_of_items"
+      },
+      "subscaleLabels": {
+        "self": "Negative cognitions about the self",
+        "world": "Negative cognitions about the world",
+        "blame": "Self-blame"
+      },
+      "alerts": []
+    }
+  ]
+}

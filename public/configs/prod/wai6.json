@@ -28,27 +28,27 @@
       "optionSets": {
         "wai_scale": [
           {
-            "label": "לא בכלל",
+            "label": "כלל לא",
             "value": 0
           },
           {
-            "label": "1",
+            "label": "במידה מועטה",
             "value": 1
           },
           {
-            "label": "2",
+            "label": "במידה בינונית",
             "value": 2
           },
           {
-            "label": "3",
+            "label": "במידה רבה למדי",
             "value": 3
           },
           {
-            "label": "4",
+            "label": "במידה רבה מאוד",
             "value": 4
           },
           {
-            "label": "תמיד",
+            "label": "לחלוטין",
             "value": 5
           }
         ]

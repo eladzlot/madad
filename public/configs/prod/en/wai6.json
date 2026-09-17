@@ -1,0 +1,99 @@
+{
+  "id": "wai6",
+  "version": "1.0.0",
+  "questionnaires": [
+    {
+      "id": "wai6",
+      "meta": {
+        "domains": [
+          "alliance"
+        ],
+        "type": "process",
+        "populations": [
+          "adult"
+        ],
+        "featured": true,
+        "source": "Falkenström, Granström & Holmqvist (2014/2015) Working Alliance Inventory-6 — English original, transcribed from the WAI-6 form supplied 2026-09-18"
+      },
+      "title": "Working Alliance Inventory (WAI-6)",
+      "description": "A 6-item measure of the therapeutic alliance — bond, and agreement on goals and tasks between client and therapist. Administered at the end of a session.",
+      "keywords": [
+        "alliance",
+        "working alliance",
+        "WAI",
+        "WAI-6",
+        "therapy process",
+        "bond"
+      ],
+      "defaultOptionSetId": "wai_scale",
+      "optionSets": {
+        "wai_scale": [
+          {
+            "label": "Not at all",
+            "value": 0
+          },
+          {
+            "label": "A little",
+            "value": 1
+          },
+          {
+            "label": "Moderately",
+            "value": 2
+          },
+          {
+            "label": "Quite a bit",
+            "value": 3
+          },
+          {
+            "label": "Very much",
+            "value": 4
+          },
+          {
+            "label": "Completely",
+            "value": 5
+          }
+        ]
+      },
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "Below are sentences that describe some of the ways a person might think or feel about his or her therapist. When you read these descriptions, think about your last session only. Work fast; your first impressions are the ones we would like to see. Please answer every item."
+        },
+        {
+          "id": "1",
+          "type": "select",
+          "text": "My therapist and I were working towards mutually agreed upon goals."
+        },
+        {
+          "id": "2",
+          "type": "select",
+          "text": "I felt that my therapist appreciated me."
+        },
+        {
+          "id": "3",
+          "type": "select",
+          "text": "My therapist and I respected each other."
+        },
+        {
+          "id": "4",
+          "type": "select",
+          "text": "We were in agreement on what is important for me to work on."
+        },
+        {
+          "id": "5",
+          "type": "select",
+          "text": "I felt that my therapist cared about me even if I had done things that he/she does not approve of."
+        },
+        {
+          "id": "6",
+          "type": "select",
+          "text": "I believe the way we were working with my problem(s) was correct."
+        }
+      ],
+      "scoring": {
+        "method": "sum"
+      }
+    }
+  ]
+}

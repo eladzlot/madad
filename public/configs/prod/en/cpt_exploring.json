@@ -1,0 +1,101 @@
+{
+  "id": "cpt_exploring",
+  "version": "1.0.0",
+  "questionnaires": [
+    {
+      "id": "cpt_exploring",
+      "meta": {
+        "domains": [
+          "trauma"
+        ],
+        "type": "worksheet",
+        "populations": [
+          "adult"
+        ],
+        "tags": [
+          "CPT",
+          "iCPT"
+        ],
+        "source": "Resick, Monson & Chard (2024), Cognitive Processing Therapy for PTSD: A Comprehensive Therapist Manual, 2nd ed. — HANDOUT 9.2, Exploring Questions Worksheet; question text verbatim, prompt framing is Madad’s"
+      },
+      "title": "Exploring Questions Worksheet (CPT)",
+      "description": "A CPT worksheet for examining a Stuck Point systematically through a series of questions. The client picks one Stuck Point and answers the questions that apply in order to challenge it.",
+      "keywords": [
+        "CPT",
+        "exploring questions",
+        "challenging questions",
+        "stuck point",
+        "trauma",
+        "cognitive restructuring"
+      ],
+      "items": [
+        {
+          "id": "stuck_point",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "Choose one Stuck Point to examine and write it here. The questions that follow will help you challenge it — not every question fits every belief, so answer as many as you can without repeating yourself.",
+          "required": true
+        },
+        {
+          "id": "clarify",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "What do you mean? Write the Stuck Point clearly enough that a stranger would understand exactly what is troubling you.",
+          "required": false
+        },
+        {
+          "id": "evidence",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "What is the evidence against this Stuck Point?",
+          "required": false
+        },
+        {
+          "id": "not_including",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "What information are you not including about your Stuck Point?",
+          "required": false
+        },
+        {
+          "id": "all_or_none",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "Does your Stuck Point include all-or-none terms (such as “all,” “never”) or extreme words or phrases (such as “need,” “should,” “must,” “can’t,” and “every time”)?",
+          "required": false
+        },
+        {
+          "id": "one_part",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "In what way is your Stuck Point overfocused on just one piece of the event?",
+          "required": false
+        },
+        {
+          "id": "source",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "How is the source of information for this Stuck Point questionable?",
+          "required": false
+        },
+        {
+          "id": "possible_certain",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "How is your Stuck Point confusing something that is possible with something that is definite?",
+          "required": false
+        },
+        {
+          "id": "feelings_facts",
+          "type": "text",
+          "inputType": "multiline",
+          "text": "In what ways is your Stuck Point based on feelings, rather than facts?",
+          "required": false
+        }
+      ],
+      "scoring": {
+        "method": "none"
+      }
+    }
+  ]
+}

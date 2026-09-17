@@ -1,0 +1,204 @@
+{
+  "id": "sbq",
+  "version": "1.0.0",
+  "questionnaires": [
+    {
+      "id": "sbq",
+      "meta": {
+        "domains": [
+          "social"
+        ],
+        "type": "process",
+        "populations": [
+          "adult"
+        ],
+        "source": "Clark et al. — Social Behaviour Questionnaire; English original, transcribed from the SBQ form supplied 2026-09-18"
+      },
+      "title": "Social Behaviour Questionnaire (SBQ)",
+      "description": "Frequency of safety behaviours used in social situations, following the Clark and Wells model.",
+      "keywords": [
+        "social anxiety",
+        "safety behaviours",
+        "SBQ",
+        "avoidance",
+        "social phobia"
+      ],
+      "defaultOptionSetId": "freq_4",
+      "optionSets": {
+        "freq_4": [
+          {
+            "label": "Never",
+            "value": 0
+          },
+          {
+            "label": "Sometimes",
+            "value": 1
+          },
+          {
+            "label": "Often",
+            "value": 2
+          },
+          {
+            "label": "Always",
+            "value": 3
+          }
+        ]
+      },
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "Please select the word which best describes how often you do the following things when you are anxious in or before a social situation."
+        },
+        {
+          "id": "1",
+          "type": "select",
+          "text": "Use alcohol to manage anxiety"
+        },
+        {
+          "id": "2",
+          "type": "select",
+          "text": "Try not to attract attention"
+        },
+        {
+          "id": "3",
+          "type": "select",
+          "text": "Make an effort to get your words right"
+        },
+        {
+          "id": "4",
+          "type": "select",
+          "text": "Check that you are coming across well"
+        },
+        {
+          "id": "5",
+          "type": "select",
+          "text": "Avoid eye contact"
+        },
+        {
+          "id": "6",
+          "type": "select",
+          "text": "Talk less"
+        },
+        {
+          "id": "7",
+          "type": "select",
+          "text": "Avoid asking questions"
+        },
+        {
+          "id": "8",
+          "type": "select",
+          "text": "Try to picture how you appear to others"
+        },
+        {
+          "id": "9",
+          "type": "select",
+          "text": "Grip cups or glasses tightly"
+        },
+        {
+          "id": "10",
+          "type": "select",
+          "text": "Position yourself so as not to be noticed"
+        },
+        {
+          "id": "11",
+          "type": "select",
+          "text": "Try to control shaking"
+        },
+        {
+          "id": "12",
+          "type": "select",
+          "text": "Choose clothes that will prevent or conceal sweating"
+        },
+        {
+          "id": "13",
+          "type": "select",
+          "text": "Wear clothes or makeup to hide blushing"
+        },
+        {
+          "id": "14",
+          "type": "select",
+          "text": "Rehearse sentences in your mind"
+        },
+        {
+          "id": "15",
+          "type": "select",
+          "text": "Censor what you are going to say"
+        },
+        {
+          "id": "16",
+          "type": "select",
+          "text": "Blank out or switch off mentally"
+        },
+        {
+          "id": "17",
+          "type": "select",
+          "text": "Avoid talking about yourself"
+        },
+        {
+          "id": "18",
+          "type": "select",
+          "text": "Keep still"
+        },
+        {
+          "id": "19",
+          "type": "select",
+          "text": "Ask lots of questions"
+        },
+        {
+          "id": "20",
+          "type": "select",
+          "text": "Think positive"
+        },
+        {
+          "id": "21",
+          "type": "select",
+          "text": "Stay on the edge of groups"
+        },
+        {
+          "id": "22",
+          "type": "select",
+          "text": "Avoid pauses in speech"
+        },
+        {
+          "id": "23",
+          "type": "select",
+          "text": "Hide your face"
+        },
+        {
+          "id": "24",
+          "type": "select",
+          "text": "Try to think about other things"
+        },
+        {
+          "id": "25",
+          "type": "select",
+          "text": "Talk more"
+        },
+        {
+          "id": "26",
+          "type": "select",
+          "text": "Try to act normal"
+        },
+        {
+          "id": "27",
+          "type": "select",
+          "text": "Try to keep tight control of your behaviour"
+        },
+        {
+          "id": "28",
+          "type": "select",
+          "text": "Make an effort to come across well"
+        },
+        {
+          "id": "29",
+          "type": "select",
+          "text": "Planning topics to talk about in advance of a conversation"
+        }
+      ],
+      "scoring": {
+        "method": "sum"
+      }
+    }
+  ]
+}
