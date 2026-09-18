@@ -1,0 +1,127 @@
+{
+  "id": "sapas",
+  "version": "1.0.0",
+  "questionnaires": [
+    {
+      "id": "sapas",
+      "meta": {
+        "domains": [
+          "intake"
+        ],
+        "type": "screener",
+        "populations": [
+          "adult"
+        ],
+        "tags": [
+          "SAPAS",
+          "personality",
+          "screening"
+        ],
+        "source": "Moran, Leese, Lee, Walters, Thornicroft & Mann (2003), Br J Psychiatry 183:228–232 — English original, transcribed from the SAPAS form supplied 2026-09-18"
+      },
+      "title": "Standardised Assessment of Personality — Abbreviated Scale (SAPAS)",
+      "description": "An 8-item yes/no screen for the likelihood of personality disorder. A score of 3 or more indicates personality disorder is likely.",
+      "keywords": [
+        "SAPAS",
+        "personality",
+        "personality disorder",
+        "screening",
+        "intake"
+      ],
+      "defaultOptionSetId": "yesno",
+      "optionSets": {
+        "yesno": [
+          {
+            "label": "Yes",
+            "value": 1
+          },
+          {
+            "label": "No",
+            "value": 0
+          }
+        ]
+      },
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "Answer the following questions. Only answer “Yes” if the description applies to you most of the time and in most situations."
+        },
+        {
+          "id": "1",
+          "type": "binary",
+          "text": "In general, do you have difficulty making and keeping friends?"
+        },
+        {
+          "id": "2",
+          "type": "binary",
+          "text": "Would you normally describe yourself as a loner?"
+        },
+        {
+          "id": "3",
+          "type": "binary",
+          "text": "In general, do you trust other people?",
+          "reverse": true
+        },
+        {
+          "id": "4",
+          "type": "binary",
+          "text": "Do you normally lose your temper easily?"
+        },
+        {
+          "id": "5",
+          "type": "binary",
+          "text": "Are you normally an impulsive sort of person?"
+        },
+        {
+          "id": "6",
+          "type": "binary",
+          "text": "Are you normally a worrier?"
+        },
+        {
+          "id": "7",
+          "type": "binary",
+          "text": "In general, do you depend on others a lot?"
+        },
+        {
+          "id": "8",
+          "type": "binary",
+          "text": "In general, are you a perfectionist?"
+        }
+      ],
+      "scoring": {
+        "method": "sum"
+      },
+      "interpretations": {
+        "target": "total",
+        "type": "screening",
+        "ranges": [
+          {
+            "min": 0,
+            "max": 2,
+            "label": "Below screening cutoff"
+          },
+          {
+            "min": 3,
+            "max": 8,
+            "label": "Above cutoff — personality disorder likely"
+          }
+        ],
+        "cutoffs": [
+          {
+            "value": 3,
+            "label": "Screening cutoff"
+          }
+        ]
+      },
+      "alerts": [
+        {
+          "id": "screen_cutoff",
+          "condition": "score.sapas >= 3",
+          "message": "Above PD screening cutoff",
+          "severity": "warning"
+        }
+      ]
+    }
+  ]
+}

@@ -52,8 +52,9 @@ test.describe('aggregate in English', () => {
 
     const phq = page.locator('trajectory-chart').filter({ hasText: 'PHQ-9' });
     await expect(phq.locator('h3')).toContainText('Patient Health Questionnaire (PHQ-9)');
-    // WSAS has no English file → its Hebrew title stays.
-    await expect(page.locator('trajectory-chart h3', { hasText: 'WSAS' })).toHaveText(/[\u0590-\u05FF]/);
+    // WSAS has an English file now, so it resolves through it like PHQ-9.
+    await expect(page.locator('trajectory-chart h3', { hasText: 'WSAS' }))
+      .toContainText('Work and Social Adjustment Scale (WSAS)');
 
     await phq.locator('circle').first().click();
     const panel = page.locator('session-detail');

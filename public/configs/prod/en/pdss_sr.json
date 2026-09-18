@@ -1,0 +1,285 @@
+{
+  "id": "pdss_sr",
+  "version": "1.0.0",
+  "questionnaires": [
+    {
+      "id": "pdss_sr",
+      "meta": {
+        "domains": [
+          "anxiety"
+        ],
+        "type": "severity",
+        "populations": [
+          "adult"
+        ],
+        "featured": true,
+        "source": "Houck, Spiegel, Shear & Rucci (2002), Depression and Anxiety 16:183–185 — PDSS Self-Report, transcribed from the form supplied 2026-09-18"
+      },
+      "title": "Panic Disorder Severity Scale — Self Report (PDSS-SR)",
+      "description": "Severity of panic symptoms over the past week (Panic Disorder Severity Scale – Self Report)",
+      "keywords": [
+        "panic",
+        "panic disorder",
+        "PDSS",
+        "PDSS-SR",
+        "agoraphobia",
+        "severity"
+      ],
+      "defaultOptionSetId": "severity_5",
+      "optionSets": {
+        "severity_5": [
+          {
+            "label": "No panic or limited symptom episodes",
+            "value": 0
+          },
+          {
+            "label": "Mild: no full panic attacks and no more than 1 limited symptom attack a day",
+            "value": 1
+          },
+          {
+            "label": "Moderate: 1 or 2 full panic attacks and/or multiple limited symptom attacks a day",
+            "value": 2
+          },
+          {
+            "label": "Severe: more than 2 full attacks but not more than 1 a day on average",
+            "value": 3
+          },
+          {
+            "label": "Extreme: full panic attacks more than once a day, more days than not",
+            "value": 4
+          }
+        ],
+        "distress_5": [
+          {
+            "label": "Not at all distressing, or no attacks during the past week",
+            "value": 0
+          },
+          {
+            "label": "Mildly distressing (not too intense)",
+            "value": 1
+          },
+          {
+            "label": "Moderately distressing (intense, but still manageable)",
+            "value": 2
+          },
+          {
+            "label": "Severely distressing (very intense)",
+            "value": 3
+          },
+          {
+            "label": "Extremely distressing (extreme distress during all attacks)",
+            "value": 4
+          }
+        ],
+        "worry_5": [
+          {
+            "label": "Not at all",
+            "value": 0
+          },
+          {
+            "label": "Occasionally or only mildly",
+            "value": 1
+          },
+          {
+            "label": "Frequently or moderately",
+            "value": 2
+          },
+          {
+            "label": "Very often or to a very disturbing degree",
+            "value": 3
+          },
+          {
+            "label": "Nearly constantly and to a disabling extent",
+            "value": 4
+          }
+        ],
+        "avoidance_5": [
+          {
+            "label": "Not at all — no fear or avoidance",
+            "value": 0
+          },
+          {
+            "label": "Mild: occasional fear and/or avoidance, but little change to my lifestyle",
+            "value": 1
+          },
+          {
+            "label": "Moderate: noticeable avoidance, but still manageable",
+            "value": 2
+          },
+          {
+            "label": "Severe: extensive avoidance and substantial change to my lifestyle",
+            "value": 3
+          },
+          {
+            "label": "Extreme: pervasive avoidance; I needed someone with me or avoided it entirely",
+            "value": 4
+          }
+        ],
+        "impairment_5": [
+          {
+            "label": "No interference",
+            "value": 0
+          },
+          {
+            "label": "Mild: almost all activity maintained",
+            "value": 1
+          },
+          {
+            "label": "Significant: I could function, but with difficulty",
+            "value": 2
+          },
+          {
+            "label": "Marked: many important things were not done",
+            "value": 3
+          },
+          {
+            "label": "Extreme: I could barely function at all",
+            "value": 4
+          }
+        ]
+      },
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "Several of the following questions refer to panic attacks and limited symptom attacks. A panic attack is a sudden rush of fear or discomfort accompanied by at least 4 of the symptoms listed below, peaking within 10 minutes. Episodes like panic attacks but with fewer than 4 of the listed symptoms are called limited symptom attacks."
+        },
+        {
+          "id": "symptoms",
+          "type": "multiselect",
+          "text": "Select the symptoms you experienced during your panic attacks:",
+          "options": [
+            {
+              "label": "Rapid or pounding heartbeat"
+            },
+            {
+              "label": "Sweating"
+            },
+            {
+              "label": "Trembling or shaking"
+            },
+            {
+              "label": "Breathlessness"
+            },
+            {
+              "label": "Feeling of choking"
+            },
+            {
+              "label": "Chest pain or discomfort"
+            },
+            {
+              "label": "Nausea"
+            },
+            {
+              "label": "Dizziness or faintness"
+            },
+            {
+              "label": "Feelings of unreality"
+            },
+            {
+              "label": "Fear of losing control or going crazy"
+            },
+            {
+              "label": "Fear of dying"
+            },
+            {
+              "label": "Chills or hot flushes"
+            },
+            {
+              "label": "Numbness or tingling"
+            }
+          ]
+        },
+        {
+          "id": "1",
+          "type": "select",
+          "text": "How many panic attacks and limited symptom attacks did you have during the past week?",
+          "options": [
+            {
+              "label": "No panic or limited symptom episodes",
+              "value": 0
+            },
+            {
+              "label": "Mild: no full panic attacks and no more than 1 limited symptom attack a day",
+              "value": 1
+            },
+            {
+              "label": "Moderate: 1 or 2 full panic attacks and/or multiple limited symptom attacks a day",
+              "value": 2
+            },
+            {
+              "label": "Severe: more than 2 full attacks but not more than 1 a day on average",
+              "value": 3
+            },
+            {
+              "label": "Extreme: full panic attacks more than once a day, more days than not",
+              "value": 4
+            }
+          ]
+        },
+        {
+          "id": "2",
+          "type": "select",
+          "text": "If you had any panic attacks during the past week, how distressing (uncomfortable, frightening) were they while they were happening? If you had more than one, give an average rating.",
+          "optionSetId": "distress_5"
+        },
+        {
+          "id": "3",
+          "type": "select",
+          "text": "During the past week, how much have you worried or felt anxious about when your next panic attack would occur, or about fears related to the attacks?",
+          "optionSetId": "worry_5"
+        },
+        {
+          "id": "4",
+          "type": "select",
+          "text": "During the past week, were there any places or situations (for example public transport, cinemas, crowds, bridges, tunnels, shopping centres, being alone) you avoided, or felt afraid of, because of fear of having a panic attack?",
+          "optionSetId": "avoidance_5"
+        },
+        {
+          "id": "5",
+          "type": "select",
+          "text": "During the past week, were there any activities (for example physical exertion, sexual relations, a hot shower or bath, drinking coffee, watching an exciting or scary film) that you avoided, or felt afraid of, because they caused physical sensations like those you feel during panic attacks?",
+          "optionSetId": "avoidance_5"
+        },
+        {
+          "id": "6",
+          "type": "select",
+          "text": "During the past week, how much did the above symptoms altogether interfere with your ability to work or carry out your responsibilities at home?",
+          "optionSetId": "impairment_5"
+        },
+        {
+          "id": "7",
+          "type": "select",
+          "text": "During the past week, how much did the above symptoms altogether interfere with your social life?",
+          "optionSetId": "impairment_5"
+        }
+      ],
+      "scoring": {
+        "method": "sum"
+      },
+      "interpretations": {
+        "target": "total",
+        "type": "screening",
+        "ranges": [
+          {
+            "min": 0,
+            "max": 8,
+            "label": "Below clinical cutoff"
+          },
+          {
+            "min": 9,
+            "max": 28,
+            "label": "Above panic screening cutoff"
+          }
+        ],
+        "cutoffs": [
+          {
+            "value": 9,
+            "label": "Screening cutoff"
+          }
+        ]
+      },
+      "alerts": []
+    }
+  ]
+}

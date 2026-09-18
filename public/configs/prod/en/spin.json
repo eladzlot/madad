@@ -1,0 +1,203 @@
+{
+  "id": "spin",
+  "version": "1.0.0",
+  "questionnaires": [
+    {
+      "id": "spin",
+      "meta": {
+        "domains": [
+          "social",
+          "anxiety"
+        ],
+        "type": "severity",
+        "populations": [
+          "adult"
+        ],
+        "featured": true,
+        "source": "Connor, Davidson, Churchill, Sherwood, Foa & Weisler (2000), Br J Psychiatry 176:379–386 — English original"
+      },
+      "title": "Social Phobia Inventory (SPIN)",
+      "description": "A 17-item scale of social phobia severity; used to screen for social anxiety disorder and to measure symptom severity (Social Phobia Inventory).",
+      "keywords": [
+        "social anxiety",
+        "social phobia",
+        "SPIN",
+        "avoidance",
+        "screening"
+      ],
+      "defaultOptionSetId": "severity_5",
+      "optionSets": {
+        "severity_5": [
+          {
+            "label": "Not at all",
+            "value": 0
+          },
+          {
+            "label": "A little bit",
+            "value": 1
+          },
+          {
+            "label": "Somewhat",
+            "value": 2
+          },
+          {
+            "label": "Very much",
+            "value": 3
+          },
+          {
+            "label": "Extremely",
+            "value": 4
+          }
+        ]
+      },
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "Please indicate how much the following problems have bothered you during the past week. Answer every item."
+        },
+        {
+          "id": "1",
+          "type": "select",
+          "text": "I am afraid of people in authority."
+        },
+        {
+          "id": "2",
+          "type": "select",
+          "text": "I am bothered by blushing in front of people."
+        },
+        {
+          "id": "3",
+          "type": "select",
+          "text": "Parties and social events scare me."
+        },
+        {
+          "id": "4",
+          "type": "select",
+          "text": "I avoid talking to people I don’t know."
+        },
+        {
+          "id": "5",
+          "type": "select",
+          "text": "Being criticized scares me a lot."
+        },
+        {
+          "id": "6",
+          "type": "select",
+          "text": "Fear of embarrassment causes me to avoid doing things or speaking to people."
+        },
+        {
+          "id": "7",
+          "type": "select",
+          "text": "Sweating in front of people causes me distress."
+        },
+        {
+          "id": "8",
+          "type": "select",
+          "text": "I avoid going to parties."
+        },
+        {
+          "id": "9",
+          "type": "select",
+          "text": "I avoid activities in which I am the center of attention."
+        },
+        {
+          "id": "10",
+          "type": "select",
+          "text": "Talking to strangers scares me."
+        },
+        {
+          "id": "11",
+          "type": "select",
+          "text": "I avoid having to give speeches."
+        },
+        {
+          "id": "12",
+          "type": "select",
+          "text": "I would do anything to avoid being criticized."
+        },
+        {
+          "id": "13",
+          "type": "select",
+          "text": "Heart palpitations bother me when I am around people."
+        },
+        {
+          "id": "14",
+          "type": "select",
+          "text": "I am afraid of doing things when people might be watching."
+        },
+        {
+          "id": "15",
+          "type": "select",
+          "text": "Being embarrassed or looking stupid is among my worst fears."
+        },
+        {
+          "id": "16",
+          "type": "select",
+          "text": "I avoid speaking to anyone in authority."
+        },
+        {
+          "id": "17",
+          "type": "select",
+          "text": "Trembling or shaking in front of others is distressing to me."
+        }
+      ],
+      "scoring": {
+        "method": "subscales",
+        "subscales": {
+          "fear": [
+            "1",
+            "2",
+            "5",
+            "10",
+            "12",
+            "14",
+            "15"
+          ],
+          "avoidance": [
+            "4",
+            "6",
+            "8",
+            "9",
+            "11",
+            "16"
+          ],
+          "physiological": [
+            "3",
+            "7",
+            "13",
+            "17"
+          ]
+        }
+      },
+      "subscaleLabels": {
+        "fear": "Fear",
+        "avoidance": "Avoidance",
+        "physiological": "Physiological arousal"
+      },
+      "interpretations": {
+        "target": "total",
+        "type": "screening",
+        "ranges": [
+          {
+            "min": 0,
+            "max": 20,
+            "label": "Below clinical cutoff"
+          },
+          {
+            "min": 21,
+            "max": 68,
+            "label": "Probable social phobia (screening cutoff)"
+          }
+        ],
+        "cutoffs": [
+          {
+            "value": 21,
+            "label": "Screening cutoff"
+          }
+        ]
+      },
+      "alerts": []
+    }
+  ]
+}

@@ -1,0 +1,112 @@
+{
+  "id": "dar5",
+  "version": "1.0.0",
+  "questionnaires": [
+    {
+      "id": "dar5",
+      "meta": {
+        "domains": [
+          "anger"
+        ],
+        "type": "severity",
+        "populations": [
+          "adult"
+        ],
+        "featured": true,
+        "source": "Forbes et al. (2014), Depression and Anxiety 31:166–173 — DAR-5 English original; item wording as reproduced in Table 2 of Grossman et al. (2024), PMC10844994"
+      },
+      "title": "Dimensions of Anger Reactions (DAR-5)",
+      "description": "A 5-item scale of anger reactions over the past four weeks — frequency, intensity, duration, aggression and interference with relationships (Dimensions of Anger Reactions).",
+      "keywords": [
+        "anger",
+        "DAR",
+        "DAR-5",
+        "aggression",
+        "irritability",
+        "screening"
+      ],
+      "defaultOptionSetId": "frequency_5",
+      "optionSets": {
+        "frequency_5": [
+          {
+            "label": "None or almost none of the time",
+            "value": 1
+          },
+          {
+            "label": "A little of the time",
+            "value": 2
+          },
+          {
+            "label": "Some of the time",
+            "value": 3
+          },
+          {
+            "label": "Most of the time",
+            "value": 4
+          },
+          {
+            "label": "All or almost all of the time",
+            "value": 5
+          }
+        ]
+      },
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "Thinking about the past four weeks, select the response that best describes how often each statement applied to you."
+        },
+        {
+          "id": "1",
+          "type": "select",
+          "text": "I found myself getting angry at people or situations"
+        },
+        {
+          "id": "2",
+          "type": "select",
+          "text": "When I got angry, I got really mad"
+        },
+        {
+          "id": "3",
+          "type": "select",
+          "text": "When I got angry, I stayed angry"
+        },
+        {
+          "id": "4",
+          "type": "select",
+          "text": "When I got angry at someone, I wanted to hit them"
+        },
+        {
+          "id": "5",
+          "type": "select",
+          "text": "My anger prevented me from getting along with people as well as I’d have liked to"
+        }
+      ],
+      "scoring": {
+        "method": "sum"
+      },
+      "interpretations": {
+        "target": "total",
+        "type": "screening",
+        "ranges": [
+          {
+            "min": 5,
+            "max": 11,
+            "label": "Below clinical cutoff"
+          },
+          {
+            "min": 12,
+            "max": 25,
+            "label": "Above cutoff for problem anger"
+          }
+        ],
+        "cutoffs": [
+          {
+            "value": 12,
+            "label": "Screening cutoff"
+          }
+        ]
+      }
+    }
+  ]
+}

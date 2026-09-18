@@ -53,9 +53,11 @@ test.describe('composer in English', () => {
     // instruments are listed — with English titles.
     await expect(langChip(page)).toHaveValue('en');
     await expect(card(page, 'phq9').locator('.name')).toHaveText('Patient Health Questionnaire (PHQ-9)');
-    await expect(card(page, 'wsas')).toHaveCount(0);
-    await searchBox(page).fill('wsas');
-    await expect(card(page, 'wsas')).toHaveCount(0);
+    // A Hebrew-only instrument. If this one ever gains public/configs/prod/en/,
+    // repoint these assertions at another config whose catalog entry is langs: ['he'].
+    await expect(card(page, 'ocsrs_m')).toHaveCount(0);
+    await searchBox(page).fill('OCSRS');
+    await expect(card(page, 'ocsrs_m')).toHaveCount(0);
   });
 
   test('the nav toggle reloads into the other language and remembers it', async ({ page }) => {
@@ -76,19 +78,21 @@ test.describe('composer in English', () => {
     await page.goto('/composer/?lang=he');
     await expect(brand(page)).toBeVisible({ timeout: 10_000 });
     // Pick a Hebrew-only instrument and an English-capable one.
-    await searchBox(page).fill('wsas');
-    await card(page, 'wsas').locator('button.card').click();
+    // A Hebrew-only instrument. If this one ever gains public/configs/prod/en/,
+    // repoint these assertions at another config whose catalog entry is langs: ['he'].
+    await searchBox(page).fill('OCSRS');
+    await card(page, 'ocsrs_m').locator('button.card').click();
     await searchBox(page).fill('');
     await card(page, 'phq9').locator('button.card').click();
     await fillUid(page);
-    await expect(urlBox(page)).toContainText('items=wsas,phq9');
+    await expect(urlBox(page)).toContainText('items=ocsrs_m,phq9');
     await expect(urlBox(page)).not.toContainText('lang=');
 
     await switchPatientLang(page, 'en');
     await expect(urlBox(page)).toContainText('items=phq9');
     await expect(urlBox(page)).toContainText('lang=en');
     await expect(page.locator('selection-cart session-settings .dropped')).toContainText('English');
-    await expect(card(page, 'wsas')).toHaveCount(0);
+    await expect(card(page, 'ocsrs_m')).toHaveCount(0);
     // Titles stay Hebrew (UI language), the link is English (patient language).
     await expect(card(page, 'phq9').locator('.name')).toContainText('PHQ-9');
     await expect(card(page, 'phq9').locator('.name')).toContainText('שאלון');

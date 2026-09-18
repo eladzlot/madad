@@ -138,7 +138,7 @@ Aggregate (`aggregate/src/`):
 
 ### 9. Composer
 
-- Store gains `uiLang` (resolved at boot, fixed for the page lifetime) and `patientLang` (default = `uiLang`; persisted under `madad.composer.patientLang.v1` once changed explicitly).
+- Store gains `uiLang` (resolved at boot, fixed for the page lifetime) and `patientLang` (follows `uiLang`; an explicit change lasts for the page only). `patientLang` was originally persisted under `madad.composer.patientLang.v1`, which was removed 2026-09-18: a choice made once outranked the UI language on every later visit, so the bar could say English while the catalog filtered to Hebrew — and on a phone the control that explains it sits inside the bottom sheet, out of sight. Any key left in a clinician's browser is now simply ignored.
 - `visibleEntries` additionally filters `entry.languages.includes(patientLang)` (L-8). `setPatientLang` drops now-unavailable selections and records them for a dismissible cart notice ("2 removed: not available in English").
 - Card/cart/preview titles use `titleIn(entry, uiLang)` → `entry.i18n[uiLang]?.title ?? entry.title`.
 - Patient-language control: a segmented control labelled with `LANGS[x].label` in the cart header (desktop) and the mobile sheet, next to the PID field.

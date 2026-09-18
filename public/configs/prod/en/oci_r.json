@@ -1,0 +1,220 @@
+{
+  "id": "oci_r",
+  "version": "1.0.0",
+  "questionnaires": [
+    {
+      "id": "oci_r",
+      "meta": {
+        "domains": [
+          "ocd"
+        ],
+        "type": "severity",
+        "populations": [
+          "adult"
+        ],
+        "featured": true,
+        "source": "Foa, Huppert, Leiberg, Hajcak, Langner et al. (2002), Psychological Assessment 14:485–496 — English original. Time frame follows the Hebrew file (past week); the published form asks about the past month."
+      },
+      "title": "Obsessive-Compulsive Inventory — Revised (OCI-R)",
+      "description": "Distress caused by obsessive-compulsive symptoms over the past week (OCD, Obsessive-Compulsive, OCI-R)",
+      "keywords": [
+        "OCD",
+        "obsessive",
+        "compulsive",
+        "OCI",
+        "OCI-R",
+        "checking",
+        "hoarding",
+        "washing"
+      ],
+      "defaultOptionSetId": "distress_5",
+      "optionSets": {
+        "distress_5": [
+          {
+            "label": "Not at all",
+            "value": 0
+          },
+          {
+            "label": "A little",
+            "value": 1
+          },
+          {
+            "label": "Moderately",
+            "value": 2
+          },
+          {
+            "label": "A lot",
+            "value": 3
+          },
+          {
+            "label": "Extremely",
+            "value": 4
+          }
+        ]
+      },
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "The following statements refer to experiences that many people have in their everyday lives. For each statement, indicate how much that experience has distressed or bothered you during the past week."
+        },
+        {
+          "id": "1",
+          "type": "select",
+          "text": "I have saved up so many things that they get in the way."
+        },
+        {
+          "id": "2",
+          "type": "select",
+          "text": "I check things more often than necessary."
+        },
+        {
+          "id": "3",
+          "type": "select",
+          "text": "I get upset if objects are not arranged properly."
+        },
+        {
+          "id": "4",
+          "type": "select",
+          "text": "I feel compelled to count while I am doing things."
+        },
+        {
+          "id": "5",
+          "type": "select",
+          "text": "I find it difficult to touch an object when I know it has been touched by strangers or certain people."
+        },
+        {
+          "id": "6",
+          "type": "select",
+          "text": "I find it difficult to control my own thoughts."
+        },
+        {
+          "id": "7",
+          "type": "select",
+          "text": "I collect things I don’t need."
+        },
+        {
+          "id": "8",
+          "type": "select",
+          "text": "I repeatedly check doors, windows, drawers, etc."
+        },
+        {
+          "id": "9",
+          "type": "select",
+          "text": "I get upset if others change the way I have arranged things."
+        },
+        {
+          "id": "10",
+          "type": "select",
+          "text": "I feel I have to repeat certain numbers."
+        },
+        {
+          "id": "11",
+          "type": "select",
+          "text": "I sometimes have to wash or clean myself simply because I feel contaminated."
+        },
+        {
+          "id": "12",
+          "type": "select",
+          "text": "I am upset by unpleasant thoughts that come into my mind against my will."
+        },
+        {
+          "id": "13",
+          "type": "select",
+          "text": "I avoid throwing things away because I am afraid I might need them later."
+        },
+        {
+          "id": "14",
+          "type": "select",
+          "text": "I repeatedly check gas and water taps and light switches after turning them off."
+        },
+        {
+          "id": "15",
+          "type": "select",
+          "text": "I need things to be arranged in a particular way."
+        },
+        {
+          "id": "16",
+          "type": "select",
+          "text": "I feel that there are good and bad numbers."
+        },
+        {
+          "id": "17",
+          "type": "select",
+          "text": "I wash my hands more often and longer than necessary."
+        },
+        {
+          "id": "18",
+          "type": "select",
+          "text": "I frequently get nasty thoughts and have difficulty in getting rid of them."
+        }
+      ],
+      "scoring": {
+        "method": "subscales",
+        "subscales": {
+          "washing": [
+            "5",
+            "11",
+            "17"
+          ],
+          "obsessing": [
+            "6",
+            "12",
+            "18"
+          ],
+          "hoarding": [
+            "1",
+            "7",
+            "13"
+          ],
+          "ordering": [
+            "3",
+            "9",
+            "15"
+          ],
+          "checking": [
+            "2",
+            "8",
+            "14"
+          ],
+          "neutralising": [
+            "4",
+            "10",
+            "16"
+          ]
+        }
+      },
+      "interpretations": {
+        "target": "total",
+        "type": "screening",
+        "ranges": [
+          {
+            "min": 0,
+            "max": 20,
+            "label": "Below clinical cutoff"
+          },
+          {
+            "min": 21,
+            "max": 72,
+            "label": "Probable OCD (screening cutoff)"
+          }
+        ],
+        "cutoffs": [
+          {
+            "value": 21,
+            "label": "Screening cutoff"
+          }
+        ]
+      },
+      "alerts": [],
+      "subscaleLabels": {
+        "washing": "Washing",
+        "obsessing": "Obsessing",
+        "hoarding": "Hoarding",
+        "ordering": "Ordering",
+        "checking": "Checking",
+        "neutralising": "Neutralising"
+      }
+    }
+  ]
+}

@@ -1,0 +1,479 @@
+{
+  "id": "hai",
+  "version": "1.0.0",
+  "questionnaires": [
+    {
+      "id": "hai",
+      "meta": {
+        "domains": [
+          "anxiety"
+        ],
+        "type": "severity",
+        "populations": [
+          "adult"
+        ],
+        "source": "Salkovskis, Rimes, Warwick & Clark (2002), Psychological Medicine 32:843–853 — Health Anxiety Inventory (HAI-18), response statements transcribed verbatim from the form supplied 2026-09-18. Item stems are Madad’s topic labels; the published form has no stem, only the four statements."
+      },
+      "title": "Health Anxiety Inventory (HAI-18)",
+      "description": "Health anxiety — 18 items covering preoccupation with health, fear of illness, and perceived danger and disability (Health Anxiety Inventory).",
+      "keywords": [
+        "health anxiety",
+        "hypochondriasis",
+        "HAI",
+        "SHAI",
+        "illness worry"
+      ],
+      "defaultOptionSetId": "hai_4",
+      "optionSets": {
+        "hai_4": [
+          {
+            "label": "No",
+            "value": 0
+          },
+          {
+            "label": "Sometimes",
+            "value": 1
+          },
+          {
+            "label": "Often",
+            "value": 2
+          },
+          {
+            "label": "Almost always",
+            "value": 3
+          }
+        ]
+      },
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "Each question consists of a group of four statements. Read each group carefully and choose the one which best describes your feelings over the past six months. There are no right or wrong answers."
+        },
+        {
+          "id": "1",
+          "type": "select",
+          "text": "Worry about my health",
+          "options": [
+            {
+              "label": "I do not worry about my health.",
+              "value": 0
+            },
+            {
+              "label": "I occasionally worry about my health.",
+              "value": 1
+            },
+            {
+              "label": "I spend much of my time worrying about my health.",
+              "value": 2
+            },
+            {
+              "label": "I spend most of my time worrying about my health.",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "id": "2",
+          "type": "select",
+          "text": "Noticing aches and pains",
+          "options": [
+            {
+              "label": "I notice aches/pains less than most other people (of my age).",
+              "value": 0
+            },
+            {
+              "label": "I notice aches/pains as much as most other people (of my age).",
+              "value": 1
+            },
+            {
+              "label": "I notice aches/pains more than most other people (of my age).",
+              "value": 2
+            },
+            {
+              "label": "I am aware of aches/pains in my body all the time.",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "id": "3",
+          "type": "select",
+          "text": "Awareness of bodily sensations",
+          "options": [
+            {
+              "label": "As a rule I am not aware of bodily sensations or changes.",
+              "value": 0
+            },
+            {
+              "label": "Sometimes I am aware of bodily sensations or changes.",
+              "value": 1
+            },
+            {
+              "label": "I am often aware of bodily sensations or changes.",
+              "value": 2
+            },
+            {
+              "label": "I am constantly aware of bodily sensations or changes.",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "id": "4",
+          "type": "select",
+          "text": "Resisting thoughts of illness",
+          "options": [
+            {
+              "label": "Resisting thoughts of illness is never a problem.",
+              "value": 0
+            },
+            {
+              "label": "Most of the time I can resist thoughts of illness.",
+              "value": 1
+            },
+            {
+              "label": "I try to resist thoughts of illness but am often unable to do so.",
+              "value": 2
+            },
+            {
+              "label": "Thoughts of illness are so strong that I no longer even try to resist them.",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "id": "5",
+          "type": "select",
+          "text": "Fear of serious illness",
+          "options": [
+            {
+              "label": "As a rule I am not afraid that I have a serious illness.",
+              "value": 0
+            },
+            {
+              "label": "I am sometimes afraid that I have a serious illness.",
+              "value": 1
+            },
+            {
+              "label": "I am often afraid that I have a serious illness.",
+              "value": 2
+            },
+            {
+              "label": "I am always afraid that I have a serious illness.",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "id": "6",
+          "type": "select",
+          "text": "Mental images of myself being ill",
+          "options": [
+            {
+              "label": "I do not have images (mental pictures) of myself being ill.",
+              "value": 0
+            },
+            {
+              "label": "I occasionally have images of myself being ill.",
+              "value": 1
+            },
+            {
+              "label": "I frequently have images of myself being ill.",
+              "value": 2
+            },
+            {
+              "label": "I constantly have images of myself being ill.",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "id": "7",
+          "type": "select",
+          "text": "Taking my mind off thoughts about my health",
+          "options": [
+            {
+              "label": "I do not have any difficulty taking my mind off thoughts about my health.",
+              "value": 0
+            },
+            {
+              "label": "I sometimes have difficulty taking my mind off thoughts about my health.",
+              "value": 1
+            },
+            {
+              "label": "I often have difficulty in taking my mind off thoughts about my health.",
+              "value": 2
+            },
+            {
+              "label": "Nothing can take my mind off thoughts about my health.",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "id": "8",
+          "type": "select",
+          "text": "Reassurance after seeing a doctor",
+          "options": [
+            {
+              "label": "I am lastingly relieved if my doctor tells me there is nothing wrong.",
+              "value": 0
+            },
+            {
+              "label": "I am initially relieved but the worries sometimes return later.",
+              "value": 1
+            },
+            {
+              "label": "I am initially relieved but the worries always return later.",
+              "value": 2
+            },
+            {
+              "label": "I am not relieved if my doctor tells me there is nothing wrong.",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "id": "9",
+          "type": "select",
+          "text": "Hearing about an illness",
+          "options": [
+            {
+              "label": "If I hear about an illness I never think I have it myself.",
+              "value": 0
+            },
+            {
+              "label": "If I hear about an illness I sometimes think I have it myself.",
+              "value": 1
+            },
+            {
+              "label": "If I hear about an illness I often think I have it myself.",
+              "value": 2
+            },
+            {
+              "label": "If I hear about an illness I always think I have it myself.",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "id": "10",
+          "type": "select",
+          "text": "What bodily sensations mean",
+          "options": [
+            {
+              "label": "If I have a bodily sensation or change I rarely wonder what it means.",
+              "value": 0
+            },
+            {
+              "label": "If I have a bodily sensation or change I often wonder what it means.",
+              "value": 1
+            },
+            {
+              "label": "If I have a bodily sensation or change I always wonder what it means.",
+              "value": 2
+            },
+            {
+              "label": "If I have a bodily sensation or change I must know what it means.",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "id": "11",
+          "type": "select",
+          "text": "Risk of developing a serious illness",
+          "options": [
+            {
+              "label": "I usually feel at very low risk for developing a serious illness.",
+              "value": 0
+            },
+            {
+              "label": "I usually feel at fairly low risk for developing a serious illness.",
+              "value": 1
+            },
+            {
+              "label": "I usually feel at moderate risk for developing a serious illness.",
+              "value": 2
+            },
+            {
+              "label": "I usually feel at high risk for developing a serious illness.",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "id": "12",
+          "type": "select",
+          "text": "Thoughts that I have a serious illness",
+          "options": [
+            {
+              "label": "I never think I have a serious illness.",
+              "value": 0
+            },
+            {
+              "label": "I sometimes think I have a serious illness.",
+              "value": 1
+            },
+            {
+              "label": "I often think I have a serious illness.",
+              "value": 2
+            },
+            {
+              "label": "I usually think that I am seriously ill.",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "id": "13",
+          "type": "select",
+          "text": "Unexplained bodily sensations",
+          "options": [
+            {
+              "label": "If I notice an unexplained bodily sensation I don’t find it difficult to think about other things.",
+              "value": 0
+            },
+            {
+              "label": "If I notice an unexplained bodily sensation I sometimes find it difficult to think about other things.",
+              "value": 1
+            },
+            {
+              "label": "If I notice an unexplained bodily sensation I often find it difficult to think about other things.",
+              "value": 2
+            },
+            {
+              "label": "If I notice an unexplained bodily sensation I always find it difficult to think about other things.",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "id": "14",
+          "type": "select",
+          "text": "How others see my concern with health",
+          "options": [
+            {
+              "label": "My family/friends would say I do not worry enough about my health.",
+              "value": 0
+            },
+            {
+              "label": "My family/friends would say I have a normal attitude to my health.",
+              "value": 1
+            },
+            {
+              "label": "My family/friends would say I worry too much about my health.",
+              "value": 2
+            },
+            {
+              "label": "My family/friends would say I am a hypochondriac.",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "id": "intro2",
+          "type": "instructions",
+          "text": "For the following questions, imagine how you would feel if you had a serious illness."
+        },
+        {
+          "id": "15",
+          "type": "select",
+          "text": "Being able to enjoy life if I had a serious illness",
+          "options": [
+            {
+              "label": "If I had a serious illness I would still be able to enjoy things in my life quite a lot.",
+              "value": 0
+            },
+            {
+              "label": "If I had a serious illness I would still be able to enjoy things in my life a little.",
+              "value": 1
+            },
+            {
+              "label": "If I had a serious illness I would be almost completely unable to enjoy things in my life.",
+              "value": 2
+            },
+            {
+              "label": "If I had a serious illness I would be completely unable to enjoy life at all.",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "id": "16",
+          "type": "select",
+          "text": "Whether modern medicine could cure a serious illness",
+          "options": [
+            {
+              "label": "If I developed a serious illness there is a good chance that modern medicine would be able to cure me.",
+              "value": 0
+            },
+            {
+              "label": "If I developed a serious illness there is a moderate chance that modern medicine would be able to cure me.",
+              "value": 1
+            },
+            {
+              "label": "If I developed a serious illness there is a very small chance that modern medicine would be able to cure me.",
+              "value": 2
+            },
+            {
+              "label": "If I developed a serious illness there is no chance that modern medicine would be able to cure me.",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "id": "17",
+          "type": "select",
+          "text": "The effect a serious illness would have on my life",
+          "options": [
+            {
+              "label": "A serious illness would ruin some aspects of my life.",
+              "value": 0
+            },
+            {
+              "label": "A serious illness would ruin many aspects of my life.",
+              "value": 1
+            },
+            {
+              "label": "A serious illness would ruin almost every aspect of my life.",
+              "value": 2
+            },
+            {
+              "label": "A serious illness would ruin every aspect of my life.",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "id": "18",
+          "type": "select",
+          "text": "Self-respect if I had a serious illness",
+          "options": [
+            {
+              "label": "If I had a serious illness I would not feel that I had lost my dignity.",
+              "value": 0
+            },
+            {
+              "label": "If I had a serious illness I would feel that I had lost a little of my dignity.",
+              "value": 1
+            },
+            {
+              "label": "If I had a serious illness I would feel that I had lost quite a lot of my dignity.",
+              "value": 2
+            },
+            {
+              "label": "If I had a serious illness I would feel that I had totally lost my dignity.",
+              "value": 3
+            }
+          ]
+        }
+      ],
+      "scoring": {
+        "method": "sum"
+      },
+      "alerts": []
+    }
+  ]
+}

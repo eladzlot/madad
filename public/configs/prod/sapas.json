@@ -1,0 +1,66 @@
+{
+  "id": "sapas",
+  "version": "1.0.0",
+  "questionnaires": [
+    {
+      "id": "sapas",
+      "meta": {
+        "domains": ["intake"],
+        "type": "screener",
+        "populations": ["adult"],
+        "tags": ["SAPAS", "personality", "screening"]
+      },
+      "title": "הערכת אישיות מקוצרת (SAPAS)",
+      "description": "שאלון סינון בן 8 פריטים (כן/לא) לאיתור סבירות להפרעת אישיות. ציון 3 ומעלה מצביע על סבירות גבוהה.",
+      "keywords": [
+        "SAPAS",
+        "אישיות",
+        "הפרעת אישיות",
+        "personality",
+        "personality disorder",
+        "screening",
+        "סינון"
+      ],
+      "defaultOptionSetId": "yesno",
+      "optionSets": {
+        "yesno": [
+          { "label": "כן", "value": 1 },
+          { "label": "לא", "value": 0 }
+        ]
+      },
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "ענה/עני על השאלות הבאות. סמן/י \"כן\" רק אם התיאור מתאים לך ברוב הזמן וברוב המצבים."
+        },
+        { "id": "1", "type": "binary", "text": "באופן כללי, האם קשה לך ליצור חברויות ולשמור עליהן?" },
+        { "id": "2", "type": "binary", "text": "האם בדרך כלל היית מתאר/ת את עצמך כמתבודד/ת?" },
+        { "id": "3", "type": "binary", "text": "באופן כללי, האם את/ה נותן/ת אמון באנשים אחרים?", "reverse": true },
+        { "id": "4", "type": "binary", "text": "האם את/ה נוטה בדרך כלל לאבד את העשתונות בקלות?" },
+        { "id": "5", "type": "binary", "text": "האם את/ה בדרך כלל אדם אימפולסיבי/ת?" },
+        { "id": "6", "type": "binary", "text": "האם את/ה בדרך כלל אדם דאגן/ית?" },
+        { "id": "7", "type": "binary", "text": "באופן כללי, האם את/ה תלוי/ה באחרים במידה רבה?" },
+        { "id": "8", "type": "binary", "text": "באופן כללי, האם את/ה פרפקציוניסט/ית?" }
+      ],
+      "scoring": { "method": "sum" },
+      "interpretations": {
+        "target": "total",
+        "type": "screening",
+        "ranges": [
+          { "min": 0, "max": 2, "label": "מתחת לסף הסינון" },
+          { "min": 3, "max": 8, "label": "מעל סף הסינון — סבירות להפרעת אישיות" }
+        ],
+        "cutoffs": [{ "value": 3, "label": "סף סינון" }]
+      },
+      "alerts": [
+        {
+          "id": "screen_cutoff",
+          "condition": "score.sapas >= 3",
+          "message": "מעל סף סינון להפרעת אישיות",
+          "severity": "warning"
+        }
+      ]
+    }
+  ]
+}

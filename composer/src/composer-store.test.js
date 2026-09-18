@@ -460,14 +460,20 @@ describe('patient language', () => {
     expect(store.url()).not.toContain('lang=');
   });
 
-  it('persists the explicit choice per browser', () => {
+  it('does NOT outlive the page — a fresh store follows the UI language again', () => {
+    // It used to persist per browser, so one explicit choice silently outranked
+    // the UI language on every later visit: the bar said English while the
+    // catalog filtered to Hebrew, with nothing on screen reconciling the two.
     const mem = new Map();
     const storage = { getItem: k => mem.get(k) ?? null, setItem: (k, v) => mem.set(k, v) };
     const a = createStore({ storage });
     a.ingestCatalog(catalog([both('phq9', 'PHQ-9')]), { catalogVersion: CATALOG_VERSION, isDev: true });
     a.setPatientLang('en');
+    expect(a.patientLang).toBe('en');          // holds for this page
     const b = createStore({ storage, uiLang: 'he' });
-    expect(b.patientLang).toBe('en');
+    expect(b.patientLang).toBe('he');          // and only for this page
+    const c = createStore({ storage, uiLang: 'en' });
+    expect(c.patientLang).toBe('en');
   });
 
   it('ignores unknown languages', () => {

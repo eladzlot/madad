@@ -1,0 +1,317 @@
+{
+  "id": "ders",
+  "version": "1.0.0",
+  "questionnaires": [
+    {
+      "id": "ders",
+      "meta": {
+        "domains": [
+          "emotion_regulation"
+        ],
+        "type": "process",
+        "populations": [
+          "adult"
+        ],
+        "featured": true,
+        "source": "Gratz & Roemer (2004), J Psychopathol Behav Assess 26:41–54 — English original, transcribed from the DERS form supplied 2026-09-18"
+      },
+      "title": "Difficulties in Emotion Regulation Scale (DERS)",
+      "description": "A 36-item measure of difficulties in emotion regulation across six dimensions (Gratz & Roemer, 2004).",
+      "keywords": [
+        "emotion regulation",
+        "DERS",
+        "emotion dysregulation",
+        "affect"
+      ],
+      "defaultOptionSetId": "freq5",
+      "optionSets": {
+        "freq5": [
+          {
+            "label": "Almost never (0–10%)",
+            "value": 1
+          },
+          {
+            "label": "Sometimes (11–35%)",
+            "value": 2
+          },
+          {
+            "label": "About half the time (36–65%)",
+            "value": 3
+          },
+          {
+            "label": "Most of the time (66–90%)",
+            "value": 4
+          },
+          {
+            "label": "Almost always (91–100%)",
+            "value": 5
+          }
+        ]
+      },
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "Please indicate how often the following statements apply to you."
+        },
+        {
+          "id": "1",
+          "type": "select",
+          "text": "I am clear about my feeling",
+          "reverse": true
+        },
+        {
+          "id": "2",
+          "type": "select",
+          "text": "I pay attention to how I feel",
+          "reverse": true
+        },
+        {
+          "id": "3",
+          "type": "select",
+          "text": "I experience my emotions as overwhelming and out of control"
+        },
+        {
+          "id": "4",
+          "type": "select",
+          "text": "I have no idea how I am feeling"
+        },
+        {
+          "id": "5",
+          "type": "select",
+          "text": "4 3 2 1"
+        },
+        {
+          "id": "6",
+          "type": "select",
+          "text": "I am attentive to my feelings",
+          "reverse": true
+        },
+        {
+          "id": "7",
+          "type": "select",
+          "text": "I know exactly how I am feeling",
+          "reverse": true
+        },
+        {
+          "id": "8",
+          "type": "select",
+          "text": "I care about what I am feeling",
+          "reverse": true
+        },
+        {
+          "id": "9",
+          "type": "select",
+          "text": "I am confused about how I feel"
+        },
+        {
+          "id": "10",
+          "type": "select",
+          "text": "When Iʼm upset, I acknowledge my emotions",
+          "reverse": true
+        },
+        {
+          "id": "11",
+          "type": "select",
+          "text": "When Iʼm upset, I become angry with myself for feeling that way"
+        },
+        {
+          "id": "12",
+          "type": "select",
+          "text": "When Iʼm upset, I become embarrassed for feeling that way"
+        },
+        {
+          "id": "13",
+          "type": "select",
+          "text": "When Iʼm upset, I have difficulty getting work done"
+        },
+        {
+          "id": "14",
+          "type": "select",
+          "text": "When Iʼm upset, I become out of control"
+        },
+        {
+          "id": "15",
+          "type": "select",
+          "text": "When Iʼm upset, I believe that I will remain that way for a long time"
+        },
+        {
+          "id": "16",
+          "type": "select",
+          "text": "When Iʼm upset, I believe that Iʼll end up feeling very depressed"
+        },
+        {
+          "id": "17",
+          "type": "select",
+          "text": "When Iʼm upset, I believe that my feelings are valid and important",
+          "reverse": true
+        },
+        {
+          "id": "18",
+          "type": "select",
+          "text": "When Iʼm upset, I have difficulty focusing on other things"
+        },
+        {
+          "id": "19",
+          "type": "select",
+          "text": "When Iʼm upset, I feel out of control"
+        },
+        {
+          "id": "20",
+          "type": "select",
+          "text": "When Iʼm upset, I can still get things done",
+          "reverse": true
+        },
+        {
+          "id": "21",
+          "type": "select",
+          "text": "When Iʼm upset, I feel ashamed with myself for feeling that way"
+        },
+        {
+          "id": "22",
+          "type": "select",
+          "text": "When Iʼm upset, I know that I can find a way to eventually feel better",
+          "reverse": true
+        },
+        {
+          "id": "23",
+          "type": "select",
+          "text": "When Iʼm upset, I feel like I am weak"
+        },
+        {
+          "id": "24",
+          "type": "select",
+          "text": "When Iʼm upset, I feel like I can remain in control of my behaviours",
+          "reverse": true
+        },
+        {
+          "id": "25",
+          "type": "select",
+          "text": "When Iʼm upset, I feel guilty for feeling that way"
+        },
+        {
+          "id": "26",
+          "type": "select",
+          "text": "When Iʼm upset, I have difficulty concentrating"
+        },
+        {
+          "id": "27",
+          "type": "select",
+          "text": "When Iʼm upset, I have difficulty controlling my behaviours"
+        },
+        {
+          "id": "28",
+          "type": "select",
+          "text": "When Iʼm upset, I believe that there is nothing I can do to make myself feel better"
+        },
+        {
+          "id": "29",
+          "type": "select",
+          "text": "When Iʼm upset, I become irritated with myself for feeling that way"
+        },
+        {
+          "id": "30",
+          "type": "select",
+          "text": "When Iʼm upset, I start to feel very bad about myself"
+        },
+        {
+          "id": "31",
+          "type": "select",
+          "text": "When Iʼm upset, I believe that wallowing in it is all I can do"
+        },
+        {
+          "id": "32",
+          "type": "select",
+          "text": "When Iʼm upset, I lose control over my behaviours"
+        },
+        {
+          "id": "33",
+          "type": "select",
+          "text": "When Iʼm upset, I have difficulty thinking about anything else"
+        },
+        {
+          "id": "34",
+          "type": "select",
+          "text": "When Iʼm upset I take time to figure out what Iʼm really feeling",
+          "reverse": true
+        },
+        {
+          "id": "35",
+          "type": "select",
+          "text": "When Iʼm upset, it takes me a long time to feel better"
+        },
+        {
+          "id": "36",
+          "type": "select",
+          "text": "When Iʼm upset, my emotions feel overwhelming"
+        }
+      ],
+      "scoring": {
+        "method": "subscales",
+        "subscales": {
+          "nonacceptance": [
+            "11",
+            "12",
+            "21",
+            "23",
+            "25",
+            "29"
+          ],
+          "goals": [
+            "13",
+            "18",
+            "20",
+            "26",
+            "33"
+          ],
+          "impulse": [
+            "3",
+            "14",
+            "19",
+            "24",
+            "27",
+            "32"
+          ],
+          "awareness": [
+            "2",
+            "6",
+            "8",
+            "10",
+            "17",
+            "34"
+          ],
+          "strategies": [
+            "15",
+            "16",
+            "22",
+            "28",
+            "30",
+            "31",
+            "35",
+            "36"
+          ],
+          "clarity": [
+            "1",
+            "4",
+            "5",
+            "7",
+            "9"
+          ]
+        }
+      },
+      "subscaleLabels": {
+        "nonacceptance": "Nonacceptance of emotional responses",
+        "goals": "Difficulty engaging in goal-directed behaviour",
+        "impulse": "Impulse control difficulties",
+        "awareness": "Lack of emotional awareness",
+        "strategies": "Limited access to emotion regulation strategies",
+        "clarity": "Lack of emotional clarity"
+      },
+      "psychometrics": {
+        "reliability": 0.93,
+        "sd": 20.72,
+        "source": "Gratz & Roemer (2004)"
+      }
+    }
+  ]
+}

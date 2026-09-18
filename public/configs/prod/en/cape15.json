@@ -1,0 +1,175 @@
+{
+  "id": "cape15",
+  "version": "1.0.0",
+  "questionnaires": [
+    {
+      "id": "cape15",
+      "meta": {
+        "domains": [
+          "psychosis"
+        ],
+        "type": "screener",
+        "populations": [
+          "adult"
+        ],
+        "source": "Capra, Kavanagh, Hides & Scott (2013), Schizophrenia Research 149:104–107 — CAPE-P15 item text transcribed verbatim from the paper’s item table"
+      },
+      "title": "Community Assessment of Psychic Experiences — Positive scale (CAPE-P15)",
+      "description": "A 15-item self-report screen for psychosis-like experiences over the past three months (the current-state CAPE-P15).",
+      "keywords": [
+        "psychosis",
+        "CAPE",
+        "CAPE-P15",
+        "psychotic-like experiences",
+        "screening"
+      ],
+      "defaultOptionSetId": "frequency_4",
+      "optionSets": {
+        "frequency_4": [
+          {
+            "label": "Never",
+            "value": 0
+          },
+          {
+            "label": "Sometimes",
+            "value": 1
+          },
+          {
+            "label": "Often",
+            "value": 2
+          },
+          {
+            "label": "Nearly always",
+            "value": 3
+          }
+        ]
+      },
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "The following questions are about thoughts, feelings and experiences that people sometimes have. For each one, indicate how often you have had it over the past three months."
+        },
+        {
+          "id": "1",
+          "type": "select",
+          "text": "Have you ever felt as if people seem to drop hints about you or say things with a double meaning?"
+        },
+        {
+          "id": "2",
+          "type": "select",
+          "text": "Have you ever felt as if some people are not what they seem to be?"
+        },
+        {
+          "id": "3",
+          "type": "select",
+          "text": "Have you ever felt that you are being persecuted in any way?"
+        },
+        {
+          "id": "4",
+          "type": "select",
+          "text": "Have you ever felt as if there is a conspiracy against you?"
+        },
+        {
+          "id": "5",
+          "type": "select",
+          "text": "Have you ever felt that people look at you oddly because of your appearance?"
+        },
+        {
+          "id": "6",
+          "type": "select",
+          "text": "Have you ever felt as if electrical devices such as computers can influence the way you think?"
+        },
+        {
+          "id": "7",
+          "type": "select",
+          "text": "Have you ever felt as if the thoughts in your head are being taken away from you?"
+        },
+        {
+          "id": "8",
+          "type": "select",
+          "text": "Have you ever felt as if the thoughts in your head are not your own?"
+        },
+        {
+          "id": "9",
+          "type": "select",
+          "text": "Have your thoughts ever been so vivid that you were worried other people would hear them?"
+        },
+        {
+          "id": "10",
+          "type": "select",
+          "text": "Have you ever heard your thoughts being echoed back at you?"
+        },
+        {
+          "id": "11",
+          "type": "select",
+          "text": "Have you ever felt as if you are under the control of some force or power other than yourself?"
+        },
+        {
+          "id": "12",
+          "type": "select",
+          "text": "Have you ever felt as if a double has taken the place of a family member, friend or acquaintance?"
+        },
+        {
+          "id": "13",
+          "type": "select",
+          "text": "Have you ever heard voices when you are alone?"
+        },
+        {
+          "id": "14",
+          "type": "select",
+          "text": "Have you ever heard voices talking to each other when you are alone?"
+        },
+        {
+          "id": "15",
+          "type": "select",
+          "text": "Have you ever seen objects, people or animals that other people can’t see?"
+        }
+      ],
+      "scoring": {
+        "method": "subscales",
+        "subscales": {
+          "persecutory": [
+            "1",
+            "2",
+            "3",
+            "4",
+            "5"
+          ],
+          "bizarre": [
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12"
+          ],
+          "perceptual": [
+            "13",
+            "14",
+            "15"
+          ]
+        }
+      },
+      "subscaleLabels": {
+        "persecutory": "Persecutory ideation",
+        "bizarre": "Bizarre experiences",
+        "perceptual": "Perceptual abnormalities"
+      },
+      "psychometrics": {
+        "reliability": 0.84,
+        "sd": 4.51,
+        "source": "Capra et al. 2017"
+      },
+      "alerts": [
+        {
+          "id": "hallucinations",
+          "condition": "item.13 >= 2 || item.14 >= 2 || item.15 >= 2",
+          "message": "Hallucinatory experiences",
+          "severity": "critical"
+        }
+      ]
+    }
+  ]
+}
