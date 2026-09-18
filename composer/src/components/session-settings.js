@@ -196,7 +196,7 @@ export class SessionSettings extends LitElement {
     return html`
       <div class="chips" role="group" aria-label=${t('cart.settings')}>
         ${langs.length > 1 ? html`
-          <span class="chip-select">
+          <span class="chip-select" title=${t('cart.patientLang')}>
             <svg class="glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                  stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
               <circle cx="12" cy="12" r="9"/><path d="M3 12h18"/>

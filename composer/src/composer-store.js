@@ -16,6 +16,12 @@
 // language (fixed for the page lifetime — switching reloads), and
 // `patientLang`, the language the link will open in. The picker only lists
 // entries available in `patientLang` (L-8); titles display in `uiLang`.
+//
+// `patientLang` FOLLOWS `uiLang` unless the clinician changes it, and that
+// change lasts for the page only. It used to persist per browser, which meant a
+// choice made once silently outranked the UI language on every later visit: the
+// bar said English while the catalog filtered to Hebrew, and on a phone the
+// control that explained it lives inside the bottom sheet, out of sight.
 
 import { buildUrl, pidWarning } from './composer-state.js';
 import { sortForBrowse, rankForQuery } from './search.js';
@@ -25,15 +31,7 @@ import { t } from '../../clinician/i18n/index.js';
 import { DEFAULT_LANG, LANGS, isLang } from '../../shared/i18n/core.js';
 import { titleIn, textIn } from './entry-text.js';
 
-export const PATIENT_LANG_KEY = 'madad.composer.patientLang.v1';
 export { titleIn, textIn };
-
-function loadPatientLang(storage, fallback) {
-  try {
-    const v = storage?.getItem?.(PATIENT_LANG_KEY);
-    return isLang(v) ? v : fallback;
-  } catch { return fallback; }
-}
 
 export function createStore({ storage = safeLocalStorage(), uiLang = DEFAULT_LANG } = {}) {
   const state = {
@@ -50,14 +48,13 @@ export function createStore({ storage = safeLocalStorage(), uiLang = DEFAULT_LAN
     // catalog's author `featured` defaults. See composer-profile.js.
     profile:   loadProfile(storage),
     uiLang:    isLang(uiLang) ? uiLang : DEFAULT_LANG,
-    // Patient language: the clinician's last explicit choice, else the UI language.
-    patientLang: loadPatientLang(storage, isLang(uiLang) ? uiLang : DEFAULT_LANG),
+    // Patient language: the UI language until the clinician says otherwise.
+    patientLang: isLang(uiLang) ? uiLang : DEFAULT_LANG,
     // Selections dropped by the last patient-language switch, for a notice.
     dropped:   [],
   };
 
   const persist = () => saveProfile(state.profile, storage);
-  const persistPatientLang = () => { try { storage?.setItem?.(PATIENT_LANG_KEY, state.patientLang); } catch { /* no storage */ } };
 
   // The catalog entries the patient language allows (L-8: hidden entirely).
   const availableIn = (entry, lang = state.patientLang) => (entry.languages ?? [DEFAULT_LANG]).includes(lang);
@@ -276,7 +273,6 @@ export function createStore({ storage = safeLocalStorage(), uiLang = DEFAULT_LAN
       state.selected = state.selected.filter(id => !dropped.includes(id));
       state.dropped = dropped;
       state.copied = false;
-      persistPatientLang();
       notify();
     },
     clearDropped() { if (state.dropped.length) { state.dropped = []; notify(); } },

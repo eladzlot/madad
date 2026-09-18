@@ -56,16 +56,11 @@ export class ClinicianNav extends LitElement {
       flex-wrap: wrap;
     }
 
-    .nav-group {
-      display: flex;
-      align-items: baseline;
-      gap: var(--space-lg, 24px);
-      /* Without this the brand and the links cannot break onto separate lines
-         and the bar overflows the viewport at 320px — which is what 1280px
-         looks like at 400% zoom (WCAG 1.4.10 Reflow). The app is RTL, so the
-         overflow runs off the left edge and is easy to miss. */
-      flex-wrap: wrap;
-    }
+    /* Brand, links, subtitle and the language control are siblings of .inner so
+       they can be re-ordered per breakpoint. .inner wraps, which is what keeps
+       the bar inside the viewport at 320px — 1280px at 400% zoom (WCAG 1.4.10
+       Reflow). The app is RTL, so overflow runs off the LEFT edge and is easy
+       to miss. */
 
     .brand {
       font-size: var(--font-size-xl, 28px);
@@ -116,11 +111,54 @@ export class ClinicianNav extends LitElement {
       .subtitle { display: block; }
     }
 
+    /* Below the subtitle breakpoint the bar cannot hold brand + three links +
+       the language control on one line, so it wrapped the control onto a line
+       of its own where it read as an orphan. Make the two tiers deliberate
+       instead: brand and language together, the links beneath them. */
+    @media (max-width: 767px) {
+      .inner { gap: var(--space-sm, 8px) var(--space-md, 16px); }
+      .brand { order: 1; }
+      .lang-wrap { order: 2; }
+      nav { order: 3; flex-basis: 100%; }
+    }
+
     /* UI language — a select on the bar's trailing edge. The language list is
        open-ended (Russian and Arabic are filed as I18N-8/9), so one control per
        language does not survive contact with the roadmap. */
-    .lang {
+    /* A select cannot hold markup, so the glyph and caret are drawn around it and
+       appearance:none lets the wrapper's fill show through — the same idiom the
+       composer's patient-language chip uses. The glyph is a SCREEN, not a globe:
+       the composer carries a second language control for the patient's
+       questionnaires, and the two were indistinguishable when both were a bare
+       language name. Screen = this interface; globe = what the patient receives. */
+    .lang-wrap {
       margin-inline-start: auto;
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .lang-glyph {
+      position: absolute;
+      inset-inline-start: 10px;
+      inline-size: 15px;
+      block-size: 15px;
+      pointer-events: none;
+      opacity: 0.85;
+      color: #ffffff;
+    }
+
+    .lang-caret {
+      position: absolute;
+      inset-inline-end: 11px;
+      font-size: 9px;
+      pointer-events: none;
+      color: rgba(255, 255, 255, 0.75);
+    }
+
+    .lang {
+      appearance: none;
+      -webkit-appearance: none;
       background: rgba(255, 255, 255, 0.10);
       border: 1px solid rgba(255, 255, 255, 0.25);
       border-radius: var(--radius-pill, 999px);
@@ -128,7 +166,8 @@ export class ClinicianNav extends LitElement {
       font-family: inherit;
       font-size: var(--font-size-sm, 14px);
       line-height: 1;
-      padding: 6px 12px;
+      padding-inline: 31px 26px;
+      padding-block: 7px;
       cursor: pointer;
     }
     .lang:hover { border-color: var(--color-accent, #2bb3c0); }
@@ -151,33 +190,38 @@ export class ClinicianNav extends LitElement {
     return html`
       <header>
         <div class="inner">
-          <div class="nav-group">
-            <a class="brand" href=${LANDING_HREF}>${t('nav.brand')}</a>
-            <nav aria-label=${t('nav.aria')}>
-              ${PAGES.map(
-                (p) => html`
-                  <a
-                    class="link"
-                    href=${hrefFor(p.href)}
-                    aria-current=${p.id === this.page ? 'page' : nothing}
-                  >${t(`nav.${p.id}`)}</a>
-                `
-              )}
-            </nav>
-          </div>
+          <a class="brand" href=${LANDING_HREF}>${t('nav.brand')}</a>
+          <nav aria-label=${t('nav.aria')}>
+            ${PAGES.map(
+              (p) => html`
+                <a
+                  class="link"
+                  href=${hrefFor(p.href)}
+                  aria-current=${p.id === this.page ? 'page' : nothing}
+                >${t(`nav.${p.id}`)}</a>
+              `
+            )}
+          </nav>
           ${this.subtitle ? html`<p class="subtitle">${this.subtitle}</p>` : nothing}
-          <select
-            class="lang"
-            aria-label=${t('nav.langAria')}
-            .value=${currentLang()}
-            @change=${(e) => this._switch(e.target.value)}
-          >
-            ${LANG_CODES.map((code) => html`
-              <option value=${code} lang=${code} ?selected=${code === currentLang()}>
-                ${LANGS[code].label}
-              </option>
-            `)}
-          </select>
+          <span class="lang-wrap" title=${t('nav.langAria')}>
+            <svg class="lang-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="2.5" y="4" width="19" height="13" rx="2"/><path d="M8 20.5h8"/><path d="M12 17v3.5"/>
+            </svg>
+            <select
+              class="lang"
+              aria-label=${t('nav.langAria')}
+              .value=${currentLang()}
+              @change=${(e) => this._switch(e.target.value)}
+            >
+              ${LANG_CODES.map((code) => html`
+                <option value=${code} lang=${code} ?selected=${code === currentLang()}>
+                  ${LANGS[code].label}
+                </option>
+              `)}
+            </select>
+            <span class="lang-caret" aria-hidden="true">▾</span>
+          </span>
         </div>
       </header>
     `;
