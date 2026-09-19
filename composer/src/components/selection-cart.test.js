@@ -55,6 +55,37 @@ describe('selection-cart', () => {
     }
   });
 
+  it('renders the copy icon as real SVG shapes', async () => {
+    // A nested html`` template inside <svg> builds its children in the HTML
+    // namespace: <RECT>/<PATH> with no geometry, painting nothing. lit's svg``
+    // tag is required there. This icon had never rendered in either mode.
+    const el = await makeEl();
+    const shape = el.shadowRoot.querySelector('.copy-btn svg *');
+    expect(shape).not.toBeNull();
+    expect(shape.namespaceURI).toBe('http://www.w3.org/2000/svg');
+    expect(el.shadowRoot.querySelectorAll('.copy-btn svg *').length).toBe(2);
+  });
+
+  it('puts COPY on the bright button by default', async () => {
+    const el = await makeEl();
+    expect(el.shadowRoot.querySelector('.copy-btn').classList.contains('c-btn--go')).toBe(true);
+    expect(el.shadowRoot.querySelector('.qr-btn').classList.contains('c-btn--rail')).toBe(true);
+  });
+
+  it('shareMode="qr" swaps them — the QR is the handover, copy is the fallback', async () => {
+    // On the trial the therapist and the patient are in the same room, so the
+    // link is passed by holding up a code to scan (REMOTE_SPEC §8.3).
+    const el = await makeEl({ shareMode: 'qr' });
+    const qr = el.shadowRoot.querySelector('.qr-btn');
+    const copy = el.shadowRoot.querySelector('.copy-btn');
+    expect(qr.classList.contains('c-btn--go')).toBe(true);
+    expect(qr.textContent).toContain('QR');
+    expect(copy.classList.contains('c-btn--rail')).toBe(true);
+    // Demoted to an icon, so its name has to live on the accessible label.
+    expect(copy.getAttribute('aria-label')).toBeTruthy();
+    expect(el.shadowRoot.querySelectorAll('.c-btn--go')).toHaveLength(1);
+  });
+
   it('holds the head\'s footprint with no link — disabled, not absent', async () => {
     // The rail used to grow ~112px on the first pick because the QR row only
     // rendered once a URL existed. Nothing here appears or disappears.

@@ -265,6 +265,7 @@ export class ComposerApp extends LitElement {
             .pidWarning=${pidWarning}
             .recentUids=${this._recentUids}
             .requirePid=${true}
+            .shareMode=${'qr'}
             .copied=${s.copied}
             .canShare=${this._canShare}
           ></selection-cart>
@@ -290,6 +291,7 @@ export class ComposerApp extends LitElement {
         .pidWarning=${pidWarning}
         .recentUids=${this._recentUids}
         .requirePid=${true}
+        .shareMode=${'qr'}
         .copied=${s.copied}
         .canShare=${this._canShare}
       ></mobile-bar>

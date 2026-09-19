@@ -17,7 +17,7 @@
 //   copy · share · open · reorder · remove · pid-change ·
 //   patient-lang-change · dropped-dismiss · reset
 
-import { LitElement, html, css, unsafeCSS, nothing } from 'lit';
+import { LitElement, html, svg, css, unsafeCSS, nothing } from 'lit';
 import { clinicianCss } from '../../../clinician/styles/clinician-styles.js';
 import { resetCSS } from '../ui-reset.js';
 import { t } from '../../../clinician/i18n/index.js';
@@ -36,6 +36,9 @@ export class MobileBar extends LitElement {
     pidWarning:  { type: String },
     recentUids:  { type: Array },
     requirePid:  { type: Boolean },  // trial: no link until the uid validates
+    // 'copy' | 'qr' — see selection-cart. On the trial the patient is in the
+    // room, so the QR is the handover and copy is the fallback.
+    shareMode:   { type: String },
     copied:      { type: Boolean },
     canShare:    { type: Boolean },
     _open:       { type: Boolean, state: true },
@@ -52,6 +55,7 @@ export class MobileBar extends LitElement {
     this.pidWarning = '';
     this.recentUids = [];
     this.requirePid = false;
+    this.shareMode = 'copy';
     this.copied = false;
     this.canShare = false;
     this._open = false;
@@ -202,15 +206,57 @@ export class MobileBar extends LitElement {
     // Trial: no uid yet means no link can exist, whatever is picked.
     const needsPid = this.requirePid && !hasUrl && !!count;
 
+    const qrFirst = this.shareMode === 'qr';
+
+    const qrPrimary = html`<button class="c-btn c-btn--go qr-btn" type="button"
+      ?disabled=${!hasUrl}
+      @click=${() => this.renderRoot.querySelector('.bar qr-code')?.expand()}>
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="1.9" stroke-linejoin="round" aria-hidden="true">
+        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+        <rect x="3" y="14" width="7" height="7"/>
+        <path d="M14 14h3v3h-3zM19 19h2v2h-2zM14 20h2"/>
+      </svg>
+      ${t('cart.qr')}</button>`;
+
     const primary = needsPid
       ? html`<button class="c-btn c-btn--go prompt-pid-btn" type="button"
           @click=${() => this._promptForPid()}>${t('mobile.enterUid')}</button>`
+      : qrFirst
+      ? qrPrimary
       : this.canShare
       ? html`<button class="c-btn c-btn--go share-btn" type="button"
           ?disabled=${!hasUrl} @click=${() => this._emit('share')}>${t('cart.share')}</button>`
       : html`<button class="c-btn c-btn--go copy-btn ${this.copied ? 'c-btn--copied' : ''}"
           type="button" ?disabled=${!hasUrl} @click=${() => this._emit('copy')}>
           ${this.copied ? t('cart.copied') : t('cart.copy')}</button>`;
+
+    // The slot beside the primary holds whichever of the pair is not on the
+    // bright button. When the uid prompt preempts the bright button it holds the
+    // QR either way, so the action the therapist is heading for stays on screen
+    // (disabled) rather than disappearing until the uid validates.
+    const secondary = (qrFirst && !needsPid)
+      ? html`<button class="c-btn c-btn--bar copy-btn ${this.copied ? 'c-btn--copied' : ''}"
+          type="button" title=${t('cart.copy')} aria-label=${t('cart.copy')}
+          ?disabled=${!hasUrl} @click=${() => this._emit('copy')}>
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            ${this.copied
+              ? svg`<path d="M20 6 9 17l-5-5"/>`
+              : svg`<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/>`}
+          </svg>
+        </button>`
+      : html`<button class="c-btn c-btn--bar qr-btn" type="button"
+          title=${t('cart.qr')} aria-label=${t('cart.qr')}
+          ?disabled=${!hasUrl}
+          @click=${() => this.renderRoot.querySelector('.bar qr-code')?.expand()}>
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="1.9" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+            <rect x="3" y="14" width="7" height="7"/>
+            <path d="M14 14h3v3h-3zM19 19h2v2h-2zM14 20h2"/>
+          </svg>
+        </button>`;
 
     return html`
       <div class="bar">
@@ -227,17 +273,7 @@ export class MobileBar extends LitElement {
             ${count ? t('mobile.selectedCount', { n: count }) : t('mobile.none')}
           </span>
         </button>
-        <button class="c-btn c-btn--bar qr-btn" type="button"
-          title=${t('cart.qr')} aria-label=${t('cart.qr')}
-          ?disabled=${!hasUrl}
-          @click=${() => this.renderRoot.querySelector('.bar qr-code')?.expand()}>
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-               stroke-width="1.9" stroke-linejoin="round" aria-hidden="true">
-            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-            <rect x="3" y="14" width="7" height="7"/>
-            <path d="M14 14h3v3h-3zM19 19h2v2h-2zM14 20h2"/>
-          </svg>
-        </button>
+        ${secondary}
         ${primary}
         ${hasUrl ? html`<qr-code .url=${this.url} size="104" tileless></qr-code>` : nothing}
       </div>
@@ -262,6 +298,7 @@ export class MobileBar extends LitElement {
             .pidWarning=${this.pidWarning}
             .recentUids=${this.recentUids}
             .requirePid=${this.requirePid}
+            .shareMode=${this.shareMode}
             .copied=${this.copied}
             .canShare=${this.canShare}
           ></selection-cart>

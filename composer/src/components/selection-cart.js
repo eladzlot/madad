@@ -34,7 +34,7 @@
 //   pid-change { pid } · patient-lang-change { lang } · dropped-dismiss
 //     (the last three bubble up from <session-settings>)
 
-import { LitElement, html, css, unsafeCSS, nothing } from 'lit';
+import { LitElement, html, svg, css, unsafeCSS, nothing } from 'lit';
 import { clinicianCss } from '../../../clinician/styles/clinician-styles.js';
 import { resetCSS } from '../ui-reset.js';
 import { t } from '../../../clinician/i18n/index.js';
@@ -53,6 +53,10 @@ export class SelectionCart extends LitElement {
     pidWarning:  { type: String },
     recentUids:  { type: Array },    // trial: remembered uids for the datalist
     requirePid:  { type: Boolean },  // trial: the uid is mandatory (REMOTE_SPEC §3)
+    // 'copy' | 'qr' — which action gets the one bright button. On the trial the
+    // therapist and the patient are in the same room, so the link is handed over
+    // by holding up a QR to scan; copying it is the rare case, not the default.
+    shareMode:   { type: String },
     copied:      { type: Boolean },
     canShare:    { type: Boolean },
     // Reflected: the :host([compact]) rules below depend on the attribute.
@@ -71,6 +75,7 @@ export class SelectionCart extends LitElement {
     this.pidWarning = '';
     this.recentUids = [];
     this.requirePid = false;
+    this.shareMode = 'copy';
     this.copied = false;
     this.canShare = false;
     this.compact = false;
@@ -304,45 +309,64 @@ export class SelectionCart extends LitElement {
     `;
   }
 
-  _renderOutput() {
-    const hasUrl = !!this.url;
-    // On the trial a link needs BOTH a selection and a valid uid, so the
-    // placeholder has to say which one is missing — "nothing selected" would be
-    // a lie once instruments are picked and only the uid is outstanding.
-    const needsPid = this.requirePid && !hasUrl && (this.entries?.length ?? 0) > 0;
+  // Copy and QR trade places by shareMode. Both keep their class either way, so
+  // the only thing that changes is which one is the bright button: as a
+  // secondary it is icon-only, with the label on title/aria-label.
+  _copyButton(hasUrl, primary) {
     return html`
-      <p class="url-line ${hasUrl ? '' : 'empty'}" dir=${hasUrl ? 'ltr' : 'auto'}
-         aria-label=${t('cart.linkAria')}>
-        ${hasUrl ? this.url : (needsPid ? t('cart.needUid') : t('cart.noSelection'))}
-      </p>
-
       <button
-        class="c-btn c-btn--go copy-btn ${this.copied ? 'c-btn--copied' : ''}"
+        class="c-btn ${primary ? 'c-btn--go' : 'c-btn--rail'} copy-btn ${this.copied ? 'c-btn--copied' : ''}"
         type="button"
+        title=${t('cart.copy')}
+        aria-label=${t('cart.copy')}
         ?disabled=${!hasUrl}
         @click=${() => this._emit('copy')}
       >
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
              stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           ${this.copied
-            ? html`<path d="M20 6 9 17l-5-5"/>`
-            : html`<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/>`}
+            ? svg`<path d="M20 6 9 17l-5-5"/>`
+            : svg`<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/>`}
         </svg>
         ${this.copied ? t('cart.copied') : t('cart.copy')}
       </button>
+    `;
+  }
+
+  _qrButton(hasUrl, primary) {
+    return html`
+      <button class="c-btn ${primary ? 'c-btn--go' : 'c-btn--rail'} qr-btn" type="button"
+        title=${t('cart.qr')} aria-label=${t('cart.qr')}
+        ?disabled=${!hasUrl}
+        @click=${() => this.renderRoot.querySelector('qr-code')?.expand()}>
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="1.9" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+          <rect x="3" y="14" width="7" height="7"/>
+          <path d="M14 14h3v3h-3zM19 19h2v2h-2zM14 20h2"/>
+        </svg>
+        ${primary ? t('cart.qr') : nothing}
+      </button>
+    `;
+  }
+
+  _renderOutput() {
+    const hasUrl = !!this.url;
+    // On the trial a link needs BOTH a selection and a valid uid, so the
+    // placeholder has to say which one is missing — "nothing selected" would be
+    // a lie once instruments are picked and only the uid is outstanding.
+    const needsPid = this.requirePid && !hasUrl && (this.entries?.length ?? 0) > 0;
+    const qrFirst = this.shareMode === 'qr';
+    return html`
+      <p class="url-line ${hasUrl ? '' : 'empty'}" dir=${hasUrl ? 'ltr' : 'auto'}
+         aria-label=${t('cart.linkAria')}>
+        ${hasUrl ? this.url : (needsPid ? t('cart.needUid') : t('cart.noSelection'))}
+      </p>
+
+      ${qrFirst ? this._qrButton(hasUrl, true) : this._copyButton(hasUrl, true)}
 
       <div class="icon-row">
-        <button class="c-btn c-btn--rail qr-btn" type="button"
-          title=${t('cart.qr')} aria-label=${t('cart.qr')}
-          ?disabled=${!hasUrl}
-          @click=${() => this.renderRoot.querySelector('qr-code')?.expand()}>
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-               stroke-width="1.9" stroke-linejoin="round" aria-hidden="true">
-            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-            <rect x="3" y="14" width="7" height="7"/>
-            <path d="M14 14h3v3h-3zM19 19h2v2h-2zM14 20h2"/>
-          </svg>
-        </button>
+        ${qrFirst ? this._copyButton(hasUrl, false) : this._qrButton(hasUrl, false)}
         <button class="c-btn c-btn--rail open-btn" type="button"
           title=${t('cart.open')} aria-label=${t('cart.open')}
           ?disabled=${!hasUrl} @click=${() => this._emit('open')}>

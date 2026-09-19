@@ -18,6 +18,39 @@ async function makeEl(props = {}) {
 const q = (el, sel) => el.shadowRoot.querySelector(sel);
 
 describe('mobile-bar', () => {
+  describe('share mode', () => {
+    it('defaults to copy on the bright button, QR beside it', async () => {
+      const el = await makeEl();
+      expect(q(el, '.copy-btn').classList.contains('c-btn--go')).toBe(true);
+      expect(q(el, '.qr-btn').classList.contains('c-btn--bar')).toBe(true);
+    });
+
+    it('shareMode="qr" makes the QR the bright button and demotes copy', async () => {
+      const el = await makeEl({ shareMode: 'qr' });
+      expect(q(el, '.qr-btn').classList.contains('c-btn--go')).toBe(true);
+      expect(q(el, '.copy-btn').classList.contains('c-btn--bar')).toBe(true);
+    });
+
+    it('forwards shareMode to the cart inside the sheet', async () => {
+      // The sheet body is the same <selection-cart> the rail renders, so the
+      // bright button has to agree in both places — it did not, at first.
+      const el = await makeEl({ shareMode: 'qr' });
+      q(el, '.count-btn').click();
+      await el.updateComplete;
+      const cart = q(el, 'selection-cart');
+      expect(cart.shareMode).toBe('qr');
+    });
+
+    it('a missing uid still outranks the QR — no link exists to encode', async () => {
+      const el = await makeEl({ shareMode: 'qr', requirePid: true, url: null });
+      expect(q(el, '.prompt-pid-btn')).not.toBeNull();
+      // …and the QR stays on screen beside it, disabled, rather than vanishing.
+      const qr = q(el, '.qr-btn');
+      expect(qr.classList.contains('c-btn--go')).toBe(false);
+      expect(qr.disabled).toBe(true);
+    });
+  });
+
   describe('the bar', () => {
     it('counts the selection and says it opens something', async () => {
       // Without the chevron the count read as a status line, and nothing
