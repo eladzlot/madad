@@ -159,6 +159,10 @@ operator's record. **Keep `minted/` out of git** (it is gitignored).
 
 ## Sending quota — before the wave
 
+**Cleared 2026-09-19: the limit increase was approved.** Steps 1 and 2 below
+are done; keep them as the record of the arithmetic that was filed. Step 3
+(ramp) and step 4 (watch the queries) still apply for the first wave.
+
 Cloudflare starts new accounts on a conservative daily quota and raises it as
 sending history builds. At trial scale — 250 therapists, roughly weekly
 measurement — expect on the order of 200–360 doorbells a day, which may

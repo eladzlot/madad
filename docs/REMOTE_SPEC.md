@@ -12,7 +12,7 @@ First drafted 2026-07-15; rewritten 2026-09-14 after the trial firmed up
 (8 courses, ~250 therapists in the first wave, a similar wave next year).
 
 Sibling docs: `AGGREGATE_SPEC.md`, `BEHAVIORAL_SPEC.md`,
-`IMPLEMENTATION_SPEC.md`, `LEGAL_QUESTIONS.md`.
+`IMPLEMENTATION_SPEC.md`.
 
 ---
 
@@ -45,7 +45,7 @@ branch, and contains none of the code described here (§12).
 | D-3 | Notification emails contain **no clinical content** — the uid, the date and a link, nothing else. A generic alert marker is a v1.1 option, default off (§6). | 2026-07-15 |
 | D-4 | Therapist access via **signed expiring links** (capability URLs), not accounts. | 2026-07-15 |
 | D-5 | The `uid → therapist email` registry is maintained **manually** by the operator, per course. | 2026-07-15 |
-| D-6 | Retention is **indefinite** — acceptable precisely because of D-2. Subject to legal review (`LEGAL_QUESTIONS.md`). | 2026-07-15 |
+| D-6 | Retention is **indefinite** — acceptable precisely because of D-2. Cleared by legal review 2026-09-19. | 2026-07-15 |
 | D-7 | **Post-first**; no share button; PDF optional. | 2026-09-14 |
 | D-8 | **Separate long-lived branch, no build flag.** `main` is the parent; the branch is rebased onto it (§12). | 2026-09-14 |
 | D-9 | **Unknown uid refuses at session start**, accepting that the registry check is an enumeration oracle (it already exists at submit; see §7). | 2026-09-14 |
@@ -622,6 +622,29 @@ clinician nav, PDF footer and page titles; `public/robots.txt` with
 
 ---
 
+### 8.5 Handover — the QR is the share action
+
+The therapist and the patient are in the same room: the link is handed over by
+holding up a code to scan, not by copying a URL into some other channel. So the
+QR takes the one bright button in the composer's rail and in the phone bar, and
+copying the link sits beside it as the fallback.
+
+`selection-cart` and `mobile-bar` carry a `shareMode` property (`'copy' | 'qr'`)
+defaulting to `'copy'` — `main`'s share-or-copy behaviour, untouched — and
+`composer-app` passes `'qr'` here. Whichever of the pair is not on the bright
+button sits beside it; both keep their `.copy-btn` / `.qr-btn` classes either
+way, so nothing that selects them had to change.
+
+Two details that are not incidental:
+
+- **The demoted copy button keeps its "copy link" label.** Beside a QR, a bare
+  copy glyph reads as "copy the QR code", which is not what it does.
+- **A missing uid still outranks the QR.** With no valid uid there is no link to
+  encode, so the uid prompt takes the bright button — but the QR stays on screen
+  beside it, disabled, rather than vanishing until the uid validates.
+
+---
+
 ## 9. Out of scope for v1
 
 Revisiting requires updating this document.
@@ -653,9 +676,12 @@ Revisiting requires updating this document.
    door; sending would move with it only if they delegate the name rather
    than aliasing it, since a CNAME cannot carry the SPF record a sender
    address needs.
-2. **Legal.** The questions for the lawyer are in `LEGAL_QUESTIONS.md`.
-   Answers may change retention (D-6), logging (§7) and the disclosure
-   wording (§8.1). The design assumes sensitive-tier obligations regardless.
+2. **Legal — cleared 2026-09-19.** The review approved the deployment as
+   specified, so retention (D-6), logging (§7) and the disclosure wording
+   (§8.1) stand as written; the design assumes sensitive-tier obligations
+   regardless. The question list it was based on has been retired. If the
+   opinion carried conditions bearing on any of those three, record them here —
+   the design was built on assumptions those answers could have changed.
 3. **Link expiry and recovery UX.** 7 days is a default, not a finding.
    `access_log` answers: how often therapists open links, how long after a
    submission, and how often the fresh-link form is used.
@@ -736,9 +762,17 @@ that mis-flips ships submission code to the public app. A branch cannot.
 - **`main` is the parent.** Every instrument, engine, scoring, PDF,
   component and fix lands on `main` as today. Nothing remote-specific is
   ever committed to `main`.
-- **`remote` is rebased onto `main`** after every `main` merge
-  (`git rebase main`). The branch's CI is the check. History on the branch
-  is therefore linear and rewritten; it is never merged back.
+- **`main` is merged into `remote`** after every `main` merge
+  (`git merge main`). The branch's CI is the check, and it is never merged
+  back. This said "rebased onto `main` … history is therefore linear and
+  rewritten" until 2026-09-19; the branch had never actually been rebased —
+  `29626a4` and `2c9efda` are merge commits — and an attempt that day showed
+  why. A true rebase replays 27 commits, the oldest predating a year of `main`
+  changes to the same files; the first alone conflicted in eight, and the two
+  merge commits had already reconciled most of that once. Merging resolves it
+  in one pass, keeps both histories and needs no force-push. Decided with the
+  user, who wanted `main`'s features on the branch rather than a particular
+  shape of history.
 - **Seams on `main`, values on the branch.** Where the branch needs to
   change behaviour in a `main` file, the preferred route is a
   behaviour-neutral seam committed to `main` first (a property whose
@@ -770,6 +804,7 @@ requires updating this section.
 | `public/favicon.svg`, `public/og-image.svg`, `public/og-image-app.svg` + their `.png`s | brand mark and OG cards; the OG copy also had to drop "המידע נשאר אצלכם", which contradicts §8.1 |
 | `aggregate/src/chart/trajectory-chart.js`, `aggregate/src/chart/export-svg.js` | cool threshold value, tooltip tints, export brand line (§8.4) |
 | `composer/src/components/*.js`, `aggregate/src/components/*.js`, `clinician/components/clinician-nav.js` | stale `var(--token, #1A9FAD)` fallbacks retired (§8.4) — values only, no markup change |
+| `composer/src/components/selection-cart.js`, `composer/src/components/mobile-bar.js`, `composer/src/components/composer-app.js` | `shareMode` — the QR is the bright button, copy the fallback (§8.5). The property defaults to `'copy'`, which is `main`'s behaviour exactly; only `composer-app` here passes `'qr'`. The seam lives on `main` per §12.1; only the value is here. |
 | `scripts/validate-configs.mjs`, `scripts/build-catalog.mjs` | no-text rule wiring |
 | `public/composer/catalog.json` | regenerated (excluded instruments absent) |
 | `public/robots.txt` | new, `Disallow: /` |
@@ -809,7 +844,7 @@ no `/api/*` routes. D1, the HMAC secret and the email key exist only in
 
 Tracked in the session plan; summarised here so the order survives.
 
-1. **Branch + documents** — this rewrite, `LEGAL_QUESTIONS.md`.
+1. **Branch + documents** — this rewrite.
 2. **Seams on `main`** — colour tokenisation, `collectName`, `status`,
    catalog `exclude`; behaviour-neutral, dist-smoke proves it.
 3. **Trial identity on the branch** — uid module, mandatory uid, no name,

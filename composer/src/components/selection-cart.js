@@ -310,8 +310,7 @@ export class SelectionCart extends LitElement {
   }
 
   // Copy and QR trade places by shareMode. Both keep their class either way, so
-  // the only thing that changes is which one is the bright button: as a
-  // secondary it is icon-only, with the label on title/aria-label.
+  // the only thing that changes is which one is the bright button.
   _copyButton(hasUrl, primary) {
     return html`
       <button
@@ -324,6 +323,10 @@ export class SelectionCart extends LitElement {
       >
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
              stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <!-- lit's svg tag, not html: a nested html template inside <svg>
+               builds its children in the HTML namespace, so these parse as
+               <RECT>/<PATH> elements with no geometry and paint nothing. This
+               icon had never rendered. -->
           ${this.copied
             ? svg`<path d="M20 6 9 17l-5-5"/>`
             : svg`<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/>`}
