@@ -34,7 +34,7 @@
 //   pid-change { pid } · patient-lang-change { lang } · dropped-dismiss
 //     (the last three bubble up from <session-settings>)
 
-import { LitElement, html, css, unsafeCSS, nothing } from 'lit';
+import { LitElement, html, svg, css, unsafeCSS, nothing } from 'lit';
 import { clinicianCss } from '../../../clinician/styles/clinician-styles.js';
 import { resetCSS } from '../ui-reset.js';
 import { t } from '../../../clinician/i18n/index.js';
@@ -307,9 +307,13 @@ export class SelectionCart extends LitElement {
       >
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
              stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <!-- lit's svg tag, not html: a nested html template inside <svg>
+               builds its children in the HTML namespace, so these parse as
+               <RECT>/<PATH> elements with no geometry and paint nothing. This
+               icon had never rendered. -->
           ${this.copied
-            ? html`<path d="M20 6 9 17l-5-5"/>`
-            : html`<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/>`}
+            ? svg`<path d="M20 6 9 17l-5-5"/>`
+            : svg`<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/>`}
         </svg>
         ${this.copied ? t('cart.copied') : t('cart.copy')}
       </button>

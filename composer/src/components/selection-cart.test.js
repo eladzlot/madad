@@ -44,6 +44,17 @@ describe('selection-cart', () => {
     expect(el.shadowRoot.querySelector('.foot')).toBeNull();
   });
 
+  it('renders the copy icon as real SVG shapes', async () => {
+    // A nested html`` template inside <svg> builds its children in the HTML
+    // namespace: <RECT>/<PATH> with no geometry, painting nothing. lit's svg``
+    // tag is required there. This icon had never rendered — the button's text
+    // label carried the meaning, so nobody noticed.
+    const el = await makeEl();
+    const shapes = el.shadowRoot.querySelectorAll('.copy-btn svg *');
+    expect(shapes).toHaveLength(2);
+    expect(shapes[0].namespaceURI).toBe('http://www.w3.org/2000/svg');
+  });
+
   it('shows the link and enables copy / QR / open', async () => {
     const el = await makeEl();
     expect(el.shadowRoot.querySelector('.url-line').textContent).toContain('items=phq9,gad7');
