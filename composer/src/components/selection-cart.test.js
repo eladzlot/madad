@@ -55,6 +55,25 @@ describe('selection-cart', () => {
     expect(shapes[0].namespaceURI).toBe('http://www.w3.org/2000/svg');
   });
 
+  it('puts copy on the bright button by default, QR beside it', async () => {
+    const el = await makeEl();
+    expect(el.shadowRoot.querySelector('.copy-btn').classList.contains('c-btn--go')).toBe(true);
+    expect(el.shadowRoot.querySelector('.qr-btn').classList.contains('c-btn--rail')).toBe(true);
+  });
+
+  it('shareMode="qr" swaps them and keeps the copy label', async () => {
+    // The trial sets this: therapist and patient are in the same room, so the
+    // handover is a code to scan. The demoted button keeps its label because
+    // beside a QR a bare copy glyph reads as "copy the QR code".
+    const el = await makeEl({ shareMode: 'qr' });
+    const qr = el.shadowRoot.querySelector('.qr-btn');
+    const copy = el.shadowRoot.querySelector('.copy-btn');
+    expect(qr.classList.contains('c-btn--go')).toBe(true);
+    expect(copy.classList.contains('c-btn--rail')).toBe(true);
+    expect(copy.textContent).toContain('העתק');
+    expect(el.shadowRoot.querySelectorAll('.c-btn--go')).toHaveLength(1);
+  });
+
   it('shows the link and enables copy / QR / open', async () => {
     const el = await makeEl();
     expect(el.shadowRoot.querySelector('.url-line').textContent).toContain('items=phq9,gad7');

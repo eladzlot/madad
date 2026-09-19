@@ -17,7 +17,7 @@
 //   copy · share · open · reorder · remove · pid-change ·
 //   patient-lang-change · dropped-dismiss · reset
 
-import { LitElement, html, css, unsafeCSS, nothing } from 'lit';
+import { LitElement, html, svg, css, unsafeCSS, nothing } from 'lit';
 import { clinicianCss } from '../../../clinician/styles/clinician-styles.js';
 import { resetCSS } from '../ui-reset.js';
 import { t } from '../../../clinician/i18n/index.js';
@@ -36,6 +36,9 @@ export class MobileBar extends LitElement {
     pidWarning:  { type: String },
     copied:      { type: Boolean },
     canShare:    { type: Boolean },
+    // 'copy' | 'qr' — see selection-cart. Defaults to 'copy'; the trial branch
+    // sets 'qr', where the QR is the handover and copy is the fallback.
+    shareMode:   { type: String },
     _open:       { type: Boolean, state: true },
   };
 
@@ -50,6 +53,7 @@ export class MobileBar extends LitElement {
     this.pidWarning = '';
     this.copied = false;
     this.canShare = false;
+    this.shareMode = 'copy';
     this._open = false;
     this._onKeydown = (e) => { if (e.key === 'Escape' && this._open) this._close(); };
   }
@@ -185,12 +189,39 @@ export class MobileBar extends LitElement {
     const count = this.entries?.length ?? 0;
     const hasUrl = !!this.url;
 
-    const primary = this.canShare
+    const qrFirst = this.shareMode === 'qr';
+
+    const qrButton = (cls, label) => html`<button class="c-btn ${cls} qr-btn" type="button"
+      title=${t('cart.qr')} aria-label=${t('cart.qr')}
+      ?disabled=${!hasUrl}
+      @click=${() => this.renderRoot.querySelector('.bar qr-code')?.expand()}>
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="1.9" stroke-linejoin="round" aria-hidden="true">
+        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+        <rect x="3" y="14" width="7" height="7"/>
+        <path d="M14 14h3v3h-3zM19 19h2v2h-2zM14 20h2"/>
+      </svg>${label ? t('cart.qr') : nothing}</button>`;
+
+    const copyButton = (cls, label) => html`<button
+      class="c-btn ${cls} copy-btn ${this.copied ? 'c-btn--copied' : ''}"
+      type="button" title=${t('cart.copy')} aria-label=${t('cart.copy')}
+      ?disabled=${!hasUrl} @click=${() => this._emit('copy')}>
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        ${this.copied
+          ? svg`<path d="M20 6 9 17l-5-5"/>`
+          : svg`<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/>`}
+      </svg>${label ? (this.copied ? t('cart.copied') : t('cart.copy')) : nothing}</button>`;
+
+    const primary = qrFirst
+      ? qrButton('c-btn--go', true)
+      : this.canShare
       ? html`<button class="c-btn c-btn--go share-btn" type="button"
           ?disabled=${!hasUrl} @click=${() => this._emit('share')}>${t('cart.share')}</button>`
-      : html`<button class="c-btn c-btn--go copy-btn ${this.copied ? 'c-btn--copied' : ''}"
-          type="button" ?disabled=${!hasUrl} @click=${() => this._emit('copy')}>
-          ${this.copied ? t('cart.copied') : t('cart.copy')}</button>`;
+      : copyButton('c-btn--go', true);
+
+    // The slot beside the primary holds whichever of the pair is not on it.
+    const secondary = qrFirst ? copyButton('c-btn--bar', false) : qrButton('c-btn--bar', false);
 
     return html`
       <div class="bar">
@@ -205,17 +236,7 @@ export class MobileBar extends LitElement {
             ${count ? t('mobile.selectedCount', { n: count }) : t('mobile.none')}
           </span>
         </button>
-        <button class="c-btn c-btn--bar qr-btn" type="button"
-          title=${t('cart.qr')} aria-label=${t('cart.qr')}
-          ?disabled=${!hasUrl}
-          @click=${() => this.renderRoot.querySelector('.bar qr-code')?.expand()}>
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-               stroke-width="1.9" stroke-linejoin="round" aria-hidden="true">
-            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-            <rect x="3" y="14" width="7" height="7"/>
-            <path d="M14 14h3v3h-3zM19 19h2v2h-2zM14 20h2"/>
-          </svg>
-        </button>
+        ${secondary}
         ${primary}
         ${hasUrl ? html`<qr-code .url=${this.url} size="104" tileless></qr-code>` : nothing}
       </div>
@@ -240,6 +261,7 @@ export class MobileBar extends LitElement {
             .pidWarning=${this.pidWarning}
             .copied=${this.copied}
             .canShare=${this.canShare}
+            .shareMode=${this.shareMode}
           ></selection-cart>
 
           <div class="sheet-foot">
