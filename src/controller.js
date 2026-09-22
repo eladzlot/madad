@@ -32,15 +32,19 @@ const ADVANCE_DELAY_MS = 150;
 // at build time via Vite `define`, same as report.js.
 const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'dev';
 
+// Built per call, not at module load: t() must read the language the patient
+// actually got. The `refused` detail is the only route out of a failed
+// submission, so leaving any of these untranslated strands a non-Hebrew
+// patient in front of an error they cannot read.
 const SEND_STATUS = {
-  sending: () => ({ kind: 'info', message: 'שולח את התוצאות למטפל/ת…' }),
-  sent:    () => ({ kind: 'success', message: 'התוצאות נשלחו למטפל/ת שלך.',
-                    detail: 'אין צורך לעשות דבר נוסף. אפשר גם להוריד עותק PDF לעצמך.' }),
-  failed:  (retry) => ({ kind: 'error', message: 'לא הצלחנו לשלוח את התוצאות.',
-                    detail: 'נסו שוב, או הורידו את דוח ה-PDF ושלחו אותו למטפל/ת בעצמכם.',
-                    action: { label: 'נסו לשלוח שוב', onClick: retry } }),
-  refused: () => ({ kind: 'error', message: 'לא ניתן לשלוח את התוצאות דרך קישור זה.',
-                    detail: 'הורידו את דוח ה-PDF ושלחו אותו למטפל/ת, ובקשו קישור חדש.' }),
+  sending: () => ({ kind: 'info', message: t('send.sending') }),
+  sent:    () => ({ kind: 'success', message: t('send.sent'),
+                    detail: t('send.sentDetail') }),
+  failed:  (retry) => ({ kind: 'error', message: t('send.failed'),
+                    detail: t('send.failedDetail'),
+                    action: { label: t('send.failedRetry'), onClick: retry } }),
+  refused: () => ({ kind: 'error', message: t('send.refused'),
+                    detail: t('send.refusedDetail') }),
 };
 
 // ── Item resolution ───────────────────────────────────────────────────────────
@@ -365,7 +369,12 @@ export function createController(container, router) {
     const envelope = buildEnvelope({ sessionState: _sessionState, config: _config, session: _session, appVersion: APP_VERSION, lang: currentLang() });
     const result = await submitSession({ uid: _session.pid, envelope });
     if (answersJson !== _send.answersJson) return;          // superseded by a newer completion
-    setSendStatus(result.ok ? 'sent' : (result.error ? 'refused' : 'failed'));
+    // A 429 is transient — the per-IP window is a minute, the per-uid cap a day —
+    // so it takes the retryable 'failed' state and its retry button. Every other
+    // refusal (404, 400, 413) would fail identically however often it is retried,
+    // and 'refused' tells the patient to use the PDF instead.
+    const retryable = result.status === 429 || !result.error;
+    setSendStatus(result.ok ? 'sent' : (retryable ? 'failed' : 'refused'));
   }
 
 

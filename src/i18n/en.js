@@ -52,6 +52,15 @@ export const en = {
   'results.share':        'Share PDF report',
   'results.download':     'Download PDF report',
 
+  'send.sending':         'Sending your results to your therapist…',
+  'send.sent':            'Your results have been sent to your therapist.',
+  'send.sentDetail':      'Nothing else is needed. You can also download a PDF copy for yourself.',
+  'send.failed':          'We could not send your results.',
+  'send.failedDetail':    'Try again, or download the PDF report and send it to your therapist yourself.',
+  'send.failedRetry':     'Try sending again',
+  'send.refused':         'These results cannot be sent through this link.',
+  'send.refusedDetail':   'Download the PDF report and send it to your therapist, and ask for a new link.',
+
   'pdf.date':             'Date',
   'pdf.pid':              'Patient ID',
   'pdf.name':             'Name',

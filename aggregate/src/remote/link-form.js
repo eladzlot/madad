@@ -15,7 +15,9 @@
 // render results directly.
 //
 // Emits `link-request` { uid }; the composition root does the POST and sets
-// `state` to 'sent'. The copy never says whether the uid is registered.
+// `state` to 'sent' (or 'failed' if the request never reached the API). The
+// copy never says whether the uid is registered — but a transport failure
+// discloses nothing about that, so it is reported rather than swallowed.
 
 import { LitElement, html, css, unsafeCSS } from 'lit';
 import { clinicianCss } from '../../../clinician/styles/clinician-styles.js';
@@ -25,7 +27,7 @@ import { t } from '../../../clinician/i18n/index.js';
 export class LinkForm extends LitElement {
   static properties = {
     uid:        { type: String },             // prefilled from the expired link
-    state:      { type: String },             // 'idle' | 'sending' | 'sent'
+    state:      { type: String },             // 'idle' | 'sending' | 'sent' | 'failed'
     reason:     { type: String },             // 'request' | 'expired' | 'error'
     recentUids: { type: Array },              // uids this browser has used (uid-memory.js)
     _value:     { state: true },
@@ -114,6 +116,7 @@ export class LinkForm extends LitElement {
               ${this.state === 'sending' ? 'שולח…' : copy.button}
             </button>
             ${warn ? html`<p class="warn">${warn}</p>` : ''}
+            ${this.state === 'failed' ? html`<p class="warn" role="alert">לא הצלחנו לשלוח כרגע. בדקו את החיבור ונסו שוב.</p>` : ''}
           </form>
         `}
       </section>

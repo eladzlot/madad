@@ -91,11 +91,15 @@ async function loadRemote() {
 async function handleLinkRequest(uid) {
   remote = { ...remote, form: 'sending' };
   update();
-  await requestFreshLink(uid);              // always "sent": the API never discloses registration
+  // The API deliberately never discloses whether the uid is registered (§4.4),
+  // so 'sent' stays opaque about that. A transport failure discloses nothing
+  // either way, though, and reporting it as 'sent' leaves the therapist waiting
+  // for mail that was never requested — so it gets its own state.
+  const delivered = await requestFreshLink(uid);
   // Remember it whether or not it was registered — the API never says, and a
   // uid the therapist typed is one they will likely type again.
   recentUids = rememberUid(uid);
-  remote = { ...remote, form: 'sent' };
+  remote = { ...remote, form: delivered ? 'sent' : 'failed' };
   update();
 }
 

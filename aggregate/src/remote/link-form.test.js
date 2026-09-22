@@ -104,4 +104,14 @@ describe('submission', () => {
     expect(text(el)).toContain('אם המזהה רשום');                   // conditional by design
     expect(el.shadowRoot.querySelector('form')).toBeNull();
   });
+
+  // Regression: the composition root discarded requestFreshLink's boolean and
+  // always rendered 'sent', so a timeout looked identical to a real send and
+  // left the therapist waiting for mail nobody had asked for.
+  it('keeps the form and says so when the request never reached the API', async () => {
+    const el = await makeEl({ uid: UID, state: 'failed' });
+    expect(el.shadowRoot.querySelector('form')).not.toBeNull();
+    expect(text(el)).not.toContain('אם המזהה רשום');
+    expect(el.shadowRoot.querySelector('[role="alert"]')).not.toBeNull();
+  });
 });

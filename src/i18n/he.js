@@ -56,6 +56,15 @@ export const he = {
   'results.share':        'שתף דוח PDF',
   'results.download':     'הורד דוח PDF',
 
+  'send.sending':         'שולח את התוצאות למטפל/ת…',
+  'send.sent':            'התוצאות נשלחו למטפל/ת שלך.',
+  'send.sentDetail':      'אין צורך לעשות דבר נוסף. אפשר גם להוריד עותק PDF לעצמך.',
+  'send.failed':          'לא הצלחנו לשלוח את התוצאות.',
+  'send.failedDetail':    'נסו שוב, או הורידו את דוח ה-PDF ושלחו אותו למטפל/ת בעצמכם.',
+  'send.failedRetry':     'נסו לשלוח שוב',
+  'send.refused':         'לא ניתן לשלוח את התוצאות דרך קישור זה.',
+  'send.refusedDetail':   'הורידו את דוח ה-PDF ושלחו אותו למטפל/ת, ובקשו קישור חדש.',
+
   'pdf.date':             'תאריך',
   'pdf.pid':              'מזהה אישי',
   'pdf.name':             'שם',

@@ -902,3 +902,44 @@ describe('remote submission envelope', () => {
     }
   });
 });
+
+// ─── Send status ──────────────────────────────────────────────────────────────
+
+describe('send status', () => {
+  const completeWith = (result) => {
+    submitSession.mockResolvedValueOnce(result);
+    const { container, orchestrator } = makeSetup({ session: { name: '', pid: 'N82J-PYXY' } });
+    orchestrator._fireSessionComplete({ answers: { phq9: { q1: 1 } }, scores: {}, alerts: {} });
+    return () => container.querySelector('results-screen').status;
+  };
+
+  // Regression: every refusal carrying an error code was mapped to 'refused',
+  // which has no retry button — so a 429, which clears in a minute, looked as
+  // permanent as a dead link and sent the patient off to the PDF fallback.
+  it('offers a retry for a 429, which is transient', async () => {
+    const status = completeWith({ ok: false, status: 429, error: 'rate_limited' });
+    await vi.waitFor(() => expect(status().kind).toBe('error'));
+    expect(status().action).toBeTruthy();
+  });
+
+  it('offers no retry for a 404, which would fail identically on retry', async () => {
+    const status = completeWith({ ok: false, status: 404, error: 'unknown_uid' });
+    await vi.waitFor(() => expect(status().kind).toBe('error'));
+    expect(status().action).toBeUndefined();
+  });
+
+  // Regression: the four states were hard-coded Hebrew literals, so a patient
+  // on an `en` link met an unreadable error — and `refused`'s detail is the only
+  // instruction that routes them out of a failed submission.
+  it('speaks the patient language', async () => {
+    await loadStrings('en');
+    try {
+      const status = completeWith({ ok: false, status: 404, error: 'unknown_uid' });
+      await vi.waitFor(() => expect(status().kind).toBe('error'));
+      expect(status().message).toBe('These results cannot be sent through this link.');
+      expect(status().detail).toMatch(/Download the PDF report/);
+    } finally {
+      await loadStrings('he');
+    }
+  });
+});
