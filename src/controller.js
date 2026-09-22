@@ -1,4 +1,4 @@
-import { t } from './i18n/index.js';
+import { t, currentLang } from './i18n/index.js';
 import { generateReport } from './pdf/report.js';
 import { buildEnvelope } from '../shared/pdf/envelope-schema.js';
 import { submitSession } from './remote/api.js';
@@ -359,7 +359,10 @@ export function createController(container, router) {
     }
     _send.answersJson = answersJson;
     setSendStatus('sending');
-    const envelope = buildEnvelope({ sessionState: _sessionState, config: _config, session: _session, appVersion: APP_VERSION });
+    // lang must be passed explicitly: buildEnvelope defaults it to 'he', so a
+    // session answered in any other language would be stored claiming Hebrew
+    // while the PDF (report.js, which does pass it) says the truth.
+    const envelope = buildEnvelope({ sessionState: _sessionState, config: _config, session: _session, appVersion: APP_VERSION, lang: currentLang() });
     const result = await submitSession({ uid: _session.pid, envelope });
     if (answersJson !== _send.answersJson) return;          // superseded by a newer completion
     setSendStatus(result.ok ? 'sent' : (result.error ? 'refused' : 'failed'));

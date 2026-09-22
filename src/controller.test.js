@@ -5,10 +5,16 @@ import { createController } from './controller.js';
 import { createEngine } from './engine/engine.js';
 import { createQuestionnaireTimer } from './questionnaire-timer.js';
 import { generateReport } from './pdf/report.js';
+import { submitSession } from './remote/api.js';
+import { loadStrings } from './i18n/index.js';
 
 // The PDF pipeline is exercised in src/pdf/*.test.js; here we only need to see
 // what the controller hands it.
 vi.mock('./pdf/report.js', () => ({ generateReport: vi.fn() }));
+
+// The remote submit path is exercised in src/remote/api.test.js; here we only
+// need to see the envelope the controller hands it.
+vi.mock('./remote/api.js', () => ({ submitSession: vi.fn(async () => ({ ok: true, status: 204, error: null })) }));
 
 // item-* components don't need to be registered — controller just
 // calls document.createElement(tag) and sets properties on the element.
@@ -107,7 +113,7 @@ function makeSetup(overrides = {}) {
     batteries:      [],
   };
   const source = { sequence: [{ questionnaireId: questionnaire.id }] };
-  controller.start(config, source, { createOrchestrator, timer: overrides.timer });
+  controller.start(config, source, { createOrchestrator, timer: overrides.timer, session: overrides.session });
   const orchestrator = createOrchestrator.mock.results[0].value;
 
   return { container, controller, engine, orchestrator, questionnaire, router };
@@ -872,5 +878,27 @@ describe('questionnaire timing', () => {
     const opts = generateReport.mock.calls.at(-1)[3];
     expect(opts.timing.questionnaires.phq9).toEqual({ wallMs: 1500, focusMs: 1500, visits: 1 });
     expect(opts.timing.startedAt).toBe(new Date(1_000_000).toISOString());
+  });
+});
+
+// ─── Remote submission ────────────────────────────────────────────────────────
+
+describe('remote submission envelope', () => {
+  // Regression: the submit path omitted `lang`, so buildEnvelope's 'he' default
+  // meant every session answered in another language was STORED claiming Hebrew
+  // while the PDF said the truth. Silent, permanent, and the aggregate's detail
+  // panel then captions an English session "Report language: עברית".
+  // Found 2026-09-22 by the production canary's three-way envelope diff.
+  it('carries the language the patient answered in, not the default', async () => {
+    await loadStrings('en');
+    try {
+      submitSession.mockClear();
+      const { orchestrator } = makeSetup({ session: { name: '', pid: 'N82J-PYXY' } });
+      orchestrator._fireSessionComplete({ answers: { phq9: { q1: 1 } }, scores: {}, alerts: {} });
+      await vi.waitFor(() => expect(submitSession).toHaveBeenCalled());
+      expect(submitSession.mock.calls[0][0].envelope.lang).toBe('en');
+    } finally {
+      await loadStrings('he');
+    }
   });
 });
