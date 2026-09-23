@@ -37,6 +37,11 @@ import { clinicianCss } from '../../../clinician/styles/clinician-styles.js';
 import { resetCSS } from '../ui-reset.js';
 import { t } from '../../../clinician/i18n/index.js';
 import { LANGS, DEFAULT_LANG } from '../../../shared/i18n/core.js';
+import { isValidUid } from '../../../shared/remote/uid.js';
+
+// A touch device, where the on-screen keyboard covers the bottom of the
+// screen — and with it the mobile bar's share button.
+const hasTouchKeyboard = () => globalThis.matchMedia?.('(pointer: coarse)').matches ?? false;
 
 export class SessionSettings extends LitElement {
   static properties = {
@@ -165,6 +170,23 @@ export class SessionSettings extends LitElement {
     }
     input.pid::placeholder { color: color-mix(in srgb, var(--clin-rail-text, #b0d7c7) 52%, transparent); }
     input.pid:focus { outline: none; border-color: var(--color-accent, #77b770); }
+    input.pid--ok { border-color: var(--color-accent, #77b770); }
+
+    /* The input is dir=ltr (uids are Latin), so its text starts at the left
+       whatever the page direction; the check sits on the physical right,
+       clear of it. */
+    .pid-wrap { position: relative; }
+    input.pid--ok { padding-right: 40px; }
+    .pid-ok {
+      position: absolute;
+      right: var(--space-md, 16px);
+      inset-block: 0;
+      display: flex;
+      align-items: center;
+      font-weight: var(--font-weight-bold, 600);
+      color: var(--color-accent, #77b770);
+      pointer-events: none;
+    }
 
     .hint { font-size: var(--font-size-xs, 12px); color: var(--clin-rail-hint, #95b2a6); }
 
@@ -202,10 +224,35 @@ export class SessionSettings extends LitElement {
     if (this.open) this._focusOnOpen = true;
   }
 
+  // Trial, touch devices: the moment the uid validates, put the keyboard away.
+  // The share button lights up in the mobile bar at the bottom of the screen,
+  // which the keyboard is covering, so otherwise the therapist is done and
+  // cannot see it. Safe to do unasked because of the check symbol: a
+  // half-typed or mistyped uid does not validate, so this never fires mid-
+  // correction. Typing, pasting and picking from the datalist all land here.
+  _onPidInput(e) {
+    const pid = e.target.value;
+    this._emit('pid-change', { pid });
+    if (this.required && hasTouchKeyboard() && isValidUid(pid)) e.target.blur();
+  }
+
+  // The keyboard's Enter is labelled "done" (enterkeyhint) and does that, for
+  // the therapist who reaches for it before the uid is complete. Touch only:
+  // on a desktop Enter also picks from the datalist popup.
+  _onPidKeydown(e) {
+    if (e.key !== 'Enter' || !this.required || !hasTouchKeyboard()) return;
+    e.preventDefault();
+    e.target.blur();
+  }
+
   get _langLabel() { return LANGS[this.patientLang]?.label ?? this.patientLang; }
 
   render() {
     const hasPid = !!this.pid?.trim();
+    // Trial: the uid is complete and passes its check. Shown in the field
+    // itself, where the therapist is looking — the button it enables may be
+    // under the keyboard.
+    const uidOk = this.required && isValidUid(this.pid ?? '');
     const langs = this.langs?.length ? this.langs : [DEFAULT_LANG];
     const n = this.dropped?.length ?? 0;
 
@@ -261,8 +308,9 @@ export class SessionSettings extends LitElement {
               ${t('cart.uidHint')} <bdi dir="ltr">XXXX-XXXX</bdi>
             </span>
           ` : nothing}
+          <div class="pid-wrap">
           <input
-            class="pid"
+            class="pid ${uidOk ? 'pid--ok' : ''}"
             id="settings-pid"
             type="text"
             dir="ltr"
@@ -275,8 +323,12 @@ export class SessionSettings extends LitElement {
             aria-describedby="settings-pid-warning"
             autocomplete="off"
             spellcheck="false"
-            @input=${(e) => this._emit('pid-change', { pid: e.target.value })}
+            enterkeyhint=${this.required ? 'done' : nothing}
+            @input=${this._onPidInput}
+            @keydown=${this._onPidKeydown}
           />
+          ${uidOk ? html`<span class="pid-ok" aria-hidden="true">✓</span>` : nothing}
+          </div>
           ${this.required ? html`
             <datalist id="uid-memory">
               ${(this.recentUids ?? []).map(u => html`<option value=${u}></option>`)}

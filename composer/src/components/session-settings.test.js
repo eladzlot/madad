@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import '../../../tests/setup-dom.js';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach, vi } from 'vitest';
 import { fixture, html } from '@open-wc/testing';
 import './session-settings.js';
 
@@ -123,5 +123,72 @@ describe('session-settings', () => {
     el.pidWarning = '';
     await el.updateComplete;
     expect(el.open).toBe(true);
+  });
+
+  describe('trial uid field on a touch device', () => {
+    const VALID = '70NH-E973';
+    const input = (el) => el.shadowRoot.querySelector('input.pid');
+    const touch = (coarse) => vi.stubGlobal('matchMedia', (q) => ({ matches: coarse && q === '(pointer: coarse)' }));
+    afterEach(() => vi.unstubAllGlobals());
+
+    // Typing in the field as the browser would: set the value, fire input.
+    const type = (el, value) => {
+      input(el).value = value;
+      input(el).dispatchEvent(new Event('input', { bubbles: true }));
+    };
+    const trackBlur = (el) => { const spy = vi.fn(); input(el).blur = spy; return spy; };
+
+    it('puts the keyboard away the moment the uid validates', async () => {
+      // The share button it enables sits in the bar the keyboard is covering.
+      touch(true);
+      const el = await makeEl({ required: true });
+      const blur = trackBlur(el);
+      type(el, '70NH-E97');
+      expect(blur).not.toHaveBeenCalled();
+      type(el, VALID);
+      expect(blur).toHaveBeenCalledOnce();
+    });
+
+    it('keeps the keyboard up for a uid that fails its check', async () => {
+      touch(true);
+      const el = await makeEl({ required: true });
+      const blur = trackBlur(el);
+      type(el, '70NH-E974');
+      expect(blur).not.toHaveBeenCalled();
+    });
+
+    it('leaves the cursor alone on a desktop', async () => {
+      touch(false);
+      const el = await makeEl({ required: true });
+      const blur = trackBlur(el);
+      type(el, VALID);
+      expect(blur).not.toHaveBeenCalled();
+    });
+
+    it('leaves the cursor alone off the trial (free-text identifier)', async () => {
+      touch(true);
+      const el = await makeEl({ open: true });
+      const blur = trackBlur(el);
+      type(el, VALID);
+      expect(blur).not.toHaveBeenCalled();
+    });
+
+    it("the keyboard's Enter says done and does it", async () => {
+      touch(true);
+      const el = await makeEl({ required: true });
+      expect(input(el).getAttribute('enterkeyhint')).toBe('done');
+      const blur = trackBlur(el);
+      input(el).dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+      expect(blur).toHaveBeenCalledOnce();
+    });
+
+    it('marks a valid uid in the field itself', async () => {
+      const el = await makeEl({ required: true, pid: '70NH-E97' });
+      expect(el.shadowRoot.querySelector('.pid-ok')).toBeNull();
+      el.pid = VALID;
+      await el.updateComplete;
+      expect(el.shadowRoot.querySelector('.pid-ok')).not.toBeNull();
+      expect(input(el).classList.contains('pid--ok')).toBe(true);
+    });
   });
 });
