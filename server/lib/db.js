@@ -22,9 +22,13 @@ export function createD1Db(d1) {
     // Successful doorbells for one uid in a window — the suppression check
     // (§6). Only ok=1 counts: a failed send means the therapist was never
     // told, so the next submission should try again rather than suppress.
-    async countEmailsSince(uid, sinceIso) {
-      return d1.prepare("SELECT COUNT(*) AS n FROM access_log WHERE kind = 'email' AND uid = ? AND ok = 1 AND ts >= ?")
-        .bind(uid, sinceIso).first('n');
+    // `kind` separates the two senders: the doorbell ('email') and the
+    // therapist's own fresh-link request ('email_link'). They used to share one
+    // counter, which made each throttle the other — a link request silenced the
+    // next doorbell, and a doorbell spent one of the hour's three link emails.
+    async countEmailsSince(uid, sinceIso, kind = 'email') {
+      return d1.prepare('SELECT COUNT(*) AS n FROM access_log WHERE kind = ? AND uid = ? AND ok = 1 AND ts >= ?')
+        .bind(kind, uid, sinceIso).first('n');
     },
     // Every API call from one IP in a window — the plan-independent per-IP
     // limit (§7). Cloudflare's own rate limiting is a paid feature beyond a

@@ -24,6 +24,14 @@ import { doorbellEmail, freshLinkEmail } from './email.js';
 
 export const MAX_BODY_BYTES = 256 * 1024;
 
+// The two senders log under different kinds so their caps stay independent:
+// the §6 doorbell suppression must not be spent by a therapist asking for a
+// link, and the §7 per-uid link cap must not be spent by a patient submitting.
+// Rows written before this split are all EMAIL_DOORBELL, so for one window
+// after deploy an old link email can still suppress a doorbell. Self-healing.
+export const EMAIL_DOORBELL = 'email';
+export const EMAIL_LINK = 'email_link';
+
 const NO_STORE = { 'Cache-Control': 'no-store' };
 export const empty = (status) => new Response(null, { status, headers: NO_STORE });
 export const json = (body, status = 200) =>
@@ -43,9 +51,9 @@ const hoursAgo = (now, h) => iso(new Date(now.getTime() - h * 3600_000));
  * triggered this send already logged the caller's IP at the same timestamp,
  * and a therapist's email event should not carry a patient's IP.
  */
-async function sendAndLog(deps, { uid, to, msg, now }) {
+async function sendAndLog(deps, { uid, to, msg, now, kind = EMAIL_DOORBELL }) {
   const sent = await deps.email.send({ to, ...msg });
-  await deps.db.logAccess({ kind: 'email', uid, ok: sent.ok, ipHash: null, ts: iso(now) });
+  await deps.db.logAccess({ kind, uid, ok: sent.ok, ipHash: null, ts: iso(now) });
   if (!sent.ok) deps.onEmailFailure?.({ uid, reason: sent.reason ?? sent.status });
   return sent;
 }
@@ -145,7 +153,7 @@ export async function submitSession(rawBody, deps) {
   // Email failure never fails a submission — the data is already stored.
   const windowHours = deps.limits.doorbellWindowHours;
   const alreadyNotified = windowHours > 0
-    && (await deps.db.countEmailsSince(uid, hoursAgo(now, windowHours))) > 0;
+    && (await deps.db.countEmailsSince(uid, hoursAgo(now, windowHours), EMAIL_DOORBELL)) > 0;
   if (!alreadyNotified) {
     const link = await buildLink({ secret: deps.secret, origin: deps.origin, uid, ttlDays: deps.limits.linkTtlDays, now });
     await sendAndLog(deps, { uid, to: row.therapist_email, msg: doorbellEmail({ uid: formatUid(uid), link, date: now }), now });
@@ -223,11 +231,11 @@ export async function requestLink(rawBody, deps) {
   // discloses nothing that the endpoint did not already disclose (§4.4).
   const perHour = deps.limits.linkEmailsPerUidPerHour;
   const recent = uid && perHour > 0
-    ? await deps.db.countEmailsSince(uid, hoursAgo(now, 1))
+    ? await deps.db.countEmailsSince(uid, hoursAgo(now, 1), EMAIL_LINK)
     : 0;
   if (row && (perHour <= 0 || recent < perHour)) {
     const link = await buildLink({ secret: deps.secret, origin: deps.origin, uid, ttlDays: deps.limits.linkTtlDays, now });
-    await sendAndLog(deps, { uid, to: row.therapist_email, msg: freshLinkEmail({ uid: formatUid(uid), link }), now });
+    await sendAndLog(deps, { uid, to: row.therapist_email, msg: freshLinkEmail({ uid: formatUid(uid), link }), now, kind: EMAIL_LINK });
   }
   return empty(204);   // never an oracle
 }

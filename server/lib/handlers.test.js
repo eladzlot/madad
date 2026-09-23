@@ -241,7 +241,7 @@ describe('requestLink (§4.4)', () => {
     const link = new URL(msg.text.match(/https:\/\/\S+/)[0]);
     const exp = Number(link.searchParams.get('exp'));
     expect(await signLink(SECRET, NUID, exp)).toBe(link.searchParams.get('sig'));
-    expect(deps.db.tables.access_log.map(a => [a.kind, a.ok])).toEqual([['link', 0], ['link', 0], ['link', 1], ['email', 1]]);
+    expect(deps.db.tables.access_log.map(a => [a.kind, a.ok])).toEqual([['link', 0], ['link', 0], ['link', 1], ['email_link', 1]]);
   });
 
   it('the first request always sends, but repeats are capped per hour', async () => {
@@ -266,5 +266,34 @@ describe('requestLink (§4.4)', () => {
     const unregistered = await requestLink(JSON.stringify({ uid: OTHER }), deps);
     expect(capped.status).toBe(unregistered.status);           // indistinguishable
     expect(capped.status).toBe(204);
+  });
+});
+
+// ─── The two email caps are independent (§6 doorbell vs §7 link cap) ──────────
+
+describe('doorbell and fresh-link caps do not throttle each other', () => {
+  // Regression: both counted every kind='email' row for the uid, so each spent
+  // the other's budget. Reproduced 2026-09-22 with production limits.
+
+  // The sharp one: the therapist has just demonstrated the old link did not
+  // reach them, and the system's answer was to go quiet about the next session.
+  it('a fresh-link request does not suppress the next doorbell', async () => {
+    const deps = makeDeps();
+    await requestLink(JSON.stringify({ uid: UID }), deps);
+    expect(deps.email.send).toHaveBeenCalledTimes(1);           // the link
+
+    const later = makeDeps({ db: deps.db, email: deps.email, now: () => new Date(NOW.getTime() + 30 * 60_000) });
+    expect((await submitSession(JSON.stringify({ uid: UID, envelope: phq9Envelope() }), later)).status).toBe(204);
+    expect(deps.email.send).toHaveBeenCalledTimes(2);           // + the doorbell
+    expect(later.db.tables.sessions).toHaveLength(1);
+  });
+
+  it('a doorbell does not spend one of the hour\'s fresh-link emails', async () => {
+    const deps = makeDeps();                                   // link cap of 2/hour
+    await submitSession(JSON.stringify({ uid: UID, envelope: phq9Envelope() }), deps);
+    expect(deps.email.send).toHaveBeenCalledTimes(1);           // the doorbell
+
+    for (let i = 0; i < 4; i++) await requestLink(JSON.stringify({ uid: UID }), deps);
+    expect(deps.email.send).toHaveBeenCalledTimes(3);           // doorbell + a full 2 links
   });
 });

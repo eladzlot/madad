@@ -23,7 +23,7 @@ CREATE INDEX sessions_uid ON sessions(uid);
 
 CREATE TABLE access_log (
   id      INTEGER PRIMARY KEY AUTOINCREMENT,
-  kind    TEXT NOT NULL,              -- 'check' | 'submit' | 'read' | 'link' | 'email'
+  kind    TEXT NOT NULL,              -- 'check' | 'submit' | 'read' | 'link' | 'email' | 'email_link'
   uid     TEXT,                       -- as supplied (normalised), may be unregistered
   ok      INTEGER NOT NULL,           -- 1 success, 0 refused
   ip_hash TEXT,
