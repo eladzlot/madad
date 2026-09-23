@@ -19,7 +19,7 @@ export const en = {
 
   'welcome.appName':      'Madad',
   'welcome.tagline':      'Digital clinical assessment',
-  'welcome.intro':        'Your answers will help your care team understand you better.',
+  'welcome.intro':        'Your answers will help your care team understand your situation better.',
   'welcome.nameLabel':    'Your name',
   'welcome.namePlaceholder': 'Your full name',
   'welcome.begin':        'Begin',

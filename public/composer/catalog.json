@@ -1627,8 +1627,7 @@
         "safety behaviors",
         "SBQ",
         "חרדה חברתית",
-        "התנהגויות ביטחון",
-        "פוביה חברתית"
+        "התנהגויות ביטחון"
       ],
       "itemCount": 29,
       "estMinutes": 4,
@@ -1755,8 +1754,7 @@
         "cognitions",
         "SCQ",
         "חרדה חברתית",
-        "מחשבות אוטומטיות",
-        "פוביה חברתית"
+        "מחשבות אוטומטיות"
       ],
       "itemCount": 23,
       "estMinutes": 3,
@@ -1792,13 +1790,11 @@
       "id": "spin",
       "kind": "questionnaire",
       "title": "שאלון פוביה חברתית (SPIN)",
-      "description": "סולם בן 17 פריטים להערכת חומרת פוביה חברתית; משמש לסינון הפרעת חרדה חברתית ולמדידת חומרת התסמינים (Social Phobia Inventory).",
+      "description": "סולם בן 17 פריטים להערכת חומרת חרדה חברתית; משמש לסינון ולמדידת חומרת התסמינים (Social Phobia Inventory).",
       "keywords": [
         "social anxiety",
-        "social phobia",
         "SPIN",
         "חרדה חברתית",
-        "פוביה חברתית",
         "screening"
       ],
       "itemCount": 17,
