@@ -903,6 +903,36 @@ describe('remote submission envelope', () => {
   });
 });
 
+// ─── Overlapping completions ──────────────────────────────────────────────────
+
+describe('overlapping submissions', () => {
+  // Regression: a completion while an earlier POST was still in flight started a
+  // second request alongside it. Both rows reach the database, and their arrival
+  // order need not match the edit order — so the therapist's latest trajectory
+  // point could be the answers the patient had already corrected.
+  it('does not start a second POST while one is in flight, then sends the newest', async () => {
+    const resolvers = [];
+    submitSession.mockClear();
+    submitSession.mockImplementation(() => new Promise((res) => resolvers.push(res)));
+    const { orchestrator } = makeSetup({ session: { name: '', pid: 'N82J-PYXY' } });
+
+    orchestrator._fireSessionComplete({ answers: { phq9: { q1: 1 } }, scores: {}, alerts: {} });
+    await vi.waitFor(() => expect(submitSession).toHaveBeenCalledTimes(1));
+
+    // patient goes back, edits, completes again — first request still unresolved
+    orchestrator._fireSessionComplete({ answers: { phq9: { q1: 2 } }, scores: {}, alerts: {} });
+    expect(submitSession).toHaveBeenCalledTimes(1);           // collapsed, not raced
+
+    resolvers[0]({ ok: true, status: 204, error: null });
+    await vi.waitFor(() => expect(submitSession).toHaveBeenCalledTimes(2));
+    expect(submitSession.mock.calls[1][0].envelope.sessionState.answers)
+      .toEqual({ phq9: { q1: 2 } });                          // the newest answers won
+    resolvers[1]({ ok: true, status: 204, error: null });
+
+    submitSession.mockImplementation(async () => ({ ok: true, status: 204, error: null }));
+  });
+});
+
 // ─── Send status ──────────────────────────────────────────────────────────────
 
 describe('send status', () => {

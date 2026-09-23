@@ -72,7 +72,7 @@ export function createController(container, router) {
   let _advanceTimer  = null;
   let _session       = null;
   let _sessionState  = null;  // saved when onSessionComplete fires; used by showResults
-  let _send          = { answersJson: null, state: null };   // remote submission memo
+  let _send          = { answersJson: null, state: null, inFlight: false, queued: false };   // remote submission memo
   let _sessionKey    = null;  // current questionnaire's session key (for timer re-entry)
   let _timer         = null;  // per-questionnaire wall/focus time — monitoring only
 
@@ -362,19 +362,37 @@ export function createController(container, router) {
       return;
     }
     _send.answersJson = answersJson;
+
+    // Sends are serialised. Completing, going back to edit, and completing again
+    // while the first request was still in flight used to start a second POST
+    // alongside it: two rows for one sitting whose arrival order at the database
+    // need not match the edit order, so the therapist's most recent reading could
+    // be the pre-edit answers. Overlapping completions now collapse into one
+    // follow-up send of the newest answers once the current request resolves;
+    // sequential completions still send individually, as §6 expects.
+    if (_send.inFlight) { _send.queued = true; return; }
+    _send.inFlight = true;
     setSendStatus('sending');
-    // lang must be passed explicitly: buildEnvelope defaults it to 'he', so a
-    // session answered in any other language would be stored claiming Hebrew
-    // while the PDF (report.js, which does pass it) says the truth.
-    const envelope = buildEnvelope({ sessionState: _sessionState, config: _config, session: _session, appVersion: APP_VERSION, lang: currentLang() });
-    const result = await submitSession({ uid: _session.pid, envelope });
-    if (answersJson !== _send.answersJson) return;          // superseded by a newer completion
-    // A 429 is transient — the per-IP window is a minute, the per-uid cap a day —
-    // so it takes the retryable 'failed' state and its retry button. Every other
-    // refusal (404, 400, 413) would fail identically however often it is retried,
-    // and 'refused' tells the patient to use the PDF instead.
-    const retryable = result.status === 429 || !result.error;
-    setSendStatus(result.ok ? 'sent' : (retryable ? 'failed' : 'refused'));
+    try {
+      do {
+        _send.queued = false;
+        const sending = _send.answersJson;
+        // lang must be passed explicitly: buildEnvelope defaults it to 'he', so a
+        // session answered in any other language would be stored claiming Hebrew
+        // while the PDF (report.js, which does pass it) says the truth.
+        const envelope = buildEnvelope({ sessionState: _sessionState, config: _config, session: _session, appVersion: APP_VERSION, lang: currentLang() });
+        const result = await submitSession({ uid: _session.pid, envelope });
+        if (sending !== _send.answersJson) continue;        // superseded; the loop sends the newer
+        // A 429 is transient — the per-IP window is a minute, the per-uid cap a day —
+        // so it takes the retryable 'failed' state and its retry button. Every other
+        // refusal (404, 400, 413) would fail identically however often it is retried,
+        // and 'refused' tells the patient to use the PDF instead.
+        const retryable = result.status === 429 || !result.error;
+        setSendStatus(result.ok ? 'sent' : (retryable ? 'failed' : 'refused'));
+      } while (_send.queued);
+    } finally {
+      _send.inFlight = false;
+    }
   }
 
 
