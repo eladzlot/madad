@@ -23,7 +23,7 @@ export const he = {
 
   'welcome.appName':      'מדד · CTR',
   'welcome.tagline':      'הערכה קלינית דיגיטלית',
-  'welcome.intro':        'התשובות שלך יעזרו לצוות המטפל להבין אותך טוב יותר.',
+  'welcome.intro':        'התשובות שלך יעזרו לצוות המטפל להבין את מצבך טוב יותר.',
   'welcome.disclosure':   'התשובות והציונים — ללא שם וללא פרטים מזהים — יישלחו ישירות למטפל/ת שלך.',
   'welcome.nameLabel':    'שמך',
   'welcome.namePlaceholder': 'שמך המלא',

@@ -19,7 +19,7 @@ export const en = {
 
   'welcome.appName':      'Madad · CTR',
   'welcome.tagline':      'Digital clinical assessment',
-  'welcome.intro':        'Your answers will help your care team understand you better.',
+  'welcome.intro':        'Your answers will help your care team understand your situation better.',
   'welcome.disclosure':   'Your answers and scores — with no name and no identifying details — go straight to your therapist.',
   'welcome.nameLabel':    'Your name',
   'welcome.namePlaceholder': 'Your full name',
