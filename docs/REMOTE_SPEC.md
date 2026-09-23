@@ -256,8 +256,20 @@ The wire format **is** the existing envelope
 server stores envelopes opaquely; the Aggregate migrates old versions
 forward on read, exactly as it does for PDFs. Remote envelopes always have
 `name: null` and `pid: <uid>`. Because §5.3 removes free text at the source,
-**the stored envelope is byte-identical to the one embedded in the PDF** —
-there is no stripping step and nothing to drift.
+**the clinical payload — `pid`, `instruments` and the whole of
+`sessionState` — is byte-identical to the one embedded in the PDF**: there
+is no stripping step and nothing to drift.
+
+Three envelope-level fields do differ, and the claim above deliberately
+stops short of them. `generatedAt` differs by construction — the PDF is
+built when the patient asks for it, seconds after the POST. `timing` is
+PDF-only by decision (AGG-8; the snapshot is taken at generation time so a
+re-download stays current), which on this deployment means the server-side
+record carries no response-time data at all. `lang` used to differ through
+a defect — the submit path omitted it and took `buildEnvelope`'s `'he'`
+default — fixed 2026-09-22; the wording here previously implied a check
+that nothing ran, and the production canary's three-way diff is what
+caught it.
 
 ### 5.2 Aggregate as the read surface
 

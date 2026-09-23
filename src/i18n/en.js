@@ -17,7 +17,7 @@ export const en = {
   'error.retry':          'Try again',
   'error.generic':        'Something went wrong: {message}',
 
-  'welcome.appName':      'Madad',
+  'welcome.appName':      'Madad · CTR',
   'welcome.tagline':      'Digital clinical assessment',
   'welcome.intro':        'Your answers will help your care team understand you better.',
   'welcome.disclosure':   'Your answers and scores — with no name and no identifying details — go straight to your therapist.',
