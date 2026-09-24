@@ -54,6 +54,15 @@ describe('paddedTimeDomain', () => {
     expect(paddedTimeDomain(dates)).toEqual([dates[0], dates[4]]);
   });
 
+  it('counts distinct sessions: two instruments × 3 weekly sessions still pad to 5 slots (D-13 × D-14)', () => {
+    const three = [0, 1, 2].map(i => new Date(Date.UTC(2026, 6, 27 + 7 * i, 6, 30)));
+    // The shared domain collects every chart's points: each date twice, sorted.
+    const both = [...three, ...three].sort((a, b) => a - b);
+    const [start, end] = paddedTimeDomain(both);
+    expect(start).toEqual(three[0]);
+    expect(end.getTime() - three[0].getTime()).toBe(4 * WEEK);   // median gap is a week, not 0
+  });
+
   it('a single session pads 4 default weeks of future', () => {
     const d = D('2026-01-01');
     const [start, end] = paddedTimeDomain([d]);
