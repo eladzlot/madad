@@ -108,7 +108,7 @@ Build slices per D-11. Slice 1 goes to pilot therapists before later slices are 
 | AGG-7 | Sort questionnaires in the aggregate by number of applications | done | See archive A-15. |
 | AGG-8 | Capture time spent answering | done | See archive A-16. Capture + carry only; nothing is reported in the PDF or the aggregate by decision (monitoring data). |
 | AGG-9 | Record the config version in the envelope | partial | **Capture side done 2026-09-16 (I18N-1):** `instruments[].configVersion` is written by `buildEnvelope` and validated as optional. Display side still open — what the aggregate *does* when two points disagree. Original note: **Small, additive.** Nothing in `data.json` says which config version produced a score, so a trajectory spanning a scoring change shows an artificial step the chart cannot detect — `scq` (1–5 → 0–4) and `ptci` (item text + filler exclusion) both changed meaning on 2026-08-21 and every PDF on either side looks identical to the reader. Write the config's top-level `version` (and the questionnaire id it belongs to) next to each instrument in the envelope; `validateEnvelope` already tolerates unknown fields, so this is **additive — no `ENVELOPE_VERSION` bump** — but every historical PDF lacks it, so the aggregate must treat absence as "unknown", never as "same". Open, and the only part needing a call: what the aggregate *does* when two points on one chart disagree — annotate the boundary, split the series, or just tooltip it. Suggest starting with the capture side (envelope + `report.js`), which is useful on its own and decides nothing.
-| AGG-10 | The Aggregate on phones | todo | Supersedes D-11's "no mobile UX in v1" (D-21). The notification email is opened on a phone, so on the remote flow the phone is the primary device. Known: the chart's viewBox is a fixed 800 wide (`chart-model.js`) with 9–10 unit SVG text, so at 390 px everything scales by ~0.45 and axis labels render at ~4 px. Scope: chart width from the container (fewer ticks when narrow); point hit targets ≥ 44 px, tap instead of hover; `session-detail` usable on a phone; heatmap at narrow widths; card header controls; an e2e pass at the iPhone 14 viewport. Update AGGREGATE_SPEC §1.2. Prerequisite for the intro video (`guides/video/intro/SPEC.md` §12, branch `remote`). |
+| AGG-10 | The Aggregate on phones | done | See archive A-18. D-21 applied. |
 
 ### I18N — Multi-language (docs/I18N_SPEC.md)
 
@@ -398,6 +398,10 @@ Append-only. Date format: YYYY-MM-DD.
 ---
 
 ## 5. Task Archive
+
+### A-18 — AGG-10 The Aggregate on phones
+**Completed:** 2026-09-24
+**Summary:** Before this, a phone got an 800-unit chart scaled to ~0.45 (axis text ~5 px), and a tap on a ~6 px point landed on the `<svg>`, so the session detail never opened. Now: `chartDims(px)` in `chart-model.js` derives the viewBox from the measured card width (a ResizeObserver in `trajectory-chart.js`) with a 1.2 px/unit floor, and x-label thinning follows plot width. Invisible ≥ 44 px tap targets (`circle.hit`) sit under the markers, and alert rings no longer take pointer events. Tooltips are mouse-only. The heatmap model takes `compact`/`labelTarget` so a narrow card fits its columns. Card header controls wrap. Also, on request, the session-detail panel colours answers and alert pills like the PDF: `calcRiskLevel` moved from `src/pdf/report.js` to `shared/config/risk-level.js` (the report re-exports it), and colour tokens were added to `clinician-styles.js` with dark-mode values. New e2e test `aggregate on a phone` (fails on the old code at 5 px text); e2e circle counts now exclude `.hit`. AGGREGATE_SPEC §1.2 and §5.6 updated. Decision D-21.
 
 ### A-17 — I18N-1..7 Multi-language phase 1 (Hebrew + English)
 **Completed:** 2026-09-17 (branch `i18n`)

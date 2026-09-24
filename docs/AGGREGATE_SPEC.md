@@ -40,14 +40,31 @@ exists.
 
 ### 1.2 Form factor
 
-Aggregate is **desktop-first** (decided 2026-07-03). Aggregation is a
-sit-down review activity: multi-file selection, wide time-axis charts,
-cross-instrument comparison. Mobile is not actively broken — upload is a
-plain `<input type="file" multiple>` (drag-and-drop is a desktop
-enhancement, not the mechanism) and the layout degrades to a single
-column — but no mobile-specific UX is built in v1. If pilot clinicians
-turn out to live on their phones (e.g. WhatsApp as the de-facto PDF
-archive), that is a v2 signal, not a v1 requirement.
+*Revised 2026-09-24 (D-21, supersedes the desktop-first scope of D-11):*
+**phones are a first-class target.** On the remote flow the therapist
+opens the summary from a notification email, most often on a phone.
+
+The original reasoning still holds for the desktop layout: aggregation is
+a sit-down review activity (multi-file selection, wide time-axis charts,
+cross-instrument comparison), and upload is a plain
+`<input type="file" multiple>` with drag-and-drop as a desktop enhancement.
+What changed is that a phone must be fully usable, not just unbroken
+(AGG-10):
+
+- **Chart geometry follows the card width** (`chartDims` in
+  `chart-model.js`). Text is sized in viewBox units, so the scale never
+  drops below 1.2 CSS px per unit. Wide cards keep the 800-unit layout;
+  narrow ones get a narrower viewBox, a shorter plot, a slimmer y-axis
+  margin and fewer date labels.
+- **Tap targets of at least 44 px** under every point, shrinking only
+  between neighbours closer than that.
+- **Hover tooltips are mouse-only.** On touch a tap opens the detail
+  panel directly.
+- **The item map fits the card.** On a narrow card the item column takes
+  42% instead of a fixed 280 px, cells drop their padding, date labels
+  thin to fit, and cells become colour chips only when single digits no
+  longer fit.
+- The card header's controls wrap instead of overflowing.
 
 ---
 
@@ -350,13 +367,17 @@ migration.
 
 ### 5.6 Interaction
 
-- Hover or focus on a point → tooltip with date, total, all subscales,
-  alerts.
+- Hover (mouse) or focus on a point → tooltip with date, total, all
+  subscales, alerts. Touch skips the tooltip (§1.2).
 - Click or Enter on a point → a slide-in detail panel with the full
   session breakdown, all instruments completed that day, and a download
   link for the underlying PDF (which Aggregate kept in memory as a Blob).
   Table rows (click/Enter — the keyboard path) and heatmap columns
   (click on a header or cell) open the same panel (added 2026-07-07).
+  The panel colours answers and alerts like the PDF report (added
+  2026-09-24): the worst option's row in red, the second-worst's in amber
+  (`shared/config/risk-level.js`, the same rule the PDF uses), and alert
+  pills red for critical, amber otherwise.
 - Arrow keys move focus across points within a chart.
 - A segmented control in the card header switches between mutually
   exclusive views (revised 2026-07-06, D-16 — previously independent

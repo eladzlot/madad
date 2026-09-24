@@ -16,14 +16,41 @@ import { linearScale, timeScale, paddedTimeDomain, yTickValues, niceMax } from '
 export const MIN_TIME_SLOTS = 5;
 
 // At most ~this many x-axis date labels; thinned when denser, the newest
-// always keeps its label.
+// always keeps its label. Narrow plots get fewer: one label per
+// X_LABEL_SPACING units of plot width, never fewer than two.
 const X_LABEL_TARGET = 8;
+const X_LABEL_SPACING = 56;
 
 export const DIMS = {
   width: 800,
   height: 300,
   margin: { top: 18, right: 18, bottom: 30, left: 48 },
 };
+
+// On-screen chart geometry for a card `px` CSS pixels wide.
+//
+// The chart's text is sized in viewBox units (9–10), so the viewBox width
+// sets the text size on screen. A fixed 800-unit viewBox rendered labels at
+// ~4 px on a phone. Instead the scale (CSS px per unit) never drops below
+// MIN_SCALE: wide cards keep the 800-unit layout and simply scale up, as
+// before; narrower cards get a narrower viewBox with fewer x labels, a
+// shorter plot and a slimmer y-axis margin. `px` of 0 (not yet measured)
+// falls back to DIMS. Exports don't use this; they have their own frame.
+export const MIN_SCALE = 1.2;
+const NARROW_WIDTH = 560;   // viewBox units below which the compact layout applies
+
+export function chartDims(px) {
+  if (!(px > 0)) return { ...DIMS, scale: 1 };
+  const scale = Math.max(MIN_SCALE, px / DIMS.width);
+  const width = Math.round(px / scale);
+  if (width >= NARROW_WIDTH) return { ...DIMS, width, scale };
+  return {
+    width,
+    height: Math.max(200, Math.round(width * 0.8)),
+    margin: { ...DIMS.margin, left: 36, right: 12 },
+    scale,
+  };
+}
 
 // Horizontal inset for data points inside the plot: keeps the first marker
 // clear of the y-axis labels and the last marker clear of the right edge.
@@ -168,10 +195,11 @@ export function buildChartModel({
     : null;
 
   // ── Ticks ─────────────────────────────────────────────────────────────────
-  // Dense series thin their date labels to ~X_LABEL_TARGET, anchored so the
+  // Dense series thin their date labels to ~labelTarget, anchored so the
   // newest session always keeps its label (same rule as the heatmap).
   const yTicks = yTickValues(yMax).map(v => ({ y: y(v), label: String(v) }));
-  const step = Math.max(1, Math.ceil(markers.length / X_LABEL_TARGET));
+  const labelTarget = Math.min(X_LABEL_TARGET, Math.max(2, Math.floor(plot.w / X_LABEL_SPACING)));
+  const step = Math.max(1, Math.ceil(markers.length / labelTarget));
   const xTicks = markers
     .filter((_, i) => (markers.length - 1 - i) % step === 0)
     .map(m => ({ x: m.x, label: m.label }));

@@ -5,8 +5,11 @@
 // and manages only UI state — window offset, tooltip, table toggle.
 //
 // Interaction (AGGREGATE_SPEC §5.6):
-//   hover/focus a point → tooltip (date, total, subscales, alerts)
+//   hover/focus a point → tooltip (date, total, subscales, alerts); mouse
+//                         only — on touch a tap goes straight to the detail
 //   click/Enter a point → 'point-selected' event (opens the detail panel)
+//   layout              → measured from the card's width (chartDims), so a
+//                         phone gets legible text and ≥ 44 px tap targets
 //   arrow keys          → move focus across points within the chart
 //   view switcher       → segmented control in the card header (D-16):
 //                         גרף | מפת פריטים | טבלה — one view at a time;
@@ -22,7 +25,7 @@ import { LitElement, html, svg, css, unsafeCSS } from 'lit';
 import { clinicianCss } from '../../../clinician/styles/clinician-styles.js';
 import { t, currentLang } from '../../../clinician/i18n/index.js';
 import { LANGS } from '../../../shared/i18n/core.js';
-import { buildChartModel } from './chart-model.js';
+import { buildChartModel, chartDims } from './chart-model.js';
 import { buildHeatmapModel } from './heatmap-model.js';
 import { buildExportSvg, exportFilename, uniquePid } from './export-svg.js';
 import { svgBlob, svgToPngBlob, triggerDownload, canCopyImage, copyPngToClipboard } from './export-image.js';
@@ -36,6 +39,7 @@ export class TrajectoryChart extends LitElement {
     _view:         { state: true },    // 'chart' | 'heatmap' | 'table' — one at a time (D-16)
     _exportPid:    { state: true },    // include pid on exported images (§6: opt-in, default off)
     _copied:       { state: true },    // transient "copied ✓" feedback on the copy button
+    _width:        { state: true },    // content-box width in CSS px, 0 until measured
   };
 
   static styles = [unsafeCSS(clinicianCss), css`
@@ -69,6 +73,7 @@ export class TrajectoryChart extends LitElement {
 
     .controls {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       gap: var(--space-sm, .5rem);
     }
@@ -148,6 +153,13 @@ export class TrajectoryChart extends LitElement {
     .marker:focus {
       stroke: var(--clin-focus-stroke, #115e59);
       stroke-width: 3;
+    }
+
+    /* Invisible tap target over each marker — at least 44 CSS px across
+       (less only where neighbouring points are closer than that). */
+    .hit {
+      fill: transparent;
+      cursor: pointer;
     }
 
     .tooltip {
@@ -241,6 +253,15 @@ export class TrajectoryChart extends LitElement {
       padding-inline: .1rem;
     }
 
+    /* Narrow card (a phone): the item column gives up its fixed 280px and
+       the cells their padding, so the session columns get the room. */
+    table.heatmap.narrow thead th:first-child { inline-size: 42%; }
+    table.heatmap.narrow th[scope='row'] { padding-inline: .2rem .3rem; }
+    table.heatmap.narrow td.cell {
+      padding: .25rem 0;
+      min-inline-size: 0;
+    }
+
     table {
       inline-size: 100%;
       border-collapse: collapse;
@@ -294,6 +315,23 @@ export class TrajectoryChart extends LitElement {
     this._view = 'chart';
     this._exportPid = false;
     this._copied = false;
+    this._width = 0;
+    this._resizeObserver = typeof ResizeObserver === 'function'
+      ? new ResizeObserver(([entry]) => {
+        const w = Math.round(entry.contentRect.width);
+        if (w !== this._width) this._width = w;
+      })
+      : null;
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    this._resizeObserver?.observe(this);
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this._resizeObserver?.disconnect();
   }
 
   willUpdate(changed) {
@@ -305,10 +343,12 @@ export class TrajectoryChart extends LitElement {
   _showTip(e, marker) {
     const r = e.currentTarget.getBoundingClientRect();
     const host = this.getBoundingClientRect();
+    // From the target's centre, so the marker and its larger tap target
+    // place the tooltip at the same spot.
     this._tooltip = {
       marker,
       x: r.x + r.width / 2 - host.x,
-      y: r.y - host.y,
+      y: r.y + r.height / 2 - host.y - 6,
     };
   }
 
@@ -493,12 +533,15 @@ export class TrajectoryChart extends LitElement {
   }
 
   _renderChart() {
+    const { scale, ...dims } = chartDims(this._width);
     const m = buildChartModel({
       points: this.series.points,
       interpretations: this.questionnaire?.interpretations,
       domain: this.domain,
+      dims,
       dir: LANGS[currentLang()].dir,
     });
+    const hitR = this._hitRadius(m.markers, scale);
 
     return html`
       <svg
@@ -534,6 +577,15 @@ export class TrajectoryChart extends LitElement {
                 stroke-linejoin="round" stroke-linecap="round"></path>
         ` : ''}
 
+        <!-- Tap targets sit under the visible markers, so a marker still takes
+             its own clicks and focus; the ring of space around it lands here. -->
+        ${m.markers.map(k => svg`
+          <circle class="hit" cx=${k.x} cy=${k.y} r=${hitR} aria-hidden="true"
+                  @pointerenter=${(e) => { if (e.pointerType === 'mouse') this._showTip(e, k); }}
+                  @pointerleave=${this._hideTip}
+                  @click=${() => this._select(k)}></circle>
+        `)}
+
         ${m.markers.map((k, i) => svg`
           ${k.alerts.length ? svg`
             <!-- Achromatic on purpose. The series line and the threshold already
@@ -545,9 +597,9 @@ export class TrajectoryChart extends LitElement {
                  state. Red is kept in the tooltip's alert text, which is never a
                  side-by-side discrimination. -->
             <circle cx=${k.x} cy=${k.y} r="8.5" fill="none"
-                    stroke="var(--clin-alert-ring, #162232)" stroke-width="2.4"></circle>
+                    stroke="var(--clin-alert-ring, #162232)" stroke-width="2.4" pointer-events="none"></circle>
             <circle cx=${k.x} cy=${k.y} r="11.5" fill="none"
-                    stroke="var(--clin-alert-ring, #162232)" stroke-width="1"></circle>
+                    stroke="var(--clin-alert-ring, #162232)" stroke-width="1" pointer-events="none"></circle>
           ` : ''}
           <circle class="marker" cx=${k.x} cy=${k.y} r=${k.baseline ? 6 : 4.5}
                   fill=${k.baseline ? 'var(--clin-card-bg, #ffffff)' : 'var(--color-primary, #1A9FAD)'}
@@ -555,13 +607,14 @@ export class TrajectoryChart extends LitElement {
                   tabindex="0" role="button"
                   aria-label=${this._markerAria(k)}
                   .__marker=${k}
-                  @mouseenter=${(e) => this._showTip(e, k)}
-                  @mouseleave=${this._hideTip}
+                  @pointerenter=${(e) => { if (e.pointerType === 'mouse') this._showTip(e, k); }}
+                  @pointerleave=${this._hideTip}
                   @focus=${(e) => this._showTip(e, k)}
                   @blur=${this._hideTip}
                   @click=${() => this._select(k)}
                   @keydown=${(e) => this._onMarkerKeydown(e, i)}></circle>
         `)}
+
 
         ${m.xTicks.map(t => svg`
           <text x=${t.x} y=${m.plot.y + m.plot.h + 16} text-anchor="middle"
@@ -573,6 +626,18 @@ export class TrajectoryChart extends LitElement {
     `;
   }
 
+  // Tap-target radius in viewBox units: 22 CSS px (a 44 px target), shrunk
+  // to half the closest gap between neighbours so targets never overlap,
+  // but never below the visible marker.
+  _hitRadius(markers, scale) {
+    const want = 22 / scale;
+    let gap = Infinity;
+    for (let i = 1; i < markers.length; i++) {
+      gap = Math.min(gap, Math.hypot(markers[i].x - markers[i - 1].x, markers[i].y - markers[i - 1].y));
+    }
+    return Math.max(6, Math.min(want, gap / 2));
+  }
+
   // The per-item heatmap: which symptoms are moving. Rows = scored items in
   // questionnaire order, columns = all sessions, cell fill = answer as a
   // fraction of the item's max on the same warm ramp the bands use.
@@ -580,7 +645,16 @@ export class TrajectoryChart extends LitElement {
   // to color chips (values in tooltips) so a year of weekly sessions still
   // fits in the card without horizontal scrolling.
   _renderHeatmap() {
-    const m = buildHeatmapModel({ points: this.series.points, questionnaire: this.questionnaire });
+    const narrow = this._width > 0 && this._width < 600;
+    let fit = {};
+    if (narrow) {
+      // Session columns share what the 42% item column leaves: numbers need
+      // ~20px a column (single digits), a date label ~34px.
+      const colsPx = this._width * 0.58;
+      const count = this.series.points.length;
+      fit = { compact: colsPx / Math.max(1, count) < 20, labelTarget: Math.max(2, Math.floor(colsPx / 34)) };
+    }
+    const m = buildHeatmapModel({ points: this.series.points, questionnaire: this.questionnaire, ...fit });
     if (!m.rows.length) return html``;
     // The table lives in the RTL page (item texts read naturally, labels on
     // the right), but time must flow left-to-right to match the chart above
@@ -590,7 +664,7 @@ export class TrajectoryChart extends LitElement {
     const cells = (r) => [...r.cells].reverse();
     return html`
       <div class="heatmap-scroll">
-        <table class="heatmap ${m.compact ? 'compact' : ''}">
+        <table class="heatmap ${m.compact ? 'compact' : ''} ${narrow ? 'narrow' : ''}">
           <thead>
             <tr>
               <th scope="col"></th>

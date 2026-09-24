@@ -59,18 +59,25 @@ function itemMax(item, questionnaire) {
  * @param {Array}  args.points        — store.series() points, sorted by date
  * @param {object} args.questionnaire — config questionnaire (required)
  * @param {Function} [args.formatDate]
+ * @param {boolean}  [args.compact]     — force compact chips (a narrow card); default:
+ *                                        more than COMPACT_THRESHOLD sessions
+ * @param {number}   [args.labelTarget] — how many column headers keep their date label;
+ *                                        default: all, or COMPACT_LABEL_TARGET when compact
  * @returns {{ compact: boolean,
  *             columns: [{label, displayLabel, sessionId, sessionKey}],
  *             rows: [{itemId, text, cells: [{value, fill}|null]}] }}
  *   `label` is always the full date (cell tooltips); `displayLabel` is what
- *   the header shows — thinned to every Nth in compact mode, anchored so
+ *   the header shows — thinned to every Nth when labels would collide, anchored so
  *   the newest column always keeps its label. `sessionId`/`sessionKey`
  *   identify the column's session so clicking it can open the detail panel.
  */
-export function buildHeatmapModel({ points, questionnaire, formatDate = defaultFormatDate }) {
+export function buildHeatmapModel({
+  points, questionnaire, formatDate = defaultFormatDate, compact: forceCompact = false, labelTarget,
+}) {
   const count = points?.length ?? 0;
-  const compact = count > COMPACT_THRESHOLD;
-  const step = compact ? Math.ceil(count / COMPACT_LABEL_TARGET) : 1;
+  const compact = forceCompact || count > COMPACT_THRESHOLD;
+  const target = labelTarget ?? (compact ? COMPACT_LABEL_TARGET : count);
+  const step = Math.max(1, Math.ceil(count / Math.max(1, target)));
   const withYear = new Set((points ?? []).map(p => p.date.getFullYear())).size > 1;
   const columns = (points ?? []).map((p, i) => {
     const label = formatDate(p.date, { withYear });

@@ -73,8 +73,8 @@ describe('trajectory-chart — rendering', () => {
     const el = await makeEl({
       series: series(pts(1, { alerts: [{ message: 'מחשבות אובדניות', severity: 'critical' }] })),
     });
-    const circles = [...el.shadowRoot.querySelectorAll('circle')];
-    expect(circles).toHaveLength(3);   // marker + two rings
+    const circles = [...el.shadowRoot.querySelectorAll('circle:not(.hit)')];
+    expect(circles).toHaveLength(3);   // marker + two rings (tap targets aside)
 
     // The ring takes --clin-alert-ring, NOT --color-no. The series line and the
     // threshold already spend the blue-yellow axis that survives protanopia and
@@ -158,6 +158,38 @@ describe('trajectory-chart — keyboard & selection', () => {
 
     markers(el)[0].dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
     expect(events[1]).toEqual({ sessionId: 0, sessionKey: 'phq9', questionnaireId: 'phq9' });
+  });
+});
+
+describe('trajectory-chart — touch targets (AGG-10)', () => {
+  it('each marker has a tap target of at least 44 px under it that selects the session', async () => {
+    const el = await makeEl({ series: series(pts(2)) });
+    const hits = [...el.shadowRoot.querySelectorAll('circle.hit')];
+    expect(hits).toHaveLength(2);
+    // Unmeasured card → scale 1, so 22 units = 22 px radius, unless the
+    // neighbours are closer than 44 units.
+    const markerR = Number(markers(el)[1].getAttribute('r'));
+    expect(Number(hits[1].getAttribute('r'))).toBeGreaterThan(markerR);
+
+    // Targets are drawn before the markers, so a marker keeps its own clicks.
+    const circles = [...el.shadowRoot.querySelectorAll('circle')];
+    expect(circles.indexOf(hits[1])).toBeLessThan(circles.indexOf(markers(el)[0]));
+
+    const events = [];
+    el.addEventListener('point-selected', (e) => events.push(e.detail));
+    hits[1].dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(events).toEqual([{ sessionId: 1, sessionKey: 'phq9', questionnaireId: 'phq9' }]);
+  });
+
+  it('a touch on a marker does not leave a hover tooltip behind', async () => {
+    const el = await makeEl({ series: series(pts(2)) });
+    const hit = el.shadowRoot.querySelector('circle.hit');
+    hit.dispatchEvent(new PointerEvent('pointerenter', { pointerType: 'touch' }));
+    await el.updateComplete;
+    expect(el.shadowRoot.querySelector('.tooltip')).toBeNull();
+    hit.dispatchEvent(new PointerEvent('pointerenter', { pointerType: 'mouse' }));
+    await el.updateComplete;
+    expect(el.shadowRoot.querySelector('.tooltip')).not.toBeNull();
   });
 });
 

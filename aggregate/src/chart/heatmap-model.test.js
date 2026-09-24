@@ -127,3 +127,21 @@ describe('buildHeatmapModel — compact mode', () => {
     expect(m.rows[0].cells).toHaveLength(52);
   });
 });
+
+describe('buildHeatmapModel — fitted to a narrow card (AGG-10)', () => {
+  const weekly = (n) => Array.from({ length: n }, (_, i) =>
+    pt(new Date(Date.UTC(2026, 0, 1 + i * 7)).toISOString(), { 1: i % 4 }));
+
+  it('compact can be forced below the session threshold', () => {
+    const m = buildHeatmapModel({ points: weekly(8), questionnaire: QUESTIONNAIRE, formatDate: utcFormat, compact: true });
+    expect(m.compact).toBe(true);
+  });
+
+  it('labelTarget thins header labels without going compact, newest kept', () => {
+    const m = buildHeatmapModel({ points: weekly(8), questionnaire: QUESTIONNAIRE, formatDate: utcFormat, labelTarget: 4 });
+    expect(m.compact).toBe(false);
+    const shown = m.columns.filter(c => c.displayLabel !== '');
+    expect(shown).toHaveLength(4);
+    expect(m.columns.at(-1).displayLabel).toBe(m.columns.at(-1).label);
+  });
+});
