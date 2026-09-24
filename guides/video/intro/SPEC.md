@@ -25,7 +25,8 @@ When they disagree, the guide wins and the script is fixed.
 
 - Therapists in the course; Hebrew.
 - Watched **both** on a phone (forwarded link) and projected in class.
-- Target length **80–95 s**, governed by the final narration.
+- Length **about 2 minutes** (decided 2026-09-24: the scratch cut runs 126 s
+  and that is fine), governed by the narration.
 - Brisk, light, polished, a little playful — never childish. The one
   exception is the alert beat (scene 6): the pace slows and the music drops
   out, so the moment reads as serious without any added words.
@@ -85,25 +86,46 @@ the eight weekly sessions in
 Narration is the master timeline, so it comes **before** the screen capture:
 
 ```
-SCRIPT.he.docx → narration/*.wav → word timestamps → cues.json
-                                                      │
-scenario.json → clips.mjs → raw/<scene>/ frames + events.json
-                                                      │
-edit.json (cue-relative) → assemble.mjs → ffmpeg → out/
+SCRIPT.he.docx ─┬─ narration/scratch/<scene>.wav ─ transcribe.py ─┐
+                └──────────────────────────────── cues.mjs ────────┴→ cues.json
+cues.json + scenario.json → clips.mjs → raw/clips/<scene>/ (frames, take.json)
+raw/clips + cues.json → assemble.py → out/video.mp4 + out/timeline.json
+out/video.mp4 + narration + music + sfx.sh sounds → mix.py → out/madad-intro.mp4
 ```
 
-1. Record narration, one WAV per scene (scratch take first, clean take later).
-2. Get word timestamps with Whisper. Spelling always comes from the script;
-   the transcription supplies timing only. Write `cues.json` (cue name →
-   seconds within its scene WAV).
-3. `clips.mjs` records each scene, **timing actions to the cues**. For
-   example, the ID is typed at a per-character delay computed so the last
-   character lands on "מוכן". Each clip writes an `events.json` of what
-   actually happened and when (`id-typed`, `qr-open`, `ring-pulse`, …).
-4. `edit.json` places clips relative to events and cues, **never by absolute
-   timecode**, so a UI timing change needs a re-record, not a re-edit.
-5. `assemble.mjs` builds one ffmpeg run: framing, cuts, dissolves,
-   punch-ins, audio mix, captions.
+```bash
+# once: a production preview of branch remote on :4173 (clips.mjs records against it)
+npm run build && npx vite preview --port 4173 --strictPort --base=/ &
+export MADAD_ASR_PYTHON=<python with faster-whisper> MADAD_ASR_MODEL=<ivrit-ai/whisper-large-v3-turbo-ct2 dir>
+node guides/video/intro/cues.mjs --from-audio     # or --estimate before any recording
+node guides/video/intro/clips.mjs [scene …]
+bash guides/video/intro/sfx.sh
+python3 guides/video/intro/assemble.py
+python3 guides/video/intro/mix.py
+```
+
+1. **Narration:** one file per scene in `narration/scratch/`, named by
+   scene (`01-composer.wav` … `08-closing.wav`). Never inside `raw/`:
+   `clips.mjs` wipes a scene's folder on every take.
+2. **Cues:** `cues.mjs --from-audio` transcribes each file (cached as
+   `<scene>.words.json`), matches the words to the script in order and
+   interpolates any Whisper missed, and puts each cue just before its line.
+   Spelling always comes from the script; the transcription supplies timing
+   only. Scenes without a recording keep the word-count estimate.
+3. **Clips:** `clips.mjs` records each scene, **timing actions to the
+   cues** — the ID's last character lands on "מוכן", the alert pulse on
+   "התראה". Anchor words that disappear from the script fall back to the
+   end of their line with a warning. Each take logs what happened and when
+   (`take.json`): taps, each keystroke, the ping, cuts.
+4. **Picture:** `assemble.py` lays the takes on the cue timeline (scene
+   time: slow motion undone, cuts removed), frames them by role, adds the
+   opening card, the recap and end card, the captions and the corner logo.
+5. **Sound:** `mix.py` places each scene's narration at its start, ducks the
+   music under it, and adds the ping, the tap clicks and the key sounds at
+   their logged times.
+
+Scene-to-scene transitions (dissolves at role changes, between the weekly
+takes) are left for the final cut, once the pacing is settled.
 
 ## 7. Capture (`clips.mjs`)
 
@@ -174,8 +196,11 @@ edit.json (cue-relative) → assemble.mjs → ffmpeg → out/
 - **Human pacing:** sequential typing, short smooth scrolls, and handles of
   ~0.5 s before and after each useful action.
 - **Patient scene:** two real questions on camera. The remaining answers
-  (the same session's values) are filled in off camera, then the results
-  screen is captured as its own clip. The automation racing through
+  (the same session's values) are filled in off camera inside a *cut*, then
+  recording resumes on the results screen. The edit drops frames inside a
+  cut except the last one, which stands for the screen at the moment the
+  cut ends: the screencast sends no new frame for a screen that is already
+  still, so without it the take would stay on the last question. The automation racing through
   questions is never shown.
 - **Email scene:** the real `doorbellEmail()` output from
   `server/lib/email.js` in a **generic** mobile mail frame, not styled after
@@ -194,8 +219,17 @@ edit.json (cue-relative) → assemble.mjs → ffmpeg → out/
 - One licensed instrumental track: modern, warm, lightly rhythmic, no
   vocals. Ducked under speech (`sidechaincompress`). It **drops out** for the
   alert beat and returns with scene 7.
-- Sounds: subtle taps and typing; a short notification **ping** when the
-  email arrives. None of them compete with speech or make the tool feel like
+- Sounds, all synthesised by `sfx.sh` (ffmpeg; no licences):
+  - the email **ping**: a soft two-note chime (C6, G6) at the take's `ping`;
+  - a **tap** on each logged tap: a mechanical "tchick" (two short noise
+    transients and a faint low thump; no tone);
+  - a soft **typewriter key** on each logged keystroke, four variants in
+    rotation.
+- Music from Pixabay (Content License: free, no attribution). Chosen:
+  alex-morgan, *Corporate Strategy Presentation Music*. Its License
+  Certificate is kept next to it in `music/` to clear a YouTube Content ID
+  claim if one appears. Incompetech was ruled out: its free licence
+  requires a credit. None of them compete with speech or make the tool feel like
   a game.
 - Loudness: two-pass `loudnorm` to −14 LUFS integrated, true peak ≤ −1 dBTP
   (YouTube).
@@ -203,15 +237,35 @@ edit.json (cue-relative) → assemble.mjs → ffmpeg → out/
 ## 9. Captions
 
 - Hebrew, from the approved script text, timed to the final narration.
+- **Short phrases, one line each**, shown one after another as they are
+  spoken. The breaks live in the script: ` | ` inside a Narration line
+  marks a caption break (never spoken). Breaks follow Hebrew phrase
+  structure (subject with verb, preposition with object, a new phrase at
+  "ו…"); without marks, `assemble.py` breaks at punctuation and halves long
+  phrases.
+- **Punctuation at the end of a caption is dropped**; inside it, kept.
+- 64 px (62 px bottom-centre), single line (no wrapping; every phrase is
+  measured to fit its ~780 px column), **centred in its column at a fixed
+  height**: left of the therapist's phone, right of the patient's, bottom
+  centre for the recap and the end card.
 - Authored as ASS, Noto Sans Hebrew (`public/fonts/`), rendered by libass
   with fribidi. The style's Encoding field must be **`-1`** (libass
   detects each line's base direction). With the Hebrew charset (177), or
   with a leading U+200F, lines are laid out left to right and trailing
-  punctuation lands on the wrong side (checked with the local ffmpeg 4.4). At most two lines, correct RTL, placed in the side space or
-  below the phone — never over the bottom bar, the QR, the chart point or the
-  session detail.
+  punctuation lands on the wrong side (checked with the local ffmpeg 4.4).
 - **Burned into the master** (the file gets forwarded) **and** exported as
   `.srt` for the YouTube upload.
+
+## 9a. Opening card, recap and corner logo
+
+- **Opening card**, ~2.5 s before scene 1, music only: the CTR lockup
+  ([`assets/ctr-lockup@4x.png`](assets/ctr-lockup@4x.png), from
+  `ctr-templates/brand/logos/`) centred on the video's light ground.
+- **Corner logo**: the same lockup, small (240 px), top right, from scene 1
+  to the end. The recap phones sit low enough to keep that corner clear.
+- **Recap** (scene 8, "זה כל התהליך"): three phones side by side, right to
+  left — send (the patient's QR), fill (the patient's question), summary
+  (all weeks) — each fading and rising in on its phrase and then staying.
 
 ## 10. End card
 
@@ -225,18 +279,20 @@ own screen.
 
 - Hosting: **unlisted YouTube**. Linked from `/help/` and
   [`guides/README.md`](../../README.md).
-- Committed: `SCRIPT.he.docx`, `SPEC.md`, `clips.mjs`, `assemble.mjs`,
-  `edit.json`, `cues.json`. Ignored (see `.gitignore`): `raw/`,
+- Committed: `SCRIPT.he.docx`, `SPEC.md`, `cues.mjs`, `cues.json`,
+  `transcribe.py`, `clips.mjs` (+ `guides/lib/capture.mjs`), `assemble.py`,
+  `mix.py`, `sfx.sh`, `assets/`. Ignored (see `.gitignore`): `raw/`,
   `narration/`, `music/`, `out/`.
 
 ```text
 guides/video/intro/
-├── SCRIPT.he.docx  SPEC.md
-├── clips.mjs  assemble.mjs  edit.json  cues.json
-├── raw/<scene>/          frames + events.json          (ignored)
-├── narration/<scene>.wav                               (ignored)
-├── music/                                              (ignored)
-└── out/  review.mp4  madad-intro.mp4  madad-intro.he.srt  (ignored)
+├── SCRIPT.he.docx  SPEC.md  cues.json
+├── cues.mjs  transcribe.py  clips.mjs  assemble.py  mix.py  sfx.sh
+├── assets/ctr-lockup@4x.png
+├── narration/scratch/<scene>.wav (+ .words.json)        (ignored)
+├── music/<track>.mp3 + licence certificate               (ignored)
+├── raw/clips/<scene>/  frames, frames.json, take.json    (ignored)
+└── out/  video.mp4  madad-intro.mp4  sfx/  timeline.json (ignored)
 ```
 
 ## 12. Prerequisites in the app
@@ -258,10 +314,9 @@ All fixed on 2026-09-24, on `main` and merged into `remote`:
    superseded by `clips.mjs` + `guides/lib/capture.mjs` (in git history as
    `spike.mjs`).
 2. ~~Fix the §12 prerequisites~~ — done.
-3. Scratch narration → cues → all clips → rough cut. Review pace, roles,
-   music and the progression beat. *In progress:* `clips.mjs` records all
-   scenes against placeholder cues (`cues.mjs --estimate`), waiting for the
-   scratch narration (`cues.mjs --from-audio`).
+3. ~~Scratch narration → cues → all clips → rough cut~~ — done
+   2026-09-24: `out/madad-intro.mp4`, 126.6 s (longer than §2's target; kept
+   by decision). Next: final cut — transitions, then the clean narration.
 4. Clean narration, licensed music, captions → final render → YouTube.
 
 Review every render for:

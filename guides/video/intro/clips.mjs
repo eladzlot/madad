@@ -42,15 +42,19 @@ function timing(sceneId) {
     return s.cues[name];
   };
   const words = s.lines.flatMap((l) => l.words);
+  // The narration line that starts at or after a cue.
+  const line = (fromCue) => s.lines.find((l) => l.start >= cue(fromCue) - 1e-6);
   // First occurrence of `word` at or after `fromCue` (or the scene start).
+  // The script gets edited: a missing anchor word warns and falls back to
+  // the last word of the cue's line instead of stopping the run.
   const word = (w, fromCue) => {
     const from = fromCue ? cue(fromCue) : 0;
     const hit = words.find((x) => x.start >= from - 1e-6 && norm(x.w) === norm(w));
-    if (!hit) throw new Error(`${sceneId}: word "${w}" not found after ${fromCue ?? 'start'}`);
-    return hit;
+    if (hit) return hit;
+    const fallback = (fromCue ? line(fromCue) : s.lines[0]).words.at(-1);
+    console.warn(`  ! ${sceneId}: anchor word "${w}" not in the script after ${fromCue ?? 'start'}; using "${fallback.w}"`);
+    return fallback;
   };
-  // The narration line that starts at or after a cue.
-  const line = (fromCue) => s.lines.find((l) => l.start >= cue(fromCue) - 1e-6);
   return { cue, word, line, duration: s.duration };
 }
 
@@ -204,7 +208,7 @@ const SCENE = {
     await page.evaluate(() => document.body.classList.add('reading'));
     await take.at(T.word('המזהה', 'EMAIL-ARRIVES').start);
     await take.pulse(page.locator('.message bdi').first(), 'pulse-uid', 6);
-    await take.at(T.word('"לצפייה', 'EMAIL-OPEN').start);
+    await take.at(T.word('הקישור', 'EMAIL-OPEN').start);
     await take.tap(page.locator('.message a'), 'tap-link');
     await take.at(T.duration);
     return take.stop();

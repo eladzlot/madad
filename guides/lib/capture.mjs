@@ -187,6 +187,7 @@ export async function openTake(browser, dir, { k = 4, api = {}, fixedTime = null
       const step = span / chars.length;
       for (const [i, ch] of chars.entries()) {
         await this.at(endSec - span + step * (i + 1));
+        this.mark('key');                    // one per keystroke, for the typing sound
         await page.keyboard.type(ch);
       }
       this.mark(name);
