@@ -174,14 +174,16 @@ async function shootHeatmap(page, card, outPath) {
 
 // ── Per-patient run ───────────────────────────────────────────────────────────
 
-async function shootPatient(page, { label, pdfDir, imageDir }, opts) {
+async function shootPatient(page, { label, lang, pdfDir, imageDir }, opts) {
   const pdfs = readdirSync(pdfDir).filter((f) => f.endsWith('.pdf')).map((f) => join(pdfDir, f));
   if (!pdfs.length) throw new Error(`No PDFs in ${pdfDir} — did the scenario generate anything?`);
 
   console.log(`\n── ${label} (${pdfs.length} session${pdfs.length === 1 ? '' : 's'}) → ${imageDir}`);
   mkdirSync(imageDir, { recursive: true });
 
-  await page.goto('/aggregate/', { timeout: NAV_TIMEOUT });
+  // The app would otherwise follow the browser's locale (en-US under
+  // Playwright); the shots belong in the patient's language, like the PDFs.
+  await page.goto(`/aggregate/?lang=${lang}`, { timeout: NAV_TIMEOUT });
   await uploadInput(page).setInputFiles(pdfs);
 
   const firstCard = page.locator('trajectory-chart').first();
@@ -245,6 +247,7 @@ async function main() {
         page,
         {
           label: patient.pid ?? '(no pid)',
+          lang: patient.lang,
           pdfDir,
           imageDir: join(pdfDir, 'images'),
         },
