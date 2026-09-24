@@ -228,7 +228,7 @@ of git; never relocate them somewhere tracked.
 
 ### Instrument library
 
-`public/configs/prod/` holds **51 files**: 45 production entities (43 questionnaires, 2 batteries) and 6 dev-only fixtures marked `"dev": true`. One entity per file, filename = entity id — enforced by `npm run validate:configs`. Item IDs are URL addresses (`?items=phq9`).
+`public/configs/prod/` holds **53 files**: 47 production entities (45 questionnaires, 2 batteries) and 6 dev-only fixtures marked `"dev": true`. One entity per file, filename = entity id — enforced by `npm run validate:configs`. Item IDs are URL addresses (`?items=phq9`).
 
 **Depression / mood**
 
@@ -236,6 +236,7 @@ of git; never relocate them somewhere tracked.
 |---|---|---|
 | `phq9` | שאלון דיכאון (PHQ-9) | Critical alert: suicidality (item 9 ≥ 1) |
 | `dass21` | שאלון דיכאון, חרדה וסטרס (DASS-21) | 3 subscales; severity alerts per subscale |
+| `cssrs` | סולם קולומביה לדירוג התנהגות אובדנית — גרסת סינון (C-SSRS) | Screener Self-Report – Recent (2026 form); 6 yes/no items + skip logic; score = Columbia triage level 0–3; critical alerts at moderate/high, warning at low; unvalidated Hebrew |
 
 **Anxiety**
 

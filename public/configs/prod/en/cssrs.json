@@ -1,0 +1,157 @@
+{
+  "id": "cssrs",
+  "version": "1.0.0",
+  "questionnaires": [
+    {
+      "id": "cssrs",
+      "meta": {
+        "domains": [
+          "general",
+          "depression"
+        ],
+        "type": "screener",
+        "populations": [
+          "adult"
+        ],
+        "tags": [
+          "suicide",
+          "risk"
+        ],
+        "source": "Posner et al., Columbia Lighthouse Project — C-SSRS Screener Self-Report – Recent (2026 form), English original"
+      },
+      "title": "Columbia-Suicide Severity Rating Scale — Screener (C-SSRS)",
+      "description": "Self-report screen for suicide risk — ideation, intent, plan and suicidal behaviour — with a risk level following the Columbia Protocol triage.",
+      "keywords": [
+        "suicide",
+        "suicidal ideation",
+        "risk",
+        "C-SSRS",
+        "Columbia",
+        "self-harm",
+        "suicide attempt",
+        "screening"
+      ],
+      "defaultOptionSetId": "yesno",
+      "optionSets": {
+        "yesno": [
+          {
+            "label": "Yes",
+            "value": 1
+          },
+          {
+            "label": "No",
+            "value": 0
+          }
+        ]
+      },
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "The following questions are about the past month. Please answer yes or no to each question."
+        },
+        {
+          "id": "1",
+          "type": "binary",
+          "text": "Have you wished you were dead or wished you could go to sleep and not wake up?"
+        },
+        {
+          "id": "2",
+          "type": "binary",
+          "text": "Have you actually had any thoughts of killing yourself?"
+        },
+        {
+          "id": "if_ideation",
+          "type": "if",
+          "condition": "item.2 == 1",
+          "then": [
+            {
+              "id": "3",
+              "type": "binary",
+              "text": "Have you thought about how you might do this? (For example, “I thought about taking an overdose but I never worked out the details about when, where, and how I would do that and I would never act on these thoughts.”)"
+            },
+            {
+              "id": "4",
+              "type": "binary",
+              "text": "Have you had any intention of acting on these thoughts of killing yourself, as opposed to you have the thoughts, but you definitely would not act on them? (For example, “I had the thought of killing myself by taking an overdose and am not sure whether I would do it or not.”)"
+            },
+            {
+              "id": "5",
+              "type": "binary",
+              "text": "Have you started to work out, or actually worked out, the specific details of how to kill yourself and did you actually intend to carry out the details of your plan? (For example, “I am planning to take 3 bottles of my sleep medication this Saturday when no one is around to stop me.”)"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "6",
+          "type": "binary",
+          "text": "Have you ever done anything, started to do anything, or prepared to do anything to end your life? (For example: Took pills, tried to shoot yourself, cut yourself, tried to hang yourself, took out pills but didn’t swallow any, held a gun but changed your mind about hurting yourself or it was grabbed from your hand, went to the roof to jump but didn’t, collected pills, obtained a gun, gave away valuables, wrote a will or suicide note; etc.)"
+        },
+        {
+          "id": "if_behavior",
+          "type": "if",
+          "condition": "item.6 == 1",
+          "then": [
+            {
+              "id": "recent",
+              "type": "binary",
+              "text": "Did this occur in the past 3 months?"
+            }
+          ],
+          "else": []
+        }
+      ],
+      "scoring": {
+        "method": "custom",
+        "customFormula": "if((item.2 == 1 && (item.4 == 1 || item.5 == 1)) || (item.6 == 1 && item.recent == 1), 3, if((item.2 == 1 && item.3 == 1) || item.6 == 1, 2, if(item.1 == 1 || item.2 == 1, 1, 0)))"
+      },
+      "interpretations": {
+        "target": "total",
+        "type": "severity",
+        "ranges": [
+          {
+            "min": 0,
+            "max": 0,
+            "label": "No suicidality reported"
+          },
+          {
+            "min": 1,
+            "max": 1,
+            "label": "Low risk"
+          },
+          {
+            "min": 2,
+            "max": 2,
+            "label": "Moderate risk"
+          },
+          {
+            "min": 3,
+            "max": 3,
+            "label": "High risk"
+          }
+        ]
+      },
+      "alerts": [
+        {
+          "id": "risk_high",
+          "condition": "score.cssrs >= 3",
+          "message": "High suicide risk",
+          "severity": "critical"
+        },
+        {
+          "id": "risk_moderate",
+          "condition": "score.cssrs == 2",
+          "message": "Moderate suicide risk",
+          "severity": "critical"
+        },
+        {
+          "id": "risk_low",
+          "condition": "score.cssrs == 1",
+          "message": "Wish to die or suicidal ideas",
+          "severity": "warning"
+        }
+      ]
+    }
+  ]
+}

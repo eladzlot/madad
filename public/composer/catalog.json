@@ -322,6 +322,58 @@
       ]
     },
     {
+      "id": "cssrs",
+      "kind": "questionnaire",
+      "title": "סולם קולומביה לדירוג התנהגות אובדנית — גרסת סינון (C-SSRS)",
+      "description": "סינון בדיווח עצמי לסיכון אובדני — מחשבות, כוונה, תוכנית והתנהגות אובדנית — עם דירוג רמת סיכון לפי פרוטוקול קולומביה.",
+      "keywords": [
+        "suicide",
+        "suicidal ideation",
+        "risk",
+        "C-SSRS",
+        "Columbia",
+        "אובדנות",
+        "סיכון אובדני",
+        "מחשבות אובדניות"
+      ],
+      "itemCount": 3,
+      "estMinutes": 1,
+      "hasConditional": true,
+      "domains": [
+        "general",
+        "depression"
+      ],
+      "type": "screener",
+      "populations": [
+        "adult"
+      ],
+      "tags": [
+        "suicide",
+        "risk"
+      ],
+      "featured": false,
+      "languages": [
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Columbia-Suicide Severity Rating Scale — Screener (C-SSRS)",
+          "description": "Self-report screen for suicide risk — ideation, intent, plan and suicidal behaviour — with a risk level following the Columbia Protocol…",
+          "keywords": [
+            "suicide",
+            "suicidal ideation",
+            "risk",
+            "C-SSRS",
+            "Columbia",
+            "self-harm",
+            "suicide attempt",
+            "screening"
+          ]
+        }
+      }
+    },
+    {
       "id": "dar5",
       "kind": "questionnaire",
       "title": "שאלון תגובות כעס (DAR-5)",
