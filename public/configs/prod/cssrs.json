@@ -1,0 +1,157 @@
+{
+  "id": "cssrs",
+  "version": "1.0.0",
+  "questionnaires": [
+    {
+      "id": "cssrs",
+      "meta": {
+        "domains": [
+          "general",
+          "depression"
+        ],
+        "type": "screener",
+        "populations": [
+          "adult"
+        ],
+        "tags": [
+          "suicide",
+          "risk"
+        ],
+        "source": "Madad translation of the C-SSRS Screener Self-Report – Recent (Posner et al., Columbia Lighthouse Project, 2026 form), unvalidated; title follows the official Hebrew C-SSRS (version 14/1/09, © 2008 Research Foundation for Mental Hygiene, distributed by the Israeli Ministry of Health)"
+      },
+      "title": "סולם קולומביה לדירוג התנהגות אובדנית — גרסת סינון (C-SSRS)",
+      "description": "סינון בדיווח עצמי לסיכון אובדני — מחשבות, כוונה, תוכנית והתנהגות אובדנית — עם דירוג רמת סיכון לפי פרוטוקול קולומביה.",
+      "keywords": [
+        "suicide",
+        "suicidal ideation",
+        "risk",
+        "C-SSRS",
+        "Columbia",
+        "אובדנות",
+        "סיכון אובדני",
+        "מחשבות אובדניות"
+      ],
+      "defaultOptionSetId": "yesno",
+      "optionSets": {
+        "yesno": [
+          {
+            "label": "כן",
+            "value": 1
+          },
+          {
+            "label": "לא",
+            "value": 0
+          }
+        ]
+      },
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "השאלות הבאות מתייחסות לחודש האחרון. אנא ענה/י כן או לא על כל שאלה."
+        },
+        {
+          "id": "1",
+          "type": "binary",
+          "text": "האם רצית להיות מת/ה, או רצית שתוכל/י ללכת לישון ולא להתעורר?"
+        },
+        {
+          "id": "2",
+          "type": "binary",
+          "text": "האם היו לך בפועל מחשבות כלשהן להרוג את עצמך?"
+        },
+        {
+          "id": "if_ideation",
+          "type": "if",
+          "condition": "item.2 == 1",
+          "then": [
+            {
+              "id": "3",
+              "type": "binary",
+              "text": "האם חשבת על האופן שבו תוכל/י לעשות זאת? (לדוגמה: \"חשבתי על לקיחת מנת יתר, אבל אף פעם לא תכננתי את הפרטים — מתי, איפה ואיך אעשה את זה — ולעולם לא הייתי פועל/ת לפי המחשבות האלה.\")"
+            },
+            {
+              "id": "4",
+              "type": "binary",
+              "text": "האם הייתה לך כוונה כלשהי לפעול לפי המחשבות האלה להרוג את עצמך, להבדיל ממצב שבו המחשבות קיימות אבל את/ה בטוח/ה שלא תפעל/י לפיהן? (לדוגמה: \"חשבתי להרוג את עצמי בלקיחת מנת יתר, ואני לא בטוח/ה אם אעשה את זה או לא.\")"
+            },
+            {
+              "id": "5",
+              "type": "binary",
+              "text": "האם התחלת לתכנן, או תכננת בפועל, את הפרטים הספציפיים של איך להרוג את עצמך, והאם באמת התכוונת לבצע את התוכנית? (לדוגמה: \"אני מתכנן/ת לקחת שלושה בקבוקים של כדורי השינה שלי בשבת הזאת, כשאף אחד לא יהיה בסביבה כדי לעצור אותי.\")"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "6",
+          "type": "binary",
+          "text": "האם אי פעם עשית משהו, התחלת לעשות משהו או התכוננת לעשות משהו כדי לשים קץ לחייך? (לדוגמה: לקחת כדורים, ניסית לירות בעצמך, חתכת את עצמך, ניסית לתלות את עצמך, הוצאת כדורים אבל לא בלעת אותם, החזקת נשק אבל שינית את דעתך לגבי פגיעה בעצמך או שהוא נלקח ממך, עלית לגג כדי לקפוץ אבל לא קפצת, אספת כדורים, השגת נשק, חילקת חפצי ערך, כתבת צוואה או מכתב התאבדות וכדומה.)"
+        },
+        {
+          "id": "if_behavior",
+          "type": "if",
+          "condition": "item.6 == 1",
+          "then": [
+            {
+              "id": "recent",
+              "type": "binary",
+              "text": "האם זה קרה בשלושת החודשים האחרונים?"
+            }
+          ],
+          "else": []
+        }
+      ],
+      "scoring": {
+        "method": "custom",
+        "customFormula": "if((item.2 == 1 && (item.4 == 1 || item.5 == 1)) || (item.6 == 1 && item.recent == 1), 3, if((item.2 == 1 && item.3 == 1) || item.6 == 1, 2, if(item.1 == 1 || item.2 == 1, 1, 0)))"
+      },
+      "interpretations": {
+        "target": "total",
+        "type": "severity",
+        "ranges": [
+          {
+            "min": 0,
+            "max": 0,
+            "label": "לא דווח על אובדנות"
+          },
+          {
+            "min": 1,
+            "max": 1,
+            "label": "סיכון נמוך"
+          },
+          {
+            "min": 2,
+            "max": 2,
+            "label": "סיכון בינוני"
+          },
+          {
+            "min": 3,
+            "max": 3,
+            "label": "סיכון גבוה"
+          }
+        ]
+      },
+      "alerts": [
+        {
+          "id": "risk_high",
+          "condition": "score.cssrs >= 3",
+          "message": "סיכון אובדני גבוה",
+          "severity": "critical"
+        },
+        {
+          "id": "risk_moderate",
+          "condition": "score.cssrs == 2",
+          "message": "סיכון אובדני בינוני",
+          "severity": "critical"
+        },
+        {
+          "id": "risk_low",
+          "condition": "score.cssrs == 1",
+          "message": "מחשבות מוות או אובדנות",
+          "severity": "warning"
+        }
+      ]
+    }
+  ]
+}
