@@ -129,10 +129,20 @@ edit.json (cue-relative) → assemble.mjs → ffmpeg → out/
     resolves one delay *after* the last character lands.
   - A 2× punch-in shows source pixels 1:1 and stays sharp.
   - Right after a large DOM change (the drawer mounting, the detail panel
-    opening) the capture stalls for ~100 ms, so the first part of a 200 ms
-    open animation can be thin (one to three in-between frames). If that
-    reads as jerky at the rough cut, slow the page's animations during
-    capture (CDP `Animation.setPlaybackRate`) and retime in the edit.
+    opening) the capture stalls for ~100 ms, so at normal speed a 200 ms
+    open animation gets only one to three in-between frames and looks
+    choppy.
+  - **Slow-motion capture is the default (×4).** CDP
+    `Animation.setPlaybackRate(0.25)` slows every CSS animation and
+    transition; the recorder scales all its own waits, typing and scrolls
+    by 4; the edit divides all times by 4. Measured: 55–63 frames per
+    drawer/panel opening (largest gap 10–12 ms) against 12 at ×1 (gap
+    45–58 ms). Two side effects: the browser's own response time to a tap
+    (~100 ms) is not slowed, so after retiming the UI reacts ~4× faster
+    than it really does (add a hold after the tap if that ever looks
+    wrong); and the app's JS timers are not slowed, so a scene that
+    depends on one (the patient app's 150 ms auto-advance) is checked,
+    and recorded at ×1 if it shows.
   - The clinician surfaces had no open animations at all; the drawer, QR
     dialog and session panel got real ones in the app (2026-09-24,
     `a548e44`), so nothing is added in post. The touch ring (below) is the
@@ -148,11 +158,13 @@ edit.json (cue-relative) → assemble.mjs → ffmpeg → out/
 - **In-page overlays**, injected with `addInitScript` and triggered by the
   recorder at cue time, so they sit exactly on the real element and move
   with it:
-  - touch ring on every tap (mint, no mouse pointer). **Finger first:** the
-    recorder draws the ring at the target ~250 ms *before* it dispatches
-    the tap, so the viewer sees where the finger lands and then what it
-    does. A ring drawn on the tap itself is gone behind the drawer before
-    anyone reads it (seen in the spike);
+  - touch ring on every tap, no mouse pointer. **Finger first:** the ring
+    appears at the target ~250 ms (scene time) *before* the tap, dips as
+    the tap lands, then fades, so the viewer sees where the finger goes
+    and then what it does. **Colour-neutral**: a translucent dark disc with
+    a white edge, readable on the green buttons, the dark rail and white
+    cards. A mint ring vanished on the mint button and cut into its
+    letters (seen in the spike);
   - one restrained pulse around the existing alert ring, at "התראה" —
     never replacing or hiding the app's own ring;
   - a brief highlight on the patient ID in the email.

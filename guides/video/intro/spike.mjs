@@ -52,22 +52,34 @@ async function mockApi(page, sessions) {
   });
 }
 
-// Touch indicator (SPEC §7): a mint ring at every touch, fading out. Drawn in
-// the page so the screencast captures it exactly where the finger lands.
-const TOUCH_RIPPLE = () => {
-  const style = `position:fixed;z-index:2147483647;pointer-events:none;width:44px;height:44px;
-    margin:-22px 0 0 -22px;border-radius:50%;border:3px solid #77b770;background:#77b77040;
-    transition:transform .45s ease-out, opacity .45s ease-out;`;
-  addEventListener('pointerdown', (e) => {
-    if (e.pointerType !== 'touch') return;
-    const dot = document.createElement('div');
-    dot.style.cssText = style + `left:${e.clientX}px;top:${e.clientY}px;transform:scale(.6);opacity:1`;
+// Touch indicator (SPEC §7), drawn in the page so the screencast captures
+// it exactly where the finger lands. Finger first: __touchRing() shows the
+// ring ~250 ms (scene time) *before* the tap; __touchPress() dips it as the
+// tap lands, then it fades. Colour-neutral (translucent dark fill, white
+// edge) so it reads on the green buttons, the dark rail and white cards; a
+// mint ring vanished on the mint button and cut into its letters. Its motion
+// is CSS, so slow-motion capture slows it too; the removal timer is scaled
+// by hand (timers are not slowed).
+const TOUCH_RING = (k) => {
+  let dot = null;
+  window.__touchRing = (x, y) => {
+    dot?.remove();
+    dot = document.createElement('div');
+    dot.style.cssText = `position:fixed;z-index:2147483647;pointer-events:none;width:46px;height:46px;
+      margin:-23px 0 0 -23px;border-radius:50%;left:${x}px;top:${y}px;
+      background:rgba(22,34,50,.22);border:2.5px solid rgba(255,255,255,.95);
+      box-shadow:0 0 0 1px rgba(22,34,50,.35), 0 2px 8px rgba(22,34,50,.25);
+      transform:scale(.7);opacity:0;transition:transform .14s ease-out, opacity .14s ease-out;`;
     document.documentElement.append(dot);
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      dot.style.transform = 'scale(1.4)'; dot.style.opacity = '0';
-    }));
-    setTimeout(() => dot.remove(), 600);
-  }, true);
+    requestAnimationFrame(() => requestAnimationFrame(() => { dot.style.transform = 'scale(1)'; dot.style.opacity = '1'; }));
+  };
+  window.__touchPress = () => {
+    const d = dot; dot = null;
+    if (!d) return;
+    d.style.transition = 'transform .12s ease-in, opacity .35s ease-out .18s';
+    d.style.transform = 'scale(.82)'; d.style.opacity = '0';
+    setTimeout(() => d.remove(), 800 * k);
+  };
 };
 
 async function screencast(page, dir, format) {
@@ -88,90 +100,118 @@ async function screencast(page, dir, format) {
   };
 }
 
-async function open(scene, method, sessions) {
-  const dir = `${OUT}${scene}-${method}/`;
+// k = slow-motion factor. The page's CSS animations and transitions run at
+// 1/k speed (CDP Animation.setPlaybackRate) and every wait of ours is scaled
+// by k, so the scene plays k times slower in real time and is captured with
+// ~k times the frames. The edit divides all times by k. JS timers inside the
+// app are NOT slowed — fine for the Composer and the Aggregate, to be checked
+// for the patient app (150 ms auto-advance).
+async function open(scene, k, sessions) {
+  const dir = `${OUT}${scene}-x${k}/`;
   rmSync(dir, { recursive: true, force: true });
   mkdirSync(dir, { recursive: true });
   const ctx = await browser.newContext(DEVICE);
   const page = await ctx.newPage();
   await mockApi(page, sessions);
-  await page.addInitScript(TOUCH_RIPPLE);
+  await page.addInitScript(TOUCH_RING, k);
+  if (k !== 1) {
+    const cdp = await ctx.newCDPSession(page);
+    await cdp.send('Animation.enable');
+    await cdp.send('Animation.setPlaybackRate', { playbackRate: 1 / k });
+  }
   // Events use seconds since epoch, like the screencast's metadata.timestamp,
   // so they line up with frames.
   const events = [];
   const mark = (name) => events.push({ name, t: Date.now() / 1000 });
+  const wait = (ms) => page.waitForTimeout(ms * k);
+  const tap = async (locator, name) => {
+    const b = await locator.boundingBox();
+    await page.evaluate(([x, y]) => window.__touchRing(x, y), [b.x + b.width / 2, b.y + b.height / 2]);
+    await wait(250);                       // finger first
+    mark(name);
+    await page.evaluate(() => window.__touchPress());
+    await locator.tap();
+  };
   let stopCast = null;
-  const start = async () => { stopCast = await screencast(page, dir, method); mark('start'); };
+  const start = async () => { stopCast = await screencast(page, dir, 'png'); mark('start'); };
   const stop = async () => {
     mark('end');
     const frames = await stopCast();
     await ctx.close();
-    const span = frames.at(-1).t - frames[0].t;
-    const gaps = frames.slice(1).map((f, i) => f.t - frames[i].t);
     writeFileSync(dir + 'frames.json', JSON.stringify(frames));
-    writeFileSync(dir + 'events.json', JSON.stringify(events, null, 1));
-    return { scene, method, frameCount: frames.length, fps: +(frames.length / span).toFixed(1), maxGapMs: Math.round(Math.max(...gaps) * 1000) };
+    writeFileSync(dir + 'events.json', JSON.stringify({ k, events }, null, 1));
+    return { scene, k, frameCount: frames.length };
   };
-  return { page, start, stop, mark };
+  return { page, start, stop, mark, wait, tap, k };
+}
+
+// Frames captured inside an event window, and the largest gap, in scene time.
+function density(dir, from, to) {
+  const frames = JSON.parse(readFileSync(dir + 'frames.json')).sort((a, b) => a.t - b.t);
+  const { k, events } = JSON.parse(readFileSync(dir + 'events.json'));
+  const ev = Object.fromEntries(events.map(e => [e.name, e.t]));
+  const a = ev[from[0]] + from[1] * k, b = ev[to[0]] + to[1] * k;
+  const inWin = frames.filter(f => f.t >= a && f.t <= b).map(f => f.t);
+  const gaps = inWin.slice(1).map((t, i) => (t - inWin[i]) / k * 1000);
+  return { frames: inWin.length, maxGapMs: Math.round(Math.max(0, ...gaps)) };
 }
 
 // Scene 2: battery already picked; tap "הזן מזהה", type the ID, hold on the
 // ready-link state.
-async function sceneId(method) {
-  const s = await open('02-id', method, SESSIONS);
+async function sceneId(k) {
+  const s = await open('02-id', k, SESSIONS);
   const { page } = s;
   await page.goto(`${LOCAL}/composer/`);
   await page.locator('clinician-nav .brand').waitFor({ timeout: 20_000 });
   await page.locator('catalog-card[data-id="course_up"] button.card').click();
   await page.waitForTimeout(600);
   await s.start();
-  await page.waitForTimeout(700);
-  s.mark('tap-enter-id');
-  await page.locator('mobile-bar .prompt-pid-btn').tap();
-  await page.waitForTimeout(600);
+  await s.wait(700);
+  await s.tap(page.locator('mobile-bar .prompt-pid-btn'), 'tap-enter-id');
+  await s.wait(700);
   s.mark('type-start');
-  await page.keyboard.type(UID, { delay: 140 });
+  await page.keyboard.type(UID, { delay: 140 * k });
   s.mark('id-typed');
-  await page.waitForTimeout(2200);
+  await s.wait(2200);
   return s.stop();
 }
 
 // Scene 6 (week 1): one session in the summary; scroll to PHQ-9, tap the
 // alert point, show the detail.
-async function sceneSummary(method) {
-  const s = await open('06-summary', method, SESSIONS.slice(0, 1));
+async function sceneSummary(k) {
+  const s = await open('06-summary', k, SESSIONS.slice(0, 1));
   const { page } = s;
   await page.goto(`${LOCAL}/aggregate/?uid=${UID.replace('-', '')}&exp=4102444800&sig=demo`);
   await page.locator('trajectory-chart').first().waitFor({ timeout: 20_000 });
   await page.waitForTimeout(800);
   await s.start();
-  await page.waitForTimeout(800);
+  await s.wait(800);
   const phq = page.locator('trajectory-chart').filter({ hasText: 'PHQ-9' }).first();
   s.mark('scroll-phq');
-  // A human-paced scroll: eased and rAF-driven over 900 ms, in the page
-  // (wheel events round-trip too slowly to drive smooth motion).
-  await phq.evaluate((el) => new Promise((done) => {
+  // A human-paced scroll: eased and rAF-driven over 900 ms (scene time), in
+  // the page (wheel events round-trip too slowly to drive smooth motion).
+  await phq.evaluate((el, ms) => new Promise((done) => {
     const from = scrollY, to = scrollY + el.getBoundingClientRect().top - 120, t0 = performance.now();
     const step = (now) => {
-      const k = Math.min(1, (now - t0) / 900), e = k < 0.5 ? 2 * k * k : 1 - (-2 * k + 2) ** 2 / 2;
+      const p = Math.min(1, (now - t0) / ms), e = p < 0.5 ? 2 * p * p : 1 - (-2 * p + 2) ** 2 / 2;
       scrollTo(0, from + (to - from) * e);
-      if (k < 1) requestAnimationFrame(step); else done();
+      if (p < 1) requestAnimationFrame(step); else done();
     };
     requestAnimationFrame(step);
-  }));
+  }), 900 * k);
   s.mark('scrolled');
-  await page.waitForTimeout(1800);
-  s.mark('tap-point');
-  await phq.locator('.marker').first().tap();
-  await page.waitForTimeout(2500);
+  await s.wait(1800);
+  await s.tap(phq.locator('.marker').first(), 'tap-point');
+  await s.wait(2500);
   return s.stop();
 }
 
-const results = [];
-for (const method of ['png']) {
-  results.push(await sceneId(method));
-  results.push(await sceneSummary(method));
+const K = (process.argv[2] ?? '1,4').split(',').map(Number);
+for (const k of K) {
+  await sceneId(k);
+  await sceneSummary(k);
+  const id = density(`${OUT}02-id-x${k}/`, ['tap-enter-id', 0], ['tap-enter-id', 0.35]);
+  const sd = density(`${OUT}06-summary-x${k}/`, ['tap-point', 0], ['tap-point', 0.35]);
+  console.log(`k=${k}  drawer open: ${id.frames} frames, max gap ${id.maxGapMs} ms   panel open: ${sd.frames} frames, max gap ${sd.maxGapMs} ms   (scene time)`);
 }
 await browser.close();
-writeFileSync(OUT + 'summary.json', JSON.stringify(results, null, 1));
-for (const r of results) console.log(r.scene, r.method, r.frameCount, 'frames', r.fps, 'fps', 'maxGap', r.maxGapMs, 'ms');
