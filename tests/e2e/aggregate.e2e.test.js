@@ -81,7 +81,7 @@ test.describe('aggregate round-trip', () => {
     const chart = page.locator('trajectory-chart');
     await expect(chart).toBeVisible();
     await expect(chart.locator('h3')).toContainText('PHQ-9 (E2E)');
-    await expect(chart.locator('circle')).toHaveCount(1);
+    await expect(chart.locator('circle:not(.hit)')).toHaveCount(1);
     await expect(chart.locator('path')).toHaveCount(0);
   });
 
@@ -97,7 +97,7 @@ test.describe('aggregate round-trip', () => {
     // an alert ring, and that ring is DOUBLED (REMOTE_SPEC §8.4 — it separates
     // from the series by lightness, not hue, so the second ring is what keeps it
     // reading as an alert rather than as the focus state): 2 markers + 4 rings.
-    await expect(chart.locator('circle')).toHaveCount(6);
+    await expect(chart.locator('circle:not(.hit)')).toHaveCount(6);
     await expect(chart.locator('path')).toHaveCount(1);
   });
 });
@@ -162,6 +162,40 @@ test.describe('aggregate interaction', () => {
 });
 
 // ── Image export (AGGREGATE_SPEC §6) ──────────────────────────────────────────
+
+// ── Phone (AGG-10 / D-21) ─────────────────────────────────────────────────────
+// The remote flow opens the summary from an email, mostly on a phone. Before
+// AGG-10 the chart kept an 800-unit viewBox (axis text ~4 px at 390 px) and a
+// tap on a ~6 px point landed on the <svg>, so the detail never opened.
+
+test.describe('aggregate on a phone', () => {
+  test.use({ viewport: { width: 390, height: 664 }, isMobile: true, hasTouch: true, deviceScaleFactor: 3 });
+
+  test('a tap near a point opens the session detail; axis text is legible; no sideways scroll', async ({ page }) => {
+    // Two reports months apart, so the points are far enough apart for full
+    // 44 px tap targets (targets shrink between close neighbours).
+    const { readdirSync } = await import('fs');
+    const base = new URL('../fixtures/pdfs/mixed15/', import.meta.url).pathname;
+    const pdfs = readdirSync(base).filter(n => n.endsWith('.pdf')).sort();
+    await page.goto('/aggregate/');
+    await uploadInput(page).setInputFiles([base + pdfs[0], base + pdfs.at(-1)]);
+    const chart = page.locator('trajectory-chart').filter({ hasText: 'PHQ-9' });
+    await expect(chart.locator('.marker')).toHaveCount(2);
+
+    // Axis labels render at a readable size on screen.
+    const labelPx = await chart.locator('svg text').first().evaluate(el => el.getBoundingClientRect().height);
+    expect(labelPx).toBeGreaterThanOrEqual(10);
+
+    // Nothing pushes the page wider than the screen (the card header wraps).
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+
+    // A tap 12 px off the point's centre still selects it (the tap target).
+    await chart.locator('.marker').first().scrollIntoViewIfNeeded();
+    const box = await chart.locator('.marker').first().boundingBox();
+    await page.touchscreen.tap(box.x + box.width / 2 + 12, box.y + box.height / 2);
+    await expect(page.locator('session-detail')).toBeVisible();
+  });
+});
 
 test.describe('aggregate image export', () => {
   test('SVG export carries the chart framing; pid appears only when opted in', async ({ page }) => {

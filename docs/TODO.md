@@ -108,6 +108,7 @@ Build slices per D-11. Slice 1 goes to pilot therapists before later slices are 
 | AGG-7 | Sort questionnaires in the aggregate by number of applications | done | See archive A-15. |
 | AGG-8 | Capture time spent answering | done | See archive A-16. Capture + carry only; nothing is reported in the PDF or the aggregate by decision (monitoring data). |
 | AGG-9 | Record the config version in the envelope | partial | **Capture side done 2026-09-16 (I18N-1):** `instruments[].configVersion` is written by `buildEnvelope` and validated as optional. Display side still open — what the aggregate *does* when two points disagree. Original note: **Small, additive.** Nothing in `data.json` says which config version produced a score, so a trajectory spanning a scoring change shows an artificial step the chart cannot detect — `scq` (1–5 → 0–4) and `ptci` (item text + filler exclusion) both changed meaning on 2026-08-21 and every PDF on either side looks identical to the reader. Write the config's top-level `version` (and the questionnaire id it belongs to) next to each instrument in the envelope; `validateEnvelope` already tolerates unknown fields, so this is **additive — no `ENVELOPE_VERSION` bump** — but every historical PDF lacks it, so the aggregate must treat absence as "unknown", never as "same". Open, and the only part needing a call: what the aggregate *does* when two points on one chart disagree — annotate the boundary, split the series, or just tooltip it. Suggest starting with the capture side (envelope + `report.js`), which is useful on its own and decides nothing.
+| AGG-10 | The Aggregate on phones | done | See archive A-18. D-21 applied. |
 
 ### I18N — Multi-language (docs/I18N_SPEC.md)
 
@@ -184,6 +185,7 @@ free for non-commercial research/clinical use only.
 | P2-10 | Worksheet PDF: block rendering instead of response table | done | Resolved 2026-07-28 via a **per-item** `display` field (the preferred option). `"display": "block"` on a `select`/`binary`/`slider` item renders it as a standalone prompt+answer block instead of a response-table row (`buildSliderBlock` / `buildChoiceBlock` in `report.js`); default `"table"` leaves all existing instruments unchanged. Schema `$defs/display` + regenerated validator; docs in CONFIG_SCHEMA_SPEC §5.5a + LLM_GUIDE. Used by `cpt_alternative` (`rerate`); all-`rated_text`/`text` worksheets (cpt_abc/exploring/patterns, top3) already block-render with no field needed. |
 | P2-11 | Clear the remaining `vitest` advisories (needs vitest 4 → 5) | todo | `npm audit fix` (2026-09-17, `da8ff96`) cleared 6 of 9. Three moderate remain, all one cluster: `vitest` / `@vitest/mocker` / `@vitest/coverage-v8` (GHSA-82fw-gwwq-j7x9 — path traversal / arbitrary file read via a mocker redirect). The fix is vitest **5.0.x**, a major bump `npm audit fix` will not take on its own, so it needs a deliberate test-runner upgrade and a full suite run. Not urgent: test-only, reachable only by running hostile test code, and **nothing in the advisory set ships** — the client bundle carries no ajv/fast-uri because `build-validator.mjs` pre-compiles the schema. Do it when there is appetite for the upgrade, not as a security fix. |
 | P2-12 | CI hygiene: scope `GITHUB_TOKEN`, pin the third-party deploy action | todo | Two cheap gaps from the 2026-09-17 security audit, neither exploitable today. **(a)** No `permissions:` block in any workflow, so `GITHUB_TOKEN` inherits the repository default rather than least privilege — add `permissions: contents: read` to `ci.yml` and `deploy-cloudflare.yml` (leave `deploy.yml`'s existing `pages: write` / `id-token: write`). **(b)** `cloudflare/wrangler-action@v3` is third-party, pinned only to a moving major tag, and it is the step holding `CLOUDFLARE_API_TOKEN` — pin it to a full commit SHA so a compromised tag cannot reach the deploy credentials. |
+| P2-13 | Results screen at the iPhone 14 viewport (390×664) | todo | Reported by the guide's screenshot script (`guides/therapist/data/shots.mjs`, branch `remote`), which resizes to 390×760 because the results screen "clips at 664px". Not yet reproduced: first step is to reproduce and describe what clips. Fix so the screen fits or scrolls cleanly; add an e2e assertion. Prerequisite for the intro video. |
 
 ---
 
@@ -388,7 +390,18 @@ Append-only. Date format: YYYY-MM-DD.
 
 ---
 
+### D-21 — The Aggregate must work on a phone
+**Date:** 2026-09-24
+**Context:** D-11 made the Aggregate desktop-first with no mobile-specific UX in v1. On the remote flow the therapist reaches the summary from a notification email, most often on a phone, and the intro video films the summary on a phone.
+**Decision:** Phones are a first-class target for the Aggregate. Supersedes D-11's "no mobile-specific UX in v1"; the rest of D-11 (slicing) stands. Work tracked as AGG-10.
+
+---
+
 ## 5. Task Archive
+
+### A-18 — AGG-10 The Aggregate on phones
+**Completed:** 2026-09-24
+**Summary:** Before this, a phone got an 800-unit chart scaled to ~0.45 (axis text ~5 px), and a tap on a ~6 px point landed on the `<svg>`, so the session detail never opened. Now: `chartDims(px)` in `chart-model.js` derives the viewBox from the measured card width (a ResizeObserver in `trajectory-chart.js`) with a 1.2 px/unit floor, and x-label thinning follows plot width. Invisible ≥ 44 px tap targets (`circle.hit`) sit under the markers, and alert rings no longer take pointer events. Tooltips are mouse-only. The heatmap model takes `compact`/`labelTarget` so a narrow card fits its columns. Card header controls wrap. Also, on request, the session-detail panel colours answers and alert pills like the PDF: `calcRiskLevel` moved from `src/pdf/report.js` to `shared/config/risk-level.js` (the report re-exports it), and colour tokens were added to `clinician-styles.js` with dark-mode values. New e2e test `aggregate on a phone` (fails on the old code at 5 px text); e2e circle counts now exclude `.hit`. AGGREGATE_SPEC §1.2 and §5.6 updated. Decision D-21.
 
 ### A-17 — I18N-1..7 Multi-language phase 1 (Hebrew + English)
 **Completed:** 2026-09-17 (branch `i18n`)

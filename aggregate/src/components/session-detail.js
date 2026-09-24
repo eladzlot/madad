@@ -17,6 +17,8 @@
 import { t, currentLang } from '../../../clinician/i18n/index.js';
 import { LANGS, DEFAULT_LANG } from '../../../shared/i18n/core.js';
 import { LitElement, html, css } from 'lit';
+import { resolveItemOptions } from '../../../shared/config/options.js';
+import { calcRiskLevel } from '../../../shared/config/risk-level.js';
 
 export class SessionDetail extends LitElement {
   static properties = {
@@ -114,13 +116,21 @@ export class SessionDetail extends LitElement {
       justify-content: space-between;
     }
 
+    /* Alert pills and answer rows use the PDF report's colours
+       (src/pdf/report.js PILL_* / HIGHLIGHT_*), so a session reads the same
+       on screen as on paper. Tokens live in clinician-styles.js. */
     .alert {
       margin-block-start: .5rem;
       font-size: var(--font-size-sm, .875rem);
-      color: var(--color-no, #8B3A3A);
-      background: var(--color-no-bg, #FDF3F3);
+      color: var(--clin-pill-warning-fg, #92400E);
+      background: var(--clin-pill-warning-bg, #FEF3C7);
       border-radius: var(--radius-sm, 6px);
       padding: .3rem .5rem;
+    }
+
+    .alert.critical {
+      color: var(--clin-pill-critical-fg, #B91C1C);
+      background: var(--clin-pill-critical-bg, #FEE2E2);
     }
 
     /* Section header — the answers list must read as a distinct section,
@@ -143,9 +153,24 @@ export class SessionDetail extends LitElement {
     /* No per-item rules — the question/answer pairs group by whitespace;
        the only divider in the panel is the one above the תשובות header. */
     ol.items li {
-      padding: .45rem 0;
+      padding: .45rem .5rem;
+      margin-inline: -.5rem;
+      border-radius: var(--radius-sm, 6px);
       font-size: var(--font-size-sm, .875rem);
     }
+
+    /* Highlighted answers: the whole row takes the ink, as in the PDF. */
+    ol.items li.risk-high {
+      background: var(--clin-risk-high-bg, #FEF8F8);
+      --row-ink: var(--clin-risk-high-fg, #991B1B);
+    }
+
+    ol.items li.risk-med {
+      background: var(--clin-risk-med-bg, #FEFBF0);
+      --row-ink: var(--clin-risk-med-fg, #78350F);
+    }
+
+    ol.items li[class*='risk-'] :is(.q-text, .q-answer, .q-value) { color: var(--row-ink); }
 
     .q-text { color: var(--color-text-muted, #576f65); }
 
@@ -245,11 +270,22 @@ export class SessionDetail extends LitElement {
     return map;
   }
 
+  _options(item, questionnaire) {
+    return item ? resolveItemOptions(item, questionnaire) : [];
+  }
+
+  // Same rule as the PDF's response table; only single numeric answers on
+  // option or slider items are highlighted.
+  _risk(item, questionnaire, answer) {
+    if (!item || typeof answer !== 'number') return null;
+    if (!['select', 'binary', 'slider'].includes(item.type)) return null;
+    return calcRiskLevel(item, answer, this._options(item, questionnaire));
+  }
+
   _answerLabel(item, questionnaire, answer) {
     if (answer == null) return '—';
-    const options = item?.options
-      ?? questionnaire?.optionSets?.[item?.optionSetId ?? questionnaire?.defaultOptionSetId];
-    const labelFor = (v) => options?.find(o => o.value === v)?.label ?? String(v);
+    const options = this._options(item, questionnaire);
+    const labelFor = (v) => options.find(o => o.value === v)?.label ?? String(v);
     if (Array.isArray(answer)) return answer.map(labelFor).join(', ') || '—';
     return labelFor(answer);
   }
@@ -310,14 +346,15 @@ export class SessionDetail extends LitElement {
         </ul>
       ` : ''}
 
-      ${alerts.map(a => html`<div class="alert">⚠ ${a.message}</div>`)}
+      ${alerts.map(a => html`<div class="alert ${a.severity === 'critical' ? 'critical' : ''}">⚠ ${a.message}</div>`)}
 
       <h4>${t('detail.answers')}</h4>
       <ol class="items">
         ${Object.entries(answers).map(([itemId, answer]) => {
           const item = items.get(itemId);
+          const risk = this._risk(item, questionnaire, answer);
           return html`
-            <li>
+            <li class=${risk ? `risk-${risk}` : ''}>
               <div class="q-text">${item?.text ?? itemId}</div>
               <div class="q-answer">
                 <span>${this._answerLabel(item, questionnaire, answer)}</span>

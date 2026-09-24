@@ -3,7 +3,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { linearScale, timeScale, paddedTimeDomain, yTickValues, niceMax } from './scales.js';
-import { buildChartModel, DIMS, X_INSET } from './chart-model.js';
+import { buildChartModel, chartDims, DIMS, MIN_SCALE, X_INSET } from './chart-model.js';
 
 // UTC formatter so tests are timezone-independent.
 const utcFormat = (d, { withYear = false } = {}) => {
@@ -356,5 +356,44 @@ describe('buildChartModel — direction', () => {
     // Label x positions are the same edges in both directions.
     expect(m.bands[0].labelX).toBe(m.plot.x + m.plot.w - 6);
     expect(m.cutoffs[0].labelX).toBe(m.plot.x + 6);
+  });
+});
+
+describe('chartDims — on-screen geometry from the card width (AGG-10)', () => {
+  it('falls back to DIMS before the card is measured', () => {
+    expect(chartDims(0)).toEqual({ ...DIMS, scale: 1 });
+  });
+
+  it('wide cards keep the 800-unit layout and scale it up', () => {
+    const d = chartDims(1000);
+    expect(d.width).toBe(800);
+    expect(d.height).toBe(DIMS.height);
+    expect(d.scale).toBeCloseTo(1.25);
+  });
+
+  it('text never renders below MIN_SCALE: a phone card gets a narrower viewBox instead', () => {
+    const d = chartDims(340);
+    expect(d.scale).toBe(MIN_SCALE);
+    expect(d.width).toBe(Math.round(340 / MIN_SCALE));
+    expect(d.height).toBeLessThan(DIMS.height);
+    expect(d.margin.left).toBeLessThan(DIMS.margin.left);
+  });
+
+  it('a narrow plot thins its date labels to fit', () => {
+    const points = Array.from({ length: 8 }, (_, i) =>
+      pt(new Date(Date.UTC(2026, 6, 27 + i * 7, 10)).toISOString(), 16 - 2 * i));
+    const { scale, ...dims } = chartDims(340);
+    const narrow = model(points, { dims });
+    const wide = model(points);
+    expect(wide.xTicks).toHaveLength(8);
+    expect(narrow.xTicks.length).toBeLessThan(8);
+    expect(narrow.xTicks.length).toBeGreaterThanOrEqual(2);
+    // The newest session keeps its label.
+    expect(narrow.xTicks.at(-1).x).toBe(narrow.markers.at(-1).x);
+    // Neighbouring labels are at least ~40 units (~48 px) apart.
+    for (let i = 1; i < narrow.xTicks.length; i++) {
+      expect(narrow.xTicks[i].x - narrow.xTicks[i - 1].x).toBeGreaterThan(40);
+    }
+    expect(scale).toBe(MIN_SCALE);
   });
 });

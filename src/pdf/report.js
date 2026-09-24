@@ -44,6 +44,7 @@ import { LANGS, DEFAULT_LANG } from '../../shared/i18n/core.js';
 import { t, currentLang } from '../i18n/index.js';
 import { ratedTextTextKey } from '../../shared/config/item-types.js';
 import { resolveItemOptions } from '../../shared/config/options.js';
+import { calcRiskLevel } from '../../shared/config/risk-level.js';
 
 // App version recorded in the embedded envelope (forensic only). Vite/Vitest
 // inline __APP_VERSION__ from package.json at build time via `define`.
@@ -1046,31 +1047,9 @@ export function buildMultiselectBlock(item, answer) {
 
 // ── Risk calculation ──────────────────────────────────────────────────────────
 
-export function calcRiskLevel(item, value, options) {
-  if (item.type === 'slider') {
-    const { min = 0, max = 10 } = item;
-    const range = max - min;
-    if (range <= 0) return null;
-    const pos = (value - min) / range;
-    if (pos >= 0.8) return 'high';
-    if (pos >= 0.6) return 'med';
-    return null;
-  }
-
-  if (!options || options.length === 0) return null;
-
-  // For reverse-scored items, the lowest raw value carries the highest clinical
-  // risk (e.g. "אינני מודאגת שינטשו אותי" with value 0 = strong endorsement of
-  // attachment anxiety after reversal). Sort descending for normal items, ascending
-  // for reverse, then read worst/second-worst from the same end.
-  const sorted = options.map(o => o.value).sort((a, b) => item.reverse ? a - b : b - a);
-  const worst        = sorted[0];
-  const secondWorst  = sorted[1];
-
-  if (value === worst) return 'high';
-  if (item.type === 'select' && value === secondWorst) return 'med';
-  return null;
-}
+// Shared with the Aggregate's session-detail panel so both colour the same
+// answers. Re-exported because report.test.js imports it from here.
+export { calcRiskLevel };
 
 // ── Option resolution ─────────────────────────────────────────────────────────
 

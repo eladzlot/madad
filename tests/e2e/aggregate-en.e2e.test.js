@@ -56,7 +56,7 @@ test.describe('aggregate in English', () => {
     await expect(page.locator('trajectory-chart h3', { hasText: 'WSAS' }))
       .toContainText('Work and Social Adjustment Scale (WSAS)');
 
-    await phq.locator('circle').first().click();
+    await phq.locator('.marker').first().click();
     const panel = page.locator('session-detail');
     await expect(panel).toBeVisible();
     await expect(panel.locator('h2')).toContainText('Patient Health Questionnaire (PHQ-9)');
@@ -72,7 +72,7 @@ test.describe('aggregate in English', () => {
     await page.goto('/aggregate/?lang=en');
     await expect(page.locator('clinician-nav .brand')).toBeVisible({ timeout: 10_000 });
     await uploadInput(page).setInputFiles(await fixtureFiles('en3', 1));
-    await page.locator('trajectory-chart').first().locator('circle').first().click();
+    await page.locator('trajectory-chart').first().locator('.marker').first().click();
     await expect(page.locator('session-detail')).toBeVisible();
     await expect(page.locator('session-detail .lang-badge')).toHaveCount(0);
   });
