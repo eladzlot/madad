@@ -39,7 +39,6 @@ minted/
 # Guides (guides/): built outputs and capture intermediates stay local.
 # The committed images are the ones the guide references.
 guides/**/*.pdf
-guides/**/*.docx
 guides/**/.~lock.*
 guides/therapist/images/*-phone.png
 guides/video/**/raw/

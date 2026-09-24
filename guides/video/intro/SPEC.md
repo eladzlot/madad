@@ -14,7 +14,10 @@ jobs, in this order:
 It is not a feature tour. Everything left out here belongs to the detailed
 walkthrough track (see [`../../README.md`](../../README.md)).
 
-Narration and shot cues: [`SCRIPT.he.md`](SCRIPT.he.md). Factual source of
+Narration and shot cues: [`SCRIPT.he.docx`](SCRIPT.he.docx) (Word, because
+Hebrew is hard to edit in Markdown). Paragraphs in the **Narration** style are
+the spoken text and the caption source; paragraphs in the **Cue** style are the
+`[SYNC-POINT]` markers. Everything else is direction. Factual source of
 truth: the therapist guide, [`GUIDE.he.md`](../../therapist/GUIDE.he.md).
 When they disagree, the guide wins and the script is fixed.
 
@@ -82,7 +85,7 @@ the eight weekly sessions in
 Narration is the master timeline, so it comes **before** the screen capture:
 
 ```
-SCRIPT.he.md → narration/*.wav → word timestamps → cues.json
+SCRIPT.he.docx → narration/*.wav → word timestamps → cues.json
                                                       │
 scenario.json → clips.mjs → raw/<scene>/ frames + events.json
                                                       │
@@ -222,13 +225,13 @@ own screen.
 
 - Hosting: **unlisted YouTube**. Linked from `/help/` and
   [`guides/README.md`](../../README.md).
-- Committed: `SCRIPT.he.md`, `SPEC.md`, `clips.mjs`, `assemble.mjs`,
+- Committed: `SCRIPT.he.docx`, `SPEC.md`, `clips.mjs`, `assemble.mjs`,
   `edit.json`, `cues.json`. Ignored (see `.gitignore`): `raw/`,
   `narration/`, `music/`, `out/`.
 
 ```text
 guides/video/intro/
-├── SCRIPT.he.md  SPEC.md
+├── SCRIPT.he.docx  SPEC.md
 ├── clips.mjs  assemble.mjs  edit.json  cues.json
 ├── raw/<scene>/          frames + events.json          (ignored)
 ├── narration/<scene>.wav                               (ignored)
