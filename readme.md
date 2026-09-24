@@ -39,6 +39,8 @@ Config-only — no app code for standard Likert/binary scales. Start from [`publ
 
 **Start with [`docs/HANDOVER.md`](docs/HANDOVER.md)** — full project state, architecture, the instrument library, security model, and what not to change. From there the `docs/` folder holds the detailed specs (behavioral, implementation, config schema, DSL, composer, sequence, rendering, item types).
 
+User-facing documentation (therapist guide, intro video, planned security guide) lives in [`guides/`](guides/).
+
 ## License
 
 Code: [MIT](LICENSE). Clinical instruments: see [CONTENT_LICENSE.md](CONTENT_LICENSE.md) — instruments belong to their respective authors; Madad claims no ownership.

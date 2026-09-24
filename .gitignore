@@ -35,3 +35,14 @@ demo/notes/
 # Minted pilot material — participant briefs, handouts and the link registry,
 # keyed by real email address. Same rule as demo/: personal data, never in git.
 minted/
+
+# Guides (guides/): built outputs and capture intermediates stay local.
+# The committed images are the ones the guide references.
+guides/**/*.pdf
+guides/**/*.docx
+guides/**/.~lock.*
+guides/therapist/images/*-phone.png
+guides/video/**/raw/
+guides/video/**/narration/
+guides/video/**/music/
+guides/video/**/out/
