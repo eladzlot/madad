@@ -136,7 +136,13 @@ export class MobileBar extends LitElement {
     .backdrop {
       position: fixed; inset: 0; z-index: 45;
       background: rgba(0,0,0,0.4);
+      animation: mb-fade var(--transition-med, 200ms ease);
     }
+    /* Open motion: the sheet rises from the bar it came from, the backdrop
+       fades in. --transition-med is 0ms under prefers-reduced-motion
+       (tokens.css), which turns both off. Closing stays instant. */
+    @keyframes mb-sheet-up { from { transform: translateY(100%); } to { transform: none; } }
+    @keyframes mb-fade { from { opacity: 0; } to { opacity: 1; } }
     .sheet {
       position: fixed;
       inset-inline: 0;
@@ -148,6 +154,8 @@ export class MobileBar extends LitElement {
       border-start-start-radius: var(--radius-lg, 18px);
       border-start-end-radius: var(--radius-lg, 18px);
       padding-block-end: env(safe-area-inset-bottom, 0px);
+      animation: mb-sheet-up var(--transition-med, 200ms ease);
+      animation-timing-function: cubic-bezier(.2, .8, .2, 1);
     }
     .sheet-header {
       display: flex;
