@@ -185,7 +185,7 @@ free for non-commercial research/clinical use only.
 | P2-10 | Worksheet PDF: block rendering instead of response table | done | Resolved 2026-07-28 via a **per-item** `display` field (the preferred option). `"display": "block"` on a `select`/`binary`/`slider` item renders it as a standalone prompt+answer block instead of a response-table row (`buildSliderBlock` / `buildChoiceBlock` in `report.js`); default `"table"` leaves all existing instruments unchanged. Schema `$defs/display` + regenerated validator; docs in CONFIG_SCHEMA_SPEC §5.5a + LLM_GUIDE. Used by `cpt_alternative` (`rerate`); all-`rated_text`/`text` worksheets (cpt_abc/exploring/patterns, top3) already block-render with no field needed. |
 | P2-11 | Clear the remaining `vitest` advisories (needs vitest 4 → 5) | todo | `npm audit fix` (2026-09-17, `da8ff96`) cleared 6 of 9. Three moderate remain, all one cluster: `vitest` / `@vitest/mocker` / `@vitest/coverage-v8` (GHSA-82fw-gwwq-j7x9 — path traversal / arbitrary file read via a mocker redirect). The fix is vitest **5.0.x**, a major bump `npm audit fix` will not take on its own, so it needs a deliberate test-runner upgrade and a full suite run. Not urgent: test-only, reachable only by running hostile test code, and **nothing in the advisory set ships** — the client bundle carries no ajv/fast-uri because `build-validator.mjs` pre-compiles the schema. Do it when there is appetite for the upgrade, not as a security fix. |
 | P2-12 | CI hygiene: scope `GITHUB_TOKEN`, pin the third-party deploy action | todo | Two cheap gaps from the 2026-09-17 security audit, neither exploitable today. **(a)** No `permissions:` block in any workflow, so `GITHUB_TOKEN` inherits the repository default rather than least privilege — add `permissions: contents: read` to `ci.yml` and `deploy-cloudflare.yml` (leave `deploy.yml`'s existing `pages: write` / `id-token: write`). **(b)** `cloudflare/wrangler-action@v3` is third-party, pinned only to a moving major tag, and it is the step holding `CLOUDFLARE_API_TOKEN` — pin it to a full commit SHA so a compromised tag cannot reach the deploy credentials. |
-| P2-13 | Results screen at the iPhone 14 viewport (390×664) | todo | Reported by the guide's screenshot script (`guides/therapist/data/shots.mjs`, branch `remote`), which resizes to 390×760 because the results screen "clips at 664px". Not yet reproduced: first step is to reproduce and describe what clips. Fix so the screen fits or scrolls cleanly; add an e2e assertion. Prerequisite for the intro video. |
+| P2-13 | Results screen at the iPhone 14 viewport (390×664) | done | See archive A-19. |
 
 ---
 
@@ -398,6 +398,10 @@ Append-only. Date format: YYYY-MM-DD.
 ---
 
 ## 5. Task Archive
+
+### A-19 — P2-13 Results screen on a short phone
+**Completed:** 2026-09-24
+**Summary:** Reproduced on branch `remote` only: `main` never sets the results screen's `status` slot. With two questionnaires at 390×664, the "sent" confirmation rendered below the scores. The sticky PDF bar sat on top of it and the rest of the card was below the fold, so the one message a remote patient must read needed a scroll to reach. `src/components/results-screen.js`: the status block now renders under the header, above the scores, and the sticky actions bar sits at `bottom: 0` on a gradient of the page background, so content scrolling under it fades out instead of showing through. `main` is visually unchanged apart from that bar background. The e2e assertion lives on `remote` (`tests/e2e/remote.e2e.test.js`, "completion on a short phone screen", which fails on the old layout). The guide's screenshot workaround in `shots.mjs` (resize to 760) can go.
 
 ### A-18 — AGG-10 The Aggregate on phones
 **Completed:** 2026-09-24

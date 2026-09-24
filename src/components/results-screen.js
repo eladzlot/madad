@@ -11,8 +11,11 @@ import { t } from '../i18n/index.js';
  *   results  {Array<{ title: string, total: number|null, category: string|null }>}
  *   status   {null | { kind: 'info'|'success'|'error', message: string,
  *             detail?: string, action?: { label: string, onClick: Function } }}
- *            — optional status block rendered above the actions (e.g. the
- *            outcome of sending the session somewhere). Null renders nothing.
+ *            — optional status block rendered under the header, above the
+ *            scores (e.g. the outcome of sending the session somewhere): it is
+ *            the one message the patient must see without scrolling, and the
+ *            sticky actions bar would otherwise cover it on a short phone
+ *            screen. Null renders nothing.
  *
  * Events:
  *   download-pdf  CustomEvent  — patient taps download (not yet implemented)
@@ -148,12 +151,17 @@ export class ResultsScreen extends LitElement {
 
     /* ── Action buttons ──────────────────────────────────────────────── */
 
+    /* Sticky at the bottom of the scroll area, on its own background, so
+       content scrolling underneath fades out behind the button instead of
+       showing through it. */
     .actions {
       display: flex;
       flex-direction: column;
       gap: var(--space-sm);
       position: sticky;
-      bottom: var(--space-lg);
+      bottom: 0;
+      padding-block: var(--space-lg);
+      background: linear-gradient(to top, var(--color-bg) 70%, transparent);
     }
 
     .pdf-btn {
@@ -235,6 +243,18 @@ export class ResultsScreen extends LitElement {
         <p class="review-hint">${t('results.hint')}</p>
       </div>
 
+      ${this.status ? html`
+        <div class="status status--${this.status.kind ?? 'info'}"
+             role=${this.status.kind === 'error' ? 'alert' : 'status'}>
+          <p class="status__msg">${this.status.message}</p>
+          ${this.status.detail ? html`<p class="status__detail">${this.status.detail}</p>` : ''}
+          ${this.status.action ? html`
+            <button class="pdf-btn pdf-btn--secondary status__action"
+                    @click=${this.status.action.onClick}>${this.status.action.label}</button>
+          ` : ''}
+        </div>
+      ` : ''}
+
       <div class="scores">
         ${this.results.map(r => html`
           <div class="score-row">
@@ -250,18 +270,6 @@ export class ResultsScreen extends LitElement {
           </div>
         `)}
       </div>
-
-      ${this.status ? html`
-        <div class="status status--${this.status.kind ?? 'info'}"
-             role=${this.status.kind === 'error' ? 'alert' : 'status'}>
-          <p class="status__msg">${this.status.message}</p>
-          ${this.status.detail ? html`<p class="status__detail">${this.status.detail}</p>` : ''}
-          ${this.status.action ? html`
-            <button class="pdf-btn pdf-btn--secondary status__action"
-                    @click=${this.status.action.onClick}>${this.status.action.label}</button>
-          ` : ''}
-        </div>
-      ` : ''}
 
       <div class="actions">
         ${this._pdfError ? html`
