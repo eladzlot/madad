@@ -254,11 +254,14 @@ All fixed on 2026-09-24, on `main` and merged into `remote`:
 
 ## 13. Order of work and review
 
-1. ~~Spike~~ — done 2026-09-24; findings in §5, §7 and §9. Script:
-   `spike.mjs`, to be replaced by `clips.mjs`.
+1. ~~Spike~~ — done 2026-09-24; findings in §5, §7 and §9. Its script is
+   superseded by `clips.mjs` + `guides/lib/capture.mjs` (in git history as
+   `spike.mjs`).
 2. ~~Fix the §12 prerequisites~~ — done.
 3. Scratch narration → cues → all clips → rough cut. Review pace, roles,
-   music and the progression beat.
+   music and the progression beat. *In progress:* `clips.mjs` records all
+   scenes against placeholder cues (`cues.mjs --estimate`), waiting for the
+   scratch narration (`cues.mjs --from-audio`).
 4. Clean narration, licensed music, captions → final render → YouTube.
 
 Review every render for:
