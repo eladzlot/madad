@@ -58,6 +58,17 @@ export const clinicianCss = /* css */ `
     --clin-card-bg:   #FFFFFF;
     --clin-grid:      #00000014;
     --clin-cutoff:    #B45309;
+
+    /* Session-detail answer rows and alert pills — the PDF report's colours
+       (src/pdf/report.js HIGHLIGHT_* / PILL_*), so screen and paper agree. */
+    --clin-risk-high-bg:      #FEF8F8;
+    --clin-risk-high-fg:      #991B1B;
+    --clin-risk-med-bg:       #FEFBF0;
+    --clin-risk-med-fg:       #78350F;
+    --clin-pill-critical-bg:  #FEE2E2;
+    --clin-pill-critical-fg:  #B91C1C;
+    --clin-pill-warning-bg:   #FEF3C7;
+    --clin-pill-warning-fg:   #92400E;
   }
 
   @media (prefers-color-scheme: dark) {
@@ -71,6 +82,15 @@ export const clinicianCss = /* css */ `
       --clin-card-bg: #161b22;
       --clin-grid:    #ffffff1f;
       --clin-cutoff:  #E8A33D;
+
+      --clin-risk-high-bg:     #2d1515;
+      --clin-risk-high-fg:     #F09A9A;
+      --clin-risk-med-bg:      #2a2210;
+      --clin-risk-med-fg:      #E8B96A;
+      --clin-pill-critical-bg: #3a1616;
+      --clin-pill-critical-fg: #F5A3A3;
+      --clin-pill-warning-bg:  #33280f;
+      --clin-pill-warning-fg:  #F0C27A;
     }
   }
 

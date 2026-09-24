@@ -97,6 +97,19 @@ describe('session-detail', () => {
     expect(items[2].textContent).toContain('כלל לא');
   });
 
+  it('colours answers like the PDF: worst option high, second-worst med', async () => {
+    const el = await makeEl();
+    const items = [...el.shadowRoot.querySelectorAll('ol.items li')];
+    expect(items[0].className).toBe('risk-high');   // 3 = worst
+    expect(items[1].className).toBe('risk-med');    // 1 = second-worst
+    expect(items[2].className).toBe('');            // 0
+  });
+
+  it('colours alerts by severity like the PDF pills', async () => {
+    const el = await makeEl();
+    expect(el.shadowRoot.querySelector('.alert').classList.contains('critical')).toBe(true);
+  });
+
   it('falls back to raw ids and values when no config questionnaire is loaded', async () => {
     const el = await makeEl({ questionnaires: new Map() });
     const items = [...el.shadowRoot.querySelectorAll('ol.items li')];
