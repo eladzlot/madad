@@ -31,8 +31,14 @@ export function timeScale([domainStart, domainEnd], rangeStart, rangeEnd) {
  * interval (robust to one long gap), defaulting to a week when there are
  * not yet two sessions.
  */
-export function paddedTimeDomain(dates, minSlots = 5) {
+export function paddedTimeDomain(allDates, minSlots = 5) {
   const WEEK = 7 * 24 * 3600 * 1000;
+  // Distinct sessions, not points: the shared domain (D-14) is built from
+  // every chart's points, so two instruments per PDF give each session date
+  // twice. Counted raw, 3 sessions looked like 6 and skipped the D-13
+  // minimum span, and the duplicate gaps of 0 skewed the median interval.
+  const seen = new Set();
+  const dates = allDates.filter((d) => !seen.has(d.getTime()) && seen.add(d.getTime()));
   const first = dates[0];
   const last = dates[dates.length - 1];
   if (dates.length >= minSlots) return [first, last];
