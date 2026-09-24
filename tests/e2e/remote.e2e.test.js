@@ -153,3 +153,30 @@ test.describe('completion — submission (§4.2, §8.1)', () => {
     expect(calls.submit).toHaveLength(1);          // refusals are not retried
   });
 });
+
+// P2-13: on a short phone (iPhone 14, 390×664 CSS) with two questionnaires,
+// the sticky PDF button used to sit on top of the "sent" confirmation, and the
+// rest of the card was below the fold. The confirmation now leads the screen.
+test.describe('completion on a short phone screen (P2-13)', () => {
+  test.use({ viewport: { width: 390, height: 664 }, isMobile: true, hasTouch: true });
+
+  test('the "sent" confirmation is fully visible and not covered by the PDF button', async ({ page }) => {
+    await mockApi(page);
+    await page.goto(`/?items=oasis,phq9#pid=${UID}`);
+    await clickBegin(page);
+    for (let i = 0; i < 40 && !(await page.locator('results-screen').isVisible()); i++) {
+      if (await page.locator('item-instructions').isVisible()) await clickContinue(page);
+      else if (await page.locator('item-select').isVisible()) {
+        await page.locator('item-select >> button.option').nth(1).click();
+      }
+      await page.waitForTimeout(250);
+    }
+    const status = page.locator('results-screen >> .status');
+    await expect(status).toHaveClass(/status--success/);
+
+    const s = await status.boundingBox();
+    const a = await page.locator('results-screen >> .actions').boundingBox();
+    expect(s.y).toBeGreaterThanOrEqual(0);
+    expect(s.y + s.height).toBeLessThanOrEqual(a.y);   // above the button bar, on screen
+  });
+});
