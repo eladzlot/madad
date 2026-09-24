@@ -36,6 +36,11 @@ export class SessionDetail extends LitElement {
          away from the reading start. */
       inset-inline-end: 0;
       inline-size: min(420px, 92vw);
+      /* Open motion: slides in from the edge it is anchored to. 0ms under
+         prefers-reduced-motion via --transition-med (tokens.css). */
+      --slide-from: 100%;
+      animation: sd-slide-in var(--transition-med, 200ms ease);
+      animation-timing-function: cubic-bezier(.2, .8, .2, 1);
       font-family: var(--font-family, system-ui, sans-serif);
       background: var(--clin-card-bg, #FFFFFF);
       border-inline-start: 1px solid var(--color-border, #bae4d2);
@@ -45,6 +50,9 @@ export class SessionDetail extends LitElement {
       z-index: 10;
       color: var(--color-text, #0b281e);
     }
+    :host(:dir(rtl)) { --slide-from: -100%; }
+    @keyframes sd-slide-in { from { transform: translateX(var(--slide-from)); } to { transform: none; } }
+
     .lang-badge {
       display: inline-block;
       margin-inline-start: var(--space-sm, .5rem);

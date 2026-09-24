@@ -80,6 +80,15 @@ export class QrCode extends LitElement {
       box-shadow: 0 24px 64px -20px rgba(11, 22, 33, 0.28);
     }
     dialog::backdrop { background: rgba(11, 22, 33, 0.4); backdrop-filter: blur(2px); }
+    /* Open motion: the code grows in slightly, the backdrop fades. 0ms under
+       prefers-reduced-motion via --transition-med (tokens.css). */
+    dialog[open] {
+      animation: qr-in var(--transition-med, 200ms ease);
+      animation-timing-function: cubic-bezier(.2, .8, .2, 1);
+    }
+    dialog[open]::backdrop { animation: qr-fade var(--transition-med, 200ms ease); }
+    @keyframes qr-in { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: none; } }
+    @keyframes qr-fade { from { opacity: 0; } to { opacity: 1; } }
     .frame {
       display: flex;
       flex-direction: column;
