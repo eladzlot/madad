@@ -63,6 +63,8 @@ the eight weekly sessions in
   - **therapist phone** right of centre, dark frame (`#1d2622`, as in the
     guide's composites);
   - **patient phone** left of centre, a light mint frame.
+  The screen layer needs its own rounded alpha mask before the bezel goes
+  on top, or its square corners poke out past the frame.
   Position plus frame colour tell the viewer whose screen it is (the story
   reads right to left). A subtle change of music texture on the patient side
   is optional and is decided at the rough cut.
@@ -105,20 +107,52 @@ edit.json (cue-relative) → assemble.mjs → ffmpeg → out/
 - **Headless Chromium** with the iPhone 14 profile (Chromium, not WebKit,
   because capture uses CDP), light colour scheme,
   `reducedMotion: 'no-preference'`, `page.clock` set to the scene's date.
-- **Frames:** a CDP `Page.startScreencast` loop saving PNG frames at device
-  pixels with their timestamps, then converted by ffmpeg to a lossless
-  constant-frame-rate intermediate. Playwright's `recordVideo` is not used
-  (low-bitrate VP8, too soft for Hebrew UI text). The first spike confirms
-  this choice.
+- **Frames:** a CDP `Page.startScreencast` loop saving PNG frames with
+  their timestamps, then converted by ffmpeg to 30 fps. Measured in the
+  spike (`spike.mjs`, 2026-09-24):
+  - Chromium must be launched with `--force-device-scale-factor=3` *and* the
+    emulated scale of 3. Without the flag, both the screencast and
+    Playwright's `recordVideo` capture at CSS pixels (390×664); upscaled 3×,
+    the text is visibly soft. With it, frames are 1170×1992.
+  - `recordVideo` is rejected: CSS-pixel capture padded into a grey
+    1170×1992 canvas, 25 fps, ~400 kbit/s VP8.
+  - Frames arrive only when something changes. Under continuous
+    full-screen motion the screencast sustains **~32 fps at scale 3** (~57 at
+    scale 2), enough for a 30 fps master. A clip's last frame must be held
+    until the clip's end event, or the tail hold is lost.
+  - Motion must be driven **in the page** (rAF-eased `scrollTo`, typing via
+    the keyboard API). Playwright wheel steps round-trip at ~48 ms and cap
+    a scroll at ~20 fps; an in-page scroll captures at ~38 fps.
+  - Event marks and frame timestamps share a clock (seconds since epoch).
+    Cue events should be taken from the DOM state (e.g. the link-ready
+    state appearing), not from when a Playwright call returns: `type()`
+    resolves one delay *after* the last character lands.
+  - A 2× punch-in shows source pixels 1:1 and stays sharp.
+  - Right after a large DOM change (the drawer mounting, the detail panel
+    opening) the capture stalls for ~100 ms, so the first part of a 200 ms
+    open animation can be thin (one to three in-between frames). If that
+    reads as jerky at the rough cut, slow the page's animations during
+    capture (CDP `Animation.setPlaybackRate`) and retime in the edit.
+  - The clinician surfaces had no open animations at all; the drawer, QR
+    dialog and session panel got real ones in the app (2026-09-24,
+    `a548e44`), so nothing is added in post. The touch ring (below) is the
+    only injected visual, and it works as designed.
 - **Data and network:** the local build (`vite preview` of `dist/` on branch
   `remote`) with the API mocked. The mock and the context factory are
   extracted from `therapist/data/shots.mjs` into `guides/lib/` and shared by
   both scripts. A route guard **fails the run** on any request to a host
   other than localhost.
+  The app must be loaded **under `https://ctrmadad.com`** and routed to
+  the local server (as `shots.mjs` does). Otherwise the Composer's link
+  reads `http://localhost:5173/…` on screen.
 - **In-page overlays**, injected with `addInitScript` and triggered by the
   recorder at cue time, so they sit exactly on the real element and move
   with it:
-  - touch ripple on every tap (mint, ~300 ms; no mouse pointer);
+  - touch ring on every tap (mint, no mouse pointer). **Finger first:** the
+    recorder draws the ring at the target ~250 ms *before* it dispatches
+    the tap, so the viewer sees where the finger lands and then what it
+    does. A ring drawn on the tap itself is gone behind the drawer before
+    anyone reads it (seen in the spike);
   - one restrained pulse around the existing alert ring, at "התראה" —
     never replacing or hiding the app's own ring;
   - a brief highlight on the patient ID in the email.
@@ -155,7 +189,10 @@ edit.json (cue-relative) → assemble.mjs → ffmpeg → out/
 
 - Hebrew, from the approved script text, timed to the final narration.
 - Authored as ASS, Noto Sans Hebrew (`public/fonts/`), rendered by libass
-  with fribidi. At most two lines, correct RTL, placed in the side space or
+  with fribidi. The style's Encoding field must be **`-1`** (libass
+  detects each line's base direction). With the Hebrew charset (177), or
+  with a leading U+200F, lines are laid out left to right and trailing
+  punctuation lands on the wrong side (checked with the local ffmpeg 4.4). At most two lines, correct RTL, placed in the side space or
   below the phone — never over the bottom bar, the QR, the chart point or the
   session detail.
 - **Burned into the master** (the file gets forwarded) **and** exported as
@@ -189,22 +226,22 @@ guides/video/intro/
 
 ## 12. Prerequisites in the app
 
-These must be fixed before filming; therapists and patients hit them today
-anyway. They are tracked in `docs/TODO.md` on `main`:
+All fixed on 2026-09-24, on `main` and merged into `remote`:
 
-- **The Aggregate on phones.** The chart's viewBox is fixed at 800 wide
-  with 9–10 unit SVG text, so at 390 px the axis labels render at about
-  4 px. Also covered: hit targets, tap instead of hover, session detail as a
-  bottom sheet, the heatmap at narrow widths.
-- **The results screen clips at the iPhone 14 viewport (664 px).** The guide's
-  screenshots work around it by resizing to 760.
+- **The Aggregate on phones** (AGG-10, decision D-21): legible chart text,
+  ≥ 44 px tap targets, an item map that fits the card, wrapping header
+  controls.
+- **The results screen at the iPhone 14 viewport** (P2-13): the "sent"
+  confirmation leads the screen and the sticky PDF bar no longer covers it.
+  The resize-to-760 workaround in `therapist/data/shots.mjs` can go.
+- **Open animations** for the phone drawer, the QR dialog and the session
+  panel (`a548e44`). Before this they appeared in a single frame.
 
 ## 13. Order of work and review
 
-1. Spike: capture scene 2 (typing → link ready) and scene 6 at week 1 on the
-   phone. Check sharpness at 100% and after a 2× punch-in, the frame rate,
-   and how bad the Aggregate is on the phone.
-2. Fix the §12 prerequisites.
+1. ~~Spike~~ — done 2026-09-24; findings in §5, §7 and §9. Script:
+   `spike.mjs`, to be replaced by `clips.mjs`.
+2. ~~Fix the §12 prerequisites~~ — done.
 3. Scratch narration → cues → all clips → rough cut. Review pace, roles,
    music and the progression beat.
 4. Clean narration, licensed music, captions → final render → YouTube.

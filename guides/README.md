@@ -9,7 +9,7 @@ the in-app help page is [`help/`](../help/) (served at `/help/`).
 | Track | Audience | Form | Status |
 |---|---|---|---|
 | [Therapist guide](therapist/GUIDE.he.md) | therapists in the course | illustrated handout, Markdown → PDF | written (Hebrew) |
-| [Intro video](video/intro/) | therapists in the course (phone and projector) | ~90 s narrated phone capture, unlisted YouTube | spec and script revised; blocked on two app fixes (see `SPEC.md` §12) |
+| [Intro video](video/intro/) | therapists in the course (phone and projector) | ~90 s narrated phone capture, unlisted YouTube | spec and script revised; app fixes and capture spike done; next: scratch narration |
 | Detailed walkthrough | therapists, course staff | longer video or step-by-step doc: optional questionnaires, preview, pins, item map, table, export, expired links, PDF fallback | planned |
 | Security & privacy guide | ethics committee, IT, MOH reviewers | prose document: what is stored, where, for how long, who can read it | planned — source is `docs/REMOTE_SPEC.md` and the security section of `docs/HANDOVER.md` |
 
