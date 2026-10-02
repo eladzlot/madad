@@ -1,0 +1,46 @@
+{
+  "id": "course_trauma",
+  "version": "1.0.0",
+  "questionnaires": [],
+  "batteries": [
+    {
+      "id": "course_trauma",
+      "meta": {
+        "domains": [
+          "trauma"
+        ],
+        "populations": [
+          "adult"
+        ],
+        "tags": [
+          "course"
+        ],
+        "featured": true,
+        "source": "Madad original"
+      },
+      "title": "Training battery — Trauma",
+      "description": "Required measures for the trauma track: the PTSD Checklist for DSM-5 (PCL-5) and the Brief Posttraumatic Cognitions Inventory (PTCI-9). You can add more questionnaires to the link as needed.",
+      "keywords": [
+        "training",
+        "course",
+        "track",
+        "trauma",
+        "PTSD",
+        "PCL-5",
+        "PTCI-9"
+      ],
+      "sequence": [
+        {
+          "questionnaireId": "pcl5"
+        },
+        {
+          "questionnaireId": "ptci9"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    "configs/prod/en/pcl5.json",
+    "configs/prod/en/ptci9.json"
+  ]
+}

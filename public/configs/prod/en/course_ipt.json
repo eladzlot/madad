@@ -1,0 +1,47 @@
+{
+  "id": "course_ipt",
+  "version": "1.0.0",
+  "questionnaires": [],
+  "batteries": [
+    {
+      "id": "course_ipt",
+      "meta": {
+        "domains": [
+          "anxiety",
+          "depression"
+        ],
+        "populations": [
+          "adult"
+        ],
+        "tags": [
+          "course"
+        ],
+        "featured": true,
+        "source": "Madad original"
+      },
+      "title": "Training battery — Interpersonal Psychotherapy",
+      "description": "Required measures for the Interpersonal Psychotherapy (IPT) track: the Overall Anxiety Severity and Impairment Scale (OASIS) and the Patient Health Questionnaire (PHQ-9). You can add more questionnaires to the link as needed.",
+      "keywords": [
+        "training",
+        "course",
+        "track",
+        "interpersonal psychotherapy",
+        "IPT",
+        "OASIS",
+        "PHQ-9"
+      ],
+      "sequence": [
+        {
+          "questionnaireId": "oasis"
+        },
+        {
+          "questionnaireId": "phq9"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    "configs/prod/en/oasis.json",
+    "configs/prod/en/phq9.json"
+  ]
+}

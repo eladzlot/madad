@@ -1,0 +1,48 @@
+{
+  "id": "course_ipt",
+  "version": "1.0.0",
+  "questionnaires": [],
+  "batteries": [
+    {
+      "id": "course_ipt",
+      "meta": {
+        "domains": [
+          "anxiety",
+          "depression"
+        ],
+        "populations": [
+          "adult"
+        ],
+        "tags": [
+          "course"
+        ],
+        "featured": true
+      },
+      "title": "סוללת ההכשרה — טיפול בינאישי",
+      "description": "המדדים המחייבים במסלול הטיפול הבינאישי (Interpersonal Psychotherapy, IPT): שאלון חומרת חרדה ופגיעה תפקודית (OASIS) ושאלון דיכאון (PHQ-9). אפשר להוסיף שאלונים נוספים לקישור לפי הצורך.",
+      "keywords": [
+        "הכשרה",
+        "טיפול בינאישי",
+        "בין-אישי",
+        "OASIS",
+        "PHQ-9",
+        "מסלול",
+        "course",
+        "interpersonal psychotherapy",
+        "IPT"
+      ],
+      "sequence": [
+        {
+          "questionnaireId": "oasis"
+        },
+        {
+          "questionnaireId": "phq9"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    "configs/prod/oasis.json",
+    "configs/prod/phq9.json"
+  ]
+}

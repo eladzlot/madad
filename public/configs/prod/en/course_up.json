@@ -1,0 +1,47 @@
+{
+  "id": "course_up",
+  "version": "1.0.0",
+  "questionnaires": [],
+  "batteries": [
+    {
+      "id": "course_up",
+      "meta": {
+        "domains": [
+          "anxiety",
+          "depression"
+        ],
+        "populations": [
+          "adult"
+        ],
+        "tags": [
+          "course"
+        ],
+        "featured": true,
+        "source": "Madad original"
+      },
+      "title": "Training battery — Unified Protocol",
+      "description": "Required measures for the Unified Protocol track: the Overall Anxiety Severity and Impairment Scale (OASIS) and the Patient Health Questionnaire (PHQ-9). You can add more questionnaires to the link as needed.",
+      "keywords": [
+        "training",
+        "course",
+        "track",
+        "Unified Protocol",
+        "UP",
+        "OASIS",
+        "PHQ-9"
+      ],
+      "sequence": [
+        {
+          "questionnaireId": "oasis"
+        },
+        {
+          "questionnaireId": "phq9"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    "configs/prod/en/oasis.json",
+    "configs/prod/en/phq9.json"
+  ]
+}

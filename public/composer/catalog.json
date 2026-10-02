@@ -256,6 +256,57 @@
       }
     },
     {
+      "id": "course_ipt",
+      "kind": "battery",
+      "title": "סוללת ההכשרה — טיפול בינאישי",
+      "description": "המדדים המחייבים במסלול הטיפול הבינאישי (Interpersonal Psychotherapy, IPT): שאלון חומרת חרדה ופגיעה תפקודית (OASIS) ושאלון דיכאון (PHQ-9).…",
+      "keywords": [
+        "הכשרה",
+        "טיפול בינאישי",
+        "בין-אישי",
+        "OASIS",
+        "PHQ-9",
+        "מסלול",
+        "course",
+        "interpersonal psychotherapy",
+        "IPT"
+      ],
+      "itemCount": 14,
+      "estMinutes": 2,
+      "hasConditional": false,
+      "domains": [
+        "anxiety",
+        "depression"
+      ],
+      "type": null,
+      "populations": [
+        "adult"
+      ],
+      "tags": [
+        "course"
+      ],
+      "featured": true,
+      "languages": [
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Training battery — Interpersonal Psychotherapy",
+          "description": "Required measures for the Interpersonal Psychotherapy (IPT) track: the Overall Anxiety Severity and Impairment Scale (OASIS) and the…",
+          "keywords": [
+            "training",
+            "course",
+            "track",
+            "interpersonal psychotherapy",
+            "IPT",
+            "OASIS",
+            "PHQ-9"
+          ]
+        }
+      }
+    },
+    {
       "id": "course_trauma",
       "kind": "battery",
       "title": "סוללת ההכשרה — טראומה",
@@ -284,8 +335,24 @@
       ],
       "featured": true,
       "languages": [
-        "he"
-      ]
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Training battery — Trauma",
+          "description": "Required measures for the trauma track: the PTSD Checklist for DSM-5 (PCL-5) and the Brief Posttraumatic Cognitions Inventory (PTCI-9). You…",
+          "keywords": [
+            "training",
+            "course",
+            "track",
+            "trauma",
+            "PTSD",
+            "PCL-5",
+            "PTCI-9"
+          ]
+        }
+      }
     },
     {
       "id": "course_up",
@@ -318,8 +385,24 @@
       ],
       "featured": true,
       "languages": [
-        "he"
-      ]
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Training battery — Unified Protocol",
+          "description": "Required measures for the Unified Protocol track: the Overall Anxiety Severity and Impairment Scale (OASIS) and the Patient Health…",
+          "keywords": [
+            "training",
+            "course",
+            "track",
+            "Unified Protocol",
+            "UP",
+            "OASIS",
+            "PHQ-9"
+          ]
+        }
+      }
     },
     {
       "id": "cssrs",
