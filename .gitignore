@@ -42,6 +42,7 @@ guides/**/*.pdf
 guides/**/.~lock.*
 guides/therapist/images/*-phone.png
 guides/video/**/raw/
-guides/video/**/narration/
+guides/video/**/narration/archive/
 guides/video/**/music/
 guides/video/**/out/
+guides/video/**/final/

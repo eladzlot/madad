@@ -86,32 +86,39 @@ the eight weekly sessions in
 Narration is the master timeline, so it comes **before** the screen capture:
 
 ```
-SCRIPT.he.docx ─┬─ narration/scratch/<scene>.wav ─ transcribe.py ─┐
+SCRIPT.he.docx ─┬─ narration/he/<scene>.m4a ─ transcribe.py ─┐
                 └──────────────────────────────── cues.mjs ────────┴→ cues.json
 cues.json + scenario.json → clips.mjs → raw/clips/<scene>/ (frames, take.json)
 raw/clips + cues.json → assemble.py → out/video.mp4 + out/timeline.json
-out/video.mp4 + narration + music + sfx.sh sounds → mix.py → out/madad-intro.mp4
+out/video.mp4 + narration + music + sfx.sh sounds → mix.py → final/madad-intro.he.mp4
 ```
+
+**One command builds it** (details and the where-things-go table:
+[`README.md`](README.md)):
 
 ```bash
-# once: a production preview of branch remote on :4173 (clips.mjs records against it)
-npm run build && npx vite preview --port 4173 --strictPort --base=/ &
-export MADAD_ASR_PYTHON=<python with faster-whisper> MADAD_ASR_MODEL=<ivrit-ai/whisper-large-v3-turbo-ct2 dir>
-node guides/video/intro/cues.mjs --from-audio     # or --estimate before any recording
-node guides/video/intro/clips.mjs [scene …]
-bash guides/video/intro/sfx.sh
-python3 guides/video/intro/assemble.py
-python3 guides/video/intro/mix.py
+bash guides/video/intro/build.sh               # → guides/video/intro/final/madad-intro.he.mp4
+bash guides/video/intro/build.sh --no-record   # picture/sound changes only
 ```
 
-1. **Narration:** one file per scene in `narration/scratch/`, named by
-   scene (`01-composer.wav` … `08-closing.wav`). Never inside `raw/`:
+It runs, in order: `cues.mjs --from-audio` (when `MADAD_ASR_PYTHON` /
+`MADAD_ASR_MODEL` point at the transcriber), `npm run build` and a preview
+on :4173, `clips.mjs`, `sfx.sh`, `assemble.py`, `mix.py`.
+
+1. **Narration:** one file per scene in `narration/he/`, named by scene
+   (`01-composer.m4a` … `08-closing.m4a`; any audio format). Older takes
+   move to `narration/archive/<date>-<name>/`. Never inside `raw/`:
    `clips.mjs` wipes a scene's folder on every take.
 2. **Cues:** `cues.mjs --from-audio` transcribes each file (cached as
    `<scene>.words.json`), matches the words to the script in order and
    interpolates any Whisper missed, and puts each cue just before its line.
    Spelling always comes from the script; the transcription supplies timing
-   only. Scenes without a recording keep the word-count estimate.
+   only. Whisper's times run early (~0.3 s after each pause) and can stretch
+   the first word back over leading silence, so they are **snapped to the
+   audio**: after every pause ffmpeg detects, the first word starting during
+   or after it is moved to where speech resumes, and the words in between
+   take the interpolated correction. Written-vs-spoken pairs ("PHQ-9" said
+   "PHQ") are listed in `SAID_AS` in `cues.mjs`. Scenes without a recording keep the word-count estimate.
 3. **Clips:** `clips.mjs` records each scene, **timing actions to the
    cues** — the ID's last character lands on "מוכן", the alert pulse on
    "התראה". Anchor words that disappear from the script fall back to the
@@ -124,8 +131,12 @@ python3 guides/video/intro/mix.py
    music under it, and adds the ping, the tap clicks and the key sounds at
    their logged times.
 
-Scene-to-scene transitions (dissolves at role changes, between the weekly
-takes) are left for the final cut, once the pacing is settled.
+Transitions (`assemble.py`), each centred on its cut so nothing changes
+length: 0.4 s dissolve from the opening card, into the recap and into the
+end card; 0.2 s screen dissolve between therapist scenes (the frame stays);
+a 0.35 s slide at the two role changes, moving the way Hebrew reads (to the
+patient: out to the left, in from the right; back: the reverse); 0.25 s
+dissolve over the patient's off-camera answering; 0.3 s week to week.
 
 ## 7. Capture (`clips.mjs`)
 
@@ -231,8 +242,11 @@ takes) are left for the final cut, once the pacing is settled.
   claim if one appears. Incompetech was ruled out: its free licence
   requires a credit. None of them compete with speech or make the tool feel like
   a game.
-- Loudness: two-pass `loudnorm` to −14 LUFS integrated, true peak ≤ −1 dBTP
-  (YouTube).
+- Loudness: two-pass `loudnorm` on the final mix to **−14 LUFS**, true peak
+  target −1.5 dBTP so it measures ≤ −1 after AAC encoding (YouTube).
+- Export: H.264 High, yuv420p, 1920×1080, 30 fps; AAC-LC 192 kbps 48 kHz;
+  `+faststart`. The `.srt` is written beside the video from the same caption
+  timings.
 
 ## 9. Captions
 
@@ -279,20 +293,23 @@ own screen.
 
 - Hosting: **unlisted YouTube**. Linked from `/help/` and
   [`guides/README.md`](../../README.md).
-- Committed: `SCRIPT.he.docx`, `SPEC.md`, `cues.mjs`, `cues.json`,
+- **The finished video is `final/madad-intro.he.mp4`**, built by `build.sh`.
+- Committed: `README.md`, `build.sh`, `SCRIPT.he.docx`, `SCRIPT.en.docx`, `SPEC.md`, `cues.mjs`, `cues.json`,
   `transcribe.py`, `clips.mjs` (+ `guides/lib/capture.mjs`), `assemble.py`,
-  `mix.py`, `sfx.sh`, `assets/`. Ignored (see `.gitignore`): `raw/`,
-  `narration/`, `music/`, `out/`.
+  `mix.py`, `sfx.sh`, `assets/`, `narration/he/`. Ignored (see `.gitignore`):
+  `raw/`, `narration/archive/`, `music/` (licence: no standalone
+  redistribution), `out/`, `final/`.
 
 ```text
 guides/video/intro/
 ├── SCRIPT.he.docx  SPEC.md  cues.json
 ├── cues.mjs  transcribe.py  clips.mjs  assemble.py  mix.py  sfx.sh
 ├── assets/ctr-lockup@4x.png
-├── narration/scratch/<scene>.wav (+ .words.json)        (ignored)
+├── narration/he/<scene>.m4a + .words.json   (committed; archive/ ignored)
 ├── music/<track>.mp3 + licence certificate               (ignored)
 ├── raw/clips/<scene>/  frames, frames.json, take.json    (ignored)
-└── out/  video.mp4  madad-intro.mp4  sfx/  timeline.json (ignored)
+├── out/  video.mp4  sfx/  timeline.json  (intermediates) (ignored)
+└── final/  madad-intro.he.mp4 + .srt  ← the deliverables  (ignored)
 ```
 
 ## 12. Prerequisites in the app
@@ -314,10 +331,13 @@ All fixed on 2026-09-24, on `main` and merged into `remote`:
    superseded by `clips.mjs` + `guides/lib/capture.mjs` (in git history as
    `spike.mjs`).
 2. ~~Fix the §12 prerequisites~~ — done.
-3. ~~Scratch narration → cues → all clips → rough cut~~ — done
-   2026-09-24: `out/madad-intro.mp4`, 126.6 s (longer than §2's target; kept
-   by decision). Next: final cut — transitions, then the clean narration.
-4. Clean narration, licensed music, captions → final render → YouTube.
+3. ~~Scratch narration → cues → all clips → rough cut~~ — done 2026-09-24.
+4. ~~Clean narration, transitions, loudness, export, `.srt`~~ — done
+   2026-10-02: `final/madad-intro.he.mp4` (123.8 s, −14 LUFS) and
+   `final/madad-intro.he.srt`.
+5. Upload to YouTube (unlisted, with the `.srt`), check Content ID, then link
+   it from `/help/` and `guides/README.md`. Next after that: the English
+   version (`SCRIPT.en.docx`).
 
 Review every render for:
 

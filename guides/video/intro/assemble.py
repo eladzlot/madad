@@ -37,8 +37,9 @@ def frame_png(role):
     return x0, y0
 
 
-def concat_list(take_dir, duration, name):
-    """Frames → ffmpeg concat list on scene time (k and cuts undone)."""
+def concat_list(take_dir, duration, name, start=0.0):
+    """Frames → ffmpeg concat list on scene time (k and cuts undone), for the
+    window [start, start + duration) of the take."""
     t = json.load(open(f'{take_dir}/take.json')); fr = json.load(open(f'{take_dir}/frames.json'))
     k, t0, cuts = t['k'], t['t0'], t['cuts']
     def scene(tr):
@@ -58,8 +59,8 @@ def concat_list(take_dir, duration, name):
         elif not any(c['from'] <= g['t'] < c['to'] and g['t'] > f['t'] for g in frs):
             keep.append({**f, 't': c['to']})
     pts = [(scene(f['t']), f['file']) for f in sorted(keep, key=lambda f: f['t'])]
-    first = max([i for i, (s, _) in enumerate(pts) if s <= 0] or [0])
-    pts = [(max(0.0, s), f) for s, f in pts[first:] if s < duration]
+    first = max([i for i, (s, _) in enumerate(pts) if s <= start] or [0])
+    pts = [(max(0.0, s - start), f) for s, f in pts[first:] if s < start + duration]
     lines = []
     for i, (s, f) in enumerate(pts):
         e = pts[i + 1][0] if i + 1 < len(pts) else duration
@@ -122,7 +123,7 @@ def recap(sc, out):
     t2 = at('המטופל', line['start'] + third) - 0.1
     t3 = at('והתוצאות', line['start'] + 2 * third) - 0.1
     t4 = sc['cues']['END-CARD']
-    n_last = max(int(n[1:]) for n in os.listdir(f'{CLIPS}/07-weeks'))
+    n_last = max(int(n[1:]) for n in os.listdir(f'{CLIPS}/07-weeks') if n.startswith('n'))
     shots = [
         (frame_at(f'{CLIPS}/03-qr', 'qr-open', 0.8), 'therapist', 0.0),                       # send: the patient's QR
         (frame_at(f'{CLIPS}/04-patient', 'answer-1', -0.6), 'patient', t2),                  # fill: a question
@@ -142,8 +143,7 @@ def recap(sc, out):
     subprocess.run(['ffmpeg', '-v', 'error', '-y', *inputs, '-filter_complex', fc, '-map', '[o]', '-t', f'{t4:.3f}',
                     '-r', '30', '-c:v', 'libx264', '-crf', '18', '-preset', 'veryfast', f'{OUT}/08-recap.mp4'], check=True)
     end_card(sc['duration'] - t4, f'{OUT}/08-endcard.mp4')
-    open(f'{OUT}/08.txt', 'w').write(f"file '{OUT}/08-recap.mp4'\nfile '{OUT}/08-endcard.mp4'\n")
-    subprocess.run(['ffmpeg', '-v', 'error', '-y', '-f', 'concat', '-safe', '0', '-i', f'{OUT}/08.txt', '-c', 'copy', out], check=True)
+    return [(f'{OUT}/08-recap.mp4', t4), (f'{OUT}/08-endcard.mp4', sc['duration'] - t4)]
 
 
 def end_card(duration, out):
@@ -233,26 +233,64 @@ def timed(groups):
     return out
 
 
-segs, offset, captions = [f'{OUT}/00-opening.mp4'], OPEN, []
+offset, captions = OPEN, []
 starts = {}
+# Transitions (SPEC §6): each is centred on its cut point and eats into held
+# frames on either side, so no part changes length and the picture stays in
+# sync with the narration. kind is an ffmpeg xfade transition, or None for a
+# hard cut.
+FADE_IN = ('fade', 0.4)        # opening card → scene 1, into the recap, recap → end card
+SAME_PHONE = ('fade', 0.2)     # therapist scene → therapist scene: the frame stays, the screen dissolves
+ROLE_IN = {'patient': ('slideleft', 0.35), 'therapist': ('slideright', 0.35)}   # the phones trade places, moving the way Hebrew reads
+CUT_JUMP = ('fade', 0.25)      # the patient's off-camera answering
+WEEK = ('fade', 0.3)           # week to week, and into the views
+
+parts = [(f'{OUT}/00-opening.mp4', OPEN, None)]
+prev_role = None
 for sid, sc in CUES.items():
-    dur = sc['duration']; role = SCENE_ROLE.get(sid, 'therapist'); out = f'{OUT}/{sid}.mp4'
+    dur = sc['duration']; role = SCENE_ROLE.get(sid, 'therapist')
     starts[sid] = offset
-    if sid == '07-weeks':
-        subs = sorted(os.listdir(f'{CLIPS}/07-weeks'), key=lambda n: int(n[1:]))
-        each = dur / len(subs)
-        parts = []
-        for n in subs:
-            concat_list(f'{CLIPS}/07-weeks/{n}', each, f'07-{n}')
-            encode_phone(f'{OUT}/07-{n}.txt', role, each, f'{OUT}/07-{n}.mp4'); parts.append(f'{OUT}/07-{n}.mp4')
-        open(f'{OUT}/07.txt', 'w').write(''.join(f"file '{p}'\n" for p in parts))
-        subprocess.run(['ffmpeg', '-v', 'error', '-y', '-f', 'concat', '-safe', '0', '-i', f'{OUT}/07.txt', '-c', 'copy', out], check=True)
+    if prev_role is None:
+        into = FADE_IN
     elif sid == '08-closing':
-        recap(sc, out)
+        into = FADE_IN
+    elif role != prev_role:
+        into = ROLE_IN[role]
     else:
-        concat_list(f'{CLIPS}/{sid}', dur, sid)
-        encode_phone(f'{OUT}/{sid}.txt', role, dur, out)
-    segs.append(out)
+        into = SAME_PHONE
+    if sid == '07-weeks':
+        # The weekly takes share the scene up to MORE-VIEWS; the views take
+        # (item map, table) runs from there to the end.
+        subs = sorted((n for n in os.listdir(f'{CLIPS}/07-weeks') if n.startswith('n')), key=lambda n: int(n[1:]))
+        has_views = os.path.exists(f'{CLIPS}/07-weeks/views/take.json')
+        t_views = sc['cues']['MORE-VIEWS'] if has_views else dur
+        each = t_views / len(subs)
+        for j, n in enumerate(subs):
+            concat_list(f'{CLIPS}/07-weeks/{n}', each, f'07-{n}')
+            encode_phone(f'{OUT}/07-{n}.txt', role, each, f'{OUT}/07-{n}.mp4')
+            parts.append((f'{OUT}/07-{n}.mp4', each, into if j == 0 else WEEK))
+        if has_views:
+            concat_list(f'{CLIPS}/07-weeks/views', dur - t_views, '07-views')
+            encode_phone(f'{OUT}/07-views.txt', role, dur - t_views, f'{OUT}/07-views.mp4')
+            parts.append((f'{OUT}/07-views.mp4', dur - t_views, WEEK))
+    elif sid == '08-closing':
+        (rf, rd), (ef, ed) = recap(sc, f'{OUT}/{sid}.mp4')
+        parts += [(rf, rd, into), (ef, ed, FADE_IN)]
+    else:
+        take = json.load(open(f'{CLIPS}/{sid}/take.json'))
+        cut_at = next((e['t'] for e in take['events'] if e['name'] == 'resume'), None)
+        if cut_at is not None:
+            # Split at the cut: the jump over the off-camera part dissolves.
+            concat_list(f'{CLIPS}/{sid}', cut_at, f'{sid}-a')
+            encode_phone(f'{OUT}/{sid}-a.txt', role, cut_at, f'{OUT}/{sid}-a.mp4')
+            concat_list(f'{CLIPS}/{sid}', dur - cut_at, f'{sid}-b', start=cut_at)
+            encode_phone(f'{OUT}/{sid}-b.txt', role, dur - cut_at, f'{OUT}/{sid}-b.mp4')
+            parts += [(f'{OUT}/{sid}-a.mp4', cut_at, into), (f'{OUT}/{sid}-b.mp4', dur - cut_at, CUT_JUMP)]
+        else:
+            concat_list(f'{CLIPS}/{sid}', dur, sid)
+            encode_phone(f'{OUT}/{sid}.txt', role, dur, f'{OUT}/{sid}.mp4')
+            parts.append((f'{OUT}/{sid}.mp4', dur, into))
+    prev_role = role
     if sid == '08-closing':
         # Recap: the phones fill the width, so every closing line sits bottom centre.
         for li, l in enumerate(sc['lines']):
@@ -266,6 +304,15 @@ for sid, sc in CUES.items():
 # Captions: on the side away from the phone, two lines max (libass wraps).
 def ts(t):
     return f'{int(t // 3600)}:{int(t % 3600 // 60):02d}:{t % 60:05.2f}'
+# Never two captions on screen in the same place: libass would stack them and
+# one would jump a row. Each caption ends where the next one on its side
+# starts (a line's last phrase lingers 0.35 s, the next line can start sooner).
+captions.sort()
+for i, (a, b, side, t) in enumerate(captions):
+    nxt = next((c[0] for c in captions[i + 1:] if c[2] == side), None)
+    if nxt is not None and b > nxt - 0.02:
+        captions[i] = (a, nxt - 0.02, side, t)
+
 ass = ['[Script Info]', 'ScriptType: v4.00+', f'PlayResX: {W}', f'PlayResY: {H}', 'WrapStyle: 2', '',
        '[V4+ Styles]',
        'Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding',
@@ -280,13 +327,55 @@ for s, e, side, text in captions:
     ass.append(f'Dialogue: 0,{ts(s)},{ts(e)},{side},,0,0,0,,{text}')
 open(f'{OUT}/captions.ass', 'w', encoding='utf-8').write('\n'.join(ass) + '\n')
 
+# The same captions as .srt, beside the finished video (for the YouTube upload).
+def srt_ts(t):
+    ms = round(t * 1000)
+    return f'{ms // 3600000:02d}:{ms // 60000 % 60:02d}:{ms // 1000 % 60:02d},{ms % 1000:03d}'
+os.makedirs(f'{INTRO}/final', exist_ok=True)
+with open(f'{INTRO}/final/madad-intro.he.srt', 'w', encoding='utf-8') as srt:
+    for n, (a, b, _side, text) in enumerate(captions, 1):
+        srt.write(f'{n}\n{srt_ts(a)} --> {srt_ts(b)}\n{text}\n\n')
+
 _logo = Image.open(f'{INTRO}/assets/ctr-lockup@4x.png').convert('RGBA')
 _logo.resize((240, round(_logo.height * 240 / _logo.width)), Image.LANCZOS).save(f'{OUT}/logo-small.png')
-open(f'{OUT}/all.txt', 'w').write(''.join(f"file '{p}'\n" for p in segs))
-subprocess.run(['ffmpeg', '-v', 'error', '-y', '-f', 'concat', '-safe', '0', '-i', f'{OUT}/all.txt',
+def join(parts, out):
+    """One video from (file, length, transition-before) parts. Each part is
+    padded with its own held first/last frame by half of the transitions
+    around it; each transition then starts half its length before the cut."""
+    inputs, fc = [], ''
+    for i, (f, d, into) in enumerate(parts):
+        inputs += ['-i', f]
+        ps = into[1] / 2 if (i and into) else 0
+        nxt = parts[i + 1][2] if i + 1 < len(parts) else None
+        pe = nxt[1] / 2 if nxt else 0
+        fc += (f'[{i}:v]trim=0:{d:.3f},setpts=PTS-STARTPTS,'
+               f'tpad=start_mode=clone:start_duration={ps:.3f}:stop_mode=clone:stop_duration={pe:.3f},'
+               f'fps=30,settb=AVTB,format=yuv420p[p{i}];')
+    acc, length = 'p0', parts[0][1] + (parts[1][2][1] / 2 if len(parts) > 1 and parts[1][2] else 0)
+    for i in range(1, len(parts)):
+        f, d, into = parts[i]
+        ps = into[1] / 2 if into else 0
+        nxt = parts[i + 1][2] if i + 1 < len(parts) else None
+        pe = nxt[1] / 2 if nxt else 0
+        if into:
+            kind, td = into
+            fc += f'[{acc}][p{i}]xfade=transition={kind}:duration={td:.3f}:offset={length - td:.3f}[j{i}];'
+            length += d + ps + pe - td
+        else:
+            fc += f'[{acc}][p{i}]concat=n=2:v=1:a=0[j{i}];'
+            length += d + pe
+        acc = f'j{i}'
+    subprocess.run(['ffmpeg', '-v', 'error', '-y', *inputs, '-filter_complex', fc.rstrip(';'), '-map', f'[{acc}]',
+                    '-c:v', 'libx264', '-crf', '16', '-preset', 'veryfast', '-r', '30', out], check=True)
+    return length
+
+
+joined_len = join(parts, f'{OUT}/joined.mp4')
+assert abs(joined_len - offset) < 0.1, (joined_len, offset)
+subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', f'{OUT}/joined.mp4',
                 '-i', f'{OUT}/logo-small.png',
                 '-filter_complex', f"[0:v]subtitles={OUT}/captions.ass:fontsdir={FONTS}[s];[s][1:v]overlay=x=W-w-44:y=34:enable='gte(t\\,{OPEN})'",
-                '-c:v', 'libx264', '-crf', '18', '-preset', 'medium',
+                '-c:v', 'libx264', '-crf', '18', '-preset', 'medium', '-profile:v', 'high', '-pix_fmt', 'yuv420p',
                 '-r', '30', f'{OUT}/video.mp4'], check=True)
 
 json.dump({'open': OPEN, 'starts': starts, 'total': offset}, open(f'{OUT}/timeline.json', 'w'))

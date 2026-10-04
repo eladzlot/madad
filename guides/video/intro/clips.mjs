@@ -254,7 +254,26 @@ const SCENE = {
       await take.wait(900);
       results.push(await take.stop());
     }
-    return { dir: OUT + '07-weeks/', frames: results.reduce((a, r) => a + r.frames, 0), events: [] };
+    // The other views, on the closing line: all weeks, then a tap on the
+    // item map ("כמפה") and on the table ("כטבלה"). This take covers the
+    // scene from MORE-VIEWS on; its clock starts there.
+    const T = timing('07-weeks');
+    const t0 = T.cue('MORE-VIEWS');
+    const take = await openTake(browser, `${OUT}07-weeks/views/`, { k: SLOW, api: API(SESSIONS) });
+    const { page } = take;
+    await page.goto(SUMMARY_URL);
+    const phq = page.locator('trajectory-chart').filter({ hasText: 'PHQ-9' }).first();
+    await phq.waitFor({ timeout: 20_000 });
+    await phq.evaluate((el) => scrollTo(0, scrollY + el.getBoundingClientRect().top - 90));
+    await page.waitForTimeout(600);
+    await take.start();
+    await take.at(T.word('כמפה', 'MORE-VIEWS').start - t0);
+    await take.tap(phq.locator('[data-view="heatmap"]'), 'tap-heatmap');
+    await take.at(T.word('כטבלה', 'MORE-VIEWS').start - t0);
+    await take.tap(phq.locator('[data-view="table"]'), 'tap-table');
+    await take.at(T.duration - t0);
+    results.push(await take.stop());
+    return { dir: OUT + '07-weeks/', frames: results.reduce((a, r) => a + r.frames, 0), events: take.events ?? [] };
   },
 };
 
