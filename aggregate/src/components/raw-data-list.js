@@ -6,6 +6,7 @@
 
 import { t, currentLang } from '../../../clinician/i18n/index.js';
 import { LANGS } from '../../../shared/i18n/core.js';
+import { fullDateFormat } from '../chart/chart-model.js';
 import { LitElement, html, css } from 'lit';
 
 export class RawDataList extends LitElement {
@@ -61,7 +62,7 @@ export class RawDataList extends LitElement {
 
   render() {
     if (!this.instruments?.length) return html``;
-    const fmt = new Intl.DateTimeFormat(LANGS[currentLang()].locale, { day: 'numeric', month: 'numeric', year: 'numeric' });
+    const fmt = fullDateFormat(currentLang(), LANGS[currentLang()].locale);
     return html`
       <h2>${t('raw.title')}</h2>
       ${this.instruments.map(inst => html`

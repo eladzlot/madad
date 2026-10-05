@@ -143,7 +143,7 @@ describe('uniquePid', () => {
 });
 
 describe('buildExportSvg — English UI', () => {
-  it('renders ltr text with the English footer and en-GB dates', async () => {
+  it('renders ltr text with the English footer and month-named dates', async () => {
     const { loadStrings, _resetStringsForTesting } = await import('../../../clinician/i18n/index.js');
     await loadStrings('en');
     try {
@@ -153,7 +153,8 @@ describe('buildExportSvg — English UI', () => {
       expect(svg).toContain('Generated ');
       expect(svg).toContain('ID: TRC-001');
       expect(svg).toContain('>Madad<');
-      expect(svg).toContain('01/03/2026');
+      expect(svg).toContain('1 Mar 2026');
+      expect(svg).not.toContain('01/03/2026');
       // Title anchored at the left margin in ltr (start edge).
       expect(svg).toMatch(/<text x="18" y="28" direction="ltr" text-anchor="start"/);
     } finally {

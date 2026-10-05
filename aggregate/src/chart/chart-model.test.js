@@ -3,7 +3,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { linearScale, timeScale, paddedTimeDomain, yTickValues, niceMax } from './scales.js';
-import { buildChartModel, chartDims, DIMS, MIN_SCALE, X_INSET } from './chart-model.js';
+import { buildChartModel, chartDims, DIMS, MIN_SCALE, X_INSET, axisDateFormat, fullDateFormat } from './chart-model.js';
 
 // UTC formatter so tests are timezone-independent.
 const utcFormat = (d, { withYear = false } = {}) => {
@@ -404,5 +404,24 @@ describe('chartDims — on-screen geometry from the card width (AGG-10)', () => 
       expect(narrow.xTicks[i].x - narrow.xTicks[i - 1].x).toBeGreaterThan(40);
     }
     expect(scale).toBe(MIN_SCALE);
+  });
+});
+
+describe('date labels by UI language', () => {
+  // Local noon, so the date is the same in any test timezone.
+  const d = new Date(2026, 7, 3, 12);
+
+  it('Hebrew keeps the compact numeric day.month', () => {
+    const f = axisDateFormat('he', 'he-IL');
+    expect(f(d)).toBe('3.8');
+    expect(f(d, { withYear: true })).toBe('3.8.26');
+    expect(fullDateFormat('he', 'he-IL').format(d)).toBe('3.8.2026');
+  });
+
+  it('English names the month, so day and month cannot be read backwards', () => {
+    const f = axisDateFormat('en', 'en-GB');
+    expect(f(d)).toBe('3 Aug');
+    expect(f(d, { withYear: true })).toBe('3 Aug 26');
+    expect(fullDateFormat('en', 'en-GB').format(d)).toBe('3 Aug 2026');
   });
 });
