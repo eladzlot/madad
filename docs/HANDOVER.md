@@ -531,7 +531,7 @@ Tool is ready to ship. Priority actions:
 `CONT-1` SCQ 0-based rescore, `CONT-2` PTCI-9, `CONT-3` PCL-5 short forms — see `docs/TODO.md` §CONT for the open design question shared by the last two.
 
 ### Idiographic / personalized measures (exploration)
-Custom questionnaires encoded in the URL with patient-specific content — repeated top3, PSYCHLOPS, goal attainment, CPT stuck points. Design options and composer UI sketch in `docs/IDIOGRAPHIC_PLAN.md`; tracked as the `IDIO` band in `docs/TODO.md`. **Nothing decided** — `IDIO-0` is the encoding decision gate. The engine already supports repeated instances via `instanceId`; the blocker is `P1-10`.
+Custom questionnaires encoded in the URL with patient-specific content — repeated top3, PSYCHLOPS, goal attainment, CPT stuck points. Design options and composer UI sketch in `docs/IDIOGRAPHIC_PLAN.md`; tracked as the `IDIO` band in `docs/TODO.md`. **Nothing decided** — `IDIO-0` is the encoding decision gate. The engine already supports repeated instances via `instanceId`; the blocker is `P1-11` (a repeat under a new id from the URL). Since D-22 a questionnaire listed twice is administered once.
 
 ---
 
@@ -565,7 +565,7 @@ To add a new instrument: `public/configs/CONTRIBUTING.md`.
 
 - **`src/engine/dsl.js`** — used by scoring, alerts, and sequence branching. Full `dsl.test.js` coverage required for any change.
 - **`src/engine/sequence-runner.js`** — shared by orchestrator and engine. Back-navigation logic is subtle; tests are the specification.
-- **Session state shape** — `answers`, `scores`, `alerts` keyed by `sessionKey` (`node.instanceId ?? node.questionnaireId`). PDF generator, orchestrator, engine, and results screen all read from this shape. See `TODO.md` P1-10 before changing the key.
+- **Session state shape** — `answers`, `scores`, `alerts` keyed by `sessionKey` (`node.instanceId ?? node.questionnaireId`). PDF generator, orchestrator, engine, and results screen all read from this shape. A questionnaire is administered once per session key (D-22: the sequence runner skips later duplicates); see `TODO.md` P1-11 before changing the key.
 - **`shared/config/QuestionnaireSet.schema.json`** — changing without running `npm run build:validator` and updating `config-validation.js` and existing configs will break validation. Always run `build:validator` after schema changes (the `schema-change` skill walks the chain).
 - **`shared/pdf/envelope-schema.js`** — the contract between the PDF writer and the Aggregate reader, and every PDF ever generated. Adding fields is forward-compatible (unknown fields tolerated); removing or re-typing them is not.
 - **`src/pdf/report.js` — RTL rendering** — pdfmake has incomplete bidi support. bidi-js (UAX-9 conformant) is used for mixed Hebrew/Latin text via `bidiNodes()`. Numbers go in `direction:'ltr'` nodes, category on its own line, never `rtl:true`. See `IMPLEMENTATION_SPEC.md §19.3`.

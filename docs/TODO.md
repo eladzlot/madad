@@ -167,7 +167,9 @@ free for non-commercial research/clinical use only.
 | P1-7 | Delete `info` severity references | todo | Decision D-3: `info` abandoned |
 | P1-8 | Structured JSON output for `validate:configs` | todo | |
 | P1-9 | Single-file mode for `validate:configs` | todo | |
-| P1-10 | Repeated/duplicate questionnaire instances collide | todo | **Not urgent, but don't postpone too long. Report to ASHER when fixed.** Two related problems from session state being keyed by `sessionKey = node.instanceId ?? node.questionnaireId`: **(a)** if a run yields a screener *and* the questionnaire it gates to (battery or `items=`), the questionnaire can be served twice — and the second time it's **pre-filled** from the first (same key). For a screener re-serve this makes no sense. **(b)** Asking for N copies of the same questionnaire — e.g. `items=cpt_abc,cpt_abc,cpt_abc` (ABC×3, a real CPT-worksheet use case) — collapses to one shared instance, so they're "the same" (filling one fills all). Fix direction: auto-assign distinct instance keys for repeats (`cpt_abc#1`, `#2`, …) so each is independent, and dedupe/skip an instance that's already answered where re-serving is meaningless (screener). Surfaced 2026-07-26 during CPT worksheet authoring. **Blocks IDIO-5** — multi-instance idiographic templates sit on this same substrate; see `docs/IDIOGRAPHIC_PLAN.md` §5. Note `src/app.js:177` also dedupes item tokens, so the URL layer needs the same fix. |
+| P1-10 | Repeated/duplicate questionnaire instances collide | done | See archive A-20. D-22 applied: one administration per session key, first occurrence wins. Repeating on purpose → P1-11; returning to one → P1-12. |
+| P1-11 | Repeat a questionnaire on purpose under a new id (URL / Composer) | todo | D-22 makes a repeat collapse into the first. A deliberate repeat needs a distinct session key: an `instanceId` from the URL (syntax undecided, e.g. `items=phq9,phq9:post`) and a way to add one in the Composer. Unblocks IDIO-5. The engine, envelope and Aggregate already handle `instanceId` keys. |
+| P1-12 | Return to an earlier questionnaire (flag) | todo | Idea only (2026-10-05): a flag on a later occurrence that re-opens the first one (its answers kept) rather than skipping it. Nothing decided. |
 
 ### P2 — Polish
 
@@ -397,7 +399,19 @@ Append-only. Date format: YYYY-MM-DD.
 
 ---
 
+### D-22 — One administration per session key; the first occurrence wins
+**Date:** 2026-10-05
+**Context:** A link can name a questionnaire more than once (battery plus member, shared members, screener branch plus token, a repeated token). Session state is keyed by session key, so the second occurrence was served again, pre-filled (P1-10).
+**Decision:** By default a questionnaire is administered once per session, at its first occurrence on the current path; later occurrences with the same session key (`instanceId ?? questionnaireId`) are skipped. "Same" means the same session key, not the same domain. Repeating on purpose will require a different id (P1-11); returning to a questionnaire may come as a flag (P1-12). The Composer does not flag duplicates for now.
+**Rejected:** deduplicating statically in `resolveItems`: wrong when the first copy sits in an `if` branch that is not taken.
+
+---
+
 ## 5. Task Archive
+
+### A-20 — P1-10 Repeated questionnaires: administered once
+**Completed:** 2026-10-05
+**Summary:** A questionnaire that appears more than once in a link was served again, pre-filled from its first administration: a battery member also listed on its own, two batteries sharing one, a screener branch plus a separate token, `items=x,x`. Now the sequence runner (`src/engine/sequence-runner.js`) skips a questionnaire leaf whose session key (`instanceId ?? questionnaireId`) is already on the current path. It's keyed on the path, not on history, so going back and changing an earlier answer that drops the first occurrence's branch makes the later copy the first. `remainingCount()` no longer counts duplicates, so progress totals are right. Item-level leaves are never deduplicated. No change to `resolveItems`, the orchestrator, the engine, the envelope or the PDF. The Composer is unchanged by decision. Tests: 10 runner + 1 orchestrator unit tests (8 fail on the old runner) and an e2e test (`items=phq9_intake,phq9_intake` asks once). SEQUENCE_SPEC §7.3. Decision D-22.
 
 ### A-19 — P2-13 Results screen on a short phone
 **Completed:** 2026-09-24

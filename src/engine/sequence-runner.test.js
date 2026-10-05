@@ -483,3 +483,79 @@ describe('hasNext() after all control-flow resolves to empty', () => {
     expect(runner.hasNext()).toBe(false);
   });
 });
+
+// ─── Repeated questionnaires (SEQUENCE_SPEC §7.3, D-22) ──────────────────────
+
+describe('repeated questionnaires: first occurrence wins', () => {
+  const keys = (nodes) => nodes.filter(Boolean).map(n => n.instanceId ?? n.questionnaireId);
+
+  it('skips a later leaf with the same questionnaire id', () => {
+    const runner = createSequenceRunner([q('phq9'), q('gad7'), q('phq9')]);
+    expect(keys(drainAll(runner))).toEqual(['phq9', 'gad7']);
+  });
+
+  it('skips a duplicate inside a taken if-branch', () => {
+    const runner = createSequenceRunner([q('phq9'), ifNode('1 == 1', [q('phq9'), q('gad7')], [])]);
+    expect(keys(drainAll(runner))).toEqual(['phq9', 'gad7']);
+  });
+
+  it('serves a later copy when its earlier twin sits in an untaken branch', () => {
+    const runner = createSequenceRunner([ifNode('1 == 0', [q('phq9')], []), q('gad7'), q('phq9')]);
+    expect(keys(drainAll(runner))).toEqual(['gad7', 'phq9']);
+  });
+
+  it('serves a distinct instanceId of the same questionnaire', () => {
+    const runner = createSequenceRunner([
+      { questionnaireId: 'phq9' }, { questionnaireId: 'phq9', instanceId: 'phq9_post' },
+    ]);
+    expect(keys(drainAll(runner))).toEqual(['phq9', 'phq9_post']);
+  });
+
+  it('skips a repeated instanceId', () => {
+    const runner = createSequenceRunner([
+      { questionnaireId: 'phq9', instanceId: 'pre' }, { questionnaireId: 'phq9', instanceId: 'pre' },
+    ]);
+    expect(keys(drainAll(runner))).toEqual(['pre']);
+  });
+
+  it('never deduplicates item-level leaves (no questionnaireId)', () => {
+    const runner = createSequenceRunner([item('a'), item('a')]);
+    expect(drainAll(runner).map(n => n.id)).toEqual(['a', 'a']);
+  });
+
+  it('advance returns null when only duplicates remain', () => {
+    const runner = createSequenceRunner([q('phq9'), q('phq9')]);
+    expect(runner.advance(ctx)).toEqual(q('phq9'));
+    expect(runner.hasNext()).toBe(true);
+    expect(runner.advance(ctx)).toBeNull();
+    expect(runner.hasNext()).toBe(false);
+  });
+
+  it('remainingCount does not count duplicates', () => {
+    const runner = createSequenceRunner([q('phq9'), q('gad7'), q('phq9'), q('gad7'), q('oasis')]);
+    expect(runner.remainingCount()).toBe(3);
+    runner.advance(ctx);
+    expect(runner.remainingCount()).toBe(2);   // gad7, oasis — not the second phq9
+  });
+
+  it('after back() and re-advance, a skipped duplicate stays skipped', () => {
+    const runner = createSequenceRunner([q('phq9'), q('gad7'), q('phq9'), q('oasis')]);
+    runner.advance(ctx); runner.advance(ctx);          // phq9, gad7
+    runner.back();                                     // on phq9
+    expect(keys([runner.advance(ctx), runner.advance(ctx)])).toEqual(['gad7', 'oasis']);
+  });
+
+  it('when an earlier answer change drops the first occurrence, the later copy is served', () => {
+    const seq = [q('screen'), ifNode('item.screen.x == 1', [q('pcl5')], []), q('gad7'), q('pcl5')];
+    const runner = createSequenceRunner(seq);
+    expect(keys([runner.advance(itemCtx({ screen: { x: 1 } })),
+                 runner.advance(itemCtx({ screen: { x: 1 } })),
+                 runner.advance(itemCtx({ screen: { x: 1 } }))])).toEqual(['screen', 'pcl5', 'gad7']);
+    expect(runner.advance(itemCtx({ screen: { x: 1 } }))).toBeNull();   // pcl5 again: skipped
+    // Go back to the screener, answer differently: the branch is no longer taken.
+    runner.back(); runner.back();
+    const again = [];
+    while (runner.hasNext()) again.push(runner.advance(itemCtx({ screen: { x: 0 } })));
+    expect(keys(again)).toEqual(['gad7', 'pcl5']);
+  });
+});

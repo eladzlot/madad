@@ -597,3 +597,30 @@ describe('engineCrossBack() progress counter', () => {
     expect(orc.progress().current).toBe(2);
   });
 });
+
+// ─── Repeated questionnaires (SEQUENCE_SPEC §7.3, D-22) ──────────────────────
+
+describe('repeated questionnaires: administered once', () => {
+  it('a battery member also listed on its own is asked once; progress counts it once', () => {
+    const config = makeConfig([makeQ('phq9'), makeQ('gad7')], [linearBattery('b', 'phq9', 'gad7')]);
+    // What resolveItems builds for items=b,phq9
+    const sequence = [...config.batteries[0].sequence, { questionnaireId: 'phq9' }];
+    const starts = [];
+    const onComplete = vi.fn();
+    const orc = createOrchestrator(config, { sequence }, {
+      onQuestionnaireStart: (_, key) => starts.push(key), onSessionComplete: onComplete,
+    });
+    orc.start();
+    expect(orc.progress()).toEqual({ current: 1, total: 2 });
+    orc.currentEngine().advance();               // the caller moves a fresh engine to its first item
+    drainEngine(orc.currentEngine(), 2);
+    orc.engineComplete();
+    drainEngine(orc.currentEngine());
+    orc.engineComplete();
+    expect(starts).toEqual(['phq9', 'gad7']);
+    expect(onComplete).toHaveBeenCalledOnce();
+    // One phq9 entry, holding the answers from its single administration.
+    expect(Object.keys(orc.sessionState().answers).sort()).toEqual(['gad7', 'phq9']);
+    expect(orc.sessionState().answers.phq9).toEqual({ q1: 2, q2: 2 });
+  });
+});
