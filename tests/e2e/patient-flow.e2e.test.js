@@ -97,7 +97,8 @@ async function answerAllPHQ9Items(page, optionIndex = 0) {
 
 test.describe('a questionnaire listed twice', () => {
   test('is asked once: one pass, then the results with one score row', async ({ page }) => {
-    await page.goto(`/?items=phq9_intake,phq9_intake`);
+    // Built from PHQ9_URL so each deployment's link form (e.g. remote's #pid) carries over.
+    await page.goto(PHQ9_URL.replace('items=phq9_intake', 'items=phq9_intake,phq9_intake'));
     await clickBegin(page);
     await answerAllPHQ9Items(page, 1);
     // Before D-22 the second copy was served again, pre-filled.
