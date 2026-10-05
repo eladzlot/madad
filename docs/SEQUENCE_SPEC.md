@@ -238,6 +238,18 @@ Each battery leaf node has a `questionnaireId` and an optional `instanceId`. The
 
 `instanceId` allows the same questionnaire to appear twice in a battery (e.g. `phq9_pre` and `phq9_post`) without session key collision. The config loader validates that no session key is duplicated within a battery at load time.
 
+**Repeated questionnaires (D-22).** Across a whole run (several `items=`
+tokens, batteries that share members, a screener branch plus a separate
+token, a repeated token) a questionnaire is **administered once per session
+key, at its first occurrence**. The sequence runner skips any later leaf
+whose session key is already on the current path. It's keyed on the path,
+not on history, so if going back and changing an answer drops the first
+occurrence's branch, the later copy becomes the first and is served.
+`remainingCount()` excludes skipped duplicates. Item-level leaves are never
+deduplicated. Repeating a questionnaire on purpose requires a distinct
+`instanceId` (from the URL: future, TODO P1-11); returning to an earlier one
+may come as a flag (P1-12).
+
 ### 7.4 `start()`
 
 Calls `runner.advance(batteryContext)` to get the first node, then calls `startQuestionnaire(node)` which:

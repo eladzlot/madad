@@ -1,5 +1,14 @@
 // Sequence Runner
 // See SEQUENCE_SPEC.md for full design rationale.
+//
+// Repeated questionnaires (SEQUENCE_SPEC §7.3, D-22): a questionnaire is
+// administered once per session key (instanceId ?? questionnaireId). A leaf
+// whose key is already on the current path — a battery member also listed on
+// its own, two batteries sharing one, a repeated token — is skipped. Keyed on
+// the current path, not on everything ever yielded, so back() + replay stays
+// consistent: if an earlier answer change drops the first occurrence's
+// branch, the later copy becomes the first and is served. Item-level leaves
+// (no questionnaireId) are never deduplicated.
 
 import { evaluate } from './dsl.js';
 
@@ -31,7 +40,8 @@ export function createSequenceRunner(sequence) {
     }
 
     const pendingBefore = [...pending];
-    const leaf = pullNextLeaf(context);
+    const served = new Set(resolved.slice(0, position + 1).map(e => leafKey(e.node)).filter(Boolean));
+    const leaf = pullNextLeaf(context, served);
 
     if (leaf === null) {
       // All remaining nodes were control-flow that resolved to empty branches
@@ -59,7 +69,7 @@ export function createSequenceRunner(sequence) {
     return leaf;
   }
 
-  function pullNextLeaf(context) {
+  function pullNextLeaf(context, served) {
     while (pending.length > 0) {
       const node = pending.shift();
 
@@ -78,6 +88,9 @@ export function createSequenceRunner(sequence) {
         pending.unshift(..._shuffleCache.get(node));
         continue;
       }
+
+      const key = leafKey(node);
+      if (key && served.has(key)) continue;   // already administered on this path
 
       return node; // leaf
     }
@@ -113,7 +126,10 @@ export function createSequenceRunner(sequence) {
 
   function remainingCount() {
     if (!isSequenceDeterminate()) return null;
-    return countLeaves(pending);
+    // Duplicates of what is already on the path, or repeated later on, will
+    // be skipped — don't count them.
+    const seen = new Set(resolved.slice(0, position + 1).map(e => leafKey(e.node)).filter(Boolean));
+    return countLeaves(pending, seen);
   }
 
   return { advance, back, canGoBack, hasNext, currentNode, resolvedPath,
@@ -143,11 +159,25 @@ function containsIfNode(nodes) {
   return false;
 }
 
-function countLeaves(nodes) {
+// Session key of a questionnaire leaf (SEQUENCE_SPEC §7.3); undefined for
+// item-level leaves, which have no questionnaireId.
+function leafKey(n) {
+  return n?.instanceId ?? n?.questionnaireId;
+}
+
+// Leaves that will actually be yielded: questionnaire leaves already in
+// `seen` (or repeated within `nodes`) are skipped by advance(), so they don't count.
+function countLeaves(nodes, seen = new Set()) {
   let count = 0;
   for (const n of nodes) {
-    if (isRandomizeNode(n)) count += countLeaves(n.ids);
-    else if (!isControlFlow(n) && n.type !== 'instructions') count++;
+    if (isRandomizeNode(n)) { count += countLeaves(n.ids, seen); continue; }
+    if (isControlFlow(n) || n.type === 'instructions') continue;
+    const key = leafKey(n);
+    if (key) {
+      if (seen.has(key)) continue;
+      seen.add(key);
+    }
+    count++;
   }
   return count;
 }
