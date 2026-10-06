@@ -25,7 +25,7 @@ import { LitElement, html, svg, css, unsafeCSS } from 'lit';
 import { clinicianCss } from '../../../clinician/styles/clinician-styles.js';
 import { t, currentLang } from '../../../clinician/i18n/index.js';
 import { LANGS } from '../../../shared/i18n/core.js';
-import { buildChartModel, chartDims } from './chart-model.js';
+import { buildChartModel, chartDims, axisDateFormat, fullDateFormat } from './chart-model.js';
 import { buildHeatmapModel } from './heatmap-model.js';
 import { buildExportSvg, exportFilename, uniquePid } from './export-svg.js';
 import { svgBlob, svgToPngBlob, triggerDownload, canCopyImage, copyPngToClipboard } from './export-image.js';
@@ -111,7 +111,7 @@ export class TrajectoryChart extends LitElement {
       display: flex;
       align-items: center;
       gap: .35rem;
-      text-align: right;
+      text-align: start;
       padding: .4rem .6rem;
       border: none;
       background: none;
@@ -220,7 +220,7 @@ export class TrajectoryChart extends LitElement {
     table.heatmap th[scope='row'] {
       font-weight: var(--font-weight-normal, 400);
       color: var(--color-text-muted, #576f65);
-      text-align: right;
+      text-align: start;
       padding: .2rem .4rem;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -259,6 +259,11 @@ export class TrajectoryChart extends LitElement {
     /* Narrow card (a phone): the item column gives up its fixed 280px and
        the cells their padding, so the session columns get the room. */
     table.heatmap.narrow thead th:first-child { inline-size: 42%; }
+    /* In LTR the newest column sits at the card's edge; its label hangs
+       inward instead of overflowing past it (an overflowing label ignores
+       text-align, so it is pinned to the edge). */
+    table.heatmap.narrow th.col-head.edge { position: relative; }
+    table.heatmap.narrow th.col-head.edge > span { position: absolute; right: 0; top: .2rem; }
     table.heatmap.narrow th[scope='row'] { padding-inline: .2rem .3rem; }
     table.heatmap.narrow td.cell {
       padding: .25rem 0;
@@ -273,7 +278,7 @@ export class TrajectoryChart extends LitElement {
     }
 
     th, td {
-      text-align: right;
+      text-align: start;
       padding: .35rem .5rem;
       border-block-end: 1px solid var(--color-border, #bae4d2);
     }
@@ -556,6 +561,7 @@ export class TrajectoryChart extends LitElement {
       domain: this.domain,
       dims,
       dir: LANGS[currentLang()].dir,
+      formatDate: axisDateFormat(currentLang(), LANGS[currentLang()].locale),
     });
     const hitR = this._hitRadius(m.markers, scale);
 
@@ -665,27 +671,35 @@ export class TrajectoryChart extends LitElement {
     let fit = {};
     if (narrow) {
       // Session columns share what the 42% item column leaves: numbers need
-      // ~20px a column (single digits), a date label ~34px.
+      // ~20px a column (single digits), a date label ~34px ("27.7"), or
+      // ~64px with a month name ("14 Sept", room for the edge label to hang inward).
       const colsPx = this._width * 0.58;
       const count = this.series.points.length;
-      fit = { compact: colsPx / Math.max(1, count) < 20, labelTarget: Math.max(2, Math.floor(colsPx / 34)) };
+      fit = { compact: colsPx / Math.max(1, count) < 20, labelTarget: Math.max(2, Math.floor(colsPx / (currentLang() === 'he' ? 34 : 64))) };
     }
-    const m = buildHeatmapModel({ points: this.series.points, questionnaire: this.questionnaire, ...fit });
+    const m = buildHeatmapModel({
+      points: this.series.points,
+      questionnaire: this.questionnaire,
+      formatDate: axisDateFormat(currentLang(), LANGS[currentLang()].locale),
+      ...fit,
+    });
     if (!m.rows.length) return html``;
-    // The table lives in the RTL page (item texts read naturally, labels on
-    // the right), but time must flow left-to-right to match the chart above
-    // (D-10). In RTL, DOM order renders right-to-left — so columns render
-    // reversed: newest first in the DOM = rightmost on screen.
-    const columns = [...m.columns].reverse();
-    const cells = (r) => [...r.cells].reverse();
+    // The table follows the page's direction (item texts read naturally,
+    // labels on the start side), but time must flow left-to-right to match
+    // the chart above (D-10). In RTL, DOM order renders right-to-left — so
+    // there the columns render reversed: newest first in the DOM = rightmost
+    // on screen. In LTR, DOM order already is time order.
+    const rtl = LANGS[currentLang()].dir === 'rtl';
+    const columns = rtl ? [...m.columns].reverse() : m.columns;
+    const cells = (r) => (rtl ? [...r.cells].reverse() : r.cells);
     return html`
       <div class="heatmap-scroll">
         <table class="heatmap ${m.compact ? 'compact' : ''} ${narrow ? 'narrow' : ''}">
           <thead>
             <tr>
               <th scope="col"></th>
-              ${columns.map(c => html`
-                <th scope="col" class="col-head" title=${c.label} @click=${() => this._select(c)}>${c.displayLabel}</th>
+              ${columns.map((c, i) => html`
+                <th scope="col" class="col-head ${!rtl && i === columns.length - 1 ? 'edge' : ''}" title=${c.label} @click=${() => this._select(c)}><span>${c.displayLabel}</span></th>
               `)}
             </tr>
           </thead>
@@ -726,7 +740,7 @@ export class TrajectoryChart extends LitElement {
   _renderTable() {
     const points = this.series.points;
     const subscaleIds = [...new Set(points.flatMap(p => Object.keys(p.subscales ?? {})))];
-    const fmt = new Intl.DateTimeFormat(LANGS[currentLang()].locale, { day: 'numeric', month: 'numeric', year: 'numeric' });
+    const fmt = fullDateFormat(currentLang(), LANGS[currentLang()].locale);
 
     return html`
       <table>

@@ -18,7 +18,7 @@
 
 import { t, currentLang } from '../../../clinician/i18n/index.js';
 import { LANGS } from '../../../shared/i18n/core.js';
-import { buildChartModel } from './chart-model.js';
+import { buildChartModel, axisDateFormat, fullDateFormat } from './chart-model.js';
 
 // Logical size 800×500 → PNG 1600×1000 at 2× density (§6).
 export const EXPORT_DIMS = { width: 800, height: 500 };
@@ -51,9 +51,9 @@ const esc = (s) => String(s)
 // Formatters follow the clinician's UI language (the export is read by the
 // clinician, in whichever language they run the surface).
 const locale = () => LANGS[currentLang()].locale;
-const shortDate = (d) => new Intl.DateTimeFormat(locale(), { day: 'numeric', month: 'numeric', year: 'numeric' }).format(d);
+const shortDate = (d) => fullDateFormat(currentLang(), locale()).format(d);
 const stampFmt = (d) => new Intl.DateTimeFormat(locale(), {
-  day: 'numeric', month: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit',
+  day: 'numeric', month: currentLang() === 'he' ? 'numeric' : 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
 }).format(d);
 
 /**
@@ -94,6 +94,7 @@ export function buildExportSvg({ series, questionnaire, domain, pid = null, now 
     domain,
     dims: CHART_DIMS,
     dir,
+    formatDate: axisDateFormat(currentLang(), locale()),
   });
 
   const dates = series.points.map(p => p.date);

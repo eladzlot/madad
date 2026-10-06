@@ -76,6 +76,24 @@ function defaultFormatDate(date, { withYear = false } = {}) {
   return withYear ? `${label}.${String(date.getFullYear()).slice(2)}` : label;
 }
 
+// Date labels for a UI language. Hebrew keeps the compact day.month above.
+// Other languages name the month ("3 Aug"): a numeric day/month reads
+// backwards to half of English readers, and en-GB pads it to "03/08".
+export function axisDateFormat(lang, locale) {
+  if (lang === 'he') return defaultFormatDate;
+  const short = new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short' });
+  const long = new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short', year: '2-digit' });
+  return (date, { withYear = false } = {}) => (withYear ? long : short).format(date);
+}
+
+// Full dates (the table, file list, export range), on the same rule.
+export function fullDateFormat(lang, locale) {
+  const opts = lang === 'he'
+    ? { day: 'numeric', month: 'numeric', year: 'numeric' }
+    : { day: 'numeric', month: 'short', year: 'numeric' };
+  return new Intl.DateTimeFormat(locale, opts);
+}
+
 /**
  * @param {object}   args
  * @param {Array}    args.points           — [{date, total, category, alerts, ...}] sorted ascending

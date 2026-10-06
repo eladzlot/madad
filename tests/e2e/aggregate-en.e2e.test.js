@@ -42,7 +42,7 @@ test.describe('aggregate in English', () => {
     // Table view: English headers, en-GB dates.
     await charts.nth(0).locator('.c-seg button[data-view="table"]').click();
     await expect(charts.nth(0).locator('th').first()).toHaveText(en['chart.date']);
-    await expect(charts.nth(0).locator('td').first()).toContainText('01/05/2026');
+    await expect(charts.nth(0).locator('td').first()).toContainText('1 May 2026');
   });
 
   test('Hebrew-answered PDFs in an English UI: English title, Hebrew answers with a language badge', async ({ page }) => {
