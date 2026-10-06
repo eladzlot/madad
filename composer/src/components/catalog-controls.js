@@ -24,7 +24,13 @@ export class CatalogControls extends LitElement {
     populations: { type: Array },   // available population values in the active tab
     filters:     { type: Object },  // { domain, population }
     _filtersOpen: { type: Boolean, state: true }, // chips collapsed behind a toggle
+    _narrow:     { type: Boolean, state: true },  // phone width: the short placeholder
   };
+
+  // On a phone the search box is ~140 px wide and the full placeholder was cut
+  // mid-word ("Search questior"); there it is just "Search…". The aria-label
+  // keeps the full description either way.
+  static NARROW = '(max-width: 480px)';
 
   constructor() {
     super();
@@ -34,6 +40,20 @@ export class CatalogControls extends LitElement {
     this.populations = [];
     this.filters = { domain: null, population: null };
     this._filtersOpen = false;
+    this._narrow = false;
+    this._onMedia = (e) => { this._narrow = e.matches; };
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    this._mq = globalThis.matchMedia?.(CatalogControls.NARROW);
+    this._narrow = !!this._mq?.matches;
+    this._mq?.addEventListener?.('change', this._onMedia);
+  }
+
+  disconnectedCallback() {
+    this._mq?.removeEventListener?.('change', this._onMedia);
+    super.disconnectedCallback();
   }
 
   static styles = [resetCSS, unsafeCSS(clinicianCss), css`
@@ -237,7 +257,7 @@ export class CatalogControls extends LitElement {
         <input
           type="search"
           .value=${this.query ?? ''}
-          placeholder=${t('controls.searchPlaceholder')}
+          placeholder=${t(this._narrow ? 'controls.searchPlaceholderShort' : 'controls.searchPlaceholder')}
           aria-label=${t('controls.searchAria')}
           autocomplete="off"
           spellcheck="false"

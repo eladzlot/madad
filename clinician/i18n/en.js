@@ -20,6 +20,7 @@ export const en = {
   'composer.shareTitle':  'Assessment questionnaire link',
 
   'controls.searchPlaceholder': 'Search questionnaires, worksheets…',
+  'controls.searchPlaceholderShort': 'Search…',
   'controls.searchAria':  'Search the catalog',
   'controls.filter':      'Filter',
   'controls.reset':       'Reset',

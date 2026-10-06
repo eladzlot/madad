@@ -27,6 +27,7 @@ export const he = {
 
   // ── catalog controls ──
   'controls.searchPlaceholder': 'חיפוש שאלונים, דפי עבודה…',
+  'controls.searchPlaceholderShort': 'חיפוש…',
   'controls.searchAria':  'חיפוש בקטלוג',
   'controls.filter':      'סינון',
   'controls.reset':       'איפוס',

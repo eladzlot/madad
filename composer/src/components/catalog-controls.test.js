@@ -125,3 +125,23 @@ describe('catalog-controls', () => {
     expect(pressed[0].textContent.trim()).toBe('חרדה');
   });
 });
+
+describe('catalog-controls — search placeholder', () => {
+  const withMedia = async (matches, run) => {
+    const real = globalThis.matchMedia;
+    globalThis.matchMedia = () => ({ matches, addEventListener() {}, removeEventListener() {} });
+    try { await run(); } finally { globalThis.matchMedia = real; }
+  };
+
+  it('is the full description on a wide screen', () => withMedia(false, async () => {
+    const el = await makeEl();
+    expect(el.shadowRoot.querySelector('input[type="search"]').placeholder).toBe('חיפוש שאלונים, דפי עבודה…');
+  }));
+
+  it('is short on a phone, where the full one was cut mid-word; the label stays full', () => withMedia(true, async () => {
+    const el = await makeEl();
+    const input = el.shadowRoot.querySelector('input[type="search"]');
+    expect(input.placeholder).toBe('חיפוש…');
+    expect(input.getAttribute('aria-label')).toBe('חיפוש בקטלוג');
+  }));
+});
