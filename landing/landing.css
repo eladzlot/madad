@@ -66,11 +66,8 @@ nav {
   height: 54px;
   display: flex; align-items: center; justify-content: space-between;
 }
-.nav-logo {
-  font-size: 19px; font-weight: 700;
-  color: var(--text); letter-spacing: -0.03em;
-  text-decoration: none;
-}
+.nav-logo { display: block; line-height: 0; text-decoration: none; }
+.nav-logo img { display: block; height: 30px; width: auto; }
 .nav-links { display: flex; align-items: center; gap: 24px; }
 .nav-link {
   font-size: 13px; color: var(--faint);
@@ -387,10 +384,7 @@ html[lang="en"] .hero-headline { font-size: clamp(34px, 5.2vw, 58px); }
   gap: 8px;
   direction: rtl;
 }
-.composer-mock-brand {
-  font-size: 15px; font-weight: 700; color: white;
-  letter-spacing: -0.03em;
-}
+.composer-mock-brand { display: block; height: 20px; width: auto; }
 .composer-mock-sep {
   color: #4A6670; font-size: 13px;
 }
@@ -572,7 +566,7 @@ footer {
   justify-content: space-between;
   flex-wrap: wrap; gap: 12px;
 }
-.footer-brand { font-size: 16px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; }
+.footer-brand { display: inline-block; height: 22px; width: auto; vertical-align: middle; }
 .footer-copy { font-size: 12px; color: var(--faint); }
 .footer-links { display: flex; gap: 20px; }
 .footer-links a {
