@@ -165,9 +165,9 @@ function template() {
         : t('aggregate.subtitleFetch')}
     ></clinician-nav>
     <div class="a-container">
-      ${remote.status === 'loading' ? html`<p class="a-remote a-empty">טוען את מפגשי המטופל <bdi>${remote.uid}</bdi>…</p>` : ''}
+      ${remote.status === 'loading' ? html`<p class="a-remote a-empty">${t('aggregate.remoteLoading')} <bdi>${remote.uid}</bdi>…</p>` : ''}
       ${remote.status === 'ok' ? html`
-        <p class="a-remote">מטופל <bdi>${remote.uid}</bdi> — ${remote.count === 1 ? 'מפגש אחד' : `${remote.count} מפגשים`}</p>
+        <p class="a-remote">${t('aggregate.remotePatient')} <bdi>${remote.uid}</bdi> — ${t('aggregate.remoteSessions', { n: remote.count })}</p>
       ` : ''}
       ${remote.status === 'request' || remote.status === 'expired' || remote.status === 'error' ? html`
         <link-form
