@@ -8,7 +8,7 @@ import { t } from '../i18n/index.js';
  * Display-only. Shows item-level and battery-level progress.
  *
  * Properties:
- *   itemProgress     { current: number, total: number|null }
+ *   itemProgress     { current: number, total: number|null, instructions?: boolean }
  *   batteryProgress  { current: number, total: number|null }
  *   questionnaireName  string
  */
@@ -103,7 +103,9 @@ export class ProgressBar extends LitElement {
           ` : ''}
           ${showItem ? html`
             <span class="item-count">
-              ${t('progress.item', { current: this.itemProgress.current, total: this.itemProgress.total })}
+              ${this.itemProgress.instructions
+                ? t('progress.items', { n: this.itemProgress.total })
+                : t('progress.item', { current: this.itemProgress.current, total: this.itemProgress.total })}
             </span>
           ` : ''}
         </div>

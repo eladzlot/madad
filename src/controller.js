@@ -105,7 +105,9 @@ export function createController(container, router) {
     _shellEl.canGoForward = !!item && canAdvance(item, answer) && !_engine.isComplete();
 
     if (_progressEl) {
-      _progressEl.itemProgress      = _engine.progress();
+      // On an instructions screen no question is current yet: the bar says
+      // how many questions there are rather than "Question 0 of 9".
+      _progressEl.itemProgress      = { ..._engine.progress(), instructions: item?.type === 'instructions' };
       _progressEl.batteryProgress   = _orchestrator.progress();
       _progressEl.questionnaireName = _questionnaire?.title ?? '';
     }

@@ -25,6 +25,7 @@ export const en = {
   'welcome.begin':        'Begin',
 
   'progress.item':        'Question {current} of {total}',
+  'progress.items':       { one: '1 question', other: '{n} questions' },
   'progress.aria':        'Questionnaire progress',
   'progress.battery':     'Questionnaire {current} of {total}',
 

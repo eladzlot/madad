@@ -29,6 +29,7 @@ export const he = {
   'welcome.begin':        'התחל',
 
   'progress.item':        'שאלה {current} מתוך {total}',
+  'progress.items':       { one: 'שאלה אחת', other: '{n} שאלות' },
   'progress.aria':        'התקדמות בשאלון',
   'progress.battery':     'שאלון {current} מתוך {total}',
 

@@ -37,6 +37,12 @@ describe('item count', () => {
     expect(el.shadowRoot.querySelector('.item-count')).toBeNull();
   });
 
+  it('on an instructions screen shows the question count, not a position', async () => {
+    const el = await makeEl({ itemProgress: { current: 0, total: 9, instructions: true } });
+    const text = el.shadowRoot.querySelector('.item-count').textContent.trim();
+    expect(text).toBe('9 שאלות');
+  });
+
   it('omits item count when itemProgress is null', async () => {
     const el = await makeEl({ itemProgress: null });
     expect(el.shadowRoot.querySelector('.item-count')).toBeNull();
