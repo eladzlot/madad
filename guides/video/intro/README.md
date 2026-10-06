@@ -1,9 +1,8 @@
 # Intro video — how to build it
 
-**The finished video:** [`final/madad-intro.he.mp4`](final/madad-intro.he.mp4),
-with its captions as [`final/madad-intro.he.srt`](final/madad-intro.he.srt) for
-the YouTube upload (Hebrew; an English version will sit beside them as
-`madad-intro.en.*`).
+**The finished videos:** [`final/madad-intro.he.mp4`](final/madad-intro.he.mp4)
+and [`final/madad-intro.en.mp4`](final/madad-intro.en.mp4), each with its
+captions beside it as `.srt` for the YouTube upload.
 `final/` holds only finished videos; it is not in git — share the file from
 there, or build it as below.
 
@@ -18,14 +17,25 @@ From the repo root, on branch `remote`:
 ```bash
 bash guides/video/intro/build.sh               # everything (~10 min)
 bash guides/video/intro/build.sh --no-record   # only picture/sound changes (~3 min)
+bash guides/video/intro/build.sh --lang en     # the English video (same flags)
 ```
+
+What differs per language is in [`langs.json`](langs.json): the script, the
+narration folder, the cues file, the take and output folders (English never
+overwrites the Hebrew build), the transcriber, the speaking rate and the
+session data. The English video mirrors the layout: the therapist's phone is
+on the left and the story reads left to right. The app is recorded in English.
+The email is an English rendering of the real (Hebrew-only) notification, in
+`clips.mjs`.
 
 It prints the path of the finished video at the end.
 
 ### Transcriber (only for new recordings)
 
 The word timings come from faster-whisper with ivrit.ai's Hebrew model,
-installed outside the repo (≈1.6 GB) at `~/.local/share/madad-video/asr`;
+installed outside the repo (≈1.6 GB) at `~/.local/share/madad-video/asr`
+(English: Systran's `faster-distil-whisper-large-v3` in `…/asr-en/model`,
+sharing the same venv);
 `build.sh` finds it there. Without it, builds use the cached timings
 (`narration/he/*.words.json`, `cues.json`), which is fine until a take
 changes. To install it:

@@ -1,0 +1,35 @@
+{
+  "he": {
+    "script": "SCRIPT.he.docx",
+    "narration": "narration/he",
+    "cues": "cues.json",
+    "clips": "raw/clips",
+    "out": "out",
+    "final": "final/madad-intro.he",
+    "asr": "asr",
+    "wps": 2.4,
+    "saidAs": [
+      [
+        "PHQ-9",
+        "PHQ"
+      ]
+    ],
+    "locale": "he-IL",
+    "dir": "rtl",
+    "sessions": "../../therapist/data/sessions.json"
+  },
+  "en": {
+    "script": "SCRIPT.en.docx",
+    "narration": "narration/en",
+    "cues": "cues.en.json",
+    "clips": "raw/clips-en",
+    "out": "out/en",
+    "final": "final/madad-intro.en",
+    "asr": "asr-en",
+    "wps": 2.6,
+    "saidAs": [],
+    "locale": "en-GB",
+    "dir": "ltr",
+    "sessions": "../../therapist/data/sessions.en.json"
+  }
+}

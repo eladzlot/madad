@@ -9,7 +9,8 @@
 //   npm run build && npx vite preview --port 4173 --strictPort --base=/ &
 //   node guides/video/intro/cues.mjs --estimate        # or --from-audio
 //   node guides/video/intro/clips.mjs [scene …]        # default: all
-// Output: guides/video/intro/raw/clips/<scene>/ (gitignored): PNG frames,
+//   … --lang en                                        # the English video (langs.json)
+// Output: guides/video/intro/raw/clips/<scene>/ (raw/clips-en/ for English; gitignored): PNG frames,
 // frames.json, take.json. Scene 08 has no capture (the end card is built in
 // the edit).
 import { readFileSync } from 'fs';
@@ -17,9 +18,24 @@ import { launch, openTake, BASE } from '../../lib/capture.mjs';
 import { doorbellEmail } from '../../../server/lib/email.js';
 
 const HERE = new URL('.', import.meta.url).pathname;
-const OUT = HERE + 'raw/clips/';
-const CUES = JSON.parse(readFileSync(HERE + 'cues.json'));
-const SESSIONS = JSON.parse(readFileSync(HERE + '../../therapist/data/sessions.json'));
+const LANG_ID = process.argv.includes('--lang') ? process.argv[process.argv.indexOf('--lang') + 1] : 'he';
+const LANG = JSON.parse(readFileSync(HERE + 'langs.json'))[LANG_ID];
+const OUT = HERE + LANG.clips + '/';
+const CUES = JSON.parse(readFileSync(HERE + LANG.cues));
+// What each scene acts on, per language: the search term, and the narration
+// words the actions land on (the anchor words of SCRIPT.<lang>.docx).
+const WORDS = {
+  he: {
+    search: 'הכשרה', searched: '"הכשרה",', pick: 'שלכם,', ready: 'מוכן.', qr: 'QR,', begin: 'התחלה,', answering: 'לענות.',
+    answer: 'עונים,', next: 'הבאה.', email: 'אימייל', id: 'המזהה', link: 'הקישור', alert: 'התראה', map: 'כמפה', table: 'כטבלה',
+  },
+  en: {
+    search: 'training', searched: '"training",', pick: 'battery,', ready: 'ready.', qr: 'QR', begin: 'Begin,', answering: 'answering.',
+    answer: 'Answer,', next: 'next.', email: 'email', id: 'ID', link: 'link', alert: 'alert', map: 'map', table: 'table.',
+  },
+}[LANG_ID];
+const LQ = LANG_ID === 'he' ? '' : `lang=${LANG_ID}`;    // the app's language, in its URLs
+const SESSIONS = JSON.parse(readFileSync(HERE + LANG.sessions));         // scored in the video's language
 const SCENARIO = JSON.parse(readFileSync(HERE + '../../therapist/data/scenario.json'));
 const UID = SCENARIO.pid;                                   // K7M3-9QR7
 const WEEK1 = SCENARIO.sessions[0];                         // 27 Jul 2026 — the session on camera
@@ -31,10 +47,10 @@ const API = (sessions) => ({
   'GET /api/v1/sessions': { status: 200, body: { uid: UID, sessions } },
   'POST /api/v1/links': { status: 204 },
 });
-const SUMMARY_URL = `${BASE}/aggregate/?uid=${UID.replace('-', '')}&exp=4102444800&sig=demo`;
+const SUMMARY_URL = `${BASE}/aggregate/?uid=${UID.replace('-', '')}&exp=4102444800&sig=demo${LQ ? `&${LQ}` : ''}`;
 
 // ── Cue lookup ────────────────────────────────────────────────────────────────
-const norm = (w) => w.replace(/[^\p{L}\p{N}]/gu, '');
+const norm = (w) => w.replace(/[^\p{L}\p{N}]/gu, '').toLowerCase();
 function timing(sceneId) {
   const s = CUES.scenes[sceneId];
   const cue = (name) => {
@@ -63,13 +79,13 @@ const catalog = (page) => page.locator('composer-app div.main');
 const search = (page) => page.locator('catalog-controls input[type="search"]');
 const battery = (page) => page.locator('catalog-card[data-id="course_up"] button.card');
 async function composerReady(page) {
-  await page.goto(`${BASE}/composer/`);
+  await page.goto(`${BASE}/composer/${LQ ? `?${LQ}` : ''}`);
   await page.locator('clinician-nav .brand').waitFor({ timeout: 20_000 });
   await page.waitForTimeout(600);
 }
 // Scene 1's end state: searched, battery picked.
 async function batteryPicked(page) {
-  await search(page).fill('הכשרה');
+  await search(page).fill(WORDS.search);
   await page.waitForTimeout(500);
   await battery(page).click();
   await page.waitForTimeout(400);
@@ -80,7 +96,7 @@ const SCENE = {
   // 1. The catalogue: a sweep for breadth, then search and pick the battery.
   async '01-composer'(browser) {
     const T = timing('01-composer');
-    const take = await openTake(browser, OUT + '01-composer/', { k: SLOW, api: API([]) });
+    const take = await openTake(browser, OUT + '01-composer/', { locale: LANG.locale, k: SLOW, api: API([]) });
     const { page } = take;
     await composerReady(page);
     await take.start();
@@ -91,8 +107,8 @@ const SCENE = {
     await take.scroll(catalog(page), 0, half * 900, { absolute: true });
     await take.at(T.cue('SEARCH-BATTERY'));
     await take.tap(search(page), 'tap-search');
-    await take.typeTo('הכשרה', T.word('"הכשרה",', 'SEARCH-BATTERY').end, 'search-typed');
-    await take.at(T.word('שלכם,', 'SEARCH-BATTERY').start);
+    await take.typeTo(WORDS.search, T.word(WORDS.searched, 'SEARCH-BATTERY').end, 'search-typed');
+    await take.at(T.word(WORDS.pick, 'SEARCH-BATTERY').start);
     await take.tap(battery(page), 'battery-picked');
     await take.at(T.duration);
     return take.stop();
@@ -102,7 +118,7 @@ const SCENE = {
   // link-ready state appears by itself.
   async '02-id'(browser) {
     const T = timing('02-id');
-    const take = await openTake(browser, OUT + '02-id/', { k: SLOW, api: API([]) });
+    const take = await openTake(browser, OUT + '02-id/', { locale: LANG.locale, k: SLOW, api: API([]) });
     const { page } = take;
     await composerReady(page);
     await batteryPicked(page);
@@ -110,7 +126,7 @@ const SCENE = {
     await take.at(T.cue('TYPE-ID'));
     await take.tap(page.locator('mobile-bar .prompt-pid-btn'), 'tap-enter-id');
     await take.wait(450);                                   // the drawer settles
-    await take.typeTo(UID, T.word('מוכן.', 'TYPE-ID').start + 0.15, 'id-typed');
+    await take.typeTo(UID, T.word(WORDS.ready, 'TYPE-ID').start + 0.15, 'id-typed');
     await page.locator('mobile-bar .sheet .qr-btn:not([disabled])').waitFor();
     take.mark('link-ready');
     await take.at(T.duration);
@@ -120,7 +136,7 @@ const SCENE = {
   // 3. The QR: tap, the code opens.
   async '03-qr'(browser) {
     const T = timing('03-qr');
-    const take = await openTake(browser, OUT + '03-qr/', { k: SLOW, api: API([]) });
+    const take = await openTake(browser, OUT + '03-qr/', { locale: LANG.locale, k: SLOW, api: API([]) });
     const { page } = take;
     await composerReady(page);
     await batteryPicked(page);
@@ -128,7 +144,7 @@ const SCENE = {
     await page.keyboard.type(UID);
     await page.waitForTimeout(500);
     await take.start();
-    await take.at(T.word('QR,', 'OPEN-QR').start - 0.1);
+    await take.at(T.word(WORDS.qr, 'OPEN-QR').start - 0.1);
     await take.tap(page.locator('mobile-bar .sheet .qr-btn'), 'tap-qr');
     await page.locator('qr-code dialog[open]').first().waitFor();
     take.mark('qr-open');
@@ -141,7 +157,7 @@ const SCENE = {
   // auto-advance is a JS timer, which slow motion would not slow.
   async '04-patient'(browser) {
     const T = timing('04-patient');
-    const take = await openTake(browser, OUT + '04-patient/', {
+    const take = await openTake(browser, OUT + '04-patient/', { locale: LANG.locale,
       k: 1, api: API([]), fixedTime: `${WEEK1.date}T09:30:00+03:00`,
     });
     const { page } = take;
@@ -157,19 +173,19 @@ const SCENE = {
       const btn = page.locator('item-select >> button.option').nth(i);
       if (name) await take.tap(btn, name); else await btn.click();
     };
-    await page.goto(`${BASE}/?items=course_up#pid=${UID}`);
+    await page.goto(`${BASE}/?items=course_up${LQ ? `&${LQ}` : ''}#pid=${UID}`);
     await page.locator('welcome-screen').waitFor({ timeout: 20_000 });
     await page.waitForTimeout(600);
     await take.start();
-    await take.at(T.word('התחלה,', 'PATIENT-WELCOME').start);
+    await take.at(T.word(WORDS.begin, 'PATIENT-WELCOME').start);
     await take.tap(page.locator('welcome-screen >> button.begin-btn'), 'tap-begin');
     await page.locator('item-instructions').waitFor();
-    await take.at(T.word('לענות.', 'PATIENT-WELCOME').start);
+    await take.at(T.word(WORDS.answering, 'PATIENT-WELCOME').start);
     await take.tap(page.locator('item-instructions >> button.continue-btn'), 'tap-continue');
     await page.locator('item-select').waitFor();
-    await take.at(T.word('עונים,', 'PATIENT-QUESTION-1').start);
+    await take.at(T.word(WORDS.answer, 'PATIENT-QUESTION-1').start);
     await answer('answer-1');
-    await take.at(T.word('הבאה.', 'PATIENT-QUESTION-2').start);
+    await take.at(T.word(WORDS.next, 'PATIENT-QUESTION-2').start);
     await answer('answer-2');
     await take.wait(350);
     take.cut();                                             // off camera from here
@@ -194,21 +210,22 @@ const SCENE = {
   // the real doorbellEmail() content. Ping, open, pulse the ID, tap the link.
   async '05-email'(browser) {
     const T = timing('05-email');
-    const take = await openTake(browser, OUT + '05-email/', { k: SLOW, api: API([]) });
+    const take = await openTake(browser, OUT + '05-email/', { locale: LANG.locale, k: SLOW, api: API([]) });
     const { page } = take;
-    const mail = doorbellEmail({ uid: UID, link: SUMMARY_URL, date: new Date(`${WEEK1.date}T09:40:00+03:00`) });
+    const date = new Date(`${WEEK1.date}T09:40:00+03:00`);
+    const mail = LANG_ID === 'he' ? doorbellEmail({ uid: UID, link: SUMMARY_URL, date }) : doorbellEmailEn({ uid: UID, link: SUMMARY_URL, date });
     await page.setContent(mailApp(mail));
     await page.waitForTimeout(500);
     await take.start();
     await take.at(T.cue('EMAIL-PING'));
     await page.evaluate(() => document.body.classList.add('arrived'));
     take.mark('ping');
-    await take.at(T.word('אימייל', 'EMAIL-ARRIVES').start);
+    await take.at(T.word(WORDS.email, 'EMAIL-ARRIVES').start);
     await take.tap(page.locator('.row:not(.old)'), 'open-mail');
     await page.evaluate(() => document.body.classList.add('reading'));
-    await take.at(T.word('המזהה', 'EMAIL-ARRIVES').start);
+    await take.at(T.word(WORDS.id, 'EMAIL-ARRIVES').start);
     await take.pulse(page.locator('.message bdi').first(), 'pulse-uid', 6);
-    await take.at(T.word('הקישור', 'EMAIL-OPEN').start);
+    await take.at(T.word(WORDS.link, 'EMAIL-OPEN').start);
     await take.tap(page.locator('.message a'), 'tap-link');
     await take.at(T.duration);
     return take.stop();
@@ -218,7 +235,7 @@ const SCENE = {
   // "התראה", tap the point, the detail panel.
   async '06-summary'(browser) {
     const T = timing('06-summary');
-    const take = await openTake(browser, OUT + '06-summary/', { k: SLOW, api: API(SESSIONS.slice(0, 1)) });
+    const take = await openTake(browser, OUT + '06-summary/', { locale: LANG.locale, k: SLOW, api: API(SESSIONS.slice(0, 1)) });
     const { page } = take;
     await page.goto(SUMMARY_URL);
     await page.locator('trajectory-chart').first().waitFor({ timeout: 20_000 });
@@ -228,7 +245,7 @@ const SCENE = {
     await take.at(T.cue('PHQ-CARD'));
     const top = await phq.evaluate((el) => el.getBoundingClientRect().top);
     await take.scroll(page.locator('html'), top - 90, 900);
-    await take.at(T.word('התראה', 'PHQ-ALERT').start);
+    await take.at(T.word(WORDS.alert, 'PHQ-ALERT').start);
     await take.pulse(phq.locator('.marker').first(), 'pulse-alert', 16);
     await take.at(T.cue('SESSION-DETAIL') + 0.3);
     await take.tap(phq.locator('.marker').first(), 'tap-point');
@@ -243,7 +260,7 @@ const SCENE = {
   async '07-weeks'(browser) {
     const results = [];
     for (let n = 2; n <= SESSIONS.length; n++) {
-      const take = await openTake(browser, `${OUT}07-weeks/n${n}/`, { k: 1, api: API(SESSIONS.slice(0, n)) });
+      const take = await openTake(browser, `${OUT}07-weeks/n${n}/`, { locale: LANG.locale, k: 1, api: API(SESSIONS.slice(0, n)) });
       const { page } = take;
       await page.goto(SUMMARY_URL);
       const phq = page.locator('trajectory-chart').filter({ hasText: 'PHQ-9' }).first();
@@ -259,7 +276,7 @@ const SCENE = {
     // scene from MORE-VIEWS on; its clock starts there.
     const T = timing('07-weeks');
     const t0 = T.cue('MORE-VIEWS');
-    const take = await openTake(browser, `${OUT}07-weeks/views/`, { k: SLOW, api: API(SESSIONS) });
+    const take = await openTake(browser, `${OUT}07-weeks/views/`, { locale: LANG.locale, k: SLOW, api: API(SESSIONS) });
     const { page } = take;
     await page.goto(SUMMARY_URL);
     const phq = page.locator('trajectory-chart').filter({ hasText: 'PHQ-9' }).first();
@@ -267,9 +284,9 @@ const SCENE = {
     await phq.evaluate((el) => scrollTo(0, scrollY + el.getBoundingClientRect().top - 90));
     await page.waitForTimeout(600);
     await take.start();
-    await take.at(T.word('כמפה', 'MORE-VIEWS').start - t0);
+    await take.at(T.word(WORDS.map, 'MORE-VIEWS').start - t0);
     await take.tap(phq.locator('[data-view="heatmap"]'), 'tap-heatmap');
-    await take.at(T.word('כטבלה', 'MORE-VIEWS').start - t0);
+    await take.at(T.word(WORDS.table, 'MORE-VIEWS').start - t0);
     await take.tap(phq.locator('[data-view="table"]'), 'tap-table');
     await take.at(T.duration - t0);
     results.push(await take.stop());
@@ -278,9 +295,32 @@ const SCENE = {
 };
 
 // A generic phone mail client: inbox row that arrives, then the message.
+// The notification email in English, for the English video only: the real
+// email (server/lib/email.js) is Hebrew. Same structure and the same rule —
+// the uid, the date and a link; no scores, no names.
+function doorbellEmailEn({ uid, link, date }) {
+  const when = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Jerusalem' }).format(date);
+  return {
+    subject: `${uid} — a patient completed a questionnaire`,
+    html: [
+      `<p>Patient <bdi>${uid}</bdi> completed a questionnaire on <bdi>${when}</bdi>.</p>`,
+      `<p><a href="${link}">View the patient summary</a></p>`,
+      '<p>The link is valid for seven days. If it expires, you can request a new one on the summary page.<br>The link shows all of the patient’s sessions, including ones that arrive after this message.</p>',
+      '<p style="color:#666">You received this as a therapist in the training programme.<br>It contains no results, names or identifying details — only the ID you assigned to the patient.</p>',
+    ].join('\n'),
+  };
+}
+
+const MAIL = {
+  he: { dir: 'rtl', inbox: 'דואר נכנס', from: 'מדד · CTR', snippet: 'לצפייה בסיכום המטופל', avatar: 'מ', fromLabel: 'מאת:',
+        old: ['ר', 'רכזת ההכשרה', 'מפגש ההדרכה הבא', 'תזכורת: המפגש ביום שלישי'] },
+  en: { dir: 'ltr', inbox: 'Inbox', from: 'Madad · CTR', snippet: 'View the patient summary', avatar: 'M', fromLabel: 'From:',
+        old: ['T', 'Training coordinator', 'Next supervision session', 'Reminder: the session is on Tuesday'] },
+}[LANG_ID];
+
 function mailApp(mail) {
   const font = `${BASE}/fonts/NotoSansHebrew`;
-  return `<!doctype html><html dir="rtl" lang="he"><head><meta charset="utf-8">
+  return `<!doctype html><html dir="${MAIL.dir}" lang="${LANG_ID}"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
   @font-face { font-family: 'Noto Sans Hebrew'; src: url(${font}-Regular.ttf); font-weight: 400; }
@@ -300,7 +340,7 @@ function mailApp(mail) {
   .snippet { font-size: 13px; color: #6b7c75; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 290px; }
   .dot { width: 9px; height: 9px; border-radius: 50%; background: #2f7fd6; align-self: center; margin-inline-start: auto; }
   .old { opacity: .55; }
-  .message { position: fixed; inset: 0; background: #fff; transform: translateX(-100%);
+  .message { position: fixed; inset: 0; background: #fff; transform: translateX(${MAIL.dir === 'rtl' ? '-100%' : '100%'});
              transition: transform .35s cubic-bezier(.2,.8,.2,1); padding: 0 20px; overflow: hidden; }
   .reading .message { transform: none; }
   .message h1 { font-size: 19px; margin: 22px 0 6px; }
@@ -309,19 +349,19 @@ function mailApp(mail) {
   .message a { color: #1d6fc2; font-weight: 600; }
   bdi { font-weight: 600; }
 </style></head><body>
-<header>דואר נכנס</header>
+<header>${MAIL.inbox}</header>
 <div class="inbox">
-  <div class="row"><div class="avatar">מ</div><div><div class="from">מדד · CTR</div>
-    <div class="subject">${mail.subject}</div><div class="snippet">לצפייה בסיכום המטופל</div></div><div class="dot"></div></div>
-  <div class="row old" style="transform:none;opacity:.55"><div class="avatar" style="background:#9aa8a1">ר</div><div>
-    <div class="from">רכזת ההכשרה</div><div class="subject">מפגש ההדרכה הבא</div><div class="snippet">תזכורת: המפגש ביום שלישי</div></div></div>
+  <div class="row"><div class="avatar">${MAIL.avatar}</div><div><div class="from">${MAIL.from}</div>
+    <div class="subject">${mail.subject}</div><div class="snippet">${MAIL.snippet}</div></div><div class="dot"></div></div>
+  <div class="row old" style="transform:none;opacity:.55"><div class="avatar" style="background:#9aa8a1">${MAIL.old[0]}</div><div>
+    <div class="from">${MAIL.old[1]}</div><div class="subject">${MAIL.old[2]}</div><div class="snippet">${MAIL.old[3]}</div></div></div>
 </div>
-<div class="message"><h1>${mail.subject}</h1><div class="meta">מאת: מדד · CTR</div>${mail.html}</div>
+<div class="message"><h1>${mail.subject}</h1><div class="meta">${MAIL.fromLabel} ${MAIL.from}</div>${mail.html}</div>
 <script>document.querySelector('.message a').addEventListener('click', (e) => e.preventDefault());</script>
 </body></html>`;
 }
 
-const wanted = process.argv.slice(2).filter((a) => !a.startsWith('-'));
+const wanted = process.argv.slice(2).filter((a, i, all) => !a.startsWith('-') && all[i - 1] !== '--lang');
 const scenes = wanted.length ? wanted : Object.keys(SCENE);
 if (CUES.source === 'estimate') console.log('cues.json: placeholder timings (estimate), not the narration');
 const browser = await launch();

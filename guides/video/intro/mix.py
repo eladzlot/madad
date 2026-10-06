@@ -4,15 +4,20 @@ narration placed at each scene's start, the music ducked under it and
 dipped for the alert beat, the email ping, a click per tap and a soft key
 per keystroke (sounds from sfx.sh).
 
-    python3 guides/video/intro/mix.py [music.mp3]   →  final/madad-intro.he.mp4
+    python3 guides/video/intro/mix.py [--lang en] [music.mp3]   →  final/madad-intro.<lang>.mp4
 """
 import json, os, subprocess, sys
-INTRO = os.path.dirname(os.path.abspath(__file__)); OUT = f'{INTRO}/out'; SFX = f'{OUT}/sfx'
+INTRO = os.path.dirname(os.path.abspath(__file__))
+LANG_ID = sys.argv[sys.argv.index('--lang') + 1] if '--lang' in sys.argv else 'he'
+LANG = json.load(open(f'{INTRO}/langs.json'))[LANG_ID]
+ARGS = [a for i, a in enumerate(sys.argv[1:], 1) if a != '--lang' and sys.argv[i - 1] != '--lang']
+OUT = f"{INTRO}/{LANG['out']}"; SFX = f'{INTRO}/out/sfx'      # the sounds are shared by both languages
+CLIPS = f"{INTRO}/{LANG['clips']}"
 FINAL = f'{INTRO}/final'                      # the finished video, and nothing else
 os.makedirs(FINAL, exist_ok=True)
-tl = json.load(open(f'{OUT}/timeline.json')); cues = json.load(open(f'{INTRO}/cues.json'))['scenes']
+tl = json.load(open(f'{OUT}/timeline.json')); cues = json.load(open(f"{INTRO}/{LANG['cues']}"))['scenes']
 total, st = tl['total'], tl['starts']
-ping_ev = next(e['t'] for e in json.load(open(f'{INTRO}/raw/clips/05-email/take.json'))['events'] if e['name'] == 'ping')
+ping_ev = next(e['t'] for e in json.load(open(f'{CLIPS}/05-email/take.json'))['events'] if e['name'] == 'ping')
 ping_at = st['05-email'] + ping_ev
 dip_a = st['06-summary'] + cues['06-summary']['cues']['PHQ-ALERT'] - 0.9      # music drops out for the alert
 dip_b = st['07-weeks'] - 0.2                                                 # and returns with the weeks
@@ -23,13 +28,13 @@ TAPS = {'tap-search', 'battery-picked', 'tap-enter-id', 'tap-qr', 'tap-begin', '
         'answer-1', 'answer-2', 'open-mail', 'tap-link', 'tap-point', 'tap-heatmap', 'tap-table'}
 clicks, keys = [], []
 for sid in st:
-    tj = f'{INTRO}/raw/clips/{sid}/take.json'
+    tj = f'{CLIPS}/{sid}/take.json'
     if os.path.exists(tj):
         ev = json.load(open(tj))['events']
         clicks += [st[sid] + e['t'] for e in ev if e['name'] in TAPS]
         keys += [st[sid] + e['t'] for e in ev if e['name'] == 'key']   # soft typewriter keys
 # The weeks scene's views take starts at its MORE-VIEWS cue, not at the scene start.
-vj = f'{INTRO}/raw/clips/07-weeks/views/take.json'
+vj = f'{CLIPS}/07-weeks/views/take.json'
 if os.path.exists(vj):
     t_views = st['07-weeks'] + cues['07-weeks']['cues']['MORE-VIEWS']
     clicks += [t_views + e['t'] for e in json.load(open(vj))['events'] if e['name'] in TAPS]
@@ -38,8 +43,8 @@ if os.path.exists(vj):
 voices = [(sid, f"{INTRO}/{sc['audio']}") for sid, sc in cues.items() if sc.get('source') == 'audio']
 DEFAULT_MUSIC = f'{INTRO}/music/alex-morgan-corporate-strategy-presentation-music-583279.mp3'   # Pixabay, chosen 2026-09-24
 MUSIC_START = 2.4   # s into the track: skip its quiet 2.5 s intro so the opening card sits on the beat
-for track in sys.argv[1:] or [DEFAULT_MUSIC]:
-    out = f'{FINAL}/madad-intro.he.mp4'
+for track in ARGS or [DEFAULT_MUSIC]:
+    out = f"{INTRO}/{LANG['final']}.mp4"
     inputs = ['-i', f'{OUT}/video.mp4', '-i', track, '-i', f'{SFX}/ping.wav', '-i', f'{SFX}/click.wav']
     inputs += sum((['-i', f'{SFX}/key{k}.wav'] for k in range(4)), [])
     for _, f in voices: inputs += ['-i', f]
@@ -74,13 +79,13 @@ for track in sys.argv[1:] or [DEFAULT_MUSIC]:
     mixwav = f'{OUT}/mix.wav'
     subprocess.run(['ffmpeg', '-v', 'error', '-y', *inputs, '-filter_complex', fc,
         '-map', '[a]', '-c:a', 'pcm_s24le', '-t', f'{total:.3f}', mixwav], check=True)
-    # Final loudness (SPEC §8): two-pass loudnorm to -14 LUFS, true peak -1.5 dBTP so it stays under -1 after AAC
+    # Final loudness (SPEC §8): two-pass loudnorm to -14 LUFS, true peak -2 dBTP so it stays under -1 after AAC
     # (YouTube's target). Pass 1 measures; pass 2 applies one linear gain, so
     # the balance between voice, music and effects is untouched.
     meas = subprocess.run(['ffmpeg', '-hide_banner', '-i', mixwav, '-af',
-        'loudnorm=I=-14:TP=-1.5:LRA=11:print_format=json', '-f', 'null', '-'], capture_output=True, text=True).stderr
+        'loudnorm=I=-14:TP=-2:LRA=11:print_format=json', '-f', 'null', '-'], capture_output=True, text=True).stderr
     m = json.loads(meas[meas.rindex('{'):meas.rindex('}') + 1])
-    norm = (f"loudnorm=I=-14:TP=-1.5:LRA=11:linear=true:measured_I={m['input_i']}:measured_TP={m['input_tp']}"
+    norm = (f"loudnorm=I=-14:TP=-2:LRA=11:linear=true:measured_I={m['input_i']}:measured_TP={m['input_tp']}"
             f":measured_LRA={m['input_lra']}:measured_thresh={m['input_thresh']}:offset={m['target_offset']}")
     # Export: picture copied as assembled (H.264 High, yuv420p), AAC 192k,
     # index at the front (+faststart) so it starts at once when streamed.

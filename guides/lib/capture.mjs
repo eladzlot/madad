@@ -129,10 +129,10 @@ async function screencast(page, dir) {
  * Written to `dir`: numbered PNG frames, frames.json (capture timestamps),
  * take.json ({ k, t0, cuts, events } — events in scene seconds).
  */
-export async function openTake(browser, dir, { k = 4, api = {}, fixedTime = null } = {}) {
+export async function openTake(browser, dir, { k = 4, api = {}, fixedTime = null, locale = null } = {}) {
   rmSync(dir, { recursive: true, force: true });
   mkdirSync(dir, { recursive: true });
-  const ctx = await browser.newContext(DEVICE);
+  const ctx = await browser.newContext(locale ? { ...DEVICE, locale } : DEVICE);
   const page = await ctx.newPage();
   await mockBackend(page, api);
   if (fixedTime) await page.clock.setFixedTime(new Date(fixedTime));

@@ -4,22 +4,29 @@ the CTR opening card, each scene's take on the cue timeline in its role's
 phone frame, the closing recap and end card, captions from the script's
 " | " breaks, and the small CTR logo in the corner. No audio — mix.py adds it.
 
-    python3 guides/video/intro/assemble.py   →  out/video.mp4, out/timeline.json
+    python3 guides/video/intro/assemble.py [--lang en]   →  out/video.mp4, out/timeline.json
+                                                          (out/en/ for English; langs.json)
 """
-import json, os, re, subprocess
+import json, os, re, subprocess, sys
 from PIL import Image, ImageDraw, ImageFont
 
 REPO = os.path.abspath(os.path.dirname(os.path.abspath(__file__)) + '/../../..')
 INTRO = os.path.dirname(os.path.abspath(__file__))
-CLIPS = f'{INTRO}/raw/clips'
-OUT = f'{INTRO}/out'
+LANG_ID = sys.argv[sys.argv.index('--lang') + 1] if '--lang' in sys.argv else 'he'
+LANG = json.load(open(f'{INTRO}/langs.json'))[LANG_ID]
+RTL = LANG['dir'] == 'rtl'
+CLIPS = f"{INTRO}/{LANG['clips']}"
+OUT = f"{INTRO}/{LANG['out']}"
 FONTS = f'{REPO}/public/fonts'
 os.makedirs(OUT, exist_ok=True)
-CUES = json.load(open(f'{INTRO}/cues.json'))['scenes']
+CUES = json.load(open(f"{INTRO}/{LANG['cues']}"))['scenes']
 
 W, H = 1920, 1080
 PW, PH = 587, 1000                       # phone screen on the canvas (1170x1992 source / ~2)
-ROLE = {'therapist': dict(cx=W // 2 + 200, bezel=(29, 38, 34)), 'patient': dict(cx=W // 2 - 200, bezel=(174, 214, 184))}
+# The story reads in the language's direction: in Hebrew the therapist is right
+# of centre and the patient left; in English the reverse.
+_side = 1 if RTL else -1
+ROLE = {'therapist': dict(cx=W // 2 + 200 * _side, bezel=(29, 38, 34)), 'patient': dict(cx=W // 2 - 200 * _side, bezel=(174, 214, 184))}
 SCENE_ROLE = {'04-patient': 'patient'}
 BG = (238, 243, 239)
 
@@ -120,8 +127,9 @@ def recap(sc, out):
         hit = next((x for x in words if norm(x['w']) == w), None)
         return hit['start'] if hit else default
     line = sc['lines'][0]; third = (line['end'] - line['start']) / 3
-    t2 = at('המטופל', line['start'] + third) - 0.1
-    t3 = at('והתוצאות', line['start'] + 2 * third) - 0.1
+    a2, a3 = ('המטופל', 'והתוצאות') if LANG_ID == 'he' else ('patient', 'results')
+    t2 = at(a2, line['start'] + third) - 0.1
+    t3 = at(a3, line['start'] + 2 * third) - 0.1
     t4 = sc['cues']['END-CARD']
     n_last = max(int(n[1:]) for n in os.listdir(f'{CLIPS}/07-weeks') if n.startswith('n'))
     shots = [
@@ -133,7 +141,7 @@ def recap(sc, out):
     inputs, fc, last = [], f'color=c=0x{"%02X%02X%02X" % BG}:s={W}x{H}:r=30:d={t4:.3f}[b0];', 'b0'
     for i, (src, role, ts) in enumerate(shots):
         w, h = phone_png(src, role, PW3, f'{OUT}/recap{i}.png')
-        x = W // 2 + (1 - i) * (w + GAP) - w // 2          # i=0 right, 1 centre, 2 left (reads RTL)
+        x = W // 2 + (1 - i) * _side * (w + GAP) - w // 2  # in reading order: RTL i=0 right, LTR i=0 left
         y = 125                                         # clear of the corner logo
         inputs += ['-loop', '1', '-t', f'{t4:.3f}', '-i', f'{OUT}/recap{i}.png']
         fc += (f'[{i}:v]format=rgba,fade=t=in:st={ts:.3f}:d=0.35:alpha=1[p{i}];'
@@ -148,13 +156,23 @@ def recap(sc, out):
 
 def end_card(duration, out):
     im = Image.new('RGB', (W, H), BG); d = ImageDraw.Draw(im)
-    big = ImageFont.truetype(f'{FONTS}/NotoSansHebrew-Bold.ttf', 120)
     mid = ImageFont.truetype(f'{FONTS}/NotoSansHebrew-Regular.ttf', 46)
     qr = Image.open(f'{REPO}/guides/therapist/images/00-composer-qr.png').convert('RGB').resize((380, 380))
-    im.paste(qr, (W // 2 - 190 - 330, H // 2 - 190))
-    d.text((W // 2 + 520, H // 2 - 170), 'מדד', font=big, fill=(29, 38, 34), anchor='rm', direction='rtl')
-    d.text((W // 2 + 520, H // 2 + 10), 'סרקו או היכנסו:', font=mid, fill=(29, 38, 34), anchor='rm', direction='rtl')
-    d.text((W // 2 + 520, H // 2 + 90), 'ctrmadad.com/composer', font=mid, fill=(50, 97, 142), anchor='rm')
+    # The Madad mark ("מדד | Madad" over the ticked rule, from brand/ on
+    # main; assets/madad-mark.svg is its source, the PNG is cropped to the ink).
+    mark = Image.open(f'{INTRO}/assets/madad-mark@4x.png').convert('RGBA')
+    mw = 560; mark = mark.resize((mw, round(mark.height * mw / mark.width)), Image.LANCZOS)
+    if RTL:
+        im.paste(qr, (W // 2 - 190 - 330, H // 2 - 190))
+        im.paste(mark, (W // 2 + 520 - mw, H // 2 - 170 - mark.height // 2), mark)
+        d.text((W // 2 + 520, H // 2 + 10), 'סרקו או היכנסו:', font=mid, fill=(29, 38, 34), anchor='rm', direction='rtl')
+        d.text((W // 2 + 520, H // 2 + 90), 'ctrmadad.com/composer', font=mid, fill=(50, 97, 142), anchor='rm')
+    else:
+        # Mirrored: the words on the left, the code on the right.
+        im.paste(qr, (W // 2 + 330 - 190, H // 2 - 190))
+        im.paste(mark, (W // 2 - 520, H // 2 - 170 - mark.height // 2), mark)
+        d.text((W // 2 - 520, H // 2 + 10), 'Scan or go to:', font=mid, fill=(29, 38, 34), anchor='lm')
+        d.text((W // 2 - 520, H // 2 + 90), 'ctrmadad.com/composer', font=mid, fill=(50, 97, 142), anchor='lm')
     im.save(f'{OUT}/endcard.png')
     subprocess.run(['ffmpeg', '-v', 'error', '-y', '-loop', '1', '-t', f'{duration:.3f}', '-i', f'{OUT}/endcard.png',
                     '-vf', 'fps=30,format=yuv420p', '-c:v', 'libx264', '-crf', '18', '-preset', 'veryfast', out], check=True)
@@ -241,7 +259,9 @@ starts = {}
 # hard cut.
 FADE_IN = ('fade', 0.4)        # opening card → scene 1, into the recap, recap → end card
 SAME_PHONE = ('fade', 0.2)     # therapist scene → therapist scene: the frame stays, the screen dissolves
-ROLE_IN = {'patient': ('slideleft', 0.35), 'therapist': ('slideright', 0.35)}   # the phones trade places, moving the way Hebrew reads
+# The phones trade places, moving the way the language reads.
+ROLE_IN = ({'patient': ('slideleft', 0.35), 'therapist': ('slideright', 0.35)} if RTL
+           else {'patient': ('slideright', 0.35), 'therapist': ('slideleft', 0.35)})
 CUT_JUMP = ('fade', 0.25)      # the patient's off-camera answering
 WEEK = ('fade', 0.3)           # week to week, and into the views
 
@@ -296,7 +316,8 @@ for sid, sc in CUES.items():
         for li, l in enumerate(sc['lines']):
             captions += [(offset + a, offset + b, 'B', t) for a, b, t in chunks(l, l.get('captions'))]
     else:
-        side = 'L' if role == 'therapist' else 'R'
+        # Captions sit on the side away from the phone.
+        side = ('L' if role == 'therapist' else 'R') if RTL else ('R' if role == 'therapist' else 'L')
         for li, l in enumerate(sc['lines']):
             captions += [(offset + a, offset + b, side, t) for a, b, t in chunks(l, l.get('captions'))]
     offset += dur
@@ -323,7 +344,14 @@ ass = ['[Script Info]', 'ScriptType: v4.00+', f'PlayResX: {W}', f'PlayResY: {H}'
        # end card: bottom centre, clear of the QR
        'Style: B,Noto Sans Hebrew,62,&H00302622,&H00302622,&H00FFFFFF,&H00000000,0,0,0,0,100,100,0,0,1,0,0,2,200,200,70,-1',
        '', '[Events]', 'Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text']
+# Every caption keeps its column's size: a phrase too wide for the column is
+# not shrunk (sizes that change from caption to caption read badly) but
+# reported, to be fixed with a | break in the script.
+_COL = {'L': (64, 780), 'R': (64, 780), 'B': (62, 1500)}
 for s, e, side, text in captions:
+    size, width = _COL[side]
+    if ImageFont.truetype(f'{FONTS}/NotoSansHebrew-Regular.ttf', size).getlength(text) > width:
+        print(f'  ! caption too wide for its column, add a | break in the script: "{text}"')
     ass.append(f'Dialogue: 0,{ts(s)},{ts(e)},{side},,0,0,0,,{text}')
 open(f'{OUT}/captions.ass', 'w', encoding='utf-8').write('\n'.join(ass) + '\n')
 
@@ -332,7 +360,7 @@ def srt_ts(t):
     ms = round(t * 1000)
     return f'{ms // 3600000:02d}:{ms // 60000 % 60:02d}:{ms // 1000 % 60:02d},{ms % 1000:03d}'
 os.makedirs(f'{INTRO}/final', exist_ok=True)
-with open(f'{INTRO}/final/madad-intro.he.srt', 'w', encoding='utf-8') as srt:
+with open(f"{INTRO}/{LANG['final']}.srt", 'w', encoding='utf-8') as srt:
     for n, (a, b, _side, text) in enumerate(captions, 1):
         srt.write(f'{n}\n{srt_ts(a)} --> {srt_ts(b)}\n{text}\n\n')
 

@@ -243,7 +243,8 @@ dissolve over the patient's off-camera answering; 0.3 s week to week.
   requires a credit. None of them compete with speech or make the tool feel like
   a game.
 - Loudness: two-pass `loudnorm` on the final mix to **−14 LUFS**, true peak
-  target −1.5 dBTP so it measures ≤ −1 after AAC encoding (YouTube).
+  target −2 dBTP so it measures ≤ −1 after AAC encoding (YouTube; at −1.5
+  the English cut measured −0.9 after encoding).
 - Export: H.264 High, yuv420p, 1920×1080, 30 fps; AAC-LC 192 kbps 48 kHz;
   `+faststart`. The `.srt` is written beside the video from the same caption
   timings.
@@ -336,8 +337,14 @@ All fixed on 2026-09-24, on `main` and merged into `remote`:
    2026-10-02: `final/madad-intro.he.mp4` (123.8 s, −14 LUFS) and
    `final/madad-intro.he.srt`.
 5. Upload to YouTube (unlisted, with the `.srt`), check Content ID, then link
-   it from `/help/` and `guides/README.md`. Next after that: the English
-   version (`SCRIPT.en.docx`).
+   it from `/help/` and `guides/README.md`.
+6. ~~The English version~~ — done 2026-10-06: `build.sh --lang en` →
+   `final/madad-intro.en.mp4` (123.2 s, −14 LUFS) and `.srt`. Narration
+   recorded 2026-10-05 (`narration/en/`). The layout is mirrored; the
+   session data is `guides/therapist/data/sessions.en.json`, the same
+   scenario scored in English. Filming it found the server-backed summary's
+   patient line hardcoded in Hebrew (fixed); the link-request form
+   (`aggregate/src/remote/link-form.js`) still is.
 
 Review every render for:
 

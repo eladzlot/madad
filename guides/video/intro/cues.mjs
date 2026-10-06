@@ -1,9 +1,10 @@
-// cues.mjs — SCRIPT.he.docx → cues.json: when each cue and each word falls,
-// in seconds from the start of its scene's narration file.
+// cues.mjs — SCRIPT.<lang>.docx → cues.json: when each cue and each word
+// falls, in seconds from the start of its scene's narration file.
 //
 //   node guides/video/intro/cues.mjs --estimate     placeholder timings from word counts
-//   node guides/video/intro/cues.mjs --from-audio   from narration/he/<scene>.* via Whisper;
+//   node guides/video/intro/cues.mjs --from-audio   from narration/<lang>/<scene>.* via Whisper;
 //                                                   scenes without a recording keep the estimate
+//   … --lang en                                     the English video (langs.json; default he)
 //
 // --from-audio runs transcribe.py (faster-whisper) with MADAD_ASR_PYTHON and
 // MADAD_ASR_MODEL from the environment, and caches each result next to its
@@ -18,14 +19,18 @@ import { execFileSync, spawnSync } from 'child_process';
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'fs';
 
 const HERE = new URL('.', import.meta.url).pathname;
-const DOCX = HERE + 'SCRIPT.he.docx';
-const OUT = HERE + 'cues.json';
-const NARRATION = HERE + 'narration/he/';                // active Hebrew takes; older takes live in narration/archive/
+// The language (langs.json): its script, narration, cues file and speech rate.
+const LANG_ID = process.argv.includes('--lang') ? process.argv[process.argv.indexOf('--lang') + 1] : 'he';
+const LANG = JSON.parse(readFileSync(HERE + 'langs.json'))[LANG_ID];
+if (!LANG) throw new Error(`unknown --lang ${LANG_ID}`);
+const DOCX = HERE + LANG.script;
+const OUT = HERE + LANG.cues;
+const NARRATION = HERE + LANG.narration + '/';           // active takes; older takes live in narration/archive/
 const AUDIO_EXT = /\.(wav|m4a|mp3|aac|ogg|opus|flac)$/i;
 
 export const SCENES = ['01-composer', '02-id', '03-qr', '04-patient', '05-email', '06-summary', '07-weeks', '08-closing'];
 
-const WPS = 2.4;          // Hebrew narration, words per second (estimate only)
+const WPS = LANG.wps;     // narration words per second (estimate only)
 const LINE_PAUSE = 0.35;  // breath after each narration paragraph
 const VISUAL_HOLD = 1.0;  // a "— תמונה בלבד" / "— צליל בלבד" cue gets this much air
 const LEAD_IN = 0.5;
@@ -70,16 +75,18 @@ export function parseScenes(paras) {
   return scenes;
 }
 
-const norm = (w) => w.replace(/[^\p{L}\p{N}]/gu, '');
+const norm = (w) => w.replace(/[^\p{L}\p{N}]/gu, '').toLowerCase();   // Whisper's case is not the script's
 
-// Written one way, said another. Matching uses the spoken form; captions keep
-// the written one. ("PHQ-9" is said "PHQ" in the Hebrew narration.)
-const SAID_AS = [[/PHQ-9/g, 'PHQ']];
+// Written one way, said another (langs.json saidAs). Matching uses the spoken
+// form; captions keep the written one. ("PHQ-9" is said "PHQ" in the Hebrew
+// narration.)
+const SAID_AS = LANG.saidAs.map(([from, to]) => [new RegExp(from, 'g'), to]);
 const spoken = (w) => SAID_AS.reduce((x, [re, to]) => x.replace(re, to), w);
 
 // Whisper splits a Hebrew prefix letter off a Latin/hyphenated word
 // ("ה" + "-PHQ,"). Join them back so they match the script's one word.
 function joinPrefixes(words) {
+  if (LANG_ID !== 'he') return words;
   const out = [];
   for (const w of words) {
     const prev = out.at(-1);
@@ -227,7 +234,7 @@ function transcribe(id, file, scene) {
   const py = process.env.MADAD_ASR_PYTHON, model = process.env.MADAD_ASR_MODEL;
   if (!py || !model) throw new Error('--from-audio needs MADAD_ASR_PYTHON and MADAD_ASR_MODEL');
   const prompt = scene.items.filter((it) => it.kind === 'line').map((l) => l.text).join(' ');
-  const out = execFileSync(py, [HERE + 'transcribe.py', file, '--prompt', prompt],
+  const out = execFileSync(py, [HERE + 'transcribe.py', file, '--lang', LANG_ID, '--prompt', prompt],
     { env: { ...process.env, MADAD_ASR_MODEL: model }, maxBuffer: 1 << 24 }).toString('utf8');
   writeFileSync(cache, out);
   return JSON.parse(out);
@@ -255,7 +262,7 @@ function estimate(scenes) {
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  const mode = process.argv[2];
+  const mode = process.argv.find((a) => a === '--estimate' || a === '--from-audio');
   const scenes = parseScenes(readScript());
   if (mode === '--estimate') {
     const data = { source: 'estimate', wps: WPS, generated: new Date().toISOString(), scenes: estimate(scenes) };
