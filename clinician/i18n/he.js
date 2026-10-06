@@ -57,7 +57,7 @@ export const he = {
   'cart.link':            'קישור למטופל',
   'cart.linkAria':        'קישור שנוצר',
   'cart.noSelection':     'לא נבחרו שאלונים',
-  'cart.copied':          'הועתק ✓',
+  'cart.copied':          'הועתק',
   'cart.copy':            'העתק קישור',
   'cart.open':            'פתח קישור',
   'cart.share':           'שתף',

@@ -47,7 +47,7 @@ export const en = {
   'cart.link':            'Patient link',
   'cart.linkAria':        'Generated link',
   'cart.noSelection':     'No questionnaires selected',
-  'cart.copied':          'Copied ✓',
+  'cart.copied':          'Copied',
   'cart.copy':            'Copy link',
   'cart.open':            'Open link',
   'cart.share':           'Share',
