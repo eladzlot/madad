@@ -1,6 +1,6 @@
 // capture.mjs — shared screen-capture plumbing for the guide and the video.
 //
-// Everything here follows guides/video/intro/SPEC.md §7, which records what
+// Everything here follows docs/video/intro/SPEC.md §7, which records what
 // the capture spike measured:
 //   - Chromium launched with --force-device-scale-factor=3 (without it the
 //     screencast delivers CSS-pixel frames); frames are 1170×1992.

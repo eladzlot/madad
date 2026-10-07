@@ -4,7 +4,7 @@ the CTR opening card, each scene's take on the cue timeline in its role's
 phone frame, the closing recap and end card, captions from the script's
 " | " breaks, and the small CTR logo in the corner. No audio — mix.py adds it.
 
-    python3 guides/video/intro/assemble.py [--lang en]   →  out/video.mp4, out/timeline.json
+    python3 docs/video/intro/assemble.py [--lang en]   →  out/video.mp4, out/timeline.json
                                                           (out/en/ for English; langs.json)
 """
 import json, os, re, subprocess, sys

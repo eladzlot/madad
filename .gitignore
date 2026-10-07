@@ -41,8 +41,10 @@ minted/
 guides/**/*.pdf
 guides/**/.~lock.*
 guides/therapist/images/*-phone.png
-guides/video/**/raw/
-guides/video/**/narration/archive/
-guides/video/**/music/
-guides/video/**/out/
-guides/video/**/final/
+# Video media (docs/video/): footage, renders and music stay local.
+docs/video/**/.~lock.*
+docs/video/**/raw/
+docs/video/**/narration/archive/
+docs/video/**/music/
+docs/video/**/out/
+docs/video/**/final/

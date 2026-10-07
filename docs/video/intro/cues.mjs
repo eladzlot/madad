@@ -1,8 +1,8 @@
 // cues.mjs — SCRIPT.<lang>.docx → cues.json: when each cue and each word
 // falls, in seconds from the start of its scene's narration file.
 //
-//   node guides/video/intro/cues.mjs --estimate     placeholder timings from word counts
-//   node guides/video/intro/cues.mjs --from-audio   from narration/<lang>/<scene>.* via Whisper;
+//   node docs/video/intro/cues.mjs --estimate     placeholder timings from word counts
+//   node docs/video/intro/cues.mjs --from-audio   from narration/<lang>/<scene>.* via Whisper;
 //                                                   scenes without a recording keep the estimate
 //   … --lang en                                     the English video (langs.json; default he)
 //

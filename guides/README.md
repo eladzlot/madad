@@ -9,13 +9,13 @@ the in-app help page is [`help/`](../help/) (served at `/help/`).
 | Track | Audience | Form | Status |
 |---|---|---|---|
 | [Therapist guide](therapist/GUIDE.he.md) | therapists in the course | illustrated handout, Markdown → PDF | written (Hebrew) |
-| [Intro video](video/intro/) — built file: `video/intro/final/madad-intro.he.mp4` (see its [README](video/intro/README.md)) | therapists in the course (phone and projector) | ~2 min narrated phone capture, unlisted YouTube | final cut done (`video/intro/final/`); next: YouTube upload, then English |
+| [Intro video](../docs/video/intro/) — built file: `docs/video/intro/final/madad-intro.he.mp4` (see its [README](../docs/video/intro/README.md)) | therapists in the course (phone and projector) | ~2 min narrated phone capture, unlisted YouTube | final cut done (`video/intro/final/`); next: YouTube upload, then English |
 | Detailed walkthrough | therapists, course staff | longer video or step-by-step doc: optional questionnaires, preview, pins, item map, table, export, expired links, PDF fallback | planned |
 | Security & privacy guide | ethics committee, IT, MOH reviewers | prose document: what is stored, where, for how long, who can read it | planned — source is `docs/REMOTE_SPEC.md` and the security section of `docs/HANDOVER.md` |
 
 The short video and the guide cover the same happy path; the walkthrough is
 where everything the video deliberately leaves out goes (see the "Excluded"
-list in [`video/intro/SPEC.md`](video/intro/SPEC.md)).
+list in [`docs/video/intro/SPEC.md`](../docs/video/intro/SPEC.md)).
 
 ## Conventions
 

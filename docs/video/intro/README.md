@@ -15,9 +15,9 @@ How the method works, for someone starting their own:
 From the repo root, on branch `remote`:
 
 ```bash
-bash guides/video/intro/build.sh               # everything (~10 min)
-bash guides/video/intro/build.sh --no-record   # only picture/sound changes (~3 min)
-bash guides/video/intro/build.sh --lang en     # the English video (same flags)
+bash docs/video/intro/build.sh               # everything (~10 min)
+bash docs/video/intro/build.sh --no-record   # only picture/sound changes (~3 min)
+bash docs/video/intro/build.sh --lang en     # the English video (same flags)
 ```
 
 What differs per language is in [`langs.json`](langs.json): the script, the

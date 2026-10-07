@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # Build the intro video, end to end.
 #
-#   bash guides/video/intro/build.sh                # Hebrew: cues, record, assemble, mix
-#   bash guides/video/intro/build.sh --lang en      # English (langs.json)
-#   bash guides/video/intro/build.sh --no-record    # reuse the recorded clips (picture/sound changes only)
+#   bash docs/video/intro/build.sh                # Hebrew: cues, record, assemble, mix
+#   bash docs/video/intro/build.sh --lang en      # English (langs.json)
+#   bash docs/video/intro/build.sh --no-record    # reuse the recorded clips (picture/sound changes only)
 #
-# The finished video:  guides/video/intro/final/madad-intro.<lang>.mp4
+# The finished video:  docs/video/intro/final/madad-intro.<lang>.mp4
 #
 # Needs (see README.md): the repo on branch `remote`; ffmpeg; the music in
 # music/ (not in git — licence). The transcriber is found in
@@ -13,7 +13,7 @@
 # without it the cached timings are used.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"; cd "$ROOT"
-V=guides/video/intro
+V=docs/video/intro
 RECORD=1; LANG_ID=he
 while [[ $# -gt 0 ]]; do
   case "$1" in

@@ -39,7 +39,7 @@ Config-only — no app code for standard Likert/binary scales. Start from [`publ
 
 **Start with [`docs/HANDOVER.md`](docs/HANDOVER.md)** — full project state, architecture, the instrument library, security model, and what not to change. From there the `docs/` folder holds the detailed specs (behavioral, implementation, config schema, DSL, composer, sequence, rendering, item types).
 
-User-facing documentation (therapist guide, intro video, planned security guide) lives in [`guides/`](guides/).
+User-facing documentation (therapist guide, planned security guide) lives in [`guides/`](guides/); the product videos' pipelines live in [`docs/video/`](docs/video/).
 
 ## License
 

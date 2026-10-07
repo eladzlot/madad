@@ -4,7 +4,7 @@ narration placed at each scene's start, the music ducked under it and
 dipped for the alert beat, the email ping, a click per tap and a soft key
 per keystroke (sounds from sfx.sh).
 
-    python3 guides/video/intro/mix.py [--lang en] [music.mp3]   →  final/madad-intro.<lang>.mp4
+    python3 docs/video/intro/mix.py [--lang en] [music.mp3]   →  final/madad-intro.<lang>.mp4
 """
 import json, os, subprocess, sys
 INTRO = os.path.dirname(os.path.abspath(__file__))

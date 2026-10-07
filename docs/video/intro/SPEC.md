@@ -12,13 +12,13 @@ jobs, in this order:
    powerful (per-session detail, alerts, trajectories) and pleasant to use.
 
 It is not a feature tour. Everything left out here belongs to the detailed
-walkthrough track (see [`../../README.md`](../../README.md)).
+walkthrough track (see [`../../README.md`](../../../guides/README.md)).
 
 Narration and shot cues: [`SCRIPT.he.docx`](SCRIPT.he.docx) (Word, because
 Hebrew is hard to edit in Markdown). Paragraphs in the **Narration** style are
 the spoken text and the caption source; paragraphs in the **Cue** style are the
 `[SYNC-POINT]` markers. Everything else is direction. Factual source of
-truth: the therapist guide, [`GUIDE.he.md`](../../therapist/GUIDE.he.md).
+truth: the therapist guide, [`GUIDE.he.md`](../../../guides/therapist/GUIDE.he.md).
 When they disagree, the guide wins and the script is fixed.
 
 ## 2. Audience, tone, length
@@ -48,7 +48,7 @@ guide); troubleshooting.
 
 One patient, `K7M3-9QR7`, on the `course_up` battery (OASIS + PHQ-9), with
 the eight weekly sessions in
-[`scenario.json`](../../therapist/data/scenario.json) (27 Jul – 14 Sep 2026).
+[`scenario.json`](../../../guides/therapist/data/scenario.json) (27 Jul – 14 Sep 2026).
 
 - Scenes 1–6 happen on **27 Jul 2026**, the first session. The patient's
   answers on camera are exactly that session's answers (PHQ-9 16 with item
@@ -97,8 +97,8 @@ out/video.mp4 + narration + music + sfx.sh sounds → mix.py → final/madad-int
 [`README.md`](README.md)):
 
 ```bash
-bash guides/video/intro/build.sh               # → guides/video/intro/final/madad-intro.he.mp4
-bash guides/video/intro/build.sh --no-record   # picture/sound changes only
+bash docs/video/intro/build.sh               # → docs/video/intro/final/madad-intro.he.mp4
+bash docs/video/intro/build.sh --no-record   # picture/sound changes only
 ```
 
 It runs, in order: `cues.mjs --from-audio` (when `MADAD_ASR_PYTHON` /
@@ -285,7 +285,7 @@ dissolve over the patient's off-camera answering; 0.3 s week to week.
 ## 10. End card
 
 Madad branding, the Composer QR
-([`00-composer-qr.png`](../../therapist/images/00-composer-qr.png)) **and**
+([`00-composer-qr.png`](../../../guides/therapist/images/00-composer-qr.png)) **and**
 `ctrmadad.com/composer` as text, with the line `סרקו או היכנסו:`. The QR is
 for the projector; the text is for the phone viewer, who can't scan their
 own screen.
@@ -293,7 +293,7 @@ own screen.
 ## 11. Delivery
 
 - Hosting: **unlisted YouTube**. Linked from `/help/` and
-  [`guides/README.md`](../../README.md).
+  [`guides/README.md`](../../../guides/README.md).
 - **The finished video is `final/madad-intro.he.mp4`**, built by `build.sh`.
 - Committed: `README.md`, `build.sh`, `SCRIPT.he.docx`, `SCRIPT.en.docx`, `SPEC.md`, `cues.mjs`, `cues.json`,
   `transcribe.py`, `clips.mjs` (+ `guides/lib/capture.mjs`), `assemble.py`,
@@ -302,7 +302,7 @@ own screen.
   redistribution), `out/`, `final/`.
 
 ```text
-guides/video/intro/
+docs/video/intro/
 ├── SCRIPT.he.docx  SPEC.md  cues.json
 ├── cues.mjs  transcribe.py  clips.mjs  assemble.py  mix.py  sfx.sh
 ├── assets/ctr-lockup@4x.png

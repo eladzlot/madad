@@ -1,10 +1,10 @@
 # Madad intro video (public app) — production specification
 
 The public-app counterpart of the trial video on branch `remote`
-(`guides/video/intro/`). Same method, same pipeline, different workflow:
+(`docs/video/intro/`). Same method, same pipeline, different workflow:
 here there is no server, and the PDF report is the only thing a session
 produces. How the method works in general:
-`remote:guides/video/PRODUCT-VIDEO-PLAYBOOK.md`.
+`remote:docs/video/PRODUCT-VIDEO-PLAYBOOK.md`.
 
 ## 1. Purpose
 
@@ -79,7 +79,7 @@ sessions in [`data/scenario.json`](data/scenario.json).
 ## 6. Pipeline
 
 The trial video's pipeline, ported to `main` and parameterized, lives in
-`guides/video/lib/`: capture plumbing, cue builder, transcriber, assembler,
+`docs/video/lib/`: capture plumbing, cue builder, transcriber, assembler,
 mixer and sound effects. This folder holds only what is particular to this
 video: script, `video.json` (domain, language, direction, device sides,
 branding, output name), scene functions (`clips.mjs`), scenario and
@@ -157,7 +157,7 @@ As in the trial video, with these differences:
 
 1. Spec and script — reviewed before any code.
 2. Scenario and the 8 PDFs; checked in the summary.
-3. Port the pipeline to `guides/video/lib/`; the laptop profile and cursor;
+3. Port the pipeline to `docs/video/lib/`; the laptop profile and cursor;
    the drag sample.
 4. Clips on estimated cues; a contact sheet per scene. App bugs found
    while filming are fixed in the app.

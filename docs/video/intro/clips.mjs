@@ -7,14 +7,14 @@
 //
 // Usage (repo root, branch remote):
 //   npm run build && npx vite preview --port 4173 --strictPort --base=/ &
-//   node guides/video/intro/cues.mjs --estimate        # or --from-audio
-//   node guides/video/intro/clips.mjs [scene …]        # default: all
+//   node docs/video/intro/cues.mjs --estimate        # or --from-audio
+//   node docs/video/intro/clips.mjs [scene …]        # default: all
 //   … --lang en                                        # the English video (langs.json)
-// Output: guides/video/intro/raw/clips/<scene>/ (raw/clips-en/ for English; gitignored): PNG frames,
+// Output: docs/video/intro/raw/clips/<scene>/ (raw/clips-en/ for English; gitignored): PNG frames,
 // frames.json, take.json. Scene 08 has no capture (the end card is built in
 // the edit).
 import { readFileSync } from 'fs';
-import { launch, openTake, BASE } from '../../lib/capture.mjs';
+import { launch, openTake, BASE } from '../../../guides/lib/capture.mjs';
 import { doorbellEmail } from '../../../server/lib/email.js';
 
 const HERE = new URL('.', import.meta.url).pathname;
@@ -36,7 +36,7 @@ const WORDS = {
 }[LANG_ID];
 const LQ = LANG_ID === 'he' ? '' : `lang=${LANG_ID}`;    // the app's language, in its URLs
 const SESSIONS = JSON.parse(readFileSync(HERE + LANG.sessions));         // scored in the video's language
-const SCENARIO = JSON.parse(readFileSync(HERE + '../../therapist/data/scenario.json'));
+const SCENARIO = JSON.parse(readFileSync(HERE + '../../../guides/therapist/data/scenario.json'));
 const UID = SCENARIO.pid;                                   // K7M3-9QR7
 const WEEK1 = SCENARIO.sessions[0];                         // 27 Jul 2026 — the session on camera
 const SLOW = 4;                                             // SPEC §7: slow-motion capture by default
