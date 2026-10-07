@@ -28,5 +28,5 @@
   X-Content-Type-Options: nosniff
   Referrer-Policy: no-referrer
   Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
-  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), serial=(), bluetooth=(), hid=(), midi=(), magnetometer=(), gyroscope=(), accelerometer=(), display-capture=(), browsing-topics=()
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), serial=(), hid=(), midi=(), magnetometer=(), gyroscope=(), accelerometer=(), display-capture=(), browsing-topics=()
   ! Access-Control-Allow-Origin
