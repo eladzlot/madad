@@ -2,7 +2,7 @@
 // (vite.landing.config.js). The two surfaces build separately because they
 // deploy to different domains — app.ezmadad.com and ezmadad.com — but the CSP
 // policy and the landing URL rewrites must stay identical, so they live here as
-// one source of truth. See docs/CLOUDFLARE_MIGRATION.md.
+// one source of truth. See docs/CODE_ORGANIZATION.md §6.1.
 
 // The policy, one directive per entry. public/_headers repeats it at the HTTP
 // layer (plus the header-only directives a meta tag cannot carry); the two are

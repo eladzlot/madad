@@ -6,7 +6,7 @@ import { cspPlugin, crossOriginLinksPlugin } from './vite.shared.js';
 // Builds the landing (marketing) surface on its own, because it deploys to a
 // different domain root (ezmadad.com) than the app (app.ezmadad.com). `root:
 // 'landing'` makes landing/index.html the artifact's root index.html rather
-// than dist-landing/landing/index.html. See docs/CLOUDFLARE_MIGRATION.md Stage 4.
+// than dist-landing/landing/index.html. See docs/CODE_ORGANIZATION.md §6.1.
 
 const abs = (p) => fileURLToPath(new URL(p, import.meta.url));
 

@@ -37,7 +37,6 @@ A static web application for clinical psychological assessment. No backend, no d
 **Languages:** Hebrew (canonical) and English. The patient language rides in the link (`lang=`); the clinician UI language is a per-browser preference with a nav toggle. Design and decisions: `docs/I18N_SPEC.md`.
 
 Hosting: Cloudflare Pages — projects `madad-app` (app entry points) and `madad-landing` (landing).
-**Legacy:** `https://eladzlot.github.io/madad/` serves a redirect shim to the new domains (removal pending — migration Stage 9, `docs/CLOUDFLARE_MIGRATION.md`).
 **Contact:** Dr. Elad Zlotnick, Hebrew University / CTR — elad.zlotnick@mail.huji.ac.il
 
 ---
@@ -146,7 +145,7 @@ Clinician drops Madad PDFs in and gets per-instrument trajectory charts. Statele
 - PDF fixtures for the aggregate E2E suite (`tests/fixtures/pdfs/`) are gitignored and rebuilt by Playwright's `globalSetup` (`tests/e2e/global-setup.js` → `npm run pdf:fixtures:e2e`, ~1s) from the committed scenario in `tests/fixtures/scenarios/`. Never commit the PDFs; a fresh clone and CI generate them.
 - The same generator produces **mock reports for slides and demos** — see §3 “Mock reports” below.
 - CI workflow: `.github/workflows/ci.yml` — lint → unit tests → validate configs → validate catalog → build → size → E2E
-- Deploy workflow: `.github/workflows/deploy-cloudflare.yml` — same gate + Wrangler deploy of `dist/` (app) and `dist-landing/` (landing); legacy `deploy.yml` now only publishes the github.io redirect shim
+- Deploy workflow: `.github/workflows/deploy-cloudflare.yml` — same gate + Wrangler deploy of `dist/` (app) and `dist-landing/` (landing)
 - MIT license (`LICENSE`) + instrument notice (`CONTENT_LICENSE.md`)
 
 ### Mock reports (slides, demos, fixtures)
@@ -411,7 +410,6 @@ The pre-collapse bundle files (`standard.json`, `trauma.json`, `intake.json`, `o
 ├── landing/                      # Landing page (built into dist-landing/)
 ├── demo/                         # Mock-report grammar (README committed;
 │                                 # scenarios/ and out/ are gitignored)
-├── pages-redirect/               # github.io redirect shim (Stage 9 deletes)
 ├── public/
 │   ├── configs/                  # Clinical content (see above)
 │   ├── composer/catalog.json     # Generated catalog index
@@ -436,8 +434,7 @@ The pre-collapse bundle files (`standard.json`, `trauma.json`, `intake.json`, `o
 ├── vite.config.js / vite.landing.config.js / vite.shared.js
 ├── .github/workflows/
 │   ├── ci.yml                    # push + PRs
-│   ├── deploy-cloudflare.yml     # push to main → Cloudflare Pages
-│   └── deploy.yml                # github.io redirect shim only (Stage 9 removes)
+│   └── deploy-cloudflare.yml     # push to main → Cloudflare Pages
 ├── docs/                         # Developer specs
 ├── LICENSE                       # MIT
 └── CONTENT_LICENSE.md            # Instrument notice (no ownership claimed)
@@ -504,9 +501,6 @@ The following security controls are in place. Do not remove them without underst
 ## 7. Next steps
 
 `docs/TODO.md` is the backlog's source of truth (task IDs, status, decisions log). The threads that matter at project level:
-
-### Migration cleanup — Stage 9
-Remove the github.io redirect shim, `pages-redirect/`, and `.github/workflows/deploy.yml` after the redirect grace period. Steps in `docs/CLOUDFLARE_MIGRATION.md` §Stage 9; that document deletes itself when the stage completes.
 
 ### Dissemination
 Tool is ready to ship. Priority actions:

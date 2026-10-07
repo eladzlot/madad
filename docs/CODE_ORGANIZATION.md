@@ -340,6 +340,35 @@ surfaces. Two reasons:
 
 If `shared/` ever grows to >20 KB and is loaded by ≥3 surfaces, revisit.
 
+### 6.1 Two builds, two domains
+
+Landing deploys to a different domain from the app, so it is a separate
+build with its own config:
+
+| | App | Landing |
+|---|---|---|
+| Config | `vite.config.js` | `vite.landing.config.js` (`root: 'landing'`, `publicDir: false`) |
+| Output | `dist/` | `dist-landing/` |
+| Cloudflare Pages project | `madad-app` | `madad-landing` |
+| Domain | `app.ezmadad.com` | `ezmadad.com` (apex) |
+| Serves | patient (root), `composer/`, `aggregate/`, `help/` | `landing/` at root (`/`, `/en/`) |
+
+`npm run build` emits both; `.github/workflows/deploy-cloudflare.yml`
+uploads each to its project after the full CI gate. Landing's build copies
+only what it needs from `public/` (fonts, `og-image.png`, `_headers`).
+
+Both directions cross-link through origins injected at build time:
+`APP_ORIGIN` replaces the `__APP_ORIGIN__` token in landing's HTML
+(`crossOriginLinksPlugin` in `vite.shared.js`), and `LANDING_ORIGIN`
+becomes `__LANDING_ORIGIN__` for the clinician nav's brand link. Both
+default to empty, which gives same-origin links. Dev and the CI smoke
+builds rely on that default, so keep it. The CSP lives in
+`vite.shared.js` so both builds share one policy.
+
+Landing stays in this tree, on `main`, because it shares fonts, headers,
+the CSP and CI with the app. A separate branch or repo would let those
+drift.
+
 ---
 
 ## 7. Test layout

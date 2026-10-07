@@ -1,14 +1,13 @@
 name: Deploy to Cloudflare
 
-# Production deploy for the Cloudflare migration (docs/CLOUDFLARE_MIGRATION.md
-# Stage 5). Two Direct-Upload Pages projects, one per surface:
+# Production deploy (docs/CODE_ORGANIZATION.md §6.1). Two Direct-Upload Pages
+# projects, one per surface:
 #   dist/          → madad-app     → app.ezmadad.com
 #   dist-landing/  → madad-landing → ezmadad.com
 #
 # Self-contained gate: it re-runs lint/test/validate/build/size/e2e before
 # deploying, so a broken bundle never reaches Cloudflare — the dist-smoke e2e is
-# the deploy gate. GitHub Pages (deploy.yml) now only publishes the github.io
-# redirect shim (Stage 8 shipped; Stage 9 removes it entirely).
+# the deploy gate.
 #
 # Requires two repo secrets: CLOUDFLARE_API_TOKEN (scoped Pages:Edit) and
 # CLOUDFLARE_ACCOUNT_ID.

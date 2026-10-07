@@ -122,7 +122,7 @@ This document specifies how Madad is to be built. It is intended for the develop
 │   ├── CODE_ORGANIZATION.md
 │   ├── HANDOVER.md
 │   └── TODO.md
-└── .github/workflows/                # ci.yml, deploy-cloudflare.yml, deploy.yml
+└── .github/workflows/                # ci.yml, deploy-cloudflare.yml
 ```
 
 ---
@@ -1091,7 +1091,7 @@ Mirrors the GitHub Actions workflow exactly: `lint → test → validate:configs
 
 ## 24. Deployment
 
-- Static hosting: Cloudflare Pages — app at `https://app.ezmadad.com/` (project `madad-app`), landing at `https://ezmadad.com/` (project `madad-landing`). Legacy `https://eladzlot.github.io/madad/` serves a redirect shim.
+- Static hosting: Cloudflare Pages — app at `https://app.ezmadad.com/` (project `madad-app`), landing at `https://ezmadad.com/` (project `madad-landing`).
 - HTTPS required
 - Cache strategy: immutable long-cache headers for hashed app assets; short TTL for config JSON files
 - Config namespaces: `public/configs/prod/` for production, `public/configs/test/` for staging
