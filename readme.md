@@ -37,7 +37,7 @@ Config-only — no app code for standard Likert/binary scales. Start from [`publ
 
 ## Documentation
 
-**Start with [`docs/HANDOVER.md`](docs/HANDOVER.md)** — full project state, architecture, the instrument library, security model, and what not to change. From there the `docs/` folder holds the detailed specs (behavioral, implementation, config schema, DSL, composer, sequence, rendering, item types).
+**Start with [`docs/HANDOVER.md`](docs/HANDOVER.md)** — full project state, architecture, the instrument library, security model, and what not to change. [`docs/README.md`](docs/README.md) indexes the rest: the detailed specs (behavioral, implementation, config schema, DSL, composer, sequence, rendering, item types, i18n), plans and process.
 
 ## License
 

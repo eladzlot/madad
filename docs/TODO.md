@@ -2,7 +2,7 @@
 
 **Living document.** Updated as work progresses. Source of truth for where we are, what's next, and why past decisions were made.
 
-Companion to `REVIEW.md` (the one-time deep-review report that produced this list).
+Companion to `archive/REVIEW-2026-04.md` (the one-time deep-review report that produced this list).
 
 ---
 
@@ -69,7 +69,7 @@ The phrase **"Continue with TODO"** means: do the above, then pick up the curren
 
 ## 2. Task List
 
-Task IDs are stable and match `REVIEW.md` section references. Status values: `todo` | `in-progress` | `done` | `blocked` | `deferred` | `abandoned`.
+Task IDs are stable and match `archive/REVIEW-2026-04.md` section references. Status values: `todo` | `in-progress` | `done` | `blocked` | `deferred` | `abandoned`.
 
 **All work in this document targets `main`.** The `ctr` branch is a throwaway POC
 (`docs/CTR_PLAN.md`: "Throwaway. Not maintained." / "Zero commits on `main`") — it

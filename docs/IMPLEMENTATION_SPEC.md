@@ -109,19 +109,7 @@ This document specifies how Madad is to be built. It is intended for the develop
 │   ├── build-validator.mjs
 │   ├── generate-test-pdfs.mjs
 │   └── check-size.mjs
-├── docs/
-│   ├── BEHAVIORAL_SPEC.md
-│   ├── IMPLEMENTATION_SPEC.md
-│   ├── CONFIG_SCHEMA_SPEC.md
-│   ├── DSL_SPEC.md
-│   ├── SEQUENCE_SPEC.md
-│   ├── RENDER_SPEC.md
-│   ├── ITEM_TYPES_SPEC.md
-│   ├── COMPOSER_SPEC.md
-│   ├── AGGREGATE_SPEC.md
-│   ├── CODE_ORGANIZATION.md
-│   ├── HANDOVER.md
-│   └── TODO.md
+├── docs/                             # specs and plans — index in docs/README.md
 └── .github/workflows/                # ci.yml, deploy-cloudflare.yml
 ```
 

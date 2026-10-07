@@ -1,7 +1,7 @@
 # Handover Document
 **Project:** Madad — Clinical Assessment App
 **Document version:** 3.0
-**Last verified against the tree:** 2026-08-27 (`npm test`, `npm run lint`, aggregate E2E; §3 “Mock reports” added)
+**Last verified against the tree:** 2026-10-07 (`npm run ci` green; §4 tree refreshed, migration Stage 9 closed)
 **Status:** Living document — update whenever the system state changes
 **Purpose:** Everything a developer (human or AI) needs to understand the project, work safely within it, and expand it without breaking things.
 
@@ -346,6 +346,7 @@ The pre-collapse bundle files (`standard.json`, `trauma.json`, `intake.json`, `o
 │   ├── router.js                 # History API router
 │   ├── controller.js             # Wiring layer
 │   ├── resolve-items.js          # URL token → orchestrator sequence
+│   ├── questionnaire-timer.js    # Per-questionnaire wall/focus time (AGG-8)
 │   ├── engine/
 │   │   ├── sequence-runner.js    # Shared if/randomize resolver
 │   │   ├── orchestrator.js       # Battery-level sequencing
@@ -366,6 +367,7 @@ The pre-collapse bundle files (`standard.json`, `trauma.json`, `intake.json`, `o
 │   │   ├── progress-bar.js
 │   │   └── results-screen.js
 │   ├── helpers/gestures.js       # Swipe gesture handler
+│   ├── i18n/                     # Patient string tables (he.js, en.js) + t()
 │   ├── pdf/report.js             # PDF generation (pdfmake, lazy-loaded)
 │   └── styles/{main.css,reset.js}
 ├── shared/                       # Framework-free, shared by every surface
@@ -374,14 +376,20 @@ The pre-collapse bundle files (`standard.json`, `trauma.json`, `intake.json`, `o
 │   │   ├── config-validation.js  # Semantic validation (IDs, options, refs)
 │   │   ├── item-types.js         # Item type registry (isScored etc.)
 │   │   ├── options.js            # Option-set resolution
+│   │   ├── risk-level.js         # Which answers a report highlights
+│   │   ├── translation-parity.js # Hebrew ↔ translation structural checks
 │   │   ├── QuestionnaireSet.schema.json
 │   │   └── validate-schema.js    # GENERATED — npm run build:validator
 │   ├── catalog/build-catalog.js  # Catalog index builder (scans prod/)
 │   ├── pdf/envelope-schema.js    # data.json envelope + validateEnvelope
+│   ├── i18n/core.js              # LANGS, DEFAULT_LANG, language resolution
 │   ├── pid.js                    # PID_PATTERN + helpers
+│   ├── safe-pattern.js           # ReDoS guard for config `pattern` fields
+│   ├── text-hygiene.js           # Free-text cleanup before PDF/Aggregate
 │   └── styles/tokens.css         # Design tokens incl. dark mode
 ├── clinician/                    # Shared clinician shell
 │   ├── components/clinician-nav.js
+│   ├── i18n/                     # Clinician UI strings (he.js, en.js)
 │   └── styles/clinician-styles.js
 ├── composer/                     # Composer (separate Vite entry point)
 │   ├── index.html
@@ -407,7 +415,9 @@ The pre-collapse bundle files (`standard.json`, `trauma.json`, `intake.json`, `o
 │       └── components/           # upload-list, pid-filter, raw-data-list,
 │                                 # session-detail
 ├── help/                         # Help surface (static content + nav)
-├── landing/                      # Landing page (built into dist-landing/)
+├── landing/                      # Landing page, he + en/ (built into dist-landing/)
+├── brand/                        # The Madad mark: generator, playground,
+│                                 # export/ (not part of the app build)
 ├── demo/                         # Mock-report grammar (README committed;
 │                                 # scenarios/ and out/ are gitignored)
 ├── public/
@@ -429,6 +439,7 @@ The pre-collapse bundle files (`standard.json`, `trauma.json`, `intake.json`, `o
 │   ├── generate-demo-shots.mjs   # Aggregate chart/heatmap PNGs (Playwright)
 │   ├── lib/mock-report.js        # Scenario grammar, validation, scoring
 │   ├── lib/mock-report.test.js   #   (its tests — run by npm test)
+│   ├── scaffold-translation.mjs  # TODO-marked translation file from Hebrew
 │   ├── build-og-image.sh
 │   └── check-size.mjs
 ├── vite.config.js / vite.landing.config.js / vite.shared.js
