@@ -67,7 +67,7 @@ The share images keep their own messages: the composer's "מדידה בלי חי
 the patient link's "מלאו שאלון לפני הפגישה". Only the corner mark, between the
 `Madad mark` comments, is generated.
 
-The product video (`guides/video/app/`) takes its opening card, end card and
+The product video (`docs/video/app/`) takes its opening card, end card and
 corner mark from these files too (`brand.marks` in its `video.json`).
 
 ## Tuning

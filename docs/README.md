@@ -32,6 +32,7 @@ the rest.
 - [TESTING_POLICY.md](TESTING_POLICY.md) — what a test must protect, and which layer each kind of test belongs in.
 - Adding an instrument: [`public/configs/CONTRIBUTING.md`](../public/configs/CONTRIBUTING.md) (by hand) or [`public/configs/LLM_GUIDE.md`](../public/configs/LLM_GUIDE.md) (LLM-assisted).
 - The brand mark: [`brand/README.md`](../brand/README.md).
+- Product videos: [`video/`](video/), one folder per video, each with a SPEC.md. Footage and renders are gitignored and live only on the machine that builds them.
 
 ## Archive
 

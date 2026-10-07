@@ -48,6 +48,8 @@ export default defineConfig(({ mode }) => ({
     },
   },
   assetsInclude: ['**/*.ttf'],
+  // docs/video/ holds gigabytes of gitignored footage; don't watch it.
+  server: { watch: { ignored: ['**/docs/video/**'] } },
   plugins: [
     crossOriginLinksPlugin(),
     ...(mode !== 'development' ? [cspPlugin()] : []),
