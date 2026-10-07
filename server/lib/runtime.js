@@ -17,9 +17,12 @@ export async function depsFrom(context) {
     db: createD1Db(env.DB),
     email: createCloudflareEmail({ accountId: env.CF_ACCOUNT_ID, apiToken: env.EMAIL_API_TOKEN, from: env.EMAIL_FROM, fromName: env.EMAIL_FROM_NAME }),
     // Configs ship in the same deploy artifact; ASSETS serves them (no network).
+    // ASSETS ignores the host, so the base is a constant rather than the
+    // request's origin: no request-derived value reaches a fetch (the MOH
+    // Checkmarx scan flagged that path as SSRF, 2026-10).
     loadConfig: async (id) => {
       if (!/^[a-z0-9_]+$/i.test(id)) return null;
-      const res = await env.ASSETS.fetch(new URL(`/configs/prod/${id}.json`, origin));
+      const res = await env.ASSETS.fetch(new URL(`/configs/prod/${id}.json`, 'https://assets.invalid'));
       return res.ok ? res.json() : null;
     },
     secret: env.HMAC_SECRET,
