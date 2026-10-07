@@ -13,6 +13,13 @@
 # leaking to any origin the patient later navigates to. New links keep the pid
 # in the URL fragment, which never leaves the browser at all.
 #
+# Two more lines answer the 2026-10 external scans of ctrmadad.com:
+#   • `! Access-Control-Allow-Origin` strips the `*` that Pages adds to every
+#     static asset by default. Nothing reads our assets cross-origin, and the
+#     API (Functions) never sent the header; this just stops the scanner flag.
+#   • Permissions-Policy denies device features the app never uses. Clipboard
+#     and Web Share are left alone: the composer, report and aggregate use both.
+#
 # Copied verbatim into the landing artifact by landingAssetsPlugin
 # (vite.landing.config.js) so both surfaces are protected identically.
 /*
@@ -21,3 +28,5 @@
   X-Content-Type-Options: nosniff
   Referrer-Policy: no-referrer
   Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), serial=(), bluetooth=(), hid=(), midi=(), magnetometer=(), gyroscope=(), accelerometer=(), display-capture=(), browsing-topics=()
+  ! Access-Control-Allow-Origin
