@@ -54,3 +54,20 @@ describe('CSP', () => {
     }
   });
 });
+
+describe('other security headers', () => {
+  const lines = () => readFileSync(new URL('../public/_headers', import.meta.url), 'utf8')
+    .split('\n').map(l => l.trim());
+
+  it('strips the Access-Control-Allow-Origin: * that Pages adds by default', () => {
+    expect(lines()).toContain('! Access-Control-Allow-Origin');
+  });
+
+  it('denies device features but leaves clipboard and Web Share usable', () => {
+    const line = lines().find(l => l.startsWith('Permissions-Policy:'));
+    expect(line, 'public/_headers must carry a Permissions-Policy').toBeTruthy();
+    for (const feature of ['camera', 'microphone', 'geolocation']) expect(line).toContain(`${feature}=()`);
+    // The composer copies and shares links; the aggregate copies chart PNGs.
+    for (const feature of ['clipboard-write', 'web-share']) expect(line).not.toContain(feature);
+  });
+});
