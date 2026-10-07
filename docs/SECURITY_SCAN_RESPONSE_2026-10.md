@@ -31,7 +31,7 @@ Every finding below was checked against the source and against live responses fr
 | # | Finding | Status | Explanation |
 |---|---|---|---|
 | 1 | Wildcard Origin (Medium) | **Fixed** | Cloudflare Pages adds `Access-Control-Allow-Origin: *` to static files by default. It was never sent on the API: `/api/v1/*` returns no CORS headers, and credentialed cross-origin reads were never allowed. A hostile page could therefore read only public JS/HTML. The default header is now removed (`! Access-Control-Allow-Origin` in `public/_headers`). |
-| 2 | Permissions-Policy not implemented (Low) | **Fixed** | Added. It denies camera, microphone, geolocation, payment, USB, serial, Bluetooth, HID, MIDI, motion sensors, display capture and Topics. Clipboard and Web Share stay allowed because the app uses them. |
+| 2 | Permissions-Policy not implemented (Low) | **Fixed** | Added. It denies camera, microphone, geolocation, payment, USB, serial, HID, MIDI, motion sensors, display capture and Topics. Clipboard and Web Share stay allowed because the app uses them. |
 | 3 | Content Type not specified (Informative) | **Not applicable** | `/composer` is a bodiless `308` redirect to `/composer/`. The target page sends `Content-Type: text/html; charset=utf-8`, and `nosniff` is set on every response. |
 | 4 | Possible Secret Key (Informative) | **Not a secret. Script removed.** | `de00f9de…` is the public site token of Cloudflare Web Analytics. Cloudflare's edge inserts it into HTML pages, and it is public by design. Our CSP (`script-src 'self'`) already blocked the injected script, so it never ran. Web Analytics injection is now turned off for the zone. It appeared under `.js` URLs because unknown paths fall back to the HTML page. |
 
@@ -50,9 +50,27 @@ Every finding below was checked against the source and against live responses fr
 | Privacy Violation in Error Messages | Low | `scripts/remote/mint-uids.mjs` 40 | Accepted | An offline administrator script that prints a malformed email back to the operator's own terminal while importing the registry. It is not deployed. |
 | Potential Clickjacking on Legacy Browsers | Low | `aggregate/index.html` | Mitigated | Every path is served with `X-Frame-Options: DENY` and CSP `frame-ancestors 'none'`. Frame-busting scripts only matter for browsers that support neither (pre-2013). |
 
+## Email authentication
+
+The trial sends two kinds of notification email from `madad@ctrmadad.com` through Cloudflare Email Service. Neither contains clinical content or an instrument name. On a production test on 2026-10-07:
+
+- **SPF: pass.** Cloudflare's sending IP is authorised for the bounce domain `cf-bounce.ctrmadad.com`, aligned with the From domain.
+- **DMARC: pass**, through the aligned SPF result. The published policy is `p=reject`.
+- **DKIM:**
+  - Messages are signed with `d=ctrmadad.com` (selector `cf-bounce`), aligned with From. The header signature verified against the published key.
+  - The body-hash check could not be confirmed. The test inbox (a disposable mail.tm address) returns a re-encoded body, and Cloudflare's own second signature (`d=cloudflare-smtp.org`) failed the same check in the same way. That points to the test inbox, not to signing.
+  - DMARC passes on SPF regardless. A check through an inbox that records `Authentication-Results` would close this.
+
 ## Verification after the fixes
 
-To be run against production after deploying:
+Run against production on 2026-10-07, after the deploy:
+
+- **CORS:** no `Access-Control-Allow-Origin` on any path (pages, static assets, API, `OPTIONS` preflight), even when a foreign `Origin` is sent.
+- **Permissions-Policy:** present on every response. CSP, `X-Frame-Options`, `Referrer-Policy` and HSTS are unchanged.
+- **Analytics script:** the Cloudflare Web Analytics script is no longer present in any page.
+- **Full patient-to-clinician round trip:** completed in production with a test ID. The submission was accepted, the hardened config lookup passed, and the clinician link opened the results. The stored record is byte-identical to what the browser sent.
+
+To repeat the header checks:
 
 ```bash
 curl -sI -H "Origin: https://attacker.com" https://ctrmadad.com/          # no access-control-allow-origin; permissions-policy present
