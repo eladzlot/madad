@@ -1,0 +1,160 @@
+{
+  "id": "ius12",
+  "version": "1.0.0",
+  "questionnaires": [
+    {
+      "id": "ius12",
+      "meta": {
+        "domains": [
+          "anxiety",
+          "ocd"
+        ],
+        "type": "process",
+        "populations": [
+          "adult"
+        ],
+        "tags": [
+          "transdiagnostic"
+        ],
+        "source": "Carleton, Norton & Asmundson (2007), J Anxiety Disord 21:105–117 — the 12 IUS-12 items, worded and ordered as in the English IUS-27 (Buhr & Dugas, 2002; PhenX protocol 650701 form). The published form labels only points 1, 3 and 5; the labels for points 2 and 4 mirror the Hebrew file and are an adaptation."
+      },
+      "title": "Intolerance of Uncertainty Scale (IUS-12)",
+      "description": "Intolerance of uncertainty: the need for predictability and paralysis in the face of uncertainty (IUS-12).",
+      "keywords": [
+        "intolerance of uncertainty",
+        "uncertainty",
+        "IUS",
+        "IUS-12",
+        "worry",
+        "GAD",
+        "OCD",
+        "transdiagnostic",
+        "anxiety"
+      ],
+      "defaultOptionSetId": "characteristic_5",
+      "optionSets": {
+        "characteristic_5": [
+          {
+            "label": "Not at all characteristic of me",
+            "value": 1
+          },
+          {
+            "label": "A little characteristic of me",
+            "value": 2
+          },
+          {
+            "label": "Somewhat characteristic of me",
+            "value": 3
+          },
+          {
+            "label": "Very characteristic of me",
+            "value": 4
+          },
+          {
+            "label": "Entirely characteristic of me",
+            "value": 5
+          }
+        ]
+      },
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "You will find below a series of statements which describe how people may react to the uncertainties of life. Please describe to what extent each item is characteristic of you."
+        },
+        {
+          "id": "1",
+          "type": "select",
+          "text": "Unforeseen events upset me greatly."
+        },
+        {
+          "id": "2",
+          "type": "select",
+          "text": "It frustrates me not having all the information I need."
+        },
+        {
+          "id": "3",
+          "type": "select",
+          "text": "Uncertainty keeps me from living a full life."
+        },
+        {
+          "id": "4",
+          "type": "select",
+          "text": "One should always look ahead so as to avoid surprises."
+        },
+        {
+          "id": "5",
+          "type": "select",
+          "text": "A small unforeseen event can spoil everything, even with the best of planning."
+        },
+        {
+          "id": "6",
+          "type": "select",
+          "text": "When it's time to act, uncertainty paralyses me."
+        },
+        {
+          "id": "7",
+          "type": "select",
+          "text": "When I am uncertain I can't function very well."
+        },
+        {
+          "id": "8",
+          "type": "select",
+          "text": "I always want to know what the future has in store for me."
+        },
+        {
+          "id": "9",
+          "type": "select",
+          "text": "I can't stand being taken by surprise."
+        },
+        {
+          "id": "10",
+          "type": "select",
+          "text": "The smallest doubt can stop me from acting."
+        },
+        {
+          "id": "11",
+          "type": "select",
+          "text": "I should be able to organize everything in advance."
+        },
+        {
+          "id": "12",
+          "type": "select",
+          "text": "I must get away from all uncertain situations."
+        }
+      ],
+      "scoring": {
+        "method": "subscales",
+        "subscaleMethod": "sum",
+        "subscales": {
+          "prospective": [
+            "1",
+            "2",
+            "4",
+            "5",
+            "8",
+            "9",
+            "11"
+          ],
+          "inhibitory": [
+            "3",
+            "6",
+            "7",
+            "10",
+            "12"
+          ]
+        }
+      },
+      "subscaleLabels": {
+        "prospective": "Prospective IU",
+        "inhibitory": "Inhibitory IU"
+      },
+      "psychometrics": {
+        "reliability": 0.93,
+        "sd": 12.43,
+        "source": "Jacoby et al. 2013"
+      },
+      "alerts": []
+    }
+  ]
+}

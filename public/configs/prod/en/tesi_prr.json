@@ -1,0 +1,1038 @@
+{
+  "id": "tesi_prr",
+  "version": "1.0.0",
+  "questionnaires": [
+    {
+      "id": "tesi_prr",
+      "title": "Traumatic Events Screening Inventory – Parent Report Revised (TESI-PRR)",
+      "description": "Parent-reported screen of a child’s exposure to 24 types of potentially traumatic events. For each endorsed event: the child’s age, details, and whether the child was strongly affected. The score is the number of event types endorsed.",
+      "keywords": [
+        "trauma",
+        "children",
+        "early childhood",
+        "traumatic events",
+        "trauma exposure",
+        "parent report",
+        "TESI",
+        "TESI-PRR"
+      ],
+      "meta": {
+        "domains": [
+          "trauma"
+        ],
+        "type": "screener",
+        "populations": [
+          "parent"
+        ],
+        "tags": [
+          "trauma exposure",
+          "early childhood"
+        ],
+        "source": "Ghosh Ippen, Ford, Racusin, Acker, Bosquet, Rogers, Ellis, Schiffman, Ribbe, Cone, Lukovitz & Edwards (2002), Traumatic Events Screening Inventory – Parent Report Revised, National Center for PTSD / NCTSN; free, not copyrighted. English wording from the form at ptsd.va.gov/professional/assessment/documents/tesi-parent.pdf; follow-up questions follow the Hebrew adaptation’s structure (the original also asks about weapons, deaths and setting for some events)."
+      },
+      "defaultOptionSetId": "yes_no_unsure",
+      "optionSets": {
+        "yes_no_unsure": [
+          {
+            "label": "Yes",
+            "value": 1
+          },
+          {
+            "label": "No",
+            "value": 0
+          },
+          {
+            "label": "Unsure",
+            "value": 2
+          }
+        ]
+      },
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "Children may experience stressful events, which may affect their health and well-being. Please indicate if your child has experienced any of these potentially stressful events by answering the following questions. If the answer is yes, please answer the follow-up questions. If it’s no, please go to the next question."
+        },
+        {
+          "id": "affected_def",
+          "type": "instructions",
+          "text": "Several questions ask: \"Was your child strongly affected by one or more of these experiences?\" By strongly affected we mean: did your child seem a) to be extremely frightened; b) to be very confused or helpless; c) to be very shocked or horrified; d) to have difficulty getting back to her or his normal way of behaving or feeling when it was over; OR e) to behave differently in important ways after it was over."
+        },
+        {
+          "id": "e1_1",
+          "type": "select",
+          "text": "Has your child ever been in a serious accident where someone could have been (or actually was) severely injured or died? (like a serious car or bicycle accident, a fall, a fire, an incident where s/he was burned, an actual or near drowning, or a severe sports injury)"
+        },
+        {
+          "id": "if_e1_1",
+          "type": "if",
+          "condition": "item.e1_1 == 1",
+          "then": [
+            {
+              "id": "e1_1_detail",
+              "type": "text",
+              "inputType": "multiline",
+              "text": "Identify the type of accident(s):"
+            },
+            {
+              "id": "e1_1_age_first",
+              "type": "text",
+              "text": "How old was your child the first time?"
+            },
+            {
+              "id": "e1_1_age_last",
+              "type": "text",
+              "text": "How old was your child the last time?"
+            },
+            {
+              "id": "e1_1_age_worst",
+              "type": "text",
+              "text": "How old was your child the most stressful time (in your opinion)?"
+            },
+            {
+              "id": "e1_1_affected",
+              "type": "select",
+              "required": false,
+              "text": "Was your child strongly affected by one or more of these experiences?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "e1_2",
+          "type": "select",
+          "text": "Has your child ever seen a serious accident where someone could have been (or actually was) severely injured or died? (like a serious car or bicycle accident, a fall, a fire, an incident where someone was burned, an actual or near drowning, or a severe sports injury)"
+        },
+        {
+          "id": "if_e1_2",
+          "type": "if",
+          "condition": "item.e1_2 == 1",
+          "then": [
+            {
+              "id": "e1_2_detail",
+              "type": "text",
+              "inputType": "multiline",
+              "text": "Identify the type of accident(s) and the victim’s relationship to your child (e.g. family member, friend, stranger):"
+            },
+            {
+              "id": "e1_2_age_first",
+              "type": "text",
+              "text": "How old was your child the first time?"
+            },
+            {
+              "id": "e1_2_age_last",
+              "type": "text",
+              "text": "How old was your child the last time?"
+            },
+            {
+              "id": "e1_2_age_worst",
+              "type": "text",
+              "text": "How old was your child the most stressful time (in your opinion)?"
+            },
+            {
+              "id": "e1_2_affected",
+              "type": "select",
+              "required": false,
+              "text": "Was your child strongly affected by one or more of these experiences?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "e1_3",
+          "type": "select",
+          "text": "Has your child ever been in a natural disaster where someone could have been (or actually was) severely injured or died? (like a tornado, fire, hurricane, or earthquake)"
+        },
+        {
+          "id": "if_e1_3",
+          "type": "if",
+          "condition": "item.e1_3 == 1",
+          "then": [
+            {
+              "id": "e1_3_age_first",
+              "type": "text",
+              "text": "How old was your child the first time?"
+            },
+            {
+              "id": "e1_3_age_last",
+              "type": "text",
+              "text": "How old was your child the last time?"
+            },
+            {
+              "id": "e1_3_age_worst",
+              "type": "text",
+              "text": "How old was your child the most stressful time (in your opinion)?"
+            },
+            {
+              "id": "e1_3_affected",
+              "type": "select",
+              "required": false,
+              "text": "Was your child strongly affected by one or more of these experiences?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "e1_4a",
+          "type": "select",
+          "text": "Has your child ever experienced the severe illness or injury of someone close to him/her?"
+        },
+        {
+          "id": "if_e1_4a",
+          "type": "if",
+          "condition": "item.e1_4a == 1",
+          "then": [
+            {
+              "id": "e1_4a_detail",
+              "type": "text",
+              "inputType": "multiline",
+              "text": "What was this person’s relationship to your child?"
+            },
+            {
+              "id": "e1_4a_age_first",
+              "type": "text",
+              "text": "How old was your child the first time?"
+            },
+            {
+              "id": "e1_4a_age_last",
+              "type": "text",
+              "text": "How old was your child the last time?"
+            },
+            {
+              "id": "e1_4a_age_worst",
+              "type": "text",
+              "text": "How old was your child the most stressful time (in your opinion)?"
+            },
+            {
+              "id": "e1_4a_affected",
+              "type": "select",
+              "required": false,
+              "text": "Was your child strongly affected by one or more of these experiences?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "e1_4b",
+          "type": "select",
+          "text": "Has your child ever experienced the death of someone close to him/her?"
+        },
+        {
+          "id": "if_e1_4b",
+          "type": "if",
+          "condition": "item.e1_4b == 1",
+          "then": [
+            {
+              "id": "e1_4b_detail",
+              "type": "text",
+              "inputType": "multiline",
+              "text": "What was this person’s relationship to your child?"
+            },
+            {
+              "id": "e1_4b_age_first",
+              "type": "text",
+              "text": "How old was your child the first time?"
+            },
+            {
+              "id": "e1_4b_age_last",
+              "type": "text",
+              "text": "How old was your child the last time?"
+            },
+            {
+              "id": "e1_4b_age_worst",
+              "type": "text",
+              "text": "How old was your child the most stressful time (in your opinion)?"
+            },
+            {
+              "id": "e1_4b_cause",
+              "type": "multiselect",
+              "text": "Was the death(s) due to: (check all that apply)",
+              "options": [
+                {
+                  "label": "Natural causes"
+                },
+                {
+                  "label": "Illness"
+                },
+                {
+                  "label": "Accident"
+                },
+                {
+                  "label": "Violence"
+                },
+                {
+                  "label": "Unknown"
+                }
+              ]
+            },
+            {
+              "id": "e1_4b_affected",
+              "type": "select",
+              "required": false,
+              "text": "Was your child strongly affected by one or more of these experiences?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "e1_5",
+          "type": "select",
+          "text": "Has your child ever undergone any serious medical procedures or had a life threatening illness? Or been treated by a paramedic, seen in an emergency room, or hospitalized overnight for a medical procedure?"
+        },
+        {
+          "id": "if_e1_5",
+          "type": "if",
+          "condition": "item.e1_5 == 1",
+          "then": [
+            {
+              "id": "e1_5_detail",
+              "type": "text",
+              "inputType": "multiline",
+              "text": "Describe:"
+            },
+            {
+              "id": "e1_5_age_first",
+              "type": "text",
+              "text": "How old was your child the first time?"
+            },
+            {
+              "id": "e1_5_age_last",
+              "type": "text",
+              "text": "How old was your child the last time?"
+            },
+            {
+              "id": "e1_5_age_worst",
+              "type": "text",
+              "text": "How old was your child the most stressful time (in your opinion)?"
+            },
+            {
+              "id": "e1_5_affected",
+              "type": "select",
+              "required": false,
+              "text": "Was your child strongly affected by one or more of these experiences?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "e1_6",
+          "type": "select",
+          "text": "Has your child ever been separated from you or another person who your child depends on for love or security for more than a few days OR under very stressful circumstances? For example due to foster care, immigration, war, major illness, or hospitalization."
+        },
+        {
+          "id": "if_e1_6",
+          "type": "if",
+          "condition": "item.e1_6 == 1",
+          "then": [
+            {
+              "id": "e1_6_detail",
+              "type": "text",
+              "inputType": "multiline",
+              "text": "Who was your child separated from, and under what circumstances?"
+            },
+            {
+              "id": "e1_6_age_first",
+              "type": "text",
+              "text": "How old was your child the first time?"
+            },
+            {
+              "id": "e1_6_age_last",
+              "type": "text",
+              "text": "How old was your child the last time?"
+            },
+            {
+              "id": "e1_6_age_worst",
+              "type": "text",
+              "text": "How old was your child the most stressful time (in your opinion)?"
+            },
+            {
+              "id": "e1_6_affected",
+              "type": "select",
+              "required": false,
+              "text": "Was your child strongly affected by one or more of these experiences?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "e1_7",
+          "type": "select",
+          "text": "Has someone close to your child ever attempted suicide or harmed him or herself?"
+        },
+        {
+          "id": "if_e1_7",
+          "type": "if",
+          "condition": "item.e1_7 == 1",
+          "then": [
+            {
+              "id": "e1_7_detail",
+              "type": "text",
+              "inputType": "multiline",
+              "text": "What was this person’s relationship to your child?"
+            },
+            {
+              "id": "e1_7_age_first",
+              "type": "text",
+              "text": "How old was your child the first time?"
+            },
+            {
+              "id": "e1_7_age_last",
+              "type": "text",
+              "text": "How old was your child the last time?"
+            },
+            {
+              "id": "e1_7_age_worst",
+              "type": "text",
+              "text": "How old was your child the most stressful time (in your opinion)?"
+            },
+            {
+              "id": "e1_7_affected",
+              "type": "select",
+              "required": false,
+              "text": "Was your child strongly affected by one or more of these experiences?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "e2_1",
+          "type": "select",
+          "text": "Has someone ever physically assaulted your child, like hitting, pushing, choking, shaking, biting, or burning? Or punished your child and caused physical injury or bruises. Or attacked your child with a gun, knife, or other weapon? (This could be done by someone in the family or by someone not in your child’s family)."
+        },
+        {
+          "id": "if_e2_1",
+          "type": "if",
+          "condition": "item.e2_1 == 1",
+          "then": [
+            {
+              "id": "e2_1_detail",
+              "type": "text",
+              "inputType": "multiline",
+              "text": "What was this person’s relationship to your child?"
+            },
+            {
+              "id": "e2_1_age_first",
+              "type": "text",
+              "text": "How old was your child the first time?"
+            },
+            {
+              "id": "e2_1_age_last",
+              "type": "text",
+              "text": "How old was your child the last time?"
+            },
+            {
+              "id": "e2_1_age_worst",
+              "type": "text",
+              "text": "How old was your child the most stressful time (in your opinion)?"
+            },
+            {
+              "id": "e2_1_affected",
+              "type": "select",
+              "required": false,
+              "text": "Was your child strongly affected by one or more of these experiences?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "e2_2",
+          "type": "select",
+          "text": "Has someone ever directly threatened your child with serious physical harm?"
+        },
+        {
+          "id": "if_e2_2",
+          "type": "if",
+          "condition": "item.e2_2 == 1",
+          "then": [
+            {
+              "id": "e2_2_detail",
+              "type": "text",
+              "inputType": "multiline",
+              "text": "What was this person’s relationship to your child?"
+            },
+            {
+              "id": "e2_2_age_first",
+              "type": "text",
+              "text": "How old was your child the first time?"
+            },
+            {
+              "id": "e2_2_age_last",
+              "type": "text",
+              "text": "How old was your child the last time?"
+            },
+            {
+              "id": "e2_2_age_worst",
+              "type": "text",
+              "text": "How old was your child the most stressful time (in your opinion)?"
+            },
+            {
+              "id": "e2_2_affected",
+              "type": "select",
+              "required": false,
+              "text": "Was your child strongly affected by one or more of these experiences?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "e2_3",
+          "type": "select",
+          "text": "Has someone ever mugged or tried to steal from your child? Or has your child been present when a family member, other caregiver, or friend was mugged?"
+        },
+        {
+          "id": "if_e2_3",
+          "type": "if",
+          "condition": "item.e2_3 == 1",
+          "then": [
+            {
+              "id": "e2_3_detail",
+              "type": "text",
+              "inputType": "multiline",
+              "text": "If it was someone other than your child: what is that person’s relationship to your child?"
+            },
+            {
+              "id": "e2_3_age_first",
+              "type": "text",
+              "text": "How old was your child the first time?"
+            },
+            {
+              "id": "e2_3_age_last",
+              "type": "text",
+              "text": "How old was your child the last time?"
+            },
+            {
+              "id": "e2_3_age_worst",
+              "type": "text",
+              "text": "How old was your child the most stressful time (in your opinion)?"
+            },
+            {
+              "id": "e2_3_affected",
+              "type": "select",
+              "required": false,
+              "text": "Was your child strongly affected by one or more of these experiences?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "e2_4",
+          "type": "select",
+          "text": "Has anyone ever kidnapped your child? (including a parent or relative) Or has anyone ever kidnapped someone close to your child?"
+        },
+        {
+          "id": "if_e2_4",
+          "type": "if",
+          "condition": "item.e2_4 == 1",
+          "then": [
+            {
+              "id": "e2_4_detail",
+              "type": "text",
+              "inputType": "multiline",
+              "text": "Describe the circumstances and the people involved (who was kidnapped, and the kidnapper’s relationship to your child):"
+            },
+            {
+              "id": "e2_4_age_first",
+              "type": "text",
+              "text": "How old was your child the first time?"
+            },
+            {
+              "id": "e2_4_age_last",
+              "type": "text",
+              "text": "How old was your child the last time?"
+            },
+            {
+              "id": "e2_4_age_worst",
+              "type": "text",
+              "text": "How old was your child the most stressful time (in your opinion)?"
+            },
+            {
+              "id": "e2_4_affected",
+              "type": "select",
+              "required": false,
+              "text": "Was your child strongly affected by one or more of these experiences?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "e2_5",
+          "type": "select",
+          "text": "Has your child ever been attacked by a dog or other animal?"
+        },
+        {
+          "id": "if_e2_5",
+          "type": "if",
+          "condition": "item.e2_5 == 1",
+          "then": [
+            {
+              "id": "e2_5_age_first",
+              "type": "text",
+              "text": "How old was your child the first time?"
+            },
+            {
+              "id": "e2_5_age_last",
+              "type": "text",
+              "text": "How old was your child the last time?"
+            },
+            {
+              "id": "e2_5_age_worst",
+              "type": "text",
+              "text": "How old was your child the most stressful time (in your opinion)?"
+            },
+            {
+              "id": "e2_5_injured",
+              "type": "select",
+              "required": false,
+              "text": "Was your child seriously physically hurt as a result of the attack?"
+            },
+            {
+              "id": "e2_5_affected",
+              "type": "select",
+              "required": false,
+              "text": "Was your child strongly affected by one or more of these experiences?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "e3_1",
+          "type": "select",
+          "text": "Has your child ever seen, heard, or heard about people in your family physically fighting, hitting, slapping, kicking, or pushing each other. Or shooting with a gun or stabbing, or using any other kind of dangerous weapon?"
+        },
+        {
+          "id": "if_e3_1",
+          "type": "if",
+          "condition": "item.e3_1 == 1",
+          "then": [
+            {
+              "id": "e3_1_detail",
+              "type": "text",
+              "inputType": "multiline",
+              "text": "What were these people’s relationships to your child?"
+            },
+            {
+              "id": "e3_1_age_first",
+              "type": "text",
+              "text": "How old was your child the first time?"
+            },
+            {
+              "id": "e3_1_age_last",
+              "type": "text",
+              "text": "How old was your child the last time?"
+            },
+            {
+              "id": "e3_1_age_worst",
+              "type": "text",
+              "text": "How old was your child the most stressful time (in your opinion)?"
+            },
+            {
+              "id": "e3_1_saw",
+              "type": "select",
+              "required": false,
+              "text": "Did your child see what happened?"
+            },
+            {
+              "id": "e3_1_affected",
+              "type": "select",
+              "required": false,
+              "text": "Was your child strongly affected by one or more of these experiences?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "e3_2",
+          "type": "select",
+          "text": "Has your child ever seen or heard people in your family threaten to seriously harm each other?"
+        },
+        {
+          "id": "if_e3_2",
+          "type": "if",
+          "condition": "item.e3_2 == 1",
+          "then": [
+            {
+              "id": "e3_2_detail",
+              "type": "text",
+              "inputType": "multiline",
+              "text": "What were these people’s relationships to your child?"
+            },
+            {
+              "id": "e3_2_age_first",
+              "type": "text",
+              "text": "How old was your child the first time?"
+            },
+            {
+              "id": "e3_2_age_last",
+              "type": "text",
+              "text": "How old was your child the last time?"
+            },
+            {
+              "id": "e3_2_age_worst",
+              "type": "text",
+              "text": "How old was your child the most stressful time (in your opinion)?"
+            },
+            {
+              "id": "e3_2_affected",
+              "type": "select",
+              "required": false,
+              "text": "Was your child strongly affected by one or more of these experiences?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "e3_3",
+          "type": "select",
+          "text": "Has your child ever known or seen that a family member was arrested, jailed, imprisoned, or taken away (like by police, soldiers, or other authorities)?"
+        },
+        {
+          "id": "if_e3_3",
+          "type": "if",
+          "condition": "item.e3_3 == 1",
+          "then": [
+            {
+              "id": "e3_3_detail",
+              "type": "text",
+              "inputType": "multiline",
+              "text": "What was this person’s relationship to your child?"
+            },
+            {
+              "id": "e3_3_age_first",
+              "type": "text",
+              "text": "How old was your child the first time?"
+            },
+            {
+              "id": "e3_3_age_last",
+              "type": "text",
+              "text": "How old was your child the last time?"
+            },
+            {
+              "id": "e3_3_age_worst",
+              "type": "text",
+              "text": "How old was your child the most stressful time (in your opinion)?"
+            },
+            {
+              "id": "e3_3_saw",
+              "type": "select",
+              "required": false,
+              "text": "Did your child see it happen?"
+            },
+            {
+              "id": "e3_3_affected",
+              "type": "select",
+              "required": false,
+              "text": "Was your child strongly affected by one or more of these experiences?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "e4_1",
+          "type": "select",
+          "text": "Has your child ever seen or heard people outside your family fighting, hitting, pushing, or attacking each other? Or seen or heard about violence such as beatings, shootings, or muggings that occurred in settings that are important to your child, such as school, your neighborhood, or the neighborhood of someone important to your child?"
+        },
+        {
+          "id": "if_e4_1",
+          "type": "if",
+          "condition": "item.e4_1 == 1",
+          "then": [
+            {
+              "id": "e4_1_age_first",
+              "type": "text",
+              "text": "How old was your child the first time?"
+            },
+            {
+              "id": "e4_1_age_last",
+              "type": "text",
+              "text": "How old was your child the last time?"
+            },
+            {
+              "id": "e4_1_age_worst",
+              "type": "text",
+              "text": "How old was your child the most stressful time (in your opinion)?"
+            },
+            {
+              "id": "e4_1_saw",
+              "type": "select",
+              "required": false,
+              "text": "Did your child see what happened?"
+            },
+            {
+              "id": "e4_1_affected",
+              "type": "select",
+              "required": false,
+              "text": "Was your child strongly affected by one or more of these experiences?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "e4_2",
+          "type": "select",
+          "text": "Has your child ever been directly exposed to war, armed conflict, or terrorism?"
+        },
+        {
+          "id": "if_e4_2",
+          "type": "if",
+          "condition": "item.e4_2 == 1",
+          "then": [
+            {
+              "id": "e4_2_age_first",
+              "type": "text",
+              "text": "How old was your child the first time?"
+            },
+            {
+              "id": "e4_2_age_last",
+              "type": "text",
+              "text": "How old was your child the last time?"
+            },
+            {
+              "id": "e4_2_age_worst",
+              "type": "text",
+              "text": "How old was your child the most stressful time (in your opinion)?"
+            },
+            {
+              "id": "e4_2_affected",
+              "type": "select",
+              "required": false,
+              "text": "Was your child strongly affected by one or more of these experiences?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "e4_3",
+          "type": "select",
+          "text": "Has your child ever seen or heard acts of war or terrorism on the television or radio?"
+        },
+        {
+          "id": "if_e4_3",
+          "type": "if",
+          "condition": "item.e4_3 == 1",
+          "then": [
+            {
+              "id": "e4_3_age_first",
+              "type": "text",
+              "text": "How old was your child the first time?"
+            },
+            {
+              "id": "e4_3_age_last",
+              "type": "text",
+              "text": "How old was your child the last time?"
+            },
+            {
+              "id": "e4_3_age_worst",
+              "type": "text",
+              "text": "How old was your child the most stressful time (in your opinion)?"
+            },
+            {
+              "id": "e4_3_affected",
+              "type": "select",
+              "required": false,
+              "text": "Was your child strongly affected by one or more of these experiences?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "e5_1",
+          "type": "select",
+          "text": "Has someone ever made your child see or do something sexual (like touching in a sexual way, exposing self or masturbating in front of the child, engaging in sexual intercourse)?"
+        },
+        {
+          "id": "if_e5_1",
+          "type": "if",
+          "condition": "item.e5_1 == 1",
+          "then": [
+            {
+              "id": "e5_1_detail",
+              "type": "text",
+              "inputType": "multiline",
+              "text": "What was this person’s relationship to your child?"
+            },
+            {
+              "id": "e5_1_age_first",
+              "type": "text",
+              "text": "How old was your child the first time?"
+            },
+            {
+              "id": "e5_1_age_last",
+              "type": "text",
+              "text": "How old was your child the last time?"
+            },
+            {
+              "id": "e5_1_age_worst",
+              "type": "text",
+              "text": "How old was your child the most stressful time (in your opinion)?"
+            },
+            {
+              "id": "e5_1_affected",
+              "type": "select",
+              "required": false,
+              "text": "Was your child strongly affected by one or more of these experiences?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "e5_2",
+          "type": "select",
+          "text": "Has your child ever been present when someone was being forced to engage in any sort of sexual activity?"
+        },
+        {
+          "id": "if_e5_2",
+          "type": "if",
+          "condition": "item.e5_2 == 1",
+          "then": [
+            {
+              "id": "e5_2_detail",
+              "type": "text",
+              "inputType": "multiline",
+              "text": "What were these people’s relationships to your child (victim and aggressor)?"
+            },
+            {
+              "id": "e5_2_age_first",
+              "type": "text",
+              "text": "How old was your child the first time?"
+            },
+            {
+              "id": "e5_2_age_last",
+              "type": "text",
+              "text": "How old was your child the last time?"
+            },
+            {
+              "id": "e5_2_age_worst",
+              "type": "text",
+              "text": "How old was your child the most stressful time (in your opinion)?"
+            },
+            {
+              "id": "e5_2_affected",
+              "type": "select",
+              "required": false,
+              "text": "Was your child strongly affected by one or more of these experiences?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "e6_1",
+          "type": "select",
+          "text": "Has your child ever repeatedly been told s/he was no good, yelled at in a scary way, or had someone threaten to abandon, leave or send him/her away?"
+        },
+        {
+          "id": "if_e6_1",
+          "type": "if",
+          "condition": "item.e6_1 == 1",
+          "then": [
+            {
+              "id": "e6_1_detail",
+              "type": "text",
+              "inputType": "multiline",
+              "text": "What was this person’s relationship to your child?"
+            },
+            {
+              "id": "e6_1_age_first",
+              "type": "text",
+              "text": "How old was your child the first time?"
+            },
+            {
+              "id": "e6_1_age_last",
+              "type": "text",
+              "text": "How old was your child the last time?"
+            },
+            {
+              "id": "e6_1_age_worst",
+              "type": "text",
+              "text": "How old was your child the most stressful time (in your opinion)?"
+            },
+            {
+              "id": "e6_1_affected",
+              "type": "select",
+              "required": false,
+              "text": "Was your child strongly affected by one or more of these experiences?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "e6_2",
+          "type": "select",
+          "text": "Has your child ever gone through a period when s/he lacked appropriate care (like not having enough to eat or drink, lacking shelter, being left alone when s/he was too young to care for herself/himself, or being left with a caregiver who was abusing drugs)?"
+        },
+        {
+          "id": "if_e6_2",
+          "type": "if",
+          "condition": "item.e6_2 == 1",
+          "then": [
+            {
+              "id": "e6_2_age_first",
+              "type": "text",
+              "text": "How old was your child the first time?"
+            },
+            {
+              "id": "e6_2_age_last",
+              "type": "text",
+              "text": "How old was your child the last time?"
+            },
+            {
+              "id": "e6_2_age_worst",
+              "type": "text",
+              "text": "How old was your child the most stressful time (in your opinion)?"
+            },
+            {
+              "id": "e6_2_affected",
+              "type": "select",
+              "required": false,
+              "text": "Was your child strongly affected by one or more of these experiences?"
+            }
+          ],
+          "else": []
+        },
+        {
+          "id": "e7_1",
+          "type": "select",
+          "text": "Have there been other stressful things that have happened to your child?"
+        },
+        {
+          "id": "if_e7_1",
+          "type": "if",
+          "condition": "item.e7_1 == 1",
+          "then": [
+            {
+              "id": "e7_1_detail",
+              "type": "text",
+              "inputType": "multiline",
+              "text": "Briefly describe these things:"
+            },
+            {
+              "id": "e7_1_age_first",
+              "type": "text",
+              "text": "How old was your child the first time?"
+            },
+            {
+              "id": "e7_1_age_last",
+              "type": "text",
+              "text": "How old was your child the last time?"
+            },
+            {
+              "id": "e7_1_age_worst",
+              "type": "text",
+              "text": "How old was your child the most stressful time (in your opinion)?"
+            },
+            {
+              "id": "e7_1_affected",
+              "type": "select",
+              "required": false,
+              "text": "Was your child strongly affected by one or more of these experiences?"
+            }
+          ],
+          "else": []
+        }
+      ],
+      "scoring": {
+        "method": "custom",
+        "customFormula": "sum(if(item.e1_1 == 1, 1, 0), if(item.e1_2 == 1, 1, 0), if(item.e1_3 == 1, 1, 0), if(item.e1_4a == 1, 1, 0), if(item.e1_4b == 1, 1, 0), if(item.e1_5 == 1, 1, 0), if(item.e1_6 == 1, 1, 0), if(item.e1_7 == 1, 1, 0), if(item.e2_1 == 1, 1, 0), if(item.e2_2 == 1, 1, 0), if(item.e2_3 == 1, 1, 0), if(item.e2_4 == 1, 1, 0), if(item.e2_5 == 1, 1, 0), if(item.e3_1 == 1, 1, 0), if(item.e3_2 == 1, 1, 0), if(item.e3_3 == 1, 1, 0), if(item.e4_1 == 1, 1, 0), if(item.e4_2 == 1, 1, 0), if(item.e4_3 == 1, 1, 0), if(item.e5_1 == 1, 1, 0), if(item.e5_2 == 1, 1, 0), if(item.e6_1 == 1, 1, 0), if(item.e6_2 == 1, 1, 0), if(item.e7_1 == 1, 1, 0))"
+      }
+    }
+  ]
+}

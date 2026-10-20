@@ -217,7 +217,7 @@ of git; never relocate them somewhere tracked.
 
 ### Instrument library
 
-`public/configs/prod/` holds **53 files**: 47 production entities (45 questionnaires, 2 batteries) and 6 dev-only fixtures marked `"dev": true`. One entity per file, filename = entity id — enforced by `npm run validate:configs`. Item IDs are URL addresses (`?items=phq9`).
+`public/configs/prod/` holds **55 files**: 49 production entities (47 questionnaires, 2 batteries) and 6 dev-only fixtures marked `"dev": true`. One entity per file, filename = entity id — enforced by `npm run validate:configs`. Item IDs are URL addresses (`?items=phq9`).
 
 **Depression / mood**
 
@@ -239,6 +239,7 @@ of git; never relocate them somewhere tracked.
 | `spin` | שאלון פוביה חברתית (SPIN) | social + anxiety |
 | `scared_child` | שאלון חרדה לילדים — דיווח עצמי (SCARED) | 41 items, 5 sum subscales; screening cutoff 25; warning alert |
 | `scared_parent` | שאלון חרדה לילדים — דיווח הורי (SCARED) | Parent-report twin of `scared_child`; same scoring and cutoff |
+| `ius12` | שאלון חוסר סבילות לאי-ודאות (IUS-12) | Process measure (anxiety + OCD); 1–5 scale, 2 sum subscales (prospective 7 / inhibitory 5), total 12–60; no validated cutoffs; RCI from Jacoby et al., 2013; HUJI lab Hebrew, unvalidated; English file |
 
 **OCD and related**
 
@@ -260,6 +261,7 @@ of git; never relocate them somewhere tracked.
 | `pcl5_8` | שאלון פוסט-טראומה מקוצר בן 8 פריטים (PCL-5) | Cluster-derived short form (items 1, 4, 6, 7, 9, 12, 18, 19); sum 0–32; screening cutoff 19; warning alert (Price et al., 2016) |
 | `ptci` | שאלון קוגניציות פוסט-טראומטיות, גרסה מלאה (PTCI) | 36 items, 33 scored — fillers 13/32/34 in `scoring.exclude`; 3 subscales (mean); validated Hebrew (Daie-Gabai et al., 2011) |
 | `ptci9` | שאלון קוגניציות פוסט-טראומטיות מקוצר (PTCI-9) | Items 1, 7, 22, 23, 25, 27, 31, 33, 36 (Wells et al., 2019); 3 subscales of 3 (mean); Hebrew from the validated PTCI |
+| `tesi_prr` | סקר אירועים טראומטיים — דיווח הורי (TESI-PRR) | Parent report, early childhood; score = number of event types endorsed (custom formula), with conditional follow-ups per event; English file |
 | `stss` | שאלון סטרס טראומטי משני (STSS) | Secondary traumatic stress in clinicians; 3 sum subscales; cutoff 38 (Bride 2007); warning alert; unvalidated Hebrew; © Bride, free non-commercial |
 
 **Psychosis / prodrome**

@@ -1,0 +1,146 @@
+{
+  "id": "ius12",
+  "version": "1.0.0",
+  "questionnaires": [
+    {
+      "id": "ius12",
+      "meta": {
+        "domains": [
+          "anxiety",
+          "ocd"
+        ],
+        "type": "process",
+        "populations": [
+          "adult"
+        ],
+        "tags": [
+          "transdiagnostic"
+        ],
+        "source": "Carleton, Norton & Asmundson (2007), J Anxiety Disord 21:105–117. Hebrew translation by the Lab for Mental Health Research, Hebrew University of Jerusalem, proofread 2026-10-20; unvalidated — psychometrics are from the English version."
+      },
+      "title": "שאלון חוסר סבילות לאי-ודאות (IUS-12)",
+      "description": "הערכת חוסר סבילות לאי-ודאות: הצורך לדעת מראש והשיתוק מול אי-ודאות (Intolerance of Uncertainty, IUS-12)",
+      "keywords": [
+        "intolerance of uncertainty",
+        "uncertainty",
+        "IUS",
+        "IUS-12",
+        "worry",
+        "GAD",
+        "OCD",
+        "אי-ודאות",
+        "דאגה"
+      ],
+      "defaultOptionSetId": "characteristic_5",
+      "optionSets": {
+        "characteristic_5": [
+          {
+            "label": "לא מתאר אותי בכלל",
+            "value": 1
+          },
+          {
+            "label": "מתאר אותי במידה מועטה",
+            "value": 2
+          },
+          {
+            "label": "מתאר אותי במידה בינונית",
+            "value": 3
+          },
+          {
+            "label": "מתאר אותי במידה רבה",
+            "value": 4
+          },
+          {
+            "label": "מתאר אותי לגמרי",
+            "value": 5
+          }
+        ]
+      },
+      "items": [
+        {
+          "id": "intro",
+          "type": "instructions",
+          "text": "עד כמה כל אחד מהמשפטים הבאים מתאר אותך?"
+        },
+        {
+          "id": "1",
+          "type": "select",
+          "text": "מאורעות לא צפויים מטרידים אותי במידה רבה"
+        },
+        {
+          "id": "2",
+          "type": "select",
+          "text": "מתסכל אותי כשאין לי את כל המידע שאני צריך/ה"
+        },
+        {
+          "id": "3",
+          "type": "select",
+          "text": "אי-ודאות מונעת ממני לחיות חיים מלאים"
+        },
+        {
+          "id": "4",
+          "type": "select",
+          "text": "תמיד צריך לצפות דברים מראש על מנת למנוע הפתעות"
+        },
+        {
+          "id": "5",
+          "type": "select",
+          "text": "מאורע בלתי צפוי קטן עלול לקלקל הכל, אפילו כשהתכנון נעשה בצורה הטובה ביותר"
+        },
+        {
+          "id": "6",
+          "type": "select",
+          "text": "כאשר צריך לפעול, אי-ודאות משתקת אותי"
+        },
+        {
+          "id": "7",
+          "type": "select",
+          "text": "כאשר אני לא בטוח/ה, קשה לי לתפקד היטב"
+        },
+        {
+          "id": "8",
+          "type": "select",
+          "text": "אני תמיד רוצה לדעת מה צופן לי העתיד"
+        },
+        {
+          "id": "9",
+          "type": "select",
+          "text": "זה בלתי נסבל עבורי להיות מופתע/ת"
+        },
+        {
+          "id": "10",
+          "type": "select",
+          "text": "הספק הקטן ביותר עלול למנוע ממני לפעול"
+        },
+        {
+          "id": "11",
+          "type": "select",
+          "text": "אני אמור/ה להיות מסוגל/ת לארגן הכל מראש"
+        },
+        {
+          "id": "12",
+          "type": "select",
+          "text": "עליי להתרחק מכל מצב של אי-ודאות"
+        }
+      ],
+      "scoring": {
+        "method": "subscales",
+        "subscaleMethod": "sum",
+        "subscales": {
+          "prospective": ["1", "2", "4", "5", "8", "9", "11"],
+          "inhibitory": ["3", "6", "7", "10", "12"]
+        }
+      },
+      "subscaleLabels": {
+        "prospective": "חרדה מקדימה (Prospective IU)",
+        "inhibitory": "חרדה מעכבת (Inhibitory IU)"
+      },
+      "psychometrics": {
+        "reliability": 0.93,
+        "sd": 12.43,
+        "source": "Jacoby et al. 2013"
+      },
+      "alerts": []
+    }
+  ]
+}
