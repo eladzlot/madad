@@ -1,0 +1,42 @@
+{
+  "id": "ptsd_battery",
+  "version": "1.0.0",
+  "questionnaires": [],
+  "batteries": [
+    {
+      "id": "ptsd_battery",
+      "meta": {
+        "domains": [
+          "trauma"
+        ],
+        "populations": [
+          "adult"
+        ]
+      },
+      "title": "פוסט-טראומה",
+      "description": "סוללת פוסט-טראומה: חומרת תסמינים (PCL-5) וקוגניציות פוסט-טראומטיות (PTCI-9).",
+      "keywords": [
+        "PTSD",
+        "trauma",
+        "PCL-5",
+        "PTCI-9",
+        "CPT",
+        "PE",
+        "פוסט-טראומה",
+        "טראומה"
+      ],
+      "sequence": [
+        {
+          "questionnaireId": "pcl5"
+        },
+        {
+          "questionnaireId": "ptci9"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    "configs/prod/pcl5.json",
+    "configs/prod/ptci9.json"
+  ]
+}

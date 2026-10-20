@@ -217,7 +217,7 @@ of git; never relocate them somewhere tracked.
 
 ### Instrument library
 
-`public/configs/prod/` holds **55 files**: 49 production entities (47 questionnaires, 2 batteries) and 6 dev-only fixtures marked `"dev": true`. One entity per file, filename = entity id — enforced by `npm run validate:configs`. Item IDs are URL addresses (`?items=phq9`).
+`public/configs/prod/` holds **59 files**: 53 production entities (47 questionnaires, 6 batteries) and 6 dev-only fixtures marked `"dev": true`. One entity per file, filename = entity id — enforced by `npm run validate:configs`. Item IDs are URL addresses (`?items=phq9`).
 
 **Depression / mood**
 
@@ -311,6 +311,10 @@ of git; never relocate them somewhere tracked.
 | `diamond_sr` | questionnaire | DIAMOND Self Report Screener | Alerts: psychotic ideation, mania, trauma, substance use |
 | `clinical_intake` | battery | הערכה ראשונית | DIAMOND → conditional questionnaires per domain; depends on 9 questionnaire configs |
 | `trauma_eval` | battery | הערכת טראומה ראשונית | PC-PTSD-5 → if score ≥ 4: PCL-5 + PTCI |
+| `sad_battery` | battery | חרדה חברתית | SPIN → SBQ → SCQ (69 items) |
+| `ptsd_battery` | battery | פוסט-טראומה | PCL-5 → PTCI-9; unconditional, for session tracking (unlike `trauma_eval`) |
+| `ocd_battery` | battery | הפרעה טורדנית-כפייתית (OCD) | OCI-R → IUS-12 |
+| `pd_battery` | battery | הפרעת פאניקה | PDSS-SR → ASI-3 |
 
 Battery files declare `dependencies` on every questionnaire file they reference. Generated URLs name only the selected items' configs — dependency resolution happens patient-side in `loadConfig`'s BFS auto-fetch.
 

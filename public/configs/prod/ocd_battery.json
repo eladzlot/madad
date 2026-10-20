@@ -1,0 +1,40 @@
+{
+  "id": "ocd_battery",
+  "version": "1.0.0",
+  "questionnaires": [],
+  "batteries": [
+    {
+      "id": "ocd_battery",
+      "meta": {
+        "domains": [
+          "ocd"
+        ],
+        "populations": [
+          "adult"
+        ]
+      },
+      "title": "הפרעה טורדנית-כפייתית (OCD)",
+      "description": "סוללת OCD: חומרת תסמינים (OCI-R) וחוסר סבילות לאי-ודאות (IUS-12).",
+      "keywords": [
+        "OCD",
+        "obsessive-compulsive",
+        "OCI-R",
+        "IUS-12",
+        "ERP",
+        "טורדנות כפייתית"
+      ],
+      "sequence": [
+        {
+          "questionnaireId": "oci_r"
+        },
+        {
+          "questionnaireId": "ius12"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    "configs/prod/oci_r.json",
+    "configs/prod/ius12.json"
+  ]
+}

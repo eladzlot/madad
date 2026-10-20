@@ -1059,6 +1059,50 @@
       }
     },
     {
+      "id": "ocd_battery",
+      "kind": "battery",
+      "title": "הפרעה טורדנית-כפייתית (OCD)",
+      "description": "סוללת OCD: חומרת תסמינים (OCI-R) וחוסר סבילות לאי-ודאות (IUS-12).",
+      "keywords": [
+        "OCD",
+        "obsessive-compulsive",
+        "OCI-R",
+        "IUS-12",
+        "ERP",
+        "טורדנות כפייתית"
+      ],
+      "itemCount": 30,
+      "estMinutes": 4,
+      "hasConditional": false,
+      "domains": [
+        "ocd"
+      ],
+      "type": null,
+      "populations": [
+        "adult"
+      ],
+      "tags": [],
+      "featured": false,
+      "languages": [
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Obsessive-compulsive disorder (OCD)",
+          "description": "OCD battery: symptom severity (OCI-R) and intolerance of uncertainty (IUS-12).",
+          "keywords": [
+            "OCD",
+            "obsessive-compulsive",
+            "OCI-R",
+            "IUS-12",
+            "ERP",
+            "טורדנות כפייתית"
+          ]
+        }
+      }
+    },
+    {
       "id": "oci_r",
       "kind": "questionnaire",
       "title": "שאלון טורדנות כפייתית (OCI-R)",
@@ -1313,6 +1357,54 @@
             "monitoring",
             "abbreviated",
             "short form"
+          ]
+        }
+      }
+    },
+    {
+      "id": "pd_battery",
+      "kind": "battery",
+      "title": "הפרעת פאניקה",
+      "description": "סוללת הפרעת פאניקה: חומרת תסמינים (PDSS-SR) ורגישות לחרדה (ASI-3).",
+      "keywords": [
+        "panic",
+        "panic disorder",
+        "PD",
+        "PDSS",
+        "PDSS-SR",
+        "ASI-3",
+        "פאניקה",
+        "התקפי חרדה"
+      ],
+      "itemCount": 26,
+      "estMinutes": 3,
+      "hasConditional": false,
+      "domains": [
+        "anxiety"
+      ],
+      "type": null,
+      "populations": [
+        "adult"
+      ],
+      "tags": [],
+      "featured": false,
+      "languages": [
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Panic disorder",
+          "description": "Panic disorder battery: symptom severity (PDSS-SR) and anxiety sensitivity (ASI-3).",
+          "keywords": [
+            "panic",
+            "panic disorder",
+            "PD",
+            "PDSS",
+            "PDSS-SR",
+            "ASI-3",
+            "פאניקה",
+            "התקפי חרדה"
           ]
         }
       }
@@ -1629,6 +1721,54 @@
       }
     },
     {
+      "id": "ptsd_battery",
+      "kind": "battery",
+      "title": "פוסט-טראומה",
+      "description": "סוללת פוסט-טראומה: חומרת תסמינים (PCL-5) וקוגניציות פוסט-טראומטיות (PTCI-9).",
+      "keywords": [
+        "PTSD",
+        "trauma",
+        "PCL-5",
+        "PTCI-9",
+        "CPT",
+        "PE",
+        "פוסט-טראומה",
+        "טראומה"
+      ],
+      "itemCount": 29,
+      "estMinutes": 4,
+      "hasConditional": false,
+      "domains": [
+        "trauma"
+      ],
+      "type": null,
+      "populations": [
+        "adult"
+      ],
+      "tags": [],
+      "featured": false,
+      "languages": [
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Posttraumatic stress",
+          "description": "PTSD battery: symptom severity (PCL-5) and posttraumatic cognitions (PTCI-9).",
+          "keywords": [
+            "PTSD",
+            "trauma",
+            "PCL-5",
+            "PTCI-9",
+            "CPT",
+            "PE",
+            "פוסט-טראומה",
+            "טראומה"
+          ]
+        }
+      }
+    },
+    {
       "id": "roci",
       "kind": "questionnaire",
       "title": "שאלון אובססיות וכפייתיות בקשר רומנטי (ROCI)",
@@ -1670,6 +1810,53 @@
             "relationship",
             "obsessive",
             "compulsive"
+          ]
+        }
+      }
+    },
+    {
+      "id": "sad_battery",
+      "kind": "battery",
+      "title": "חרדה חברתית",
+      "description": "סוללת חרדה חברתית: חומרת תסמינים (SPIN), התנהגויות ביטחון (SBQ) וקוגניציות חברתיות (SCQ).",
+      "keywords": [
+        "social anxiety",
+        "SAD",
+        "SPIN",
+        "SBQ",
+        "SCQ",
+        "CBT",
+        "חרדה חברתית"
+      ],
+      "itemCount": 69,
+      "estMinutes": 8,
+      "hasConditional": false,
+      "domains": [
+        "social",
+        "anxiety"
+      ],
+      "type": null,
+      "populations": [
+        "adult"
+      ],
+      "tags": [],
+      "featured": false,
+      "languages": [
+        "he",
+        "en"
+      ],
+      "i18n": {
+        "en": {
+          "title": "Social anxiety",
+          "description": "Social anxiety battery: symptom severity (SPIN), safety behaviours (SBQ) and social cognitions (SCQ).",
+          "keywords": [
+            "social anxiety",
+            "SAD",
+            "SPIN",
+            "SBQ",
+            "SCQ",
+            "CBT",
+            "חרדה חברתית"
           ]
         }
       }

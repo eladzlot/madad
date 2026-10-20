@@ -1,0 +1,47 @@
+{
+  "id": "sad_battery",
+  "version": "1.0.0",
+  "questionnaires": [],
+  "batteries": [
+    {
+      "id": "sad_battery",
+      "meta": {
+        "domains": [
+          "social",
+          "anxiety"
+        ],
+        "populations": [
+          "adult"
+        ],
+        "source": "Madad original"
+      },
+      "title": "Social anxiety",
+      "description": "Social anxiety battery: symptom severity (SPIN), safety behaviours (SBQ) and social cognitions (SCQ).",
+      "keywords": [
+        "social anxiety",
+        "SAD",
+        "SPIN",
+        "SBQ",
+        "SCQ",
+        "CBT",
+        "חרדה חברתית"
+      ],
+      "sequence": [
+        {
+          "questionnaireId": "spin"
+        },
+        {
+          "questionnaireId": "sbq"
+        },
+        {
+          "questionnaireId": "scq"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    "configs/prod/en/spin.json",
+    "configs/prod/en/sbq.json",
+    "configs/prod/en/scq.json"
+  ]
+}

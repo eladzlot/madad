@@ -1,0 +1,43 @@
+{
+  "id": "pd_battery",
+  "version": "1.0.0",
+  "questionnaires": [],
+  "batteries": [
+    {
+      "id": "pd_battery",
+      "meta": {
+        "domains": [
+          "anxiety"
+        ],
+        "populations": [
+          "adult"
+        ],
+        "source": "Madad original"
+      },
+      "title": "Panic disorder",
+      "description": "Panic disorder battery: symptom severity (PDSS-SR) and anxiety sensitivity (ASI-3).",
+      "keywords": [
+        "panic",
+        "panic disorder",
+        "PD",
+        "PDSS",
+        "PDSS-SR",
+        "ASI-3",
+        "פאניקה",
+        "התקפי חרדה"
+      ],
+      "sequence": [
+        {
+          "questionnaireId": "pdss_sr"
+        },
+        {
+          "questionnaireId": "asi_3"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    "configs/prod/en/pdss_sr.json",
+    "configs/prod/en/asi_3.json"
+  ]
+}

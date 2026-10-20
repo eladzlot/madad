@@ -1,0 +1,42 @@
+{
+  "id": "pd_battery",
+  "version": "1.0.0",
+  "questionnaires": [],
+  "batteries": [
+    {
+      "id": "pd_battery",
+      "meta": {
+        "domains": [
+          "anxiety"
+        ],
+        "populations": [
+          "adult"
+        ]
+      },
+      "title": "הפרעת פאניקה",
+      "description": "סוללת הפרעת פאניקה: חומרת תסמינים (PDSS-SR) ורגישות לחרדה (ASI-3).",
+      "keywords": [
+        "panic",
+        "panic disorder",
+        "PD",
+        "PDSS",
+        "PDSS-SR",
+        "ASI-3",
+        "פאניקה",
+        "התקפי חרדה"
+      ],
+      "sequence": [
+        {
+          "questionnaireId": "pdss_sr"
+        },
+        {
+          "questionnaireId": "asi_3"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    "configs/prod/pdss_sr.json",
+    "configs/prod/asi_3.json"
+  ]
+}

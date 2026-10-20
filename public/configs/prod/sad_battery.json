@@ -1,0 +1,46 @@
+{
+  "id": "sad_battery",
+  "version": "1.0.0",
+  "questionnaires": [],
+  "batteries": [
+    {
+      "id": "sad_battery",
+      "meta": {
+        "domains": [
+          "social",
+          "anxiety"
+        ],
+        "populations": [
+          "adult"
+        ]
+      },
+      "title": "חרדה חברתית",
+      "description": "סוללת חרדה חברתית: חומרת תסמינים (SPIN), התנהגויות ביטחון (SBQ) וקוגניציות חברתיות (SCQ).",
+      "keywords": [
+        "social anxiety",
+        "SAD",
+        "SPIN",
+        "SBQ",
+        "SCQ",
+        "CBT",
+        "חרדה חברתית"
+      ],
+      "sequence": [
+        {
+          "questionnaireId": "spin"
+        },
+        {
+          "questionnaireId": "sbq"
+        },
+        {
+          "questionnaireId": "scq"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    "configs/prod/spin.json",
+    "configs/prod/sbq.json",
+    "configs/prod/scq.json"
+  ]
+}
