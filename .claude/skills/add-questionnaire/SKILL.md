@@ -37,6 +37,17 @@ browsing and **must be regenerated** whenever you add or change a config
   (structural parity check) and `npm run build:catalog`. Full procedure:
   `public/configs/CONTRIBUTING.md` §"Translating an instrument"; design: `docs/I18N_SPEC.md`.
   A translated *battery* needs every questionnaire it sequences translated too.
+- **Always add the English file when one can be sourced.** When adding a new instrument,
+  also add `public/configs/prod/en/<id>.json` whenever the English original or an
+  official English translation is available (most instruments are published in English).
+  This is the default and needs no separate request. Find the official form (the
+  publication, the author's site, or a curated source such as PhenX), use its item
+  wording, instructions and response labels verbatim, and cite it in `meta.source`. If
+  the form leaves some response points unlabelled, mirror the Hebrew file's labels for
+  those points (the user's choice for the IUS-12, 2026-10-20) and say in `meta.source`
+  that those labels are an adaptation. Skip the English file only
+  when no authoritative English wording can be found; never back-translate from Hebrew.
+  Say which was done in the Step 7 review.
 - **License gate.** Add any instrument that is free to use for non-commercial
   (research/clinical) purposes — whether public-domain/open-license (e.g. PHQ-9, PCL-5) or
   copyrighted but distributed free for clinical use (e.g. the STSS, `© Brian E. Bride`).
@@ -159,17 +170,20 @@ Before any commit — even if the user supplied a perfect Hebrew version — pre
 4. Every item, numbered, in order, with type and any reverse/exclude/conditional flags.
 5. Scoring method, subscales, interpretation ranges, cutoffs, alerts, psychometrics —
    each with its literature source.
-6. Open questions: unvalidated translation, unresolved proofreading suggestions,
+6. The English file: its source and its full text side by side with the Hebrew, or
+   why there is none.
+7. Open questions: unvalidated translation, unresolved proofreading suggestions,
    missing psychometric values.
 
-Then **stop and wait**. Offer the manual test URL
-(`http://localhost:5173/?items=<id>`) and invite corrections. Apply any fixes the user
+Then **stop and wait**. Offer the manual test URLs
+(`http://localhost:5173/?items=<id>`, and `&lang=en` for the English file) and invite corrections. Apply any fixes the user
 requests, re-run validation + `build:catalog`, and re-show the changed parts.
 
 ## Step 8 — Commit
 
 Only after the user explicitly approves. Config + regenerated catalog change, plain
 commit message (no AI attribution), e.g.
-`content: add <INSTRUMENT> (configs/prod/<id>.json)`. Stage both the new
-`public/configs/prod/<id>.json` and the regenerated `public/composer/catalog.json`.
+`content: add <INSTRUMENT> (configs/prod/<id>.json)`. Stage the new
+`public/configs/prod/<id>.json`, the English `public/configs/prod/en/<id>.json` when
+there is one, and the regenerated `public/composer/catalog.json`.
 Update `docs/HANDOVER.md`'s instrument-library table if the instrument is prod-facing.
